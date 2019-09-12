@@ -11,4 +11,8 @@ android {
     defaultConfig {
         minSdkVersion(14)
     }
+    compileOptions {
+        setSourceCompatibility(JavaVersion.VERSION_1_8)
+        setTargetCompatibility(JavaVersion.VERSION_1_8)
+    }
 }
