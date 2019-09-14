@@ -10,6 +10,12 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.3.50")
 }
 
+configure<SourceSetContainer> {
+    test {
+        java.srcDir("src/test/java")
+    }
+}
+
 jacoco {
     toolVersion = "0.8.4"
 }
