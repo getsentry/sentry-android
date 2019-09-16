@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":sentry-core"))
+    api(project(":sentry-core"))
     testImplementation("org.robolectric:robolectric:4.3")
     testImplementation(kotlin("stdlib-jdk8"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.3.50")
