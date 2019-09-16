@@ -1,20 +1,31 @@
 package io.sentry.android
 
+import android.content.Context
 import android.content.pm.ProviderInfo
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.sentry.Sentry
+import org.junit.runner.RunWith
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-class SentryInitProviderTest : AndroidTest() {
+@RunWith(AndroidJUnit4::class)
+class SentryInitProviderTest {
     private var sentryInitProvider: SentryInitProvider = SentryInitProvider()
 
+    private lateinit var context: Context
+
+    @BeforeTest
+    fun `set up`() {
+        context = ApplicationProvider.getApplicationContext()
+    }
+
     @Test
-    fun MissingApplicationIdThrows() {
-//      fun `missing applicationId throws`() {
+    fun `missing applicationId throws`() {
         val providerInfo = ProviderInfo()
-        throw RuntimeException()
 
         providerInfo.authority = "com.google.android.gms.tests.common.firebaseinitprovider"
-        sentryInitProvider.attachInfo(context(), providerInfo)
+        sentryInitProvider.attachInfo(context, providerInfo)
 
         Sentry.init { o -> o.dsn = "test" }
 
