@@ -24,11 +24,9 @@ class SentryInitProviderTest {
     fun `missing applicationId throws`() {
         val providerInfo = ProviderInfo()
 
-        providerInfo.authority = "com.google.android.gms.tests.common.firebaseinitprovider"
+        providerInfo.authority = "io.sentry.sentryInitProvider"
         sentryInitProvider.attachInfo(context, providerInfo)
 
         Sentry.init { o -> o.dsn = "test" }
-
-//        assertEquals(firebaseApp, FirebaseApp.getInstance())
     }
 }
