@@ -3,6 +3,7 @@ package io.sentry.sample;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import io.sentry.Sentry;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -11,6 +12,8 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    System.out.println("Sentry.isEnabled() = " + Sentry.isEnabled());
+    Timber.plant(new Timber.DebugTree());
+
+    Timber.i("Sentry.isEnabled() = %s", Sentry.isEnabled());
   }
 }
