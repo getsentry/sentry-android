@@ -16,6 +16,12 @@ object Config {
         val compileSdkVersion = sdkVersion
     }
 
+    object Libs {
+        val appCompat = "androidx.appcompat:appcompat:1.1.0"
+        val constraintLayout = "androidx.constraintlayout:constraintlayout:1.1.3"
+        val timber = "com.jakewharton.timber:timber:4.7.1"
+    }
+
     object TestLibs {
         private val androidxTestVersion = "1.2.0"
 
@@ -24,6 +30,8 @@ object Config {
         val androidxRunner = "androidx.test:runner:$androidxTestVersion"
         val androidxJunit = "androidx.test.ext:junit:1.1.1"
         val robolectric = "org.robolectric:robolectric:4.3"
+        val junit = "junit:junit:4.12"
+        val espressoCore = "androidx.test.espresso:espresso-core:3.2.0"
     }
 
     object QualityPlugins {

@@ -4,17 +4,6 @@ plugins {
     jacoco
 }
 
-dependencies {
-    api(project(":sentry-core"))
-
-    testImplementation(kotlin(Config.kotlinStdLib))
-    testImplementation(Config.TestLibs.robolectric)
-    testImplementation(Config.TestLibs.kotlinTestJunit)
-    testImplementation(Config.TestLibs.androidxCore)
-    testImplementation(Config.TestLibs.androidxRunner)
-    testImplementation(Config.TestLibs.androidxJunit)
-}
-
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
     buildToolsVersion(Config.Android.buildToolsVersion)
@@ -45,4 +34,15 @@ android {
             }, this))
         }
     }
+}
+
+dependencies {
+    api(project(":sentry-core"))
+
+    testImplementation(kotlin(Config.kotlinStdLib))
+    testImplementation(Config.TestLibs.robolectric)
+    testImplementation(Config.TestLibs.kotlinTestJunit)
+    testImplementation(Config.TestLibs.androidxCore)
+    testImplementation(Config.TestLibs.androidxRunner)
+    testImplementation(Config.TestLibs.androidxJunit)
 }
