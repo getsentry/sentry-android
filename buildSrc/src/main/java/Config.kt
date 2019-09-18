@@ -32,6 +32,7 @@ object Config {
         val robolectric = "org.robolectric:robolectric:4.3"
         val junit = "junit:junit:4.12"
         val espressoCore = "androidx.test.espresso:espresso-core:3.2.0"
+        val androidxOrchestrator = "androidx.test:orchestrator:$androidxTestVersion"
     }
 
     object QualityPlugins {

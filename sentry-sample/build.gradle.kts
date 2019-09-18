@@ -14,7 +14,10 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.ext.junit.runners.AndroidJUnit4"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments = mapOf(
+            "clearPackageData" to "true"
+        )
     }
 
     buildTypes {
@@ -45,4 +48,5 @@ dependencies {
     androidTestImplementation(Config.TestLibs.androidxCore)
     androidTestImplementation(Config.TestLibs.androidxRunner)
     androidTestImplementation(Config.TestLibs.androidxJunit)
+    androidTestUtil(Config.TestLibs.androidxOrchestrator)
 }
