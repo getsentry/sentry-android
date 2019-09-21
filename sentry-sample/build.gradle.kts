@@ -11,6 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "io.sentry.sample"
+        minSdkVersion(Config.Android.minSdkVersionDebug)
         targetSdkVersion(Config.Android.targetSdkVersion)
         versionCode = 1
         versionName = "1.0"
@@ -22,8 +23,10 @@ android {
     }
 
     buildTypes {
-        getByName("release") {
+        getByName("debug") {
             isMinifyEnabled = false
+        }
+        getByName("release") {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
