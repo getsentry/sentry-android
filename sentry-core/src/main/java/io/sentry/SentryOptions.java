@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SentryOptions {
-  private static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.Debug;
+  static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.Debug;
 
   private List<EventProcessor> eventProcessors = new ArrayList<>();
 
   private String dsn;
   private boolean debug;
-  private DiagnosticLogger logger;
+  private ILogger logger = NoOpLogger.getInstance();
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
@@ -42,7 +42,7 @@ public class SentryOptions {
   }
 
   public void setLogger(ILogger logger) {
-    this.logger = new DiagnosticLogger(this, logger);
+    this.logger = logger == null ? NoOpLogger.getInstance() : new DiagnosticLogger(this, logger);
   }
 
   public SentryLevel getDiagnosticLevel() {
