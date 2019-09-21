@@ -1,11 +1,13 @@
+import org.jetbrains.kotlin.config.KotlinCompilerVersion
+
 plugins {
     id("com.android.application")
+    kotlin("android")
 }
 
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
     buildToolsVersion(Config.Android.buildToolsVersion)
-
 
     defaultConfig {
         applicationId = "io.sentry.sample"
@@ -27,9 +29,20 @@ android {
         }
     }
 
+    flavorDimensions("version")
+
+    productFlavors {
+        create("staging") {
+            minSdkVersion(Config.Android.minSdkVersionDebug)
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
 }
@@ -43,7 +56,7 @@ dependencies {
     implementation(Config.Libs.constraintLayout)
     implementation(Config.Libs.timber)
 
-    testImplementation(Config.TestLibs.junit)
+    testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
     androidTestImplementation(Config.TestLibs.espressoCore)
     androidTestImplementation(Config.TestLibs.androidxCore)
     androidTestImplementation(Config.TestLibs.androidxRunner)
