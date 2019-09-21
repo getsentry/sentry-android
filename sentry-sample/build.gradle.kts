@@ -11,7 +11,6 @@ android {
 
     defaultConfig {
         applicationId = "io.sentry.sample"
-        minSdkVersion(Config.Android.minSdkVersion)
         targetSdkVersion(Config.Android.targetSdkVersion)
         versionCode = 1
         versionName = "1.0"
@@ -35,12 +34,16 @@ android {
         create("staging") {
             minSdkVersion(Config.Android.minSdkVersionDebug)
         }
+        create("production") {
+            minSdkVersion(Config.Android.minSdkVersion)
+        }
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
@@ -57,6 +60,7 @@ dependencies {
     implementation(Config.Libs.timber)
 
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
+    testImplementation(Config.TestLibs.junit)
     androidTestImplementation(Config.TestLibs.espressoCore)
     androidTestImplementation(Config.TestLibs.androidxCore)
     androidTestImplementation(Config.TestLibs.androidxRunner)

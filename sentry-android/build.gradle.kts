@@ -11,9 +11,7 @@ android {
     buildToolsVersion(Config.Android.buildToolsVersion)
 
     defaultConfig {
-        minSdkVersion(Config.Android.minSdkVersion)
         targetSdkVersion(Config.Android.targetSdkVersion)
-
         javaCompileOptions {
             annotationProcessorOptions {
                 includeCompileClasspath = true
@@ -35,6 +33,9 @@ android {
     productFlavors {
         create("staging") {
             minSdkVersion(Config.Android.minSdkVersionDebug)
+        }
+        create("production") {
+            minSdkVersion(Config.Android.minSdkVersion)
         }
     }
 
@@ -72,4 +73,5 @@ dependencies {
     testImplementation(Config.TestLibs.androidxCore)
     testImplementation(Config.TestLibs.androidxRunner)
     testImplementation(Config.TestLibs.androidxJunit)
+    testImplementation(Config.TestLibs.mockitoKotlin)
 }
