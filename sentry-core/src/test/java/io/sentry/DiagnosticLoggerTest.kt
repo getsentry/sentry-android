@@ -56,6 +56,16 @@ class DiagnosticLoggerTest {
     }
 
     @Test
+    fun `when debug is true, a call to log with null level does not throw`() {
+        fixture.getSut().log(null, expectedMessage)
+    }
+
+    @Test
+    fun `when debug is true, a call to log with null level and throwable does not throw`() {
+        fixture.getSut().log(null, expectedMessage, expectedThrowable)
+    }
+
+    @Test
     fun `when debug is true and Logger is null, a call to log with throwable does not throw`() {
         fixture.logger = null
         fixture.getSut().log(SentryLevel.Debug, expectedMessage, expectedThrowable)
