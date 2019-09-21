@@ -1,6 +1,7 @@
 package io.sentry;
 
-public class NoOpLogger implements ILogger {
+/** No-op implementation of ILogger */
+class NoOpLogger implements ILogger {
 
   private static NoOpLogger instance = new NoOpLogger();
 
