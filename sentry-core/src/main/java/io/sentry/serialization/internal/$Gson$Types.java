@@ -333,10 +333,12 @@ public final class $Gson$Types {
     return new Type[] { Object.class, Object.class };
   }
 
+  @SuppressWarnings("rawtypes")
   public static Type resolve(Type context, Class<?> contextRawType, Type toResolve) {
     return resolve(context, contextRawType, toResolve, new HashSet<TypeVariable>());
   }
 
+  @SuppressWarnings("rawtypes")
   private static Type resolve(Type context, Class<?> contextRawType, Type toResolve,
                               Collection<TypeVariable> visitedTypeVariables) {
     // this implementation is made a little more complicated in an attempt to avoid object-creation

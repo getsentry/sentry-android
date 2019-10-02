@@ -233,6 +233,7 @@ public final class JsonPrimitive extends JsonElement {
     return isNumber() ? getAsNumber().byteValue() : Byte.parseByte(getAsString());
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public char getAsCharacter() {
     return getAsString().charAt(0);

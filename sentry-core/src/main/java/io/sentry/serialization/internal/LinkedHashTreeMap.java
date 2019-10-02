@@ -37,6 +37,7 @@ import java.util.Set;
  * <p>This implementation was derived from Android 4.1's TreeMap and
  * LinkedHashMap classes.
  */
+@SuppressWarnings("serial")
 public final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Serializable {
   @SuppressWarnings({ "unchecked", "rawtypes" }) // to avoid Comparable<Comparable<Comparable<...>>>
   private static final Comparator<Comparable> NATURAL_ORDER = new Comparator<Comparable>() {
@@ -566,7 +567,7 @@ public final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements 
   static <K, V> Node<K, V>[] doubleCapacity(Node<K, V>[] oldTable) {
     // TODO: don't do anything if we're already at MAX_CAPACITY
     int oldCapacity = oldTable.length;
-    @SuppressWarnings("unchecked") // Arrays and generics don't get along.
+    @SuppressWarnings({"rawtypes", "unchecked"}) // Arrays and generics don't get along.
     Node<K, V>[] newTable = new Node[oldCapacity * 2];
     AvlIterator<K, V> iterator = new AvlIterator<K, V>();
     AvlBuilder<K, V> leftBuilder = new AvlBuilder<K, V>();

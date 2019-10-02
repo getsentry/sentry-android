@@ -128,6 +128,7 @@ import static io.sentry.serialization.stream.JsonScope.NONEMPTY_OBJECT;
  * @author Jesse Wilson
  * @since 1.6
  */
+@SuppressWarnings("cast")
 public class JsonWriter implements Closeable, Flushable {
 
   /*
@@ -142,6 +143,7 @@ public class JsonWriter implements Closeable, Flushable {
    */
   private static final String[] REPLACEMENT_CHARS;
   private static final String[] HTML_SAFE_REPLACEMENT_CHARS;
+
   static {
     REPLACEMENT_CHARS = new String[128];
     for (int i = 0; i <= 0x1f; i++) {
