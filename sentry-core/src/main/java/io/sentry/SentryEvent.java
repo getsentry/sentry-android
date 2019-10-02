@@ -4,7 +4,6 @@ import io.sentry.protocol.Message;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
 import io.sentry.protocol.SentryThread;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class SentryEvent extends Scope {
   }
 
   public SentryEvent() {
-    this(new SentryId(), Calendar.getInstance().getTime());
+    this(new SentryId(), DateUtils.getCurrentDateTime());
   }
 
   public SentryId getEventId() {
