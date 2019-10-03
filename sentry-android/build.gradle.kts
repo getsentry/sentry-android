@@ -68,6 +68,7 @@ android {
 
 dependencies {
     api(project(":sentry-core"))
+    api(project(":sentry-android-ndk"))
 
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
     testImplementation(Config.TestLibs.robolectric)
