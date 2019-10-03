@@ -10,10 +10,9 @@ import io.sentry.protocol.User;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SentryEvent {
   private SentryId eventId;
@@ -33,9 +32,9 @@ public class SentryEvent {
   private Request request;
   private SdkVersion sdkVersion;
   private List<String> fingerprint = new ArrayList<>();
-  private List<Breadcrumb> breadcrumbs = new CopyOnWriteArrayList<>();
-  private Map<String, String> tags = new ConcurrentHashMap<>();
-  private Map<String, Object> extra = new ConcurrentHashMap<>();
+  private List<Breadcrumb> breadcrumbs = new ArrayList<>();
+  private Map<String, String> tags = new HashMap<>();
+  private Map<String, Object> extra = new HashMap<>();
 
   SentryEvent(SentryId eventId, Date timestamp) {
     this.eventId = eventId;
@@ -203,7 +202,7 @@ public class SentryEvent {
     return breadcrumbs;
   }
 
-  public void setBreadcrumbs(CopyOnWriteArrayList<Breadcrumb> breadcrumbs) {
+  public void setBreadcrumbs(ArrayList<Breadcrumb> breadcrumbs) {
     this.breadcrumbs = breadcrumbs;
   }
 
@@ -211,7 +210,7 @@ public class SentryEvent {
     return tags;
   }
 
-  public void setTags(ConcurrentHashMap<String, String> tags) {
+  public void setTags(HashMap<String, String> tags) {
     this.tags = tags;
   }
 
@@ -219,7 +218,7 @@ public class SentryEvent {
     return extra;
   }
 
-  public void setExtra(ConcurrentHashMap<String, Object> extra) {
+  public void setExtra(HashMap<String, Object> extra) {
     this.extra = extra;
   }
 }
