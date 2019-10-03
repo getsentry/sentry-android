@@ -1,4 +1,3 @@
 package io.sentry;
 
-public class SentryEnvelope {
-}
+public class SentryEnvelope {}

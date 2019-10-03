@@ -1,8 +1,8 @@
 package io.sentry.android;
 
 import io.sentry.ISerializer;
-import io.sentry.SentryEvent;
 import io.sentry.SentryEnvelope;
+import io.sentry.SentryEvent;
 
 public class AndroidSerializer implements ISerializer {
   @Override
