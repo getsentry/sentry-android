@@ -2,7 +2,6 @@ package io.sentry.android;
 
 import android.content.Context;
 import io.sentry.SentryOptions;
-import io.sentry.internal.AndroidSerializer;
 
 class AndroidOptionsInitializer {
   static void init(SentryOptions options, Context context) {

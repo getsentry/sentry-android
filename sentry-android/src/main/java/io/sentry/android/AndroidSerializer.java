@@ -1,16 +1,17 @@
-package io.sentry.internal;
+package io.sentry.android;
 
 import io.sentry.ISerializer;
 import io.sentry.SentryEvent;
+import io.sentry.SentryEnvelope;
 
 public class AndroidSerializer implements ISerializer {
   @Override
-  public SentryEnvelope DeserializeEnvelope(String envelope) {
+  public SentryEnvelope deserializeEnvelope(String envelope) {
     return null;
   }
 
   @Override
-  public String Serialize(SentryEvent event) {
+  public String serialize(SentryEvent event) {
     return null;
   }
 }
