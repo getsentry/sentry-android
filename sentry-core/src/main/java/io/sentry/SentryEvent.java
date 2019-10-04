@@ -7,6 +7,8 @@ import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryId;
 import io.sentry.protocol.SentryThread;
 import io.sentry.protocol.User;
+
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,7 +59,7 @@ public class SentryEvent {
     return (Date) timestamp.clone();
   }
 
-  String getTimestampIsoFormat() {
+  String getTimestampIsoFormat() throws ParseException {
     return DateUtils.getTimestampIsoFormat(timestamp);
   }
 

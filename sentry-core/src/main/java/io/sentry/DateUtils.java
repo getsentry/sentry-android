@@ -1,7 +1,9 @@
 package io.sentry;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -22,6 +24,19 @@ class DateUtils {
     DateFormat df = new SimpleDateFormat(UTC_FORMAT);
     df.setTimeZone(tz);
     return df.format(date);
+  }
+
+  /**
+   * Get Date from formatted String expected by Sentry.
+   *
+   * @param date
+   * @return the ISO formatted UTC date.
+   */
+  public static Date getTimestampIsoFormat(String date) throws ParseException {
+    TimeZone tz = TimeZone.getTimeZone(UTC);
+    DateFormat df = new SimpleDateFormat(UTC_FORMAT);
+    df.setTimeZone(tz);
+    return df.parse(date);
   }
 
   /**
