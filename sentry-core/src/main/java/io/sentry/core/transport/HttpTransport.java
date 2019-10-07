@@ -3,6 +3,11 @@ package io.sentry.core.transport;
 import static io.sentry.SentryLevel.DEBUG;
 import static io.sentry.SentryLevel.ERROR;
 
+import io.sentry.ISerializer;
+import io.sentry.SentryEvent;
+import io.sentry.SentryLevel;
+import io.sentry.SentryOptions;
+import io.sentry.util.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,14 +33,13 @@ import io.sentry.SentryOptions;
 import io.sentry.util.Nullable;
 
 /**
- * An implementation of the {@link io.sentry.core.transport.ITransport} interface that sends the events to the Sentry server over HTTP(S) in
- * UTF-8 encoding.
+ * An implementation of the {@link ITransport} interface that sends the events to the Sentry server
+ * over HTTP(S) in UTF-8 encoding.
  */
 public class HttpTransport implements ITransport {
   public static final int HTTP_TOO_MANY_REQUESTS = 429;
 
-  @Nullable
-  private final Proxy proxy;
+  @Nullable private final Proxy proxy;
   private final Consumer<URLConnection> requestUpdater;
   private final int connectionTimeout;
   private final int readTimeout;
@@ -44,20 +48,27 @@ public class HttpTransport implements ITransport {
   private final SentryOptions options;
 
   /**
-   * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set the appropriate
-   * content encoding header for the {@link io.sentry.ISerializer} instance obtained from the options.
+   * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set
+   * the appropriate content encoding header for the {@link io.sentry.ISerializer} instance obtained
+   * from the options.
    *
-   * @param options           sentry options to read the config from
-   * @param proxy             the proxy to use, if any
-   * @param requestUpdater    this consumer is given a chance to set up the request before it is sent
+   * @param options sentry options to read the config from
+   * @param proxy the proxy to use, if any
+   * @param requestUpdater this consumer is given a chance to set up the request before it is sent
    * @param connectionTimeout connection timeout
-   * @param readTimeout       read timeout
-   * @param bypassSecurity    whether to ignore TLS errors
-   * @throws URISyntaxException    when options contain invalid DSN
+   * @param readTimeout read timeout
+   * @param bypassSecurity whether to ignore TLS errors
+   * @throws URISyntaxException when options contain invalid DSN
    * @throws MalformedURLException when options contain invalid DSN
    */
-  public HttpTransport(SentryOptions options, @Nullable Proxy proxy, Consumer<URLConnection> requestUpdater,
-    int connectionTimeout, int readTimeout, boolean bypassSecurity) throws URISyntaxException, MalformedURLException {
+  public HttpTransport(
+      SentryOptions options,
+      @Nullable Proxy proxy,
+      Consumer<URLConnection> requestUpdater,
+      int connectionTimeout,
+      int readTimeout,
+      boolean bypassSecurity)
+      throws URISyntaxException, MalformedURLException {
     this.proxy = proxy;
     this.requestUpdater = requestUpdater;
     this.connectionTimeout = connectionTimeout;
@@ -68,9 +79,11 @@ public class HttpTransport implements ITransport {
   }
 
   // visible for testing
-  // giving up on testing this method is probably the simplest way of having the rest of the class testable...
+  // giving up on testing this method is probably the simplest way of having the rest of the class
+  // testable...
   protected HttpURLConnection open(URL url, Proxy proxy) throws IOException {
-      return (HttpURLConnection) (proxy == null ? sentryUrl.openConnection() : sentryUrl.openConnection(proxy));
+    return (HttpURLConnection)
+        (proxy == null ? sentryUrl.openConnection() : sentryUrl.openConnection(proxy));
   }
 
   @Override
@@ -101,7 +114,8 @@ public class HttpTransport implements ITransport {
       String retryAfterHeader = connection.getHeaderField("Retry-After");
       if (retryAfterHeader != null) {
         try {
-          retryAfterMs = (long) (Double.parseDouble(retryAfterHeader) * 1000L); // seconds -> milliseconds
+          retryAfterMs =
+              (long) (Double.parseDouble(retryAfterHeader) * 1000L); // seconds -> milliseconds
         } catch (NumberFormatException __) {
           // let's use the default then
         }
@@ -112,7 +126,11 @@ public class HttpTransport implements ITransport {
         responseCode = connection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
           if (options.isDebug()) {
-            log(DEBUG, "Event '" + event.getEventId() + "' was rejected by the Sentry server due to a filter.");
+            log(
+                DEBUG,
+                "Event '"
+                    + event.getEventId()
+                    + "' was rejected by the Sentry server due to a filter.");
           }
           return TransportResult.error(1000, responseCode);
         } else if (responseCode == HTTP_TOO_MANY_REQUESTS) {
@@ -145,7 +163,8 @@ public class HttpTransport implements ITransport {
   }
 
   private String getErrorMessageFromStream(InputStream errorStream) {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8));
+    BufferedReader reader =
+        new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8));
     StringBuilder sb = new StringBuilder();
     try {
       String line;
@@ -159,7 +178,9 @@ public class HttpTransport implements ITransport {
         first = false;
       }
     } catch (Exception e2) {
-      log(ERROR, "Exception while reading the error message from the connection: " + e2.getMessage());
+      log(
+          ERROR,
+          "Exception while reading the error message from the connection: " + e2.getMessage());
     }
     return sb.toString();
   }

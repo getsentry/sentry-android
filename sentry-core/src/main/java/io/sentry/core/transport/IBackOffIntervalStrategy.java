@@ -1,9 +1,11 @@
 package io.sentry.core.transport;
 
 /**
- * Implementations of this interface can influence the delay between attempts to send an event to Sentry server.
+ * Implementations of this interface can influence the delay between attempts to send an event to
+ * Sentry server.
  *
- * Note that the suggested delay may be ignored if the Sentry server explicitly asks for a different delay.
+ * <p>Note that the suggested delay may be ignored if the Sentry server explicitly asks for a
+ * different delay.
  */
 public interface IBackOffIntervalStrategy {
 

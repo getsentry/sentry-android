@@ -7,7 +7,11 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.test.*
+import kotlin.test.assertTrue
+import kotlin.test.assertEquals
+import kotlin.test.Test
+import kotlin.test.BeforeTest
+import kotlin.test.AfterTest
 
 class RetryingThreadPoolExecutorTest {
     private val maxRetries = 5
@@ -95,7 +99,7 @@ class RetryingThreadPoolExecutorTest {
 
         counter.await()
 
-        val actualDelay = System.currentTimeMillis() - now;
+        val actualDelay = System.currentTimeMillis() - now
 
         assertTrue(actualDelay >= (maxRetries - 1) * delay, "Should have waited between invocations based on the suggested failure delay.")
     }

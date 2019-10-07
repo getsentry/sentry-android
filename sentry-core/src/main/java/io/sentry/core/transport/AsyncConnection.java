@@ -1,15 +1,12 @@
 package io.sentry.core.transport;
 
-import java.io.IOException;
-import java.util.concurrent.ThreadFactory;
-
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
+import java.io.IOException;
+import java.util.concurrent.ThreadFactory;
 
-/**
- * A connection to Sentry that sends the events asynchronously.
- */
+/** A connection to Sentry that sends the events asynchronously. */
 public class AsyncConnection {
   private final io.sentry.core.transport.ITransport transport;
   private final io.sentry.core.transport.ITransportGate transportGate;
@@ -17,8 +14,13 @@ public class AsyncConnection {
   private final IEventCache eventCache;
   private final SentryOptions options;
 
-  public AsyncConnection(ITransport transport, ITransportGate transportGate, int maxRetries,
-    IBackOffIntervalStrategy backOffIntervalStrategy, IEventCache eventCache, SentryOptions options) {
+  public AsyncConnection(
+      ITransport transport,
+      ITransportGate transportGate,
+      int maxRetries,
+      IBackOffIntervalStrategy backOffIntervalStrategy,
+      IEventCache eventCache,
+      SentryOptions options) {
     this.transport = transport;
     this.transportGate = transportGate;
     this.eventCache = eventCache;
@@ -74,8 +76,12 @@ public class AsyncConnection {
           } else {
             suggestedRetryDelay = result.getRetryMillis();
 
-            String message = "The transport failed to send the event with response code "
-              + result.getResponseCode() + ". Retrying in " + suggestedRetryDelay + "ms.";
+            String message =
+                "The transport failed to send the event with response code "
+                    + result.getResponseCode()
+                    + ". Retrying in "
+                    + suggestedRetryDelay
+                    + "ms.";
 
             if (options.isDebug()) {
               options.getLogger().log(SentryLevel.DEBUG, message);

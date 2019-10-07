@@ -4,8 +4,9 @@ import io.sentry.ISerializer;
 import io.sentry.SentryEvent;
 
 /**
- * A result of {@link ITransport#send(SentryEvent, ISerializer)}. Note that this class is intentionally not subclassable
- * and has only two factory methods to capture the 2 possible states - success or error.
+ * A result of {@link ITransport#send(SentryEvent, ISerializer)}. Note that this class is
+ * intentionally not subclassable and has only two factory methods to capture the 2 possible states
+ * - success or error.
  */
 public abstract class TransportResult {
 
@@ -21,8 +22,8 @@ public abstract class TransportResult {
   /**
    * Use this method to announce failure of sending the event.
    *
-   * @param retryMillis the number of milliseconds after which the next attempt to send the event should be made or -1
-   *                    if not known
+   * @param retryMillis the number of milliseconds after which the next attempt to send the event
+   *     should be made or -1 if not known
    * @param responseCode the HTTP status code if known, -1 otherwise
    * @return an errorneous transport result
    */
@@ -30,8 +31,7 @@ public abstract class TransportResult {
     return new ErrorTransportResult(retryMillis, responseCode);
   }
 
-  private TransportResult() {
-  }
+  private TransportResult() {}
 
   public abstract boolean isSuccess();
 

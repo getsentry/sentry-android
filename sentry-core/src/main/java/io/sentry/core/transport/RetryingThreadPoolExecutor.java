@@ -16,14 +16,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This is a thread pool executor enriched for the possibility of retrying the supplied tasks.
  *
- * Note that only {@link Runnable} tasks are retried, a {@link java.util.concurrent.Callable} is not retry-able. Note
- * also that the {@link Future} returned from the {@link #submit(Runnable)} or {@link #submit(Runnable, Object)} methods
- * is NOT generally usable, because it does not work when the task is retried!
+ * <p>Note that only {@link Runnable} tasks are retried, a {@link java.util.concurrent.Callable} is
+ * not retry-able. Note also that the {@link Future} returned from the {@link #submit(Runnable)} or
+ * {@link #submit(Runnable, Object)} methods is NOT generally usable, because it does not work when
+ * the task is retried!
  *
- * The {@link Runnable} instances may in addition implement the {@link io.sentry.core.transport.Retryable} interface to suggest the required
- * delay before the next attempt.
+ * <p>The {@link Runnable} instances may in addition implement the {@link Retryable} interface to
+ * suggest the required delay before the next attempt.
  *
- * This class is not public because it is used solely in {@link AsyncConnection}.
+ * <p>This class is not public because it is used solely in {@link AsyncConnection}.
  */
 final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   private final int maxRetries;
@@ -35,18 +36,25 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
    * @param corePoolSize the minimum number of threads started
    * @param maxRetries the maximum number of retries of failing tasks
    * @param threadFactory the thread factory to construct new threads
-   * @param backOffIntervalStrategy the strategy for obtaining delays between retries if not suggested by the tasks
-   * @param rejectedExecutionHandler specifies what to do with the tasks that cannot be run (e.g. during the shutdown)
+   * @param backOffIntervalStrategy the strategy for obtaining delays between retries if not
+   *     suggested by the tasks
+   * @param rejectedExecutionHandler specifies what to do with the tasks that cannot be run (e.g.
+   *     during the shutdown)
    */
-  public RetryingThreadPoolExecutor(int corePoolSize, int maxRetries, ThreadFactory threadFactory,
-    IBackOffIntervalStrategy backOffIntervalStrategy, RejectedExecutionHandler rejectedExecutionHandler) {
+  public RetryingThreadPoolExecutor(
+      int corePoolSize,
+      int maxRetries,
+      ThreadFactory threadFactory,
+      IBackOffIntervalStrategy backOffIntervalStrategy,
+      RejectedExecutionHandler rejectedExecutionHandler) {
     super(corePoolSize, threadFactory, rejectedExecutionHandler);
     this.maxRetries = maxRetries;
     this.backOffIntervalStrategy = backOffIntervalStrategy;
   }
 
   /**
-   * A special overload to submit {@link io.sentry.core.transport.Retryable} tasks.
+   * A special overload to submit {@link Retryable} tasks.
+   *
    * @param task the task to execute
    */
   public void submit(io.sentry.core.transport.Retryable task) {
@@ -54,8 +62,8 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   }
 
   @Override
-  protected <V> RunnableScheduledFuture<V> decorateTask(Runnable runnable,
-    RunnableScheduledFuture<V> task) {
+  protected <V> RunnableScheduledFuture<V> decorateTask(
+      Runnable runnable, RunnableScheduledFuture<V> task) {
 
     int attempt = 0;
 
@@ -77,7 +85,8 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
     AttemptedRunnable<?> ar = (AttemptedRunnable) r;
 
-    // taken verbatim from the javadoc of the method in ThreadPoolExecutor - this makes sure we capture the exceptions
+    // taken verbatim from the javadoc of the method in ThreadPoolExecutor - this makes sure we
+    // capture the exceptions
     // from the tasks
     if (t == null) {
       try {
@@ -179,7 +188,8 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public V get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException {
       task.get(timeout, unit);
       return null;
     }
