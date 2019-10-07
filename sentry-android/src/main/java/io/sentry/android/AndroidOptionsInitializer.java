@@ -10,6 +10,7 @@ class AndroidOptionsInitializer {
     options.setLogger(new AndroidLogger());
     ManifestMetadataReader.applyMetadata(context, options);
     options.addEventProcessor(new DefaultAndroidEventProcessor(context));
+    options.setSerializer(new AndroidSerializer());
     SentryNdk.init();
   }
 }

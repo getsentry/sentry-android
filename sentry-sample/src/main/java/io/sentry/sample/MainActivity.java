@@ -15,5 +15,23 @@ public class MainActivity extends AppCompatActivity {
     Timber.plant(new Timber.DebugTree());
 
     Timber.i("Sentry.isEnabled() = %s", Sentry.isEnabled());
+
+    findViewById(R.id.crash)
+        .setOnClickListener(
+            view -> {
+              throw new RuntimeException("Some runtime exception.");
+            });
+
+    findViewById(R.id.send_message)
+        .setOnClickListener(
+            view -> {
+              Sentry.captureMessage("Some message.");
+            });
+
+    findViewById(R.id.capture_exception)
+        .setOnClickListener(
+            view -> {
+              Sentry.captureException(new Exception("Some exception."));
+            });
   }
 }

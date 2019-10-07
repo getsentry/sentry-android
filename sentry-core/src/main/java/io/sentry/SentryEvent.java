@@ -1,14 +1,7 @@
 package io.sentry;
 
-import io.sentry.protocol.Message;
-import io.sentry.protocol.Request;
-import io.sentry.protocol.SdkVersion;
-import io.sentry.protocol.SentryException;
-import io.sentry.protocol.SentryId;
-import io.sentry.protocol.SentryThread;
-import io.sentry.protocol.User;
+import io.sentry.protocol.*;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +15,7 @@ public class SentryEvent {
   private String serverName;
   private String platform;
   private String release;
+  private String dist;
   private String logger;
   private SentryValues<SentryThread> threads;
   private SentryValues<SentryException> exceptions;
@@ -31,6 +25,7 @@ public class SentryEvent {
   private User user;
   private Request request;
   private SdkVersion sdkVersion;
+  private Contexts contexts = new Contexts();
   private List<String> fingerprint = new ArrayList<>();
   private List<Breadcrumb> breadcrumbs = new ArrayList<>();
   private Map<String, String> tags = new HashMap<>();
@@ -47,7 +42,7 @@ public class SentryEvent {
   }
 
   public SentryEvent() {
-    this(new SentryId(), Calendar.getInstance().getTime());
+    this(new SentryId(), DateUtils.getCurrentDateTime());
   }
 
   public SentryId getEventId() {
@@ -96,6 +91,14 @@ public class SentryEvent {
 
   public void setRelease(String release) {
     this.release = release;
+  }
+
+  public String getDist() {
+    return dist;
+  }
+
+  public void setDist(String dist) {
+    this.dist = dist;
   }
 
   public String getLogger() {
@@ -220,5 +223,13 @@ public class SentryEvent {
 
   public void setExtra(HashMap<String, Object> extra) {
     this.extra = extra;
+  }
+
+  public Contexts getContexts() {
+    return contexts;
+  }
+
+  public void setContexts(Contexts contexts) {
+    this.contexts = contexts;
   }
 }
