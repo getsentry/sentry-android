@@ -233,7 +233,7 @@ public class Device {
   }
 
   public enum DeviceOrientation {
-    Portrait,
-    Landscape
+    PORTRAIT,
+    LANDSCAPE
   }
 }
