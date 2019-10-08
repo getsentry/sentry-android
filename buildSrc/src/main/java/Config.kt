@@ -11,7 +11,7 @@ object Config {
         private val sdkVersion = 29
 
         val buildToolsVersion = "29.0.2"
-        val minSdkVersion = 14
+        val minSdkVersion = 21
         val minSdkVersionDebug = 21
         val targetSdkVersion = sdkVersion
         val compileSdkVersion = sdkVersion

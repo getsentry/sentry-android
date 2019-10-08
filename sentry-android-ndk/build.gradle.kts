@@ -1,3 +1,4 @@
+
 plugins {
     id("com.android.library")
 }
@@ -12,6 +13,24 @@ android {
             annotationProcessorOptions {
                 includeCompileClasspath = true
             }
+        }
+
+        minSdkVersion(21)
+        externalNativeBuild {
+            cmake {
+                arguments.add(0, "-DANDROID_STL=c++_static")
+                arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
+
+            }
+        }
+        ndk {
+            abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            setPath("CMakeLists.txt")
         }
     }
 }

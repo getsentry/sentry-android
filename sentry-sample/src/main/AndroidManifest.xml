@@ -23,5 +23,7 @@
     <meta-data android:name="io.sentry.dsn" android:value="https://key@sentry.io/123" />
     <meta-data android:name="io.sentry.debug" android:value="true" />
   </application>
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 </manifest>

@@ -42,9 +42,9 @@ allprojects {
                 TestLogEvent.FAILED)
             dependsOn("cleanTest")
         }
-        withType<JavaCompile> {
-            options.compilerArgs.addAll(arrayOf("-Xlint:all", "-Werror", "-Xlint:-classfile"))
-        }
+//        withType<JavaCompile> {
+//            options.compilerArgs.addAll(arrayOf("-Xlint:all", "-Werror", "-Xlint:-classfile"))
+//        }
     }
 }
 

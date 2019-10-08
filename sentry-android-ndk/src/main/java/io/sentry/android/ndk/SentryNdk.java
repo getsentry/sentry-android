@@ -5,5 +5,14 @@ public class SentryNdk {
     System.loadLibrary("sentry");
   }
 
-  public static void init() {}
+  static {
+    System.loadLibrary("sentry-android");
+  }
+
+  public static native void example();
+
+  public static void init() {
+    // Java_example
+    example();
+  }
 }

@@ -6,3 +6,4 @@ out/
 local.properties
 **.iml
 *.hprof
+.cxx
