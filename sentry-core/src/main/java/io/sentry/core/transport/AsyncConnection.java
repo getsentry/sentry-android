@@ -74,6 +74,7 @@ public class AsyncConnection {
           if (result.isSuccess()) {
             eventCache.discard(event);
           } else {
+            eventCache.store(event);
             suggestedRetryDelay = result.getRetryMillis();
 
             String message =
