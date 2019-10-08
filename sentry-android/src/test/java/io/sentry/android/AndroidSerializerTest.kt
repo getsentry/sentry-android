@@ -66,6 +66,7 @@ class AndroidSerializerTest {
             setTags(null)
             setExtra(null)
             fingerprint = null
+            contexts = null
         }
     }
 }
