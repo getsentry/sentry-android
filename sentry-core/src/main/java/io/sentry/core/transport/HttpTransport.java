@@ -132,13 +132,8 @@ public class HttpTransport implements ITransport {
                     + event.getEventId()
                     + "' was rejected by the Sentry server due to a filter.");
           }
-          return TransportResult.error(1000, responseCode);
-        } else if (responseCode == HTTP_TOO_MANY_REQUESTS) {
-          // If the response is a 429 we rethrow as a TooManyRequestsException so that we can
-          // avoid logging this is an error.
-
-          return TransportResult.error(retryAfterMs, responseCode);
         }
+        return TransportResult.error(retryAfterMs, responseCode);
       } catch (IOException responseCodeException) {
         // pass
       }
