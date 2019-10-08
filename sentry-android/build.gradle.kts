@@ -69,6 +69,10 @@ android {
 dependencies {
     api(project(":sentry-core"))
 
+    // libs
+    implementation(Config.Libs.gson)
+
+    // tests
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
     testImplementation(Config.TestLibs.robolectric)
     testImplementation(Config.TestLibs.kotlinTestJunit)

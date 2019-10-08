@@ -16,7 +16,7 @@ import java.util.Map;
 public class SentryEvent {
   private SentryId eventId;
   private Date timestamp;
-  private Throwable throwable;
+  private transient Throwable throwable;
   private Message message;
   private String serverName;
   private String platform;

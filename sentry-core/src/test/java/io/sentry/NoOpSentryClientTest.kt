@@ -2,8 +2,8 @@ package io.sentry
 
 import io.sentry.protocol.SentryId
 import kotlin.test.Test
-import kotlin.test.assertFalse
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class NoOpSentryClientTest {
     private var sut: NoOpSentryClient = NoOpSentryClient.getInstance()
