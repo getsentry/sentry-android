@@ -1,6 +1,5 @@
 package io.sentry.core.transport;
 
-import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
@@ -86,8 +85,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     AttemptedRunnable<?> ar = (AttemptedRunnable) r;
 
     // taken verbatim from the javadoc of the method in ThreadPoolExecutor - this makes sure we
-    // capture the exceptions
-    // from the tasks
+    // capture the exceptions from the tasks
     if (t == null) {
       try {
         ar.get();
