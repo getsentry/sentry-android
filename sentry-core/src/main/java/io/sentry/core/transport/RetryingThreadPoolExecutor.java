@@ -204,7 +204,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
     @Override
     public int hashCode() {
-      return Objects.hash(task);
+      return task.hashCode();
     }
 
     @Override
