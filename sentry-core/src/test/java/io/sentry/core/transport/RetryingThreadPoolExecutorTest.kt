@@ -35,10 +35,18 @@ class RetryingThreadPoolExecutorTest {
 
     @Test
     fun `executes once when finishes ok`() {
-        val counter = AtomicInteger()
-        threadPool?.submit { counter.incrementAndGet() }
+        val counter = CountDownLatch(1)
+        val actualTimes = AtomicInteger()
+        threadPool?.submit {
+            counter.countDown()
+            actualTimes.incrementAndGet()
+        }
+
+        counter.await()
+        // wait to see if there are any more attempts
         Thread.sleep(1000)
-        assertEquals(1, counter.get(), "Successful task should only be run once.")
+
+        assertEquals(1, actualTimes.get(), "Successful task should only be run once.")
     }
 
     @Test
