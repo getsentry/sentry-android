@@ -20,10 +20,7 @@ import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.function.Consumer;
-
+import java.nio.charset.Charset;
 import javax.net.ssl.HttpsURLConnection;
 
 import io.sentry.ISerializer;
@@ -39,8 +36,10 @@ import io.sentry.util.Nullable;
 public class HttpTransport implements ITransport {
   public static final int HTTP_TOO_MANY_REQUESTS = 429;
 
+  private static final Charset UTF_8 = Charset.forName("UTF-8");
+
   @Nullable private final Proxy proxy;
-  private final Consumer<URLConnection> requestUpdater;
+  private final IConnectionConfigurator connectionConfigurator;
   private final int connectionTimeout;
   private final int readTimeout;
   private final boolean bypassSecurity;
@@ -54,7 +53,8 @@ public class HttpTransport implements ITransport {
    *
    * @param options sentry options to read the config from
    * @param proxy the proxy to use, if any
-   * @param requestUpdater this consumer is given a chance to set up the request before it is sent
+   * @param connectionConfigurator this consumer is given a chance to set up the request before it
+   *     is sent
    * @param connectionTimeout connection timeout
    * @param readTimeout read timeout
    * @param bypassSecurity whether to ignore TLS errors
@@ -64,13 +64,13 @@ public class HttpTransport implements ITransport {
   public HttpTransport(
       SentryOptions options,
       @Nullable Proxy proxy,
-      Consumer<URLConnection> requestUpdater,
+      IConnectionConfigurator connectionConfigurator,
       int connectionTimeout,
       int readTimeout,
       boolean bypassSecurity)
       throws URISyntaxException, MalformedURLException {
     this.proxy = proxy;
-    this.requestUpdater = requestUpdater;
+    this.connectionConfigurator = connectionConfigurator;
     this.connectionTimeout = connectionTimeout;
     this.readTimeout = readTimeout;
     this.options = options;
@@ -89,7 +89,7 @@ public class HttpTransport implements ITransport {
   @Override
   public TransportResult send(SentryEvent event, ISerializer serializer) throws IOException {
     HttpURLConnection connection = open(sentryUrl, proxy);
-    requestUpdater.accept(connection);
+    connectionConfigurator.configure(connection);
 
     connection.setRequestMethod("POST");
     connection.setDoOutput(true);
@@ -103,8 +103,10 @@ public class HttpTransport implements ITransport {
 
     connection.connect();
 
-    try (OutputStream outputStream = connection.getOutputStream()) {
-      serializer.serialize(event, new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+    OutputStream outputStream = null;
+    try {
+      outputStream = connection.getOutputStream();
+      serializer.serialize(event, new OutputStreamWriter(outputStream, UTF_8));
 
       // need to also close the input stream of the connection
       connection.getInputStream().close();
@@ -153,13 +155,19 @@ public class HttpTransport implements ITransport {
 
       return TransportResult.error(retryAfterMs, responseCode);
     } finally {
+      if (outputStream != null) {
+        try {
+          outputStream.close();
+        } catch (IOException e) {
+          // ignored...
+        }
+      }
       connection.disconnect();
     }
   }
 
   private String getErrorMessageFromStream(InputStream errorStream) {
-    BufferedReader reader =
-        new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, UTF_8));
     StringBuilder sb = new StringBuilder();
     try {
       String line;

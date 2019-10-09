@@ -13,8 +13,6 @@ import java.net.HttpURLConnection
 import java.net.Proxy
 import java.net.URI
 import java.net.URL
-import java.net.URLConnection
-import java.util.function.Consumer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -26,7 +24,7 @@ class HttpTransportTest {
         var dsn = URI.create("http://localhost").toURL()
         val serializer = mock<ISerializer>()
         var proxy: Proxy? = null
-        var requestUpdater: Consumer<URLConnection> = Consumer { ; }
+        var requestUpdater = IConnectionConfigurator {}
         var connectionTimeout = 1000
         var readTimeout = 500
         var bypassSecurity = false
