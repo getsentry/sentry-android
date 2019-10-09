@@ -20,7 +20,6 @@ android {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
-
             }
         }
         ndk {
