@@ -11,6 +11,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.InvalidDsnException
 import io.sentry.Sentry
+import io.sentry.android.core.BuildConfig
 import org.junit.runner.RunWith
 import kotlin.test.BeforeTest
 import kotlin.test.Test
