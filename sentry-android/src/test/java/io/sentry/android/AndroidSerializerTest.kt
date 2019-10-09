@@ -51,13 +51,14 @@ class AndroidSerializerTest {
         val sentryEvent = generateEmptySentryEvent()
         val dateIsoFormat = "2000-12-31T23:59:58Z"
         sentryEvent.eventId = null
-        sentryEvent.timestamp = DateUtils.getDateTime(dateIsoFormat)
+        val expected = DateUtils.getDateTime(dateIsoFormat)
+        sentryEvent.timestamp = expected
 
-        val expected = "{\"timestamp\":\"$dateIsoFormat\"}"
+        val jsonEvent = "{\"timestamp\":\"$dateIsoFormat\"}"
 
-        val actual = serializer.serialize(sentryEvent)
+        val actual = serializer.deserializeEvent(jsonEvent)
 
-        assertEquals(expected, actual)
+        assertEquals(expected, actual.timestamp)
     }
 
     private fun generateEmptySentryEvent(): SentryEvent {
