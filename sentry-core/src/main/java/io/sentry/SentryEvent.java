@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SentryEvent {
+public class SentryEvent implements IUnknownPropertiesConsumer {
   private SentryId eventId;
   private Date timestamp;
   private transient Throwable throwable;
@@ -30,6 +30,7 @@ public class SentryEvent {
   private List<Breadcrumb> breadcrumbs = new ArrayList<>();
   private Map<String, String> tags = new HashMap<>();
   private Map<String, Object> extra = new HashMap<>();
+  private Map<String, Object> unknown = new HashMap<>();
 
   SentryEvent(SentryId eventId, Date timestamp) {
     this.eventId = eventId;
@@ -231,5 +232,18 @@ public class SentryEvent {
 
   public void setContexts(Contexts contexts) {
     this.contexts = contexts;
+  }
+
+  @Override
+  public void acceptUnknownProperties(Map<String, Object> unknown) {
+    this.unknown = unknown;
+  }
+
+  public Map<String, Object> getUnknown() {
+    return unknown;
+  }
+
+  public void setUnknown(Map<String, Object> unknown) {
+    this.unknown = unknown;
   }
 }

@@ -18,6 +18,7 @@ public class AndroidSerializer implements ISerializer {
           .registerTypeAdapter(SentryId.class, new SentryIdDeserializerAdapter())
           .registerTypeAdapter(Date.class, new DateSerializerAdapter())
           .registerTypeAdapter(Date.class, new DateDeserializerAdapter())
+          .registerTypeAdapterFactory(UnknownPropertiesTypeAdapterFactory.get())
           .create();
 
   @Override
