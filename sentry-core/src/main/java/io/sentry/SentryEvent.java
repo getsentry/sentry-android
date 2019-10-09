@@ -1,13 +1,14 @@
 package io.sentry;
 
 import io.sentry.protocol.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class SentryEvent {
+public class SentryEvent
+    extends UnknownField { // all the classes which suppots the unknown fields should extends
+  // UnknownField
+  public static final transient List<String> KEYS =
+      new ArrayList<>(Arrays.asList("event_id", "timestamp")); // TODO: add all
+
   private SentryId eventId;
   private Date timestamp;
   private transient Throwable throwable;

@@ -1,4 +1,4 @@
-package io.sentry.android;
+package io.sentry.android.adapters;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
@@ -8,7 +8,7 @@ import io.sentry.DateUtils;
 import java.lang.reflect.Type;
 import java.util.Date;
 
-class DateSerializerAdapter implements JsonSerializer<Date> {
+public class DateSerializerAdapter implements JsonSerializer<Date> {
   @Override
   public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
     return src == null ? null : new JsonPrimitive(DateUtils.getTimestamp(src));
