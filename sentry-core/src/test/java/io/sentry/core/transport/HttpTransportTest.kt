@@ -56,7 +56,7 @@ class HttpTransportTest {
 
         val event = SentryEvent()
 
-        val result = transport.send(event, fixture.serializer)
+        val result = transport.send(event)
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertTrue(result.isSuccess)
@@ -71,7 +71,7 @@ class HttpTransportTest {
 
         val event = SentryEvent()
 
-        val result = transport.send(event, fixture.serializer)
+        val result = transport.send(event)
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertFalse(result.isSuccess)
@@ -87,7 +87,7 @@ class HttpTransportTest {
 
         val event = SentryEvent()
 
-        val result = transport.send(event, fixture.serializer)
+        val result = transport.send(event)
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertFalse(result.isSuccess)
@@ -102,7 +102,7 @@ class HttpTransportTest {
 
         val event = SentryEvent()
 
-        val result = transport.send(event, fixture.serializer)
+        val result = transport.send(event)
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertFalse(result.isSuccess)
@@ -118,7 +118,7 @@ class HttpTransportTest {
 
         val event = SentryEvent()
 
-        val result = transport.send(event, fixture.serializer)
+        val result = transport.send(event)
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertFalse(result.isSuccess)

@@ -40,6 +40,7 @@ public class HttpTransport implements ITransport {
 
   @Nullable private final Proxy proxy;
   private final IConnectionConfigurator connectionConfigurator;
+  private final ISerializer serializer;
   private final int connectionTimeout;
   private final int readTimeout;
   private final boolean bypassSecurity;
@@ -71,6 +72,7 @@ public class HttpTransport implements ITransport {
       throws URISyntaxException, MalformedURLException {
     this.proxy = proxy;
     this.connectionConfigurator = connectionConfigurator;
+    this.serializer = options.getSerializer();
     this.connectionTimeout = connectionTimeout;
     this.readTimeout = readTimeout;
     this.options = options;
@@ -87,7 +89,7 @@ public class HttpTransport implements ITransport {
   }
 
   @Override
-  public TransportResult send(SentryEvent event, ISerializer serializer) throws IOException {
+  public TransportResult send(SentryEvent event) throws IOException {
     HttpURLConnection connection = open(sentryUrl, proxy);
     connectionConfigurator.configure(connection);
 

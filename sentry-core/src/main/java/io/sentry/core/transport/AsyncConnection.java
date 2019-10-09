@@ -70,7 +70,7 @@ public class AsyncConnection {
     public void run() {
       if (transportGate.isSendingAllowed()) {
         try {
-          TransportResult result = transport.send(event, options.getSerializer());
+          TransportResult result = transport.send(event);
           if (result.isSuccess()) {
             eventCache.discard(event);
           } else {
