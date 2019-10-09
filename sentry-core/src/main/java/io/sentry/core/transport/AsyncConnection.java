@@ -4,6 +4,7 @@ import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
 import java.io.IOException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 
 /** A connection to Sentry that sends the events asynchronously. */
@@ -25,16 +26,21 @@ public class AsyncConnection {
     this.transportGate = transportGate;
     this.eventCache = eventCache;
     this.options = options;
-    this.executor = new io.sentry.core.transport.RetryingThreadPoolExecutor(
-      1,
-      maxRetries,
-      new AsyncConnectionThreadFactory(),
-      backOffIntervalStrategy,
-      (r, executor) -> {
-        if (r instanceof EventSender) {
-          eventCache.store(((EventSender) r).event);
-        }
-      });
+    this.executor = initExecutor(maxRetries, backOffIntervalStrategy, eventCache);
+  }
+
+  private static RetryingThreadPoolExecutor initExecutor(
+      int maxRetries, IBackOffIntervalStrategy backOffIntervalStrategy, IEventCache eventCache) {
+
+    RejectedExecutionHandler storeEvents =
+        (r, executor) -> {
+          if (r instanceof EventSender) {
+            eventCache.store(((EventSender) r).event);
+          }
+        };
+
+    return new RetryingThreadPoolExecutor(
+        1, maxRetries, new AsyncConnectionThreadFactory(), backOffIntervalStrategy, storeEvents);
   }
 
   /**
