@@ -120,7 +120,7 @@ class SentryInitProviderTest {
     }
 
     companion object {
-        private const val AUTHORITY = "io.sentry.android.SentryInitProvider"
-        private const val TEST_PACKAGE = "io.sentry.android.test"
+        private const val AUTHORITY = "io.sentry.android.core.SentryInitProvider"
+        private const val TEST_PACKAGE = "io.sentry.android.core.test"
     }
 }
