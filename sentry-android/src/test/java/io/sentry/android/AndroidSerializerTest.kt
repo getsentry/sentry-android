@@ -1,5 +1,7 @@
 package io.sentry.android
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import io.sentry.DateUtils
 import io.sentry.SentryEvent
 import java.util.UUID
@@ -59,6 +61,67 @@ class AndroidSerializerTest {
         val actual = serializer.deserializeEvent(jsonEvent)
 
         assertEquals(expected, actual.timestamp)
+    }
+
+    @Test
+    fun `when deserializing unknown properties, it should be added to unknown field`() {
+        val sentryEvent = generateEmptySentryEvent()
+        sentryEvent.eventId = null
+        sentryEvent.timestamp = null
+
+        val jsonEvent = "{\"string\":\"test\",\"int\":1,\"boolean\":true}"
+
+        val actual = serializer.deserializeEvent(jsonEvent)
+
+        assertEquals("test", (actual.unknown["string"] as JsonPrimitive).asString)
+        assertEquals(1, (actual.unknown["int"] as JsonPrimitive).asInt)
+        assertEquals(true, (actual.unknown["boolean"] as JsonPrimitive).asBoolean)
+    }
+
+    @Test
+    fun `when deserializing unknown properties with nested objects, it should be added to unknown field`() {
+        val sentryEvent = generateEmptySentryEvent()
+        sentryEvent.eventId = null
+        sentryEvent.timestamp = null
+
+        val objects = hashMapOf<String, Any>()
+        objects["int"] = 1
+        objects["boolean"] = true
+
+        val unknown = hashMapOf<String, Any>()
+        unknown["object"] = objects
+        sentryEvent.acceptUnknownProperties(unknown)
+
+        val jsonEvent = "{\"object\":{\"int\":1,\"boolean\":true}}"
+
+        val actual = serializer.deserializeEvent(jsonEvent)
+
+        val hashMapActual = actual.unknown["object"] as JsonObject // gson creates it as JsonObject
+
+        assertEquals(true, hashMapActual.get("boolean").asBoolean)
+        assertEquals(1, (hashMapActual.get("int")).asInt)
+    }
+
+    @Test
+    fun `when serializing unknown field, it should become unknown as json format`() {
+        val sentryEvent = generateEmptySentryEvent()
+        sentryEvent.eventId = null
+        sentryEvent.timestamp = null
+
+        val objects = hashMapOf<String, Any>()
+        objects["int"] = 1
+        objects["boolean"] = true
+
+        val unknown = hashMapOf<String, Any>()
+        unknown["object"] = objects
+
+        sentryEvent.acceptUnknownProperties(unknown)
+
+        val actual = serializer.serialize(sentryEvent)
+
+        val expected = "{\"unknown\":{\"object\":{\"boolean\":true,\"int\":1}}}"
+
+        assertEquals(expected, actual)
     }
 
     private fun generateEmptySentryEvent(): SentryEvent {
