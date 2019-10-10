@@ -68,18 +68,14 @@ class AndroidSerializerTest {
         val sentryEvent = generateEmptySentryEvent()
         sentryEvent.eventId = null
         sentryEvent.timestamp = null
-        sentryEvent.unknown = hashMapOf()
-        sentryEvent.unknown["string"] = "test"
-        sentryEvent.unknown["int"] = 1
-        sentryEvent.unknown["boolean"] = true
 
         val jsonEvent = "{\"string\":\"test\",\"int\":1,\"boolean\":true}"
 
         val actual = serializer.deserializeEvent(jsonEvent)
 
-        assertEquals(sentryEvent.unknown["string"], (actual.unknown["string"] as JsonPrimitive).asString)
-        assertEquals(sentryEvent.unknown["int"], (actual.unknown["int"] as JsonPrimitive).asInt)
-        assertEquals(sentryEvent.unknown["boolean"], (actual.unknown["boolean"] as JsonPrimitive).asBoolean)
+        assertEquals("test", (actual.unknown["string"] as JsonPrimitive).asString)
+        assertEquals(1, (actual.unknown["int"] as JsonPrimitive).asInt)
+        assertEquals(true, (actual.unknown["boolean"] as JsonPrimitive).asBoolean)
     }
 
     @Test
@@ -87,29 +83,28 @@ class AndroidSerializerTest {
         val sentryEvent = generateEmptySentryEvent()
         sentryEvent.eventId = null
         sentryEvent.timestamp = null
-        sentryEvent.unknown = hashMapOf()
 
         val objects = hashMapOf<String, Any>()
         objects["int"] = 1
         objects["boolean"] = true
 
-        sentryEvent.unknown["object"] = objects
+        val unknown = hashMapOf<String, Any>()
+        unknown["object"] = objects
+        sentryEvent.acceptUnknownProperties(unknown)
 
         val jsonEvent = "{\"object\":{\"int\":1,\"boolean\":true}}"
 
         val actual = serializer.deserializeEvent(jsonEvent)
 
-        val hashMapObject = sentryEvent.unknown["object"] as HashMap<*, *>
         val hashMapActual = actual.unknown["object"] as JsonObject // gson creates it as JsonObject
 
-        assertEquals(hashMapObject["boolean"], hashMapActual.get("boolean").asBoolean)
-        assertEquals(hashMapObject["int"], (hashMapActual.get("int")).asInt)
+        assertEquals(true, hashMapActual.get("boolean").asBoolean)
+        assertEquals(1, (hashMapActual.get("int")).asInt)
     }
 
     @Test
     fun `when serializing unknown field, it should become unknown as json format`() {
         val sentryEvent = generateEmptySentryEvent()
-        sentryEvent.unknown = hashMapOf()
         sentryEvent.eventId = null
         sentryEvent.timestamp = null
 
@@ -117,7 +112,10 @@ class AndroidSerializerTest {
         objects["int"] = 1
         objects["boolean"] = true
 
-        sentryEvent.unknown["object"] = objects
+        val unknown = hashMapOf<String, Any>()
+        unknown["object"] = objects
+
+        sentryEvent.acceptUnknownProperties(unknown)
 
         val actual = serializer.serialize(sentryEvent)
 

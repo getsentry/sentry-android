@@ -242,8 +242,4 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
   public Map<String, Object> getUnknown() {
     return unknown;
   }
-
-  public void setUnknown(Map<String, Object> unknown) {
-    this.unknown = unknown;
-  }
 }
