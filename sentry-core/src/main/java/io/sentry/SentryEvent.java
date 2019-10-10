@@ -30,7 +30,7 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
   private List<Breadcrumb> breadcrumbs = new ArrayList<>();
   private Map<String, String> tags = new HashMap<>();
   private Map<String, Object> extra = new HashMap<>();
-  private Map<String, Object> unknown = new HashMap<>();
+  private Map<String, Object> unknown;
 
   SentryEvent(SentryId eventId, Date timestamp) {
     this.eventId = eventId;

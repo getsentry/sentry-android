@@ -133,7 +133,6 @@ class AndroidSerializerTest {
             setExtra(null)
             fingerprint = null
             contexts = null
-            unknown = null
         }
     }
 }
