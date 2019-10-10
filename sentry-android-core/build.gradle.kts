@@ -64,6 +64,10 @@ android {
             }, this))
         }
     }
+    lintOptions {
+        isWarningsAsErrors = true
+        isCheckDependencies = true
+    }
 }
 
 dependencies {
