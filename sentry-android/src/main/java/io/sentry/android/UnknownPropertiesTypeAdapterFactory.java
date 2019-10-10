@@ -93,7 +93,7 @@ class UnknownPropertiesTypeAdapterFactory implements TypeAdapterFactory {
       Map<String, Object> unknownProperties = new HashMap<>();
       for (final Map.Entry<String, JsonElement> e : jsonObjectToParse.entrySet()) {
         final String propertyName = e.getKey();
-        // No in the object fields?
+        // Not in the object fields?
         if (!propertyNames.contains(propertyName)) {
           // Then we assume the property is unknown
           unknownProperties.put(propertyName, e.getValue());
