@@ -90,7 +90,6 @@ class UnknownPropertiesTypeAdapterFactory implements TypeAdapterFactory {
       // In its simplest solution, we can just collect a JSON tree because its much easier to
       // process
       final JsonObject jsonObjectToParse = JsonParser.parseReader(in).getAsJsonObject();
-      //            final JsonObject unknownProperties = new JsonObject();
       Map<String, Object> unknownProperties = new HashMap<>();
       for (final Map.Entry<String, JsonElement> e : jsonObjectToParse.entrySet()) {
         final String propertyName = e.getKey();
