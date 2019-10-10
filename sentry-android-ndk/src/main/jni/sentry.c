@@ -3,7 +3,7 @@
 #include <malloc.h>
 #include <android/log.h>
 
-void print(sentry_value_t event) {
+void print(sentry_value_t event, void *data) {
     __android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "EVENTTTTTTTTTTT: %s",sentry_value_to_json(event));
 }
 
