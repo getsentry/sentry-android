@@ -70,5 +70,4 @@ class NoOpHubTest {
 
     @Test
     fun `clone returns the same instance`() = assertSame(NoOpHub.getInstance(), sut.clone())
-
 }
