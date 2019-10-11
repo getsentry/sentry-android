@@ -60,7 +60,7 @@ public class Hub implements IHub {
   public void bindClient(SentryClient client) {}
 
   @Override
-  public void flush(int timeoutMills) {}
+  public void flush(long timeoutMills) {}
 
   @Override
   public IHub clone() {
