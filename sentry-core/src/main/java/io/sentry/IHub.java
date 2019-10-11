@@ -17,7 +17,7 @@ public interface IHub extends ISentryClient {
 
   void bindClient(SentryClient client);
 
-  void flush(int timeoutMills);
+  void flush(long timeoutMills);
 
   IHub clone();
 }
