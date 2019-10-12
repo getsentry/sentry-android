@@ -7,6 +7,8 @@ android {
     buildToolsVersion(Config.Android.buildToolsVersion)
 
     defaultConfig {
+        minSdkVersion(Config.Android.minSdkVersion)
+
         missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
 }
