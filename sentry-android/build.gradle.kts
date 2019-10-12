@@ -11,6 +11,11 @@ android {
 
         missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
