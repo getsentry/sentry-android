@@ -3,7 +3,7 @@ object Config {
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
-        val androidGradle = "com.android.tools.build:gradle:3.5.0"
+        val androidGradle = "com.android.tools.build:gradle:3.5.1"
         val kotlinGradlePlugin = "gradle-plugin"
     }
 
@@ -41,5 +41,11 @@ object Config {
     object QualityPlugins {
         val jacocoVersion = "0.8.4"
         val spotlessVersion = "3.25.0"
+    }
+
+    object Flavors {
+        val dimension = "version"
+        val staging = "staging"
+        val production = "production"
     }
 }
