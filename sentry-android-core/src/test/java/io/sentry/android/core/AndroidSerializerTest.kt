@@ -1,9 +1,9 @@
-package io.sentry.android
+package io.sentry.android.core
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
-import io.sentry.DateUtils
-import io.sentry.SentryEvent
+import io.sentry.core.DateUtils
+import io.sentry.core.SentryEvent
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals

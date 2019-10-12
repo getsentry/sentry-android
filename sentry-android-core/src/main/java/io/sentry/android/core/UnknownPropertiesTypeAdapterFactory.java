@@ -84,9 +84,6 @@ class UnknownPropertiesTypeAdapterFactory implements TypeAdapterFactory {
 
     @Override
     public T read(final JsonReader in) {
-      // JsonParser holds no state so instantiation is a bit excessive, but Gson may change in the
-      // future
-      //      final JsonParser jsonParser = new JsonParser();
       // In its simplest solution, we can just collect a JSON tree because its much easier to
       // process
       final JsonObject jsonObjectToParse = JsonParser.parseReader(in).getAsJsonObject();
@@ -111,7 +108,7 @@ class UnknownPropertiesTypeAdapterFactory implements TypeAdapterFactory {
         final Excluder excluder,
         final FieldNamingStrategy fieldNamingStrategy) {
       final Collection<String> propertyNames = new ArrayList<>();
-      // Class fields are declared per class so we have to traverse the whole hierarachy
+      // Class fields are declared per class so we have to traverse the whole hierarchy
       for (Class<?> i = clazz;
           i.getSuperclass() != null && i != Object.class;
           i = i.getSuperclass()) {
