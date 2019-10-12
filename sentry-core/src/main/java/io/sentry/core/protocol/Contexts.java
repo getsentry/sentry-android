@@ -18,12 +18,11 @@ public class Contexts extends ConcurrentHashMap<String, Object> {
     this.put(App.TYPE, app);
   }
 
-  public io.sentry.core.protocol.Browser getBrowser() {
-    return toContextType(
-        io.sentry.core.protocol.Browser.TYPE, io.sentry.core.protocol.Browser.class);
+  public Browser getBrowser() {
+    return toContextType(Browser.TYPE, Browser.class);
   }
 
-  public void setBrowser(io.sentry.core.protocol.Browser browser) {
+  public void setBrowser(Browser browser) {
     this.put(Browser.TYPE, browser);
   }
 

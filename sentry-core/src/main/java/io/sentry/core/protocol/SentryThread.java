@@ -6,7 +6,7 @@ public class SentryThread {
   private String name;
   private Boolean crashed;
   private Boolean current;
-  private io.sentry.core.protocol.SentryStackTrace stacktrace;
+  private SentryStackTrace stacktrace;
 
   /**
    * Gets the Id of the thread.
@@ -85,7 +85,7 @@ public class SentryThread {
    *
    * @return the thread stacktrace.
    */
-  public io.sentry.core.protocol.SentryStackTrace getStacktrace() {
+  public SentryStackTrace getStacktrace() {
     return stacktrace;
   }
 

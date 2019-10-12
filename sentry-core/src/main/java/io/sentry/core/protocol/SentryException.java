@@ -6,7 +6,7 @@ public class SentryException {
   private String value;
   private String module;
   private Integer threadId;
-  private io.sentry.core.protocol.SentryStackTrace stacktrace;
+  private SentryStackTrace stacktrace;
   private Mechanism mechanism;
 
   /**
@@ -82,7 +82,7 @@ public class SentryException {
    *
    * @return the stacktrace.
    */
-  public io.sentry.core.protocol.SentryStackTrace getStacktrace() {
+  public SentryStackTrace getStacktrace() {
     return stacktrace;
   }
 

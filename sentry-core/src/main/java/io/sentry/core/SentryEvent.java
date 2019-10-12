@@ -1,6 +1,6 @@
 package io.sentry.core;
 
-import io.sentry.core.protocol.Contexts;
+import io.sentry.core.protocol.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -8,30 +8,30 @@ import java.util.List;
 import java.util.Map;
 
 public class SentryEvent {
-  private io.sentry.core.protocol.SentryId eventId;
+  private SentryId eventId;
   private Date timestamp;
   private Throwable throwable;
-  private io.sentry.core.protocol.Message message;
+  private Message message;
   private String serverName;
   private String platform;
   private String release;
   private String dist;
   private String logger;
-  private SentryValues<io.sentry.core.protocol.SentryThread> threads;
-  private SentryValues<io.sentry.core.protocol.SentryException> exceptions;
+  private SentryValues<SentryThread> threads;
+  private SentryValues<SentryException> exceptions;
   private SentryLevel level;
   private String transaction;
   private String environment;
-  private io.sentry.core.protocol.User user;
-  private io.sentry.core.protocol.Request request;
-  private io.sentry.core.protocol.SdkVersion sdkVersion;
-  private io.sentry.core.protocol.Contexts contexts = new io.sentry.core.protocol.Contexts();
+  private User user;
+  private Request request;
+  private SdkVersion sdkVersion;
+  private Contexts contexts = new Contexts();
   private List<String> fingerprint = new ArrayList<>();
   private List<Breadcrumb> breadcrumbs = new ArrayList<>();
   private Map<String, String> tags = new HashMap<>();
   private Map<String, Object> extra = new HashMap<>();
 
-  SentryEvent(io.sentry.core.protocol.SentryId eventId, Date timestamp) {
+  SentryEvent(SentryId eventId, Date timestamp) {
     this.eventId = eventId;
     this.timestamp = timestamp;
   }
@@ -42,10 +42,10 @@ public class SentryEvent {
   }
 
   public SentryEvent() {
-    this(new io.sentry.core.protocol.SentryId(), DateUtils.getCurrentDateTime());
+    this(new SentryId(), DateUtils.getCurrentDateTime());
   }
 
-  public io.sentry.core.protocol.SentryId getEventId() {
+  public SentryId getEventId() {
     return eventId;
   }
 
@@ -61,11 +61,11 @@ public class SentryEvent {
     return throwable;
   }
 
-  public io.sentry.core.protocol.Message getMessage() {
+  public Message getMessage() {
     return message;
   }
 
-  public void setMessage(io.sentry.core.protocol.Message message) {
+  public void setMessage(Message message) {
     this.message = message;
   }
 
@@ -109,23 +109,23 @@ public class SentryEvent {
     this.logger = logger;
   }
 
-  public List<io.sentry.core.protocol.SentryThread> getThreads() {
+  public List<SentryThread> getThreads() {
     return threads.getValues();
   }
 
-  public void setThreads(List<io.sentry.core.protocol.SentryThread> threads) {
+  public void setThreads(List<SentryThread> threads) {
     this.threads = new SentryValues<>(threads);
   }
 
-  public List<io.sentry.core.protocol.SentryException> getExceptions() {
+  public List<SentryException> getExceptions() {
     return exceptions.getValues();
   }
 
-  public void setExceptions(List<io.sentry.core.protocol.SentryException> exceptions) {
+  public void setExceptions(List<SentryException> exceptions) {
     this.exceptions = new SentryValues<>(exceptions);
   }
 
-  public void setEventId(io.sentry.core.protocol.SentryId eventId) {
+  public void setEventId(SentryId eventId) {
     this.eventId = eventId;
   }
 
@@ -137,11 +137,11 @@ public class SentryEvent {
     this.throwable = throwable;
   }
 
-  public void setThreads(SentryValues<io.sentry.core.protocol.SentryThread> threads) {
+  public void setThreads(SentryValues<SentryThread> threads) {
     this.threads = threads;
   }
 
-  public void setExceptions(SentryValues<io.sentry.core.protocol.SentryException> exceptions) {
+  public void setExceptions(SentryValues<SentryException> exceptions) {
     this.exceptions = exceptions;
   }
 
@@ -169,27 +169,27 @@ public class SentryEvent {
     this.environment = environment;
   }
 
-  public io.sentry.core.protocol.User getUser() {
+  public User getUser() {
     return user;
   }
 
-  public void setUser(io.sentry.core.protocol.User user) {
+  public void setUser(User user) {
     this.user = user;
   }
 
-  public io.sentry.core.protocol.Request getRequest() {
+  public Request getRequest() {
     return request;
   }
 
-  public void setRequest(io.sentry.core.protocol.Request request) {
+  public void setRequest(Request request) {
     this.request = request;
   }
 
-  public io.sentry.core.protocol.SdkVersion getSdkVersion() {
+  public SdkVersion getSdkVersion() {
     return sdkVersion;
   }
 
-  public void setSdkVersion(io.sentry.core.protocol.SdkVersion sdkVersion) {
+  public void setSdkVersion(SdkVersion sdkVersion) {
     this.sdkVersion = sdkVersion;
   }
 
@@ -225,7 +225,7 @@ public class SentryEvent {
     this.extra = extra;
   }
 
-  public io.sentry.core.protocol.Contexts getContexts() {
+  public Contexts getContexts() {
     return contexts;
   }
 

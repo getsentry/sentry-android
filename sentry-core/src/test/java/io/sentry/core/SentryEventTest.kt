@@ -31,7 +31,7 @@ class SentryEventTest {
         val expected = "2000-12-31T23:59:58Z"
         val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ssX", Locale.ROOT)
         val date = OffsetDateTime.parse(expected, formatter)
-        val actual = io.sentry.core.SentryEvent(null, Date(date.toInstant().toEpochMilli()))
+        val actual = SentryEvent(null, Date(date.toInstant().toEpochMilli()))
         assertEquals(expected, actual.timestampIsoFormat)
     }
 }
