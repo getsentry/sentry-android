@@ -4,7 +4,7 @@ project("sentry-android")
 # Adding NDCrash submodule subdirectory
 add_subdirectory("sentry-native")
 
-# NDCrash submodule include path.
+# sentry-native submodule include path.
 include_directories("sentry-native/include")
 
 # JNDCrash source code.
