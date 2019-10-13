@@ -1,4 +1,4 @@
-package io.sentry.util;
+package io.sentry.core.util;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
@@ -11,11 +11,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotates a declaration as visible solely for testing purposes. Such declaration should not be used in production
- * code.
+ * Annotates a declaration as visible solely for testing purposes. Such declaration should not be
+ * used in production code.
  */
 @Documented
 @Target({TYPE, METHOD, FIELD, CONSTRUCTOR})
 @Retention(CLASS)
-public @interface VisibleForTesting {
-}
+public @interface VisibleForTesting {}

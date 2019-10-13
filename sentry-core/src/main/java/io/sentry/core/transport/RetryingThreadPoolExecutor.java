@@ -56,7 +56,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
    *
    * @param task the task to execute
    */
-  public void submit(io.sentry.core.transport.Retryable task) {
+  public void submit(Retryable task) {
     super.submit(task);
   }
 
@@ -104,8 +104,8 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
       int attempt = ar.attempt.get();
       if (attempt < maxRetries) {
         long delayMillis = -1;
-        if (ar.suppliedAction instanceof io.sentry.core.transport.Retryable) {
-          delayMillis = ((io.sentry.core.transport.Retryable) ar.suppliedAction).getSuggestedRetryDelayMillis();
+        if (ar.suppliedAction instanceof Retryable) {
+          delayMillis = ((Retryable) ar.suppliedAction).getSuggestedRetryDelayMillis();
         }
 
         if (delayMillis < 0) {

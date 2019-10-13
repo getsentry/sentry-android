@@ -1,4 +1,4 @@
-package io.sentry.transport;
+package io.sentry.core.transport;
 
 import java.net.HttpURLConnection;
 

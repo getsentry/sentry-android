@@ -1,15 +1,14 @@
 package io.sentry.core.transport;
 
-import static io.sentry.SentryLevel.DEBUG;
-import static io.sentry.SentryLevel.ERROR;
+import static io.sentry.core.SentryLevel.DEBUG;
+import static io.sentry.core.SentryLevel.ERROR;
 
-import io.sentry.ISerializer;
-import io.sentry.SentryEvent;
-import io.sentry.SentryLevel;
-import io.sentry.SentryOptions;
-import io.sentry.util.Nullable;
-import io.sentry.util.VisibleForTesting;
-
+import io.sentry.core.ISerializer;
+import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryLevel;
+import io.sentry.core.SentryOptions;
+import io.sentry.core.util.Nullable;
+import io.sentry.core.util.VisibleForTesting;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,19 +24,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import javax.net.ssl.HttpsURLConnection;
 
-import io.sentry.ISerializer;
-import io.sentry.SentryEvent;
-import io.sentry.SentryLevel;
-import io.sentry.SentryOptions;
-import io.sentry.util.Nullable;
-
 /**
  * An implementation of the {@link ITransport} interface that sends the events to the Sentry server
  * over HTTP(S) in UTF-8 encoding.
  */
 public class HttpTransport implements ITransport {
-  public static final int HTTP_TOO_MANY_REQUESTS = 429;
-
   private static final Charset UTF_8 = Charset.forName("UTF-8");
 
   @Nullable private final Proxy proxy;

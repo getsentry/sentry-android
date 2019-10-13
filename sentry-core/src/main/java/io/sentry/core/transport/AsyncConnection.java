@@ -1,10 +1,9 @@
 package io.sentry.core.transport;
 
-import io.sentry.SentryEvent;
-import io.sentry.SentryLevel;
-import io.sentry.SentryOptions;
-import io.sentry.util.VisibleForTesting;
-
+import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryLevel;
+import io.sentry.core.SentryOptions;
+import io.sentry.core.util.VisibleForTesting;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -25,11 +24,17 @@ public class AsyncConnection {
       IBackOffIntervalStrategy backOffIntervalStrategy,
       IEventCache eventCache,
       SentryOptions options) {
-    this(transport, transportGate, eventCache, initExecutor(maxRetries, backOffIntervalStrategy, eventCache), options);
+    this(
+        transport,
+        transportGate,
+        eventCache,
+        initExecutor(maxRetries, backOffIntervalStrategy, eventCache),
+        options);
   }
 
   @VisibleForTesting
-  AsyncConnection(ITransport transport,
+  AsyncConnection(
+      ITransport transport,
       ITransportGate transportGate,
       IEventCache eventCache,
       ExecutorService executorService,

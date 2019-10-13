@@ -1,6 +1,6 @@
 package io.sentry.core.transport;
 
-import io.sentry.SentryEvent;
+import io.sentry.core.SentryEvent;
 
 /**
  * Implementations of this interface are used as a kind of persistent storage for events that wait

@@ -1,4 +1,4 @@
-package io.sentry.transport
+package io.sentry.core.transport
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.eq
@@ -6,15 +6,17 @@ import com.nhaarman.mockitokotlin2.inOrder
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.SentryEvent
 import io.sentry.SentryOptions
 import io.sentry.dsnString
+import io.sentry.transport.IEventCache
+import io.sentry.transport.ITransport
+import io.sentry.transport.ITransportGate
+import io.sentry.transport.TransportResult
 import java.io.IOException
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Future
 import kotlin.test.Test
 
 class AsyncConnectionTest {
@@ -35,7 +37,7 @@ class AsyncConnectionTest {
             whenever(executor.submit(any())).thenAnswer { (it.arguments[0] as Runnable).run(); null }
         }
 
-        fun getSUT(): AsyncConnection {
+        fun getSUT(): io.sentry.transport.AsyncConnection {
             return AsyncConnection(transport, transportGate, eventCache, executor, sentryOptions)
         }
     }
