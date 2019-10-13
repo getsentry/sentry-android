@@ -8,6 +8,8 @@ import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
 import io.sentry.util.Nullable;
+import io.sentry.util.VisibleForTesting;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,9 +82,9 @@ public class HttpTransport implements ITransport {
     this.bypassSecurity = bypassSecurity;
   }
 
-  // visible for testing
   // giving up on testing this method is probably the simplest way of having the rest of the class
   // testable...
+  @VisibleForTesting
   protected HttpURLConnection open(URL url, Proxy proxy) throws IOException {
     return (HttpURLConnection)
         (proxy == null ? sentryUrl.openConnection() : sentryUrl.openConnection(proxy));
