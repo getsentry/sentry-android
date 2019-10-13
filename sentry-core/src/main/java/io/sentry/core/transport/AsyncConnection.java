@@ -3,15 +3,18 @@ package io.sentry.core.transport;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.SentryOptions;
+import io.sentry.util.VisibleForTesting;
+
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 
 /** A connection to Sentry that sends the events asynchronously. */
 public class AsyncConnection {
-  private final io.sentry.core.transport.ITransport transport;
-  private final io.sentry.core.transport.ITransportGate transportGate;
-  private final io.sentry.core.transport.RetryingThreadPoolExecutor executor;
+  private final ITransport transport;
+  private final ITransportGate transportGate;
+  private final ExecutorService executor;
   private final IEventCache eventCache;
   private final SentryOptions options;
 
@@ -22,11 +25,20 @@ public class AsyncConnection {
       IBackOffIntervalStrategy backOffIntervalStrategy,
       IEventCache eventCache,
       SentryOptions options) {
+    this(transport, transportGate, eventCache, initExecutor(maxRetries, backOffIntervalStrategy, eventCache), options);
+  }
+
+  @VisibleForTesting
+  AsyncConnection(ITransport transport,
+      ITransportGate transportGate,
+      IEventCache eventCache,
+      ExecutorService executorService,
+      SentryOptions options) {
     this.transport = transport;
     this.transportGate = transportGate;
     this.eventCache = eventCache;
     this.options = options;
-    this.executor = initExecutor(maxRetries, backOffIntervalStrategy, eventCache);
+    this.executor = executorService;
   }
 
   private static RetryingThreadPoolExecutor initExecutor(
