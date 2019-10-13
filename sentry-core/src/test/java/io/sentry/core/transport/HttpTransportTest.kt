@@ -5,9 +5,9 @@ import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import io.sentry.ISerializer
-import io.sentry.SentryEvent
-import io.sentry.SentryOptions
+import io.sentry.core.ISerializer
+import io.sentry.core.SentryEvent
+import io.sentry.core.SentryOptions
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.Proxy

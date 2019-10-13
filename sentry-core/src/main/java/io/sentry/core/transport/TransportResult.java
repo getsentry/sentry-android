@@ -3,9 +3,9 @@ package io.sentry.core.transport;
 import io.sentry.core.SentryEvent;
 
 /**
- * A result of {@link ITransport#send(SentryEvent)}. Note that this class is
- * intentionally not subclassable and has only two factory methods to capture the 2 possible states
- * - success or error.
+ * A result of {@link ITransport#send(SentryEvent)}. Note that this class is intentionally not
+ * subclassable and has only two factory methods to capture the 2 possible states - success or
+ * error.
  */
 public abstract class TransportResult {
 

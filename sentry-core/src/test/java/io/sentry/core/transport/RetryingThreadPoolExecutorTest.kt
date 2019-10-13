@@ -1,17 +1,15 @@
 package io.sentry.core.transport
 
-import io.sentry.core.transport.Retryable
-import io.sentry.core.transport.RetryingThreadPoolExecutor
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.test.assertTrue
-import kotlin.test.assertEquals
-import kotlin.test.Test
-import kotlin.test.BeforeTest
 import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class RetryingThreadPoolExecutorTest {
     private val maxRetries = 5
