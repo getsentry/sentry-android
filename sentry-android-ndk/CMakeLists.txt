@@ -7,7 +7,7 @@ add_subdirectory("sentry-native")
 # sentry-native submodule include path.
 include_directories("sentry-native/include")
 
-# JNDCrash source code.
+# sentry-native source code.
 file(GLOB SENTRY_ANDROID_SOURCES ${CMAKE_SOURCE_DIR}/src/main/jni/*.c)
 
 # Adding dynamic library and linking it with log and NDCrash.
