@@ -26,7 +26,6 @@ android {
     buildTypes {
         getByName("debug")
         getByName("release") {
-//            isMinifyEnabled = true // Do we want to enable it for our lib?
             consumerProguardFiles("proguard-rules.pro")
         }
     }
