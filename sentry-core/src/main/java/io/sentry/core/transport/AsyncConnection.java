@@ -20,15 +20,16 @@ public class AsyncConnection {
   public AsyncConnection(
       ITransport transport,
       ITransportGate transportGate,
-      int maxRetries,
       IBackOffIntervalStrategy backOffIntervalStrategy,
       IEventCache eventCache,
+      int maxRetries,
+      int maxQueueSize,
       SentryOptions options) {
     this(
         transport,
         transportGate,
         eventCache,
-        initExecutor(maxRetries, backOffIntervalStrategy, eventCache),
+        initExecutor(maxRetries, maxQueueSize, backOffIntervalStrategy, eventCache),
         options);
   }
 
@@ -47,7 +48,10 @@ public class AsyncConnection {
   }
 
   private static RetryingThreadPoolExecutor initExecutor(
-      int maxRetries, IBackOffIntervalStrategy backOffIntervalStrategy, IEventCache eventCache) {
+      int maxRetries,
+      int maxQueueSize,
+      IBackOffIntervalStrategy backOffIntervalStrategy,
+      IEventCache eventCache) {
 
     RejectedExecutionHandler storeEvents =
         (r, executor) -> {
@@ -57,7 +61,12 @@ public class AsyncConnection {
         };
 
     return new RetryingThreadPoolExecutor(
-        1, maxRetries, new AsyncConnectionThreadFactory(), backOffIntervalStrategy, storeEvents);
+        1,
+        maxRetries,
+        maxQueueSize,
+        new AsyncConnectionThreadFactory(),
+        backOffIntervalStrategy,
+        storeEvents);
   }
 
   /**

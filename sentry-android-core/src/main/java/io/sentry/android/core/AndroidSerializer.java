@@ -7,7 +7,6 @@ import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.protocol.SentryId;
-
 import java.io.Writer;
 import java.util.Date;
 

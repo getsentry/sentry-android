@@ -1,5 +1,6 @@
 package io.sentry.core.transport;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   private final int maxRetries;
+  private final int maxQueueSize;
+  private final AtomicInteger currentlyRunning;
   private final IBackOffIntervalStrategy backOffIntervalStrategy;
 
   /**
@@ -43,12 +46,15 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   public RetryingThreadPoolExecutor(
       int corePoolSize,
       int maxRetries,
+      int maxQueueSize,
       ThreadFactory threadFactory,
       IBackOffIntervalStrategy backOffIntervalStrategy,
       RejectedExecutionHandler rejectedExecutionHandler) {
     super(corePoolSize, threadFactory, rejectedExecutionHandler);
     this.maxRetries = maxRetries;
+    this.maxQueueSize = maxQueueSize;
     this.backOffIntervalStrategy = backOffIntervalStrategy;
+    this.currentlyRunning = new AtomicInteger();
   }
 
   /**
@@ -57,7 +63,36 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
    * @param task the task to execute
    */
   public void submit(Retryable task) {
-    super.submit(task);
+    if (isSchedulingAllowed()) {
+      super.submit(task);
+    }
+  }
+
+  @Override
+  public Future<?> submit(Runnable task) {
+    if (isSchedulingAllowed()) {
+      return super.submit(task);
+    } else {
+      return new CancelledFuture<>();
+    }
+  }
+
+  @Override
+  public <T> Future<T> submit(Runnable task, T result) {
+    if (isSchedulingAllowed()) {
+      return super.submit(task, result);
+    } else {
+      return new CancelledFuture<>();
+    }
+  }
+
+  @Override
+  public <T> Future<T> submit(Callable<T> task) {
+    if (isSchedulingAllowed()) {
+      return super.submit(task);
+    } else {
+      return new CancelledFuture<>();
+    }
   }
 
   @Override
@@ -75,46 +110,60 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   }
 
   @Override
+  protected void beforeExecute(Thread t, Runnable r) {
+    super.beforeExecute(t, r);
+    currentlyRunning.incrementAndGet();
+  }
+
+  @Override
   protected void afterExecute(Runnable r, Throwable t) {
-    super.afterExecute(r, t);
+    try {
+      super.afterExecute(r, t);
 
-    if (!(r instanceof AttemptedRunnable)) {
-      return;
-    }
-
-    AttemptedRunnable<?> ar = (AttemptedRunnable) r;
-
-    // taken verbatim from the javadoc of the method in ThreadPoolExecutor - this makes sure we
-    // capture the exceptions from the tasks
-    if (t == null) {
-      try {
-        ar.get();
-      } catch (CancellationException ce) {
-        t = ce;
-      } catch (ExecutionException ee) {
-        t = ee.getCause();
-      } catch (InterruptedException ie) {
-        // ok, we're interrupted - mark the thread again and give up
-        Thread.currentThread().interrupt();
+      if (!(r instanceof AttemptedRunnable)) {
         return;
       }
-    }
 
-    if (t != null) {
-      int attempt = ar.attempt.get();
-      if (attempt < maxRetries) {
-        long delayMillis = -1;
-        if (ar.suppliedAction instanceof Retryable) {
-          delayMillis = ((Retryable) ar.suppliedAction).getSuggestedRetryDelayMillis();
+      AttemptedRunnable<?> ar = (AttemptedRunnable) r;
+
+      // taken verbatim from the javadoc of the method in ThreadPoolExecutor - this makes sure we
+      // capture the exceptions from the tasks
+      if (t == null) {
+        try {
+          ar.get();
+        } catch (CancellationException ce) {
+          t = ce;
+        } catch (ExecutionException ee) {
+          t = ee.getCause();
+        } catch (InterruptedException ie) {
+          // ok, we're interrupted - mark the thread again and give up
+          Thread.currentThread().interrupt();
+          return;
         }
-
-        if (delayMillis < 0) {
-          delayMillis = backOffIntervalStrategy.nextDelayMillis(attempt);
-        }
-
-        schedule(new NextAttempt(attempt, ar.suppliedAction), delayMillis, TimeUnit.MILLISECONDS);
       }
+
+      if (t != null) {
+        int attempt = ar.attempt.get();
+        if (attempt < maxRetries) {
+          long delayMillis = -1;
+          if (ar.suppliedAction instanceof Retryable) {
+            delayMillis = ((Retryable) ar.suppliedAction).getSuggestedRetryDelayMillis();
+          }
+
+          if (delayMillis < 0) {
+            delayMillis = backOffIntervalStrategy.nextDelayMillis(attempt);
+          }
+
+          schedule(new NextAttempt(attempt, ar.suppliedAction), delayMillis, TimeUnit.MILLISECONDS);
+        }
+      }
+    } finally {
+      currentlyRunning.decrementAndGet();
     }
+  }
+
+  private boolean isSchedulingAllowed() {
+    return getQueue().size() + currentlyRunning.get() < maxQueueSize;
   }
 
   private static final class NextAttempt implements Runnable {
@@ -208,6 +257,33 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     @Override
     public String toString() {
       return task.toString();
+    }
+  }
+
+  private static final class CancelledFuture<T> implements Future<T> {
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+      return false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+      return true;
+    }
+
+    @Override
+    public boolean isDone() {
+      return true;
+    }
+
+    @Override
+    public T get() {
+      throw new CancellationException();
+    }
+
+    @Override
+    public T get(long timeout, TimeUnit unit) {
+      throw new CancellationException();
     }
   }
 }

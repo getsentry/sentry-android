@@ -9,10 +9,13 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class RetryingThreadPoolExecutorTest {
     private val maxRetries = 5
+    private val maxQueueSize = 5
     private var threadPool: RetryingThreadPoolExecutor? = null
 
     @BeforeTest
@@ -23,7 +26,13 @@ class RetryingThreadPoolExecutorTest {
             t
         }
         val rerunImmediately = io.sentry.core.transport.IBackOffIntervalStrategy { 0L }
-        threadPool = RetryingThreadPoolExecutor(1, maxRetries, threadFactory, rerunImmediately, DiscardPolicy())
+
+        // make sure we have enough threads to handle more than the maximum number of enqueued operations
+        // in reality this would not be a problem but the test code needs to synchronize the main thread
+        // with a number of jobs. If there weren't enough threads, the main thread could block indefinitely
+        // because there wouldn't be enough worker threads to handle all jobs in the queue (because the test
+        // code blocks the worker threads).
+        threadPool = RetryingThreadPoolExecutor(maxQueueSize + 1, maxRetries, maxQueueSize, threadFactory, rerunImmediately, DiscardPolicy())
     }
 
     @AfterTest
@@ -108,5 +117,55 @@ class RetryingThreadPoolExecutorTest {
         val actualDelay = System.currentTimeMillis() - now
 
         assertTrue(actualDelay >= (maxRetries - 1) * delay, "Should have waited between invocations based on the suggested failure delay.")
+    }
+
+    @Test
+    fun `limits the queue size`() {
+        // using this we're waiting for the submitted jobs to be unblocked
+        val jobBlocker = Object()
+
+        // this is used to wait on the main thread until all the jobs are started
+        val sync = CountDownLatch(maxQueueSize)
+
+        // this is used to block the main thread until at least 1 of the jobs has finished
+        val atLeastOneFinished = CountDownLatch(1)
+
+        val futures = (1..maxQueueSize).map {
+            threadPool?.submit {
+                sync.countDown()
+
+                // using the primitive notify/wait enables us to wake up the jobs 1 by 1.
+                synchronized(jobBlocker) { jobBlocker.wait() }
+
+                // signal that we're finished
+                atLeastOneFinished.countDown()
+            }
+        }
+
+        // wait for the jobs to start
+        sync.await()
+
+        futures.forEach {
+            assertNotNull(it)
+            assertFalse(it.isCancelled, "No task below the max queue size should be cancelled.")
+        }
+
+        var f = threadPool?.submit { synchronized(jobBlocker) { jobBlocker.wait() } }
+        assertTrue(f != null && f.isCancelled, "A task above the queue size should have been cancelled.")
+
+        // wake up a single job and wait on the main thread for that to finish
+        synchronized(jobBlocker) { jobBlocker.notify() }
+        atLeastOneFinished.await()
+
+        // now try to test that the above actually made room in the queue again
+        val jobBlocker2 = CountDownLatch(1)
+        val sync2 = CountDownLatch(1)
+
+        f = threadPool?.submit { sync2.countDown(); jobBlocker2.await() }
+        sync2.await()
+        assertFalse(f != null && f.isCancelled, "A task should be successfully enqueued after making a place in the queue")
+
+        synchronized(jobBlocker) { jobBlocker.notifyAll() }
+        jobBlocker2.countDown()
     }
 }
