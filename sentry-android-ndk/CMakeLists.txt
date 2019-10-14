@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 project("sentry-android")
 
-# Adding NDCrash submodule subdirectory
+# Adding sentry-native submodule subdirectory
 add_subdirectory("sentry-native")
 
 # sentry-native submodule include path.
