@@ -1,16 +1,20 @@
 package io.sentry.core.transport;
 
+import static io.sentry.core.ILogger.log;
+
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.VisibleForTesting;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /** A connection to Sentry that sends the events asynchronously. */
-public class AsyncConnection {
+public class AsyncConnection implements Closeable {
   private final ITransport transport;
   private final ITransportGate transportGate;
   private final ExecutorService executor;
@@ -77,6 +81,23 @@ public class AsyncConnection {
    */
   public void send(SentryEvent event) throws IOException {
     executor.submit(new EventSender(event));
+  }
+
+  @Override
+  public void close() throws IOException {
+    executor.shutdown();
+    try {
+      if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+        log(
+            options.getLogger(),
+            SentryLevel.WARNING,
+            "Failed to shutdown the async connection async sender within 1 minute. Trying to force it now.");
+        executor.shutdownNow();
+      }
+      transport.close();
+    } catch (InterruptedException e) {
+      // ok, just give up then...
+    }
   }
 
   private static final class AsyncConnectionThreadFactory implements ThreadFactory {

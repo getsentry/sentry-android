@@ -42,8 +42,8 @@ public class HttpTransport implements ITransport {
 
   /**
    * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set
-   * the appropriate content encoding header for the {@link io.sentry.ISerializer} instance obtained
-   * from the options.
+   * the appropriate content encoding header for the {@link io.sentry.core.ISerializer} instance
+   * obtained from the options.
    *
    * @param options sentry options to read the config from
    * @param proxy the proxy to use, if any
@@ -188,4 +188,7 @@ public class HttpTransport implements ITransport {
       options.getLogger().log(logLevel, message);
     }
   }
+
+  @Override
+  public void close() throws IOException {}
 }
