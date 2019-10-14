@@ -1,9 +1,5 @@
-import org.jetbrains.kotlin.config.KotlinCompilerVersion
-
 plugins {
     id("com.android.library")
-    kotlin("android")
-    jacoco
 }
 
 android {
@@ -12,33 +8,9 @@ android {
 
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
-        javaCompileOptions {
-            annotationProcessorOptions {
-                includeCompileClasspath = true
-            }
-        }
+        minSdkVersion(Config.Android.minSdkVersion)
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        getByName("debug") {
-            isMinifyEnabled = false
-        }
-        getByName("release") {
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
-
-    flavorDimensions("version")
-
-    productFlavors {
-        create("staging") {
-            minSdkVersion(Config.Android.minSdkVersionDebug)
-        }
-        create("production") {
-            minSdkVersion(Config.Android.minSdkVersion)
-        }
+        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
 
     compileOptions {
@@ -46,35 +18,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-    }
-
-    testOptions {
-        animationsDisabled = true
-        unitTests.apply {
-            isReturnDefaultValues = true
-            isIncludeAndroidResources = true
-            all(KotlinClosure1<Any, Test>({
-                (this as Test).also { testTask ->
-                    testTask.extensions
-                        .getByType(JacocoTaskExtension::class.java)
-                        .isIncludeNoLocationClasses = true
-                }
-            }, this))
+    // replace with https://issuetracker.google.com/issues/72050365 once released.
+    libraryVariants.all {
+        generateBuildConfigProvider?.configure {
+            enabled = false
         }
     }
 }
 
 dependencies {
-    api(project(":sentry-core"))
+    api(project(":sentry-android-core"))
     api(project(":sentry-android-ndk"))
-
-    testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
-    testImplementation(Config.TestLibs.robolectric)
-    testImplementation(Config.TestLibs.kotlinTestJunit)
-    testImplementation(Config.TestLibs.androidxCore)
-    testImplementation(Config.TestLibs.androidxRunner)
-    testImplementation(Config.TestLibs.androidxJunit)
-    testImplementation(Config.TestLibs.mockitoKotlin)
 }

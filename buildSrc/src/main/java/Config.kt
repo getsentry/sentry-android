@@ -3,7 +3,7 @@ object Config {
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
-        val androidGradle = "com.android.tools.build:gradle:3.5.0"
+        val androidGradle = "com.android.tools.build:gradle:3.5.1"
         val kotlinGradlePlugin = "gradle-plugin"
     }
 
@@ -21,6 +21,7 @@ object Config {
         val appCompat = "androidx.appcompat:appcompat:1.1.0"
         val constraintLayout = "androidx.constraintlayout:constraintlayout:1.1.3"
         val timber = "com.jakewharton.timber:timber:4.7.1"
+        val gson = "com.google.code.gson:gson:2.8.6"
     }
 
     object TestLibs {
@@ -39,6 +40,12 @@ object Config {
 
     object QualityPlugins {
         val jacocoVersion = "0.8.4"
-        val spotlessVersion = "3.24.2"
+        val spotlessVersion = "3.25.0"
+    }
+
+    object Flavors {
+        val dimension = "version"
+        val staging = "staging"
+        val production = "production"
     }
 }

@@ -20,25 +20,15 @@ android {
         testInstrumentationRunnerArguments = mapOf(
             "clearPackageData" to "true"
         )
+
+        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
 
     buildTypes {
-        getByName("debug") {
-            isMinifyEnabled = false
-        }
+        getByName("debug")
         getByName("release") {
+            isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
-
-    flavorDimensions("version")
-
-    productFlavors {
-        create("staging") {
-            minSdkVersion(Config.Android.minSdkVersionDebug)
-        }
-        create("production") {
-            minSdkVersion(Config.Android.minSdkVersion)
         }
     }
 
