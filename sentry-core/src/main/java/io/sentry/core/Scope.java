@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Scope {
+  private SentryId lastEventId;
   private SentryLevel level;
   private String transaction;
   private User user;
@@ -79,5 +81,13 @@ public class Scope {
   protected Scope clone() {
     // TODO: clone me
     return new Scope();
+  }
+
+  SentryId getLastEventId() {
+    return lastEventId;
+  }
+
+  void setLastEventId(SentryId lastEventId) {
+    this.lastEventId = lastEventId;
   }
 }

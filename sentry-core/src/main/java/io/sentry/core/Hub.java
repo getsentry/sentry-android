@@ -39,42 +39,60 @@ public class Hub implements IHub {
 
   @Override
   public SentryId captureEvent(SentryEvent event) {
-    StackItem item;
+    SentryId sentryId;
     synchronized (lock) {
-      item = stack.peek();
+      StackItem item = stack.peek();
+      sentryId = item.client.captureEvent(event, item.scope);
+      item.scope.setLastEventId(sentryId);
     }
-    return item.client.captureEvent(event, item.scope);
+    return sentryId;
   }
 
   @Override
   public SentryId captureMessage(String message) {
-    StackItem item;
+    SentryId sentryId;
     synchronized (lock) {
-      item = stack.peek();
+      StackItem item = stack.peek();
+      sentryId = item.client.captureMessage(message, item.scope);
+      item.scope.setLastEventId(sentryId);
     }
-    return item.client.captureMessage(message, item.scope);
+    return sentryId;
   }
 
   @Override
   public SentryId captureException(Throwable throwable) {
-    StackItem item;
+    SentryId sentryId;
     synchronized (lock) {
-      item = stack.peek();
+      StackItem item = stack.peek();
+      sentryId = item.client.captureException(throwable, item.scope);
+      item.scope.setLastEventId(sentryId);
     }
-    return item.client.captureException(throwable, item.scope);
+    return sentryId;
   }
 
   @Override
   public void close() {
+    synchronized (lock) {
+      // Close the top-most client
+      StackItem item = stack.peek();
+      item.client.close(options.getShutdownTimeout());
+    }
     isEnabled = false;
   }
 
   @Override
-  public void addBreadcrumb(Breadcrumb breadcrumb) {}
+  public void addBreadcrumb(Breadcrumb breadcrumb) {
+    synchronized (lock) {
+      StackItem item = stack.peek();
+      item.scope.addBreadcrumb(breadcrumb);
+    }
+  }
 
   @Override
   public SentryId getLastEventId() {
-    return null;
+    synchronized (lock) {
+      return stack.peek().scope.getLastEventId();
+    }
   }
 
   @Override
@@ -90,7 +108,10 @@ public class Hub implements IHub {
   @Override
   public void popScope() {
     synchronized (lock) {
-      stack.pop();
+      // Don't drop the root scope
+      if (stack.size() != 1) {
+        stack.pop();
+      }
     }
   }
 
@@ -133,6 +154,7 @@ public class Hub implements IHub {
 
   @Override
   public IHub clone() {
+    // TODO: Clone hub
     return new Hub(options);
   }
 }
