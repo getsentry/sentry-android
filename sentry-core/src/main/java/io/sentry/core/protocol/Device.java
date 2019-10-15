@@ -13,7 +13,8 @@ public class Device {
   private String model;
   private String modelId;
   private String architecture;
-  private Short batteryLevel;
+  private String[] architectures;
+  private Float batteryLevel;
   private Boolean isCharging;
   private Boolean isOnline;
   private DeviceOrientation orientation;
@@ -88,11 +89,11 @@ public class Device {
     this.architecture = architecture;
   }
 
-  public Short getBatteryLevel() {
+  public Float getBatteryLevel() {
     return batteryLevel;
   }
 
-  public void setBatteryLevel(Short batteryLevel) {
+  public void setBatteryLevel(Float batteryLevel) {
     this.batteryLevel = batteryLevel;
   }
 
@@ -230,6 +231,14 @@ public class Device {
 
   public void setTimezone(TimeZone timezone) {
     this.timezone = timezone;
+  }
+
+  public String[] getArchitectures() {
+    return architectures;
+  }
+
+  public void setArchitectures(String[] architectures) {
+    this.architectures = architectures;
   }
 
   public enum DeviceOrientation {

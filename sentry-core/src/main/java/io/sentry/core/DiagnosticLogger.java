@@ -1,9 +1,10 @@
 package io.sentry.core;
 
 import io.sentry.core.util.Nullable;
+import io.sentry.core.util.Objects;
 
 /** Sentry SDK internal diagnostic logger. */
-class DiagnosticLogger implements ILogger {
+public class DiagnosticLogger implements ILogger {
   private SentryOptions options;
   private ILogger logger;
 
@@ -13,10 +14,8 @@ class DiagnosticLogger implements ILogger {
    * @param options
    * @param logger
    */
-  DiagnosticLogger(SentryOptions options, @Nullable ILogger logger) {
-    if (options == null) {
-      throw new IllegalArgumentException("SentryOptions is required.");
-    }
+  public DiagnosticLogger(SentryOptions options, @Nullable ILogger logger) {
+    Objects.requireNonNull(options, "SentryOptions is required.");
     this.options = options;
     this.logger = logger;
   }

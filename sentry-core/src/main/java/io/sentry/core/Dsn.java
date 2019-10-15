@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.util.Objects;
 import java.net.URI;
 
 final class Dsn {
@@ -48,21 +49,21 @@ final class Dsn {
     try {
       URI uri = new URI(dsn);
       String userInfo = uri.getUserInfo();
-      if (userInfo == null || userInfo.length() == 0) {
-        throw new IllegalArgumentException("Invalid DSN: No public key provided.");
+      if (userInfo == null || userInfo.isEmpty()) {
+        Objects.requireNonNull(userInfo, "Invalid DSN: No public key provided.");
       }
       String[] keys = userInfo.split(":");
       publicKey = keys[0]; // TODO: test lack of delimiter returns whole value as first index
-      if (publicKey == null || publicKey.length() == 0) {
-        throw new IllegalArgumentException("Invalid DSN: No public key provided.");
+      if (publicKey == null || publicKey.isEmpty()) {
+        Objects.requireNonNull(publicKey, "Invalid DSN: No public key provided.");
       }
       secretKey = keys.length > 1 ? keys[1] : null;
       String uriPath = uri.getPath();
       int projectIdStart = uriPath.lastIndexOf("/") + 1;
       path = uriPath.substring(0, projectIdStart);
       projectId = uriPath.substring(projectIdStart);
-      if (projectId == null || projectId.length() == 0) {
-        throw new IllegalArgumentException("Invalid DSN: A Project Id is required.");
+      if (projectId.isEmpty()) {
+        Objects.requireNonNull(projectId, "Invalid DSN: A Project Id is required.");
       }
       sentryUri =
           new URI(

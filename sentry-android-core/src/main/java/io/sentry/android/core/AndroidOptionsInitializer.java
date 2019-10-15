@@ -10,7 +10,7 @@ class AndroidOptionsInitializer {
 
     if (ManifestMetadataReader.isAutoInit(context, options)) {
       ManifestMetadataReader.applyMetadata(context, options);
-      options.addEventProcessor(new DefaultAndroidEventProcessor(context));
+      options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
       options.setSerializer(new AndroidSerializer());
     }
   }
