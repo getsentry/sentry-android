@@ -15,7 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 public class SentryClient implements ISentryClient {
-  static final String SENTRY_PROTOCOL_VERSION = "6";
+  static final String SENTRY_PROTOCOL_VERSION = "7";
 
   private boolean isEnabled;
 
