@@ -97,6 +97,11 @@ public class AsyncConnection implements Closeable {
       transport.close();
     } catch (InterruptedException e) {
       // ok, just give up then...
+      log(
+          options.getLogger(),
+          SentryLevel.DEBUG,
+          "Thread interrupted while closing the connection.");
+      Thread.currentThread().interrupt();
     }
   }
 

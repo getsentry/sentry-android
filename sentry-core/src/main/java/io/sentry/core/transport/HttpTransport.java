@@ -1,11 +1,11 @@
 package io.sentry.core.transport;
 
+import static io.sentry.core.ILogger.log;
 import static io.sentry.core.SentryLevel.DEBUG;
 import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
-import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Nullable;
 import io.sentry.core.util.VisibleForTesting;
@@ -124,6 +124,7 @@ public class HttpTransport implements ITransport {
         if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
           if (options.isDebug()) {
             log(
+                options.getLogger(),
                 DEBUG,
                 "Event '"
                     + event.getEventId()
@@ -132,7 +133,12 @@ public class HttpTransport implements ITransport {
         }
         return TransportResult.error(retryAfterMs, responseCode);
       } catch (IOException responseCodeException) {
-        // pass
+        // this should not stop us from continuing. We'll just use -1 as response code.
+        log(
+            options.getLogger(),
+            DEBUG,
+            "Failed to obtain response code while analyzing event send failure.",
+            e);
       }
 
       if (options.isDebug()) {
@@ -145,7 +151,7 @@ public class HttpTransport implements ITransport {
           errorMessage = "An exception occurred while submitting the event to the Sentry server.";
         }
 
-        log(DEBUG, errorMessage);
+        log(options.getLogger(), DEBUG, errorMessage);
       }
 
       return TransportResult.error(retryAfterMs, responseCode);
@@ -177,16 +183,11 @@ public class HttpTransport implements ITransport {
       }
     } catch (Exception e2) {
       log(
+          options.getLogger(),
           ERROR,
           "Exception while reading the error message from the connection: " + e2.getMessage());
     }
     return sb.toString();
-  }
-
-  private final void log(SentryLevel logLevel, String message) {
-    if (options.isDebug()) {
-      options.getLogger().log(logLevel, message);
-    }
   }
 
   @Override
