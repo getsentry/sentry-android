@@ -10,6 +10,7 @@ public class SentryOptions {
   private List<EventProcessor> eventProcessors = new ArrayList<>();
 
   private String dsn;
+  private long shutdownTimeoutMills;
   private boolean debug;
   private @NonNull ILogger logger = NoOpLogger.getInstance();
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
@@ -64,5 +65,13 @@ public class SentryOptions {
 
   public void setSerializer(ISerializer serializer) {
     this.serializer = serializer;
+  }
+
+  public long getShutdownTimeout() {
+    return shutdownTimeoutMills;
+  }
+
+  public void setShutdownTimeout(long shutdownTimeoutMills) {
+    this.shutdownTimeoutMills = shutdownTimeoutMills;
   }
 }

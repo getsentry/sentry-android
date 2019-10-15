@@ -56,7 +56,7 @@ class SentryClientTest {
     fun `when client is closed, client gets disabled`() {
         val sut = fixture.getSut()
         assertTrue(sut.isEnabled)
-        sut.close()
+        sut.close(0)
         assertFalse(sut.isEnabled)
     }
 }

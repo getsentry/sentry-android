@@ -25,19 +25,19 @@ class NoOpSentryClientTest {
 
     @Test
     fun `close does not affect captureEvent`() {
-        sut.close()
+        sut.close(0)
         assertEquals(SentryId.EMPTY_ID, sut.captureEvent(null))
     }
 
     @Test
     fun `close does not affect captureException`() {
-        sut.close()
+        sut.close(0)
         assertEquals(SentryId.EMPTY_ID, sut.captureException(null))
     }
 
     @Test
     fun `close does not affect captureMessage`() {
-        sut.close()
+        sut.close(0)
         assertEquals(SentryId.EMPTY_ID, sut.captureMessage(null))
     }
 }

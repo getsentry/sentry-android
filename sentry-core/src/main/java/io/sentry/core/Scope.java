@@ -74,4 +74,10 @@ public class Scope {
   public void setExtra(String key, String value) {
     this.extra.put(key, value);
   }
+
+  @Override
+  protected Scope clone() {
+    // TODO: clone me
+    return new Scope();
+  }
 }

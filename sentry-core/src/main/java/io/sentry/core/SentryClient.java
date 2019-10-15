@@ -2,6 +2,7 @@ package io.sentry.core;
 
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SentryId;
+import io.sentry.core.util.Nullable;
 
 public class SentryClient implements ISentryClient {
   private boolean isEnabled;
@@ -17,7 +18,7 @@ public class SentryClient implements ISentryClient {
     this.isEnabled = true;
   }
 
-  public SentryId captureEvent(SentryEvent event) {
+  public SentryId captureEvent(SentryEvent event, @Nullable Scope scope) {
     ILogger logger = options.getLogger();
     if (logger != null) {
       logger.log(SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
@@ -26,7 +27,17 @@ public class SentryClient implements ISentryClient {
   }
 
   @Override
+  public SentryId captureEvent(SentryEvent event) {
+    return captureEvent(event, null);
+  }
+
+  @Override
   public SentryId captureMessage(String message) {
+    return captureMessage(message, null);
+  }
+
+  @Override
+  public SentryId captureMessage(String message, @Nullable Scope scope) {
     SentryEvent event = new SentryEvent();
     Message sentryMessage = new Message();
     sentryMessage.setFormatted(message);
@@ -35,16 +46,27 @@ public class SentryClient implements ISentryClient {
 
   @Override
   public SentryId captureException(Throwable throwable) {
+    return captureException(throwable, null);
+  }
+
+  @Override
+  public SentryId captureException(Throwable throwable, @Nullable Scope scope) {
     SentryEvent event = new SentryEvent(throwable);
     return captureEvent(event);
   }
 
-  public void close() {
+  @Override
+  public void close(long shutdownMills) {
     ILogger logger = options.getLogger();
     if (logger != null) {
       logger.log(SentryLevel.INFO, "Closing SDK.");
     }
-    // TODO: Flush events
+    flush(options.getShutdownTimeout());
     isEnabled = false;
+  }
+
+  @Override
+  public void flush(long timeoutMills) {
+    // TODO: Flush transport
   }
 }
