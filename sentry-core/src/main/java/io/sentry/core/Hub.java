@@ -16,6 +16,7 @@ public class Hub implements IHub {
     }
   }
 
+  private SentryId lastEventId;
   private SentryOptions options;
   private volatile boolean isEnabled;
   private Deque<StackItem> stack = new ArrayDeque<>();
@@ -43,7 +44,7 @@ public class Hub implements IHub {
     synchronized (lock) {
       StackItem item = stack.peek();
       sentryId = item.client.captureEvent(event, item.scope);
-      item.scope.setLastEventId(sentryId);
+      this.lastEventId = sentryId;
     }
     return sentryId;
   }
@@ -54,7 +55,7 @@ public class Hub implements IHub {
     synchronized (lock) {
       StackItem item = stack.peek();
       sentryId = item.client.captureMessage(message, item.scope);
-      item.scope.setLastEventId(sentryId);
+      this.lastEventId = sentryId;
     }
     return sentryId;
   }
@@ -65,7 +66,7 @@ public class Hub implements IHub {
     synchronized (lock) {
       StackItem item = stack.peek();
       sentryId = item.client.captureException(throwable, item.scope);
-      item.scope.setLastEventId(sentryId);
+      this.lastEventId = sentryId;
     }
     return sentryId;
   }
@@ -90,9 +91,7 @@ public class Hub implements IHub {
 
   @Override
   public SentryId getLastEventId() {
-    synchronized (lock) {
-      return stack.peek().scope.getLastEventId();
-    }
+    return lastEventId;
   }
 
   @Override
