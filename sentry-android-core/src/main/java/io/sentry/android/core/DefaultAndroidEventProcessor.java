@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.os.*;
@@ -16,14 +17,8 @@ import android.util.DisplayMetrics;
 import io.sentry.core.*;
 import io.sentry.core.protocol.*;
 import io.sentry.core.util.Objects;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.io.*;
+import java.util.*;
 
 public class DefaultAndroidEventProcessor implements EventProcessor {
   Context context;
@@ -696,6 +691,39 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     // Android 29 has changed and -> Avoid using hardware identifiers, find another way in the
     // future
     return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+  }
+
+  private String[] getProGuardUuids() {
+    InputStream is = null;
+    try {
+      AssetManager assets = context.getAssets();
+      is = assets.open("sentry-debug-meta.properties");
+      Properties properties = new Properties();
+      properties.load(is);
+      is.close();
+
+      String uuid = properties.getProperty("io.sentry.ProguardUuids");
+      if (uuid != null && !uuid.isEmpty()) {
+        return uuid.split("\\|");
+      }
+      log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
+    } catch (FileNotFoundException e) {
+      log(SentryLevel.ERROR, "Proguard UUIDs file not found.", e);
+    } catch (Exception e) {
+      log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
+    } finally {
+      if (is != null) {
+        try {
+          is.close();
+        } catch (IOException e) {
+          log(
+              SentryLevel.ERROR,
+              "InputStream of sentry-debug-meta.properties didn't close correctly.",
+              e);
+        }
+      }
+    }
+    return null;
   }
 
   private void log(SentryLevel level, String message, Throwable throwable) {
