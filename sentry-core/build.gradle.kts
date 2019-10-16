@@ -9,6 +9,8 @@ dependencies {
     testImplementation(kotlin(Config.kotlinStdLib))
     testImplementation(Config.TestLibs.kotlinTestJunit)
     testImplementation(Config.TestLibs.mockitoKotlin)
+    // For testing only. This library is coupled with any serialization library
+    testImplementation(Config.Libs.gson)
 }
 
 configure<SourceSetContainer> {
