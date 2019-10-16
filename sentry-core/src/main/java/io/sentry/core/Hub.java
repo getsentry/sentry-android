@@ -6,9 +6,9 @@ import java.util.Deque;
 
 public class Hub implements IHub {
 
-  private class StackItem {
-    public ISentryClient client;
-    public Scope scope;
+  private static final class StackItem {
+    ISentryClient client;
+    Scope scope;
 
     public StackItem(ISentryClient client, Scope scope) {
       this.client = client;
@@ -16,8 +16,8 @@ public class Hub implements IHub {
     }
   }
 
-  private SentryId lastEventId;
-  private SentryOptions options;
+  private volatile SentryId lastEventId;
+  private final SentryOptions options;
   private volatile boolean isEnabled;
   private final Deque<StackItem> stack = new ArrayDeque<>();
 
