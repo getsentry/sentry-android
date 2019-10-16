@@ -3,11 +3,13 @@ package io.sentry.android.core;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.sentry.android.core.adapters.*;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.protocol.SentryId;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class AndroidSerializer implements ISerializer {
 
@@ -18,6 +20,8 @@ public class AndroidSerializer implements ISerializer {
           .registerTypeAdapter(SentryId.class, new SentryIdDeserializerAdapter())
           .registerTypeAdapter(Date.class, new DateSerializerAdapter())
           .registerTypeAdapter(Date.class, new DateDeserializerAdapter())
+          .registerTypeAdapter(TimeZone.class, new TimeZoneSerializerAdapter())
+          .registerTypeAdapter(TimeZone.class, new TImeZoneDeserializerAdapter())
           .registerTypeAdapterFactory(UnknownPropertiesTypeAdapterFactory.get())
           .create();
 

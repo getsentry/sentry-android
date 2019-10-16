@@ -2,8 +2,12 @@ package io.sentry.android.core
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
+import com.google.gson.internal.LinkedTreeMap
 import io.sentry.core.DateUtils
 import io.sentry.core.SentryEvent
+import io.sentry.core.protocol.Contexts
+import io.sentry.core.protocol.Device
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -122,6 +126,37 @@ class AndroidSerializerTest {
         val expected = "{\"unknown\":{\"object\":{\"boolean\":true,\"int\":1}}}"
 
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `when serializing a TimeZone, it should become a timezone ID string`() {
+        val sentryEvent = generateEmptySentryEvent()
+        sentryEvent.eventId = null
+        sentryEvent.timestamp = null
+        val device = Device()
+        device.timezone = TimeZone.getTimeZone("Europe/Vienna") // do we expect like this?
+        val contexts = Contexts()
+        contexts.device = device
+        sentryEvent.contexts = contexts
+
+        val expected = "{\"contexts\":{\"device\":{\"timezone\":\"Europe/Vienna\"}}}"
+
+        val actual = serializer.serialize(sentryEvent)
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `when deserializing a timezone ID string, it should become a Device-TimeZone`() {
+        val sentryEvent = generateEmptySentryEvent()
+        sentryEvent.eventId = null
+        sentryEvent.timestamp = null
+
+        val jsonEvent = "{\"contexts\":{\"device\":{\"timezone\":\"Europe/Vienna\"}}}"
+
+        val actual = serializer.deserializeEvent(jsonEvent)
+
+        assertEquals("Europe/Vienna", (actual.contexts["device"] as LinkedTreeMap<*, *>)["timezone"]) // TODO: fix it when casting is being done proerly
     }
 
     private fun generateEmptySentryEvent(): SentryEvent {
