@@ -15,8 +15,8 @@ public class DiagnosticLogger implements ILogger {
    * @param logger
    */
   public DiagnosticLogger(SentryOptions options, @Nullable ILogger logger) {
-    Objects.requireNonNull(options, "SentryOptions is required.");
-    this.options = options;
+    this.options = Objects.requireNonNull(options, "SentryOptions is required.");
+    ;
     this.logger = logger;
   }
 

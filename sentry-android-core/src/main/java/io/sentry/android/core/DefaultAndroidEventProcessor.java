@@ -25,11 +25,11 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   SentryOptions options;
 
   public DefaultAndroidEventProcessor(Context context, SentryOptions options) {
-    Objects.requireNonNull(context, "The application context is required.");
-    Objects.requireNonNull(options, "The SentryOptions is required.");
-
-    this.context = context.getApplicationContext();
-    this.options = options;
+    this.context =
+        Objects.requireNonNull(
+            context != null ? context.getApplicationContext() : null,
+            "The application context is required.");
+    this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
   }
 
   @Override
