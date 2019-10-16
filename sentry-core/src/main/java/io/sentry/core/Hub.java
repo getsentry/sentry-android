@@ -1,8 +1,8 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class Hub implements IHub {
 
@@ -19,8 +19,7 @@ public class Hub implements IHub {
   private SentryId lastEventId;
   private SentryOptions options;
   private volatile boolean isEnabled;
-  private Deque<StackItem> stack = new ArrayDeque<>();
-  private final Object lock = new Object();
+  private final Deque<StackItem> stack = new ConcurrentLinkedDeque<>();
 
   public Hub(SentryOptions options) {
     this.options = options;
@@ -41,52 +40,42 @@ public class Hub implements IHub {
   @Override
   public SentryId captureEvent(SentryEvent event) {
     SentryId sentryId;
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      sentryId = item.client.captureEvent(event, item.scope);
-      this.lastEventId = sentryId;
-    }
+    StackItem item = stack.peek();
+    sentryId = item.client.captureEvent(event, item.scope);
+    this.lastEventId = sentryId;
     return sentryId;
   }
 
   @Override
   public SentryId captureMessage(String message) {
     SentryId sentryId;
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      sentryId = item.client.captureMessage(message, item.scope);
-      this.lastEventId = sentryId;
-    }
+    StackItem item = stack.peek();
+    sentryId = item.client.captureMessage(message, item.scope);
+    this.lastEventId = sentryId;
     return sentryId;
   }
 
   @Override
   public SentryId captureException(Throwable throwable) {
     SentryId sentryId;
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      sentryId = item.client.captureException(throwable, item.scope);
-      this.lastEventId = sentryId;
-    }
+    StackItem item = stack.peek();
+    sentryId = item.client.captureException(throwable, item.scope);
+    this.lastEventId = sentryId;
     return sentryId;
   }
 
   @Override
   public void close() {
-    synchronized (lock) {
-      // Close the top-most client
-      StackItem item = stack.peek();
-      item.client.close(options.getShutdownTimeout());
-    }
+    // Close the top-most client
+    StackItem item = stack.peek();
+    item.client.close(options.getShutdownTimeout());
     isEnabled = false;
   }
 
   @Override
   public void addBreadcrumb(Breadcrumb breadcrumb) {
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      item.scope.addBreadcrumb(breadcrumb);
-    }
+    StackItem item = stack.peek();
+    item.scope.addBreadcrumb(breadcrumb);
   }
 
   @Override
@@ -96,18 +85,16 @@ public class Hub implements IHub {
 
   @Override
   public void pushScope() {
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      Scope clone = item.scope.clone();
-      StackItem newItem = new StackItem(item.client, clone);
-      stack.push(newItem);
-    }
+    StackItem item = stack.peek();
+    Scope clone = item.scope.clone();
+    StackItem newItem = new StackItem(item.client, clone);
+    stack.push(newItem);
   }
 
   @Override
   public void popScope() {
-    synchronized (lock) {
-      // Don't drop the root scope
+    // Don't drop the root scope
+    synchronized (stack) {
       if (stack.size() != 1) {
         stack.pop();
       }
@@ -118,10 +105,8 @@ public class Hub implements IHub {
   public void withScope(ScopeCallback callback) {
     pushScope();
     try {
-      synchronized (lock) {
-        StackItem item = stack.peek();
-        callback.run(item.scope);
-      }
+      StackItem item = stack.peek();
+      callback.run(item.scope);
     } finally {
       popScope();
     }
@@ -129,26 +114,20 @@ public class Hub implements IHub {
 
   @Override
   public void configureScope(ScopeCallback callback) {
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      callback.run(item.scope);
-    }
+    StackItem item = stack.peek();
+    callback.run(item.scope);
   }
 
   @Override
   public void bindClient(SentryClient client) {
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      item.client = client;
-    }
+    StackItem item = stack.peek();
+    item.client = client;
   }
 
   @Override
   public void flush(long timeoutMills) {
-    synchronized (lock) {
-      StackItem item = stack.peek();
-      item.client.flush(options.getShutdownTimeout());
-    }
+    StackItem item = stack.peek();
+    item.client.flush(options.getShutdownTimeout());
   }
 
   @Override
