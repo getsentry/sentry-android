@@ -1,8 +1,8 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class Hub implements IHub {
 
@@ -19,7 +19,7 @@ public class Hub implements IHub {
   private SentryId lastEventId;
   private SentryOptions options;
   private volatile boolean isEnabled;
-  private final Deque<StackItem> stack = new ConcurrentLinkedDeque<>();
+  private final Deque<StackItem> stack = new ArrayDeque<>();
 
   public Hub(SentryOptions options) {
     this.options = options;
@@ -68,7 +68,7 @@ public class Hub implements IHub {
   public void close() {
     // Close the top-most client
     StackItem item = stack.peek();
-    item.client.close(options.getShutdownTimeout());
+    item.client.close();
     isEnabled = false;
   }
 

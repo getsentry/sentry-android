@@ -18,7 +18,7 @@ public interface ISentryClient {
 
   SentryId captureException(Throwable throwable, @Nullable Scope scope);
 
-  void close(long shutdownMills);
+  void close();
 
   void flush(long timeoutMills);
 }

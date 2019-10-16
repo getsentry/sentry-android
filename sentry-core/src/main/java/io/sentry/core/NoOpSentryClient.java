@@ -49,7 +49,7 @@ class NoOpSentryClient implements ISentryClient {
   }
 
   @Override
-  public void close(long shutdownMills) {}
+  public void close() {}
 
   @Override
   public void flush(long timeoutMills) {}
