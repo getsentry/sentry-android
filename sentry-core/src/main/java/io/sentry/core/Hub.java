@@ -28,6 +28,12 @@ public class Hub implements IHub {
 
   @Override
   public SentryId captureException(Throwable throwable) {
+    // TODO: only for testing
+    SentryEvent event = new SentryEvent(throwable);
+    for (EventProcessor processor : options.getEventProcessors()) {
+      processor.process(event);
+    }
+
     return null;
   }
 

@@ -5,13 +5,13 @@ import java.util.Date;
 public class App {
   static final String TYPE = "app";
 
-  private String identifier;
-  private Date startTime;
+  private String identifier; // it was app_identifier
+  private Date startTime; // it was app_start_time
   private String hash;
   private String buildType;
-  private String name;
-  private String version;
-  private String build;
+  private String name; // it was app_name
+  private String version; // it was app_version
+  private String build; // it was app_build
 
   public String getIdentifier() {
     return identifier;

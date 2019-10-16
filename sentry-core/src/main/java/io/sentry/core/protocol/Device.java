@@ -12,11 +12,13 @@ public class Device {
   private String family;
   private String model;
   private String modelId;
-  private String architecture;
+
+  @Deprecated private String architecture; // it was only arch, did we change it?
+
   private String[] architectures;
   private Float batteryLevel;
-  private Boolean isCharging;
-  private Boolean isOnline;
+  private Boolean isCharging; // charging
+  private Boolean isOnline; // online
   private DeviceOrientation orientation;
   private Boolean simulator;
   private Long memorySize;
@@ -27,7 +29,12 @@ public class Device {
   private Long freeStorage;
   private Long externalStorageSize;
   private Long externalFreeStorage;
-  private String screenResolution;
+
+  @Deprecated private String screenResolution;
+
+  private Integer widthPixels;
+  private Integer heightPixels;
+
   private Float screenDensity;
   private Integer screenDpi;
   private Date bootTime;
@@ -81,10 +88,20 @@ public class Device {
     this.modelId = modelId;
   }
 
+  /**
+   * @deprecated use {@link #getArchitectures} instead.
+   * @return device architecture
+   */
+  @Deprecated
   public String getArchitecture() {
     return architecture;
   }
 
+  /**
+   * @deprecated use {@link #setArchitectures} instead.
+   * @param architecture device architecture
+   */
+  @Deprecated
   public void setArchitecture(String architecture) {
     this.architecture = architecture;
   }
@@ -193,10 +210,20 @@ public class Device {
     this.externalFreeStorage = externalFreeStorage;
   }
 
+  /**
+   * @deprecated use {@link #getWidthPixels, #getHeightPixels} instead.
+   * @return screen resolution largest + smallest
+   */
+  @Deprecated
   public String getScreenResolution() {
     return screenResolution;
   }
 
+  /**
+   * @deprecated use {@link #setWidthPixels} , #getHeightPixels} instead.
+   * @param screenResolution screen resolution largest + smallest
+   */
+  @Deprecated
   public void setScreenResolution(String screenResolution) {
     this.screenResolution = screenResolution;
   }
@@ -239,6 +266,22 @@ public class Device {
 
   public void setArchitectures(String[] architectures) {
     this.architectures = architectures;
+  }
+
+  public Integer getWidthPixels() {
+    return widthPixels;
+  }
+
+  public void setWidthPixels(Integer widthPixels) {
+    this.widthPixels = widthPixels;
+  }
+
+  public Integer getHeightPixels() {
+    return heightPixels;
+  }
+
+  public void setHeightPixels(Integer heightPixels) {
+    this.heightPixels = heightPixels;
   }
 
   public enum DeviceOrientation {

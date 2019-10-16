@@ -6,19 +6,22 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.os.*;
 import android.util.DisplayMetrics;
-import io.sentry.core.EventProcessor;
-import io.sentry.core.SentryEvent;
-import io.sentry.core.SentryLevel;
-import io.sentry.core.SentryOptions;
+import io.sentry.core.*;
+import io.sentry.core.protocol.App;
 import io.sentry.core.protocol.Device;
+import io.sentry.core.protocol.OperatingSystem;
 import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.util.Objects;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -52,11 +55,10 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
         event.setRelease(packageInfo.packageName + "-" + packageInfo.versionName);
       }
       if (event.getDist() == null) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-          event.setDist(Long.toString(packageInfo.getLongVersionCode()));
-        } else {
-          event.setDist(getVersionCode(packageInfo));
-        }
+        event.setDist(getVersionCode(packageInfo));
+      }
+      if (event.getContexts().getApp() == null) {
+        event.getContexts().setApp(getApp(packageInfo));
       }
     }
     // sentry interface? we dont need anymore, only user
@@ -67,18 +69,35 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     if (event.getContexts().getDevice() == null) {
       event.getContexts().setDevice(getDevice());
     }
+    if (event.getContexts().getOperatingSystem() == null) {
+      event.getContexts().setOperatingSystem(getOperatingSystem());
+    }
+
+    // whats about Runtime, Browser, GPU object, do they make sense to Android?
 
     return event;
   }
 
-  @SuppressWarnings("deprecation")
   private String getVersionCode(PackageInfo packageInfo) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      return Long.toString(packageInfo.getLongVersionCode());
+    }
+    return getVersionCodeDep(packageInfo);
+  }
+
+  @SuppressWarnings("deprecation")
+  private String getVersionCodeDep(PackageInfo packageInfo) {
     return Integer.toString(packageInfo.versionCode);
   }
 
   @SuppressWarnings("deprecation")
   private String getAbi() {
     return Build.CPU_ABI;
+  }
+
+  @SuppressWarnings("deprecation")
+  private String getAbi2() {
+    return Build.CPU_ABI2;
   }
 
   /**
@@ -95,12 +114,17 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     }
   }
 
-  @SuppressWarnings("ObsoleteSdkInt")
+  @SuppressWarnings({"ObsoleteSdkInt", "deprecation"})
   private void setArchitectures(Device device) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      device.setArchitectures(Build.SUPPORTED_ABIS);
+      String[] supportedAbis = Build.SUPPORTED_ABIS;
+      device.setArchitecture(supportedAbis[0]);
+      device.setArchitectures(supportedAbis);
     } else {
-      device.setArchitecture(getAbi());
+      String[] supportedAbis = {getAbi(), getAbi2()};
+      device.setArchitecture(supportedAbis[0]);
+      device.setArchitectures(supportedAbis);
+      // we were not checking CPU_ABI2, but I've added to the list now
     }
   }
 
@@ -117,12 +141,13 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   // https://github.com/flutter/plugins/blob/master/packages/device_info/android/src/main/java/io/flutter/plugins/deviceinfo/DeviceInfoPlugin.java
   private Device getDevice() {
     Device device = new Device();
-    // name of what? maybe from the BluetoothAdapter
+    // name of what? maybe from the BluetoothAdapter or "device_name"
+    //    device.setName(Settings.Global.getString(context.getContentResolver(), "device_name"));
     device.setManufacturer(Build.MANUFACTURER);
     device.setBrand(Build.BRAND);
     device.setFamily(getFamily());
     device.setModel(Build.MODEL);
-    device.setModelId(Build.ID); // or DISPLAY which is user friendly id
+    device.setModelId(Build.ID);
     setArchitectures(device);
 
     Intent batteryIntent = getBatteryIntent();
@@ -140,7 +165,6 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       device.setFreeMemory(memInfo.availMem);
       device.setLowMemory(memInfo.lowMemory);
       // device.setUsableMemory(); // TODO: check that
-      // do we need threshold?
     }
 
     StatFs internalStorageStat = getInternalStorageStat();
@@ -155,7 +179,9 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
     DisplayMetrics displayMetrics = getDisplayMetrics();
     if (displayMetrics != null) {
-      device.setScreenResolution(getResolution(displayMetrics));
+      setScreenResolution(device, displayMetrics);
+      device.setWidthPixels(displayMetrics.widthPixels);
+      device.setHeightPixels(displayMetrics.heightPixels);
       device.setScreenDensity(displayMetrics.density);
       device.setScreenDpi(displayMetrics.densityDpi);
     }
@@ -164,6 +190,11 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     device.setTimezone(getTimeZone());
 
     return device;
+  }
+
+  @SuppressWarnings("deprecation")
+  private void setScreenResolution(Device device, DisplayMetrics displayMetrics) {
+    device.setScreenResolution(getResolution(displayMetrics));
   }
 
   private TimeZone getTimeZone() {
@@ -178,15 +209,11 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   private Date getBootTime() {
-    // should it be a Date?
-    return new Date(
-        System.currentTimeMillis()
-            - SystemClock.elapsedRealtime()
-            + new Date().getTime()); // check Date().getTime() and if its UTC
+    // if user changes time, will give a wrong answer, consider ACTION_TIME_CHANGED
+    return new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
   }
 
   private String getResolution(DisplayMetrics displayMetrics) {
-    // do we need to calculate the density in here?
     int largestSide = Math.max(displayMetrics.widthPixels, displayMetrics.heightPixels);
     int smallestSide = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
     return largestSide + "x" + smallestSide;
@@ -248,9 +275,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
         return null;
       }
 
-      // CHECKSTYLE.OFF: MagicNumber
       float percentMultiplier = 100.0f;
-      // CHECKSTYLE.ON: MagicNumber
 
       return ((float) level / (float) scale) * percentMultiplier;
     } catch (Exception e) {
@@ -446,14 +471,23 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   private StatFs getInternalStorageStat() {
-    File path = Environment.getDataDirectory();
+    File path = Environment.getDataDirectory(); // /data
     return new StatFs(path.getPath());
   }
 
   private StatFs getExternalStorageStat() {
+    // might need READ_EXTERNAL_STORAGE permission
+
     if (!isExternalStorageMounted()) {
-      File path = context.getExternalFilesDir(null);
-      if (path != null) {
+      // check in real device and see if its compatible with the old way of doing it
+      File path = getExternalStorageDep(); // /storage/sdcard0 or /storage/emulated/0
+
+      //      if (path == null || !path.canRead()) {
+      //        context.getExternalFilesDir(null); // /storage/sdcard0/Android/data/package/files or
+      // /storage/emulated/0/Android/data/io.sentry.sample/files
+      //      }
+
+      if (path != null) { // && path.canRead()) { canRead() will read return false
         return new StatFs(path.getPath());
       }
       options.getLogger().log(SentryLevel.INFO, "Not possible to read external files directory");
@@ -461,6 +495,11 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     }
     options.getLogger().log(SentryLevel.INFO, "External storage is not mounted or emulated.");
     return null;
+  }
+
+  @SuppressWarnings("deprecation")
+  private File getExternalStorageDep() {
+    return Environment.getExternalStorageDirectory();
   }
 
   /**
@@ -516,5 +555,146 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       options.getLogger().log(SentryLevel.ERROR, "Error getting DisplayMetrics.", e);
       return null;
     }
+  }
+
+  private OperatingSystem getOperatingSystem() {
+    OperatingSystem os = new OperatingSystem();
+    os.setName("Android");
+    os.setVersion(Build.VERSION.RELEASE);
+    os.setBuild(Build.DISPLAY);
+    os.setKernelVersion(getKernelVersion());
+    os.setRooted(isRooted());
+    //    os.setRawDescription("");  whats that? maybe the const of VERSION_CODES?
+
+    return os;
+  }
+
+  private App getApp(PackageInfo packageInfo) {
+    App app = new App();
+    app.setIdentifier(packageInfo.packageName);
+    app.setStartTime(
+        DateUtils
+            .getCurrentDateTime()); // is it App. start? this was not supposed to be a lazy class?
+    //    app.setHash(); whats that?
+    //    app.setBuildType(); whats that? might be possible with BuildConfig.BUILD_VARIANT but Apps
+    // side, also for flavor
+    app.setName(getApplicationName());
+    app.setVersion(packageInfo.versionName);
+    app.setBuild(getVersionCode(packageInfo));
+
+    // App name and starttime don't depend on packageInfo, should we move outside of the packageInfo
+    // NPE check like the old the SDK?
+
+    return app;
+  }
+
+  /**
+   * Get the device's current kernel version, as a string. Attempts to read /proc/version, and falls
+   * back to the 'os.version' System Property.
+   *
+   * @return the device's current kernel version, as a string
+   */
+  private String getKernelVersion() {
+    // its possible to try to execute 'uname' and parse it or also another unix commands or even
+    // looking for well known root installed apps
+    String errorMsg = "Exception while attempting to read kernel information";
+    String defaultVersion = System.getProperty("os.version");
+
+    BufferedReader br = null;
+    try {
+      File file = new File("/proc/version");
+      if (!file.canRead()) {
+        return defaultVersion;
+      }
+
+      br = new BufferedReader(new FileReader(file));
+      return br.readLine();
+    } catch (Exception e) {
+      options.getLogger().log(SentryLevel.ERROR, errorMsg, e);
+    } finally {
+      if (br != null) {
+        try {
+          br.close();
+        } catch (IOException ioe) {
+          options.getLogger().log(SentryLevel.ERROR, errorMsg, ioe);
+        }
+      }
+    }
+
+    return defaultVersion;
+  }
+
+  /**
+   * Attempt to discover if this device is currently rooted. From:
+   * https://stackoverflow.com/questions/1101380/determine-if-running-on-a-rooted-device
+   *
+   * @return true if heuristics show the device is probably rooted, otherwise false
+   */
+  private Boolean isRooted() {
+    // we could get some inspiration from https://github.com/scottyab/rootbeer
+    if (Build.TAGS != null && Build.TAGS.contains("test-keys")) {
+      return true;
+    }
+
+    String[] probableRootPaths = {
+      "/data/local/bin/su",
+      "/data/local/su",
+      "/data/local/xbin/su",
+      "/sbin/su",
+      "/su/bin",
+      "/su/bin/su",
+      "/system/app/SuperSU",
+      "/system/app/SuperSU.apk",
+      "/system/app/Superuser",
+      "/system/app/Superuser.apk",
+      "/system/bin/failsafe/su",
+      "/system/bin/su",
+      "/system/sd/xbin/su",
+      "/system/xbin/daemonsu",
+      "/system/xbin/su"
+    };
+
+    for (String probableRootPath : probableRootPaths) {
+      try {
+        if (new File(probableRootPath).exists()) {
+          return true;
+        }
+      } catch (Exception e) {
+        options
+            .getLogger()
+            .log(
+                SentryLevel.ERROR,
+                "Exception while attempting to detect whether the device is rooted",
+                e);
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Get the human-facing Application name.
+   *
+   * @return Application name
+   */
+  private String getApplicationName() {
+    // possible to get also from
+    // context.getPackageManager().getApplicationLabel(context.getPackageManager().getApplicationInfo(context.getPackageName(), 0))
+    // should we fallback?
+    try {
+      ApplicationInfo applicationInfo = context.getApplicationInfo();
+      int stringId = applicationInfo.labelRes;
+      if (stringId == 0) {
+        if (applicationInfo.nonLocalizedLabel != null) {
+          return applicationInfo.nonLocalizedLabel.toString();
+        }
+      } else {
+        return context.getString(stringId);
+      }
+    } catch (Exception e) {
+      options.getLogger().log(SentryLevel.ERROR, "Error getting application name.", e);
+    }
+
+    return null;
   }
 }
