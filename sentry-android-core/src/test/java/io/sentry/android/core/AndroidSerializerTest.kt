@@ -134,7 +134,7 @@ class AndroidSerializerTest {
         sentryEvent.eventId = null
         sentryEvent.timestamp = null
         val device = Device()
-        device.timezone = TimeZone.getTimeZone("Europe/Vienna") // do we expect like this?
+        device.timezone = TimeZone.getTimeZone("Europe/Vienna")
         val contexts = Contexts()
         contexts.device = device
         sentryEvent.contexts = contexts
@@ -157,6 +157,39 @@ class AndroidSerializerTest {
         val actual = serializer.deserializeEvent(jsonEvent)
 
         assertEquals("Europe/Vienna", (actual.contexts["device"] as LinkedTreeMap<*, *>)["timezone"]) // TODO: fix it when casting is being done proerly
+    }
+
+    @Test
+    fun `when serializing a DeviceOrientation, it should become an orientation string`() {
+        val sentryEvent = generateEmptySentryEvent()
+        sentryEvent.eventId = null
+        sentryEvent.timestamp = null
+        val device = Device()
+        device.orientation = Device.DeviceOrientation.LANDSCAPE
+        val contexts = Contexts()
+        contexts.device = device
+        sentryEvent.contexts = contexts
+
+        val expected = "{\"contexts\":{\"device\":{\"orientation\":\"landscape\"}}}"
+
+        val actual = serializer.serialize(sentryEvent)
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `when deserializing an orientation string, it should become a DeviceOrientation`() {
+        val sentryEvent = generateEmptySentryEvent()
+        sentryEvent.eventId = null
+        sentryEvent.timestamp = null
+
+        val jsonEvent = "{\"contexts\":{\"device\":{\"orientation\":\"landscape\"}}}"
+
+        val actual = serializer.deserializeEvent(jsonEvent)
+
+        val orientation = (actual.contexts["device"] as LinkedTreeMap<*, *>)["orientation"] as String // TODO: fix it when casting is being done proerly
+
+        assertEquals(Device.DeviceOrientation.LANDSCAPE, Device.DeviceOrientation.valueOf(orientation.toUpperCase())) // here too
     }
 
     private fun generateEmptySentryEvent(): SentryEvent {

@@ -285,18 +285,7 @@ public class Device {
   }
 
   public enum DeviceOrientation {
-    PORTRAIT("portrait"),
-    LANDSCAPE("landscape");
-
-    private String value;
-
-    DeviceOrientation(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return value;
-    }
+    PORTRAIT,
+    LANDSCAPE
   }
 }

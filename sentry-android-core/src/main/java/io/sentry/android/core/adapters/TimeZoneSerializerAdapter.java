@@ -10,6 +10,6 @@ import java.util.TimeZone;
 public class TimeZoneSerializerAdapter implements JsonSerializer<TimeZone> {
   @Override
   public JsonElement serialize(TimeZone src, Type typeOfSrc, JsonSerializationContext context) {
-    return src == null ? null : new JsonPrimitive(src.getID()); // is it ID?
+    return src == null ? null : new JsonPrimitive(src.getID());
   }
 }
