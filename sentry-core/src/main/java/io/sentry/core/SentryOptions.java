@@ -84,8 +84,7 @@ public class SentryOptions {
     this.beforeSend = beforeSend;
   }
 
-  public interface BeforeSecondCallback
-  {
+  public interface BeforeSecondCallback {
     SentryEvent execute(SentryEvent event);
   }
 }
