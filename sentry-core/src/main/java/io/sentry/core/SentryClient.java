@@ -78,6 +78,15 @@ public class SentryClient implements ISentryClient {
   public SentryId captureEvent(SentryEvent event) {
     log(options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
+    SentryOptions.BeforeSecondCallback beforeSend = options.getBeforeSend();
+    if (beforeSend != null) {
+      event = beforeSend.execute(event);
+      if (event == null) {
+        // Event dropped by the beforeSend callback
+        return SentryId.EMPTY_ID;
+      }
+    }
+
     try {
       connection.send(event);
     } catch (IOException e) {

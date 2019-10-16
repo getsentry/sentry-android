@@ -59,4 +59,16 @@ class SentryClientTest {
         sut.close()
         assertFalse(sut.isEnabled)
     }
+
+    @Test
+    fun `when beforeSend is set, callback is invoked`() {
+        var invoked = false;
+        fixture.sentryOptions.setBeforeSend { e ->
+            invoked = true
+            e
+        }
+        val sut = fixture.getSut()
+        sut.captureEvent(SentryEvent())
+        assertTrue(invoked)
+    }
 }
