@@ -20,7 +20,7 @@ public class SentryClient implements ISentryClient {
   public SentryId captureEvent(SentryEvent event) {
     ILogger logger = options.getLogger();
     if (logger != null) {
-      logger.log(SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
+      logger.log(SentryLevel.INFO, "Capturing event: %s", event.getEventId());
     }
     return event.getEventId();
   }
@@ -42,7 +42,7 @@ public class SentryClient implements ISentryClient {
   public void close() {
     ILogger logger = options.getLogger();
     if (logger != null) {
-      logger.log(SentryLevel.INFO, "Closing SDK.");
+      logger.log(SentryLevel.DEBUG, "Closing SDK.");
     }
     // TODO: Flush events
     isEnabled = false;
