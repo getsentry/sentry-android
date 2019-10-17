@@ -20,6 +20,10 @@ public class SentryClient implements ISentryClient {
     return isEnabled;
   }
 
+  public SentryClient(SentryOptions options) {
+    this(options, null);
+  }
+
   public SentryClient(SentryOptions options, @Nullable AsyncConnection connection) {
     this.options = options;
     this.isEnabled = true;
