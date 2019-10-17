@@ -58,9 +58,11 @@ public class EnvelopeReader {
             break;
           }
         }
+
         SentryEnvelopeItemHeader itemHeader =
             serializer.deserializeEnvelopeItemHeader(
                 envelopeBytes, startHeaderOffset, envelopeHeaderLength);
+
         headerEndOffset = startHeaderOffset + envelopeHeaderLength + 1; // \n
         payloadEndOffset = headerEndOffset + itemHeader.getLength();
         byte[] envelopeItemBytes =
@@ -68,7 +70,11 @@ public class EnvelopeReader {
         SentryEnvelopeItem item = new SentryEnvelopeItem(itemHeader, envelopeItemBytes);
         items.add(item);
         startHeaderOffset = payloadEndOffset + 1;
-      } while (startHeaderOffset < envelopeBytes.length);
+        // TODO: test
+        if (startHeaderOffset < envelopeBytes.length || envelopeBytes[startHeaderOffset] != '\n') {
+          break;
+        }
+      } while (true);
 
       return new SentryEnvelope(header, items);
     } catch (Exception e) {

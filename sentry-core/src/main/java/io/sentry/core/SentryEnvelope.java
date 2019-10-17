@@ -12,6 +12,10 @@ public class SentryEnvelope {
     return items;
   }
 
+  public SentryEnvelopeHeader getHeader() {
+    return header;
+  }
+
   public SentryEnvelope(SentryEnvelopeHeader header, Iterable<SentryEnvelopeItem> items) {
     this.header = header;
     this.items = items;
@@ -20,6 +24,11 @@ public class SentryEnvelope {
   public SentryEnvelope(
       SentryId sentryId, @Nullable String auth, Iterable<SentryEnvelopeItem> items) {
     header = new SentryEnvelopeHeader(sentryId, auth);
+    this.items = items;
+  }
+
+  public SentryEnvelope(SentryId sentryId, Iterable<SentryEnvelopeItem> items) {
+    header = new SentryEnvelopeHeader(sentryId, null);
     this.items = items;
   }
 }

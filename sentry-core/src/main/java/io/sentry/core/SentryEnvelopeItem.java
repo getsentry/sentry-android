@@ -9,4 +9,12 @@ public class SentryEnvelopeItem {
     this.header = header;
     this.data = data;
   }
+
+  public byte[] getData() {
+    return data;
+  }
+
+  public SentryEnvelopeItemHeader getHeader() {
+    return header;
+  }
 }
