@@ -10,10 +10,13 @@ public class SentryOptions {
   private List<EventProcessor> eventProcessors = new ArrayList<>();
 
   private String dsn;
+  private long shutdownTimeoutMills;
   private boolean debug;
   private @NonNull ILogger logger = NoOpLogger.getInstance();
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
   private ISerializer serializer;
+  private String sentryClientName;
+  private BeforeSecondCallback beforeSend;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -64,5 +67,33 @@ public class SentryOptions {
 
   public void setSerializer(ISerializer serializer) {
     this.serializer = serializer;
+  }
+
+  public long getShutdownTimeout() {
+    return shutdownTimeoutMills;
+  }
+
+  public void setShutdownTimeout(long shutdownTimeoutMills) {
+    this.shutdownTimeoutMills = shutdownTimeoutMills;
+  }
+
+  public String getSentryClientName() {
+    return sentryClientName;
+  }
+
+  public void setSentryClientName(String sentryClientName) {
+    this.sentryClientName = sentryClientName;
+  }
+
+  public BeforeSecondCallback getBeforeSend() {
+    return beforeSend;
+  }
+
+  public void setBeforeSend(BeforeSecondCallback beforeSend) {
+    this.beforeSend = beforeSend;
+  }
+
+  public interface BeforeSecondCallback {
+    SentryEvent execute(SentryEvent event);
   }
 }

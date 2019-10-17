@@ -6,6 +6,7 @@ import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import io.sentry.core.protocol.SentryId
+import java.io.Writer
 import java.nio.charset.StandardCharsets
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -22,16 +23,16 @@ class SentryEnvelopeTest {
     }
 
     class TestSerializer : ISerializer {
+        override fun serialize(event: SentryEvent?, writer: Writer?) {
+            TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        }
+
         private val gson: Gson = GsonBuilder()
             .registerTypeAdapter(SentryEnvelopeHeader::class.java, SentryEnvelopeHeaderAdapter())
             .registerTypeAdapter(SentryEnvelopeItemHeader::class.java, SentryEnvelopeItemHeaderAdapter())
             .create()
 
         override fun deserializeEvent(envelope: String?): SentryEvent {
-            TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun serialize(event: SentryEvent?): String {
             TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
         }
 
