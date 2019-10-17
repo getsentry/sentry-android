@@ -1,5 +1,7 @@
 package io.sentry.android.core;
 
+import static io.sentry.core.ILogger.log;
+
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -22,23 +24,25 @@ class ManifestMetadataReader {
 
       if (metadata != null) {
         boolean debug = metadata.getBoolean(DEBUG_KEY, options.isDebug());
-        options.getLogger().log(SentryLevel.DEBUG, "debug read: %s", debug);
+        log(options.getLogger(), SentryLevel.DEBUG, "debug read: %s", debug);
         options.setDebug(debug);
 
         String dsn = metadata.getString(DSN_KEY, null);
         if (dsn != null) {
-          options.getLogger().log(SentryLevel.DEBUG, "DSN read: %s", dsn);
+          log(options.getLogger(), SentryLevel.DEBUG, "DSN read: %s", dsn);
           options.setDsn(dsn);
         }
       }
-      options
-          .getLogger()
-          .log(SentryLevel.INFO, "Retrieving configuration from AndroidManifest.xml");
+      log(
+          options.getLogger(),
+          SentryLevel.INFO,
+          "Retrieving configuration from AndroidManifest.xml");
     } catch (Exception e) {
-      options
-          .getLogger()
-          .log(
-              SentryLevel.ERROR, "Failed to read configuration from android manifest metadata.", e);
+      log(
+          options.getLogger(),
+          SentryLevel.ERROR,
+          "Failed to read configuration from android manifest metadata.",
+          e);
     }
   }
 
@@ -50,11 +54,11 @@ class ManifestMetadataReader {
       Bundle metadata = getMetadata(context);
       if (metadata != null) {
         autoInit = metadata.getBoolean(AUTO_INIT, true);
-        logger.log(SentryLevel.DEBUG, "Auto-init: %s", autoInit);
+        log(logger, SentryLevel.DEBUG, "Auto-init: %s", autoInit);
       }
-      logger.log(SentryLevel.INFO, "Retrieving auto-init from AndroidManifest.xml");
+      log(logger, SentryLevel.INFO, "Retrieving auto-init from AndroidManifest.xml");
     } catch (Exception e) {
-      logger.log(SentryLevel.ERROR, "Failed to read auto-init from android manifest metadata.", e);
+      log(logger, SentryLevel.ERROR, "Failed to read auto-init from android manifest metadata.", e);
     }
     return autoInit;
   }
