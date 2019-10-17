@@ -36,7 +36,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   public SentryEvent process(SentryEvent event) {
     if (event.getSdkVersion() == null) {
       SdkVersion sdkVersion = new SdkVersion();
-      sdkVersion.setName("android");
+      sdkVersion.setName("sentry-android");
       // version, don't we have getRelease() for that?
       // packages, which packages?
 
