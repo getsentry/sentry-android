@@ -3,9 +3,9 @@ package io.sentry.core;
 public class SentryEnvelopeItem {
   private final SentryEnvelopeItemHeader header;
   // TODO: Can we have a slice or a reader here instead?
-  private final Byte[] data;
+  private final byte[] data;
 
-  public SentryEnvelopeItem(SentryEnvelopeItemHeader header, Byte[] data) {
+  public SentryEnvelopeItem(SentryEnvelopeItemHeader header, byte[] data) {
     this.header = header;
     this.data = data;
   }

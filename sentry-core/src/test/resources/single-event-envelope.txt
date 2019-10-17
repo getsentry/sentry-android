@@ -1,0 +1,6 @@
+{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc"}
+{"type":"event","length":107}
+{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc", "sdk": {"name":"sentry-android","version":"2.0.0-SNAPSHOT"}
+{"type":"attachment","length":63,"filename":"attachment.txt","content_type":"text/plain"}
+some plain text attachment file which include two line breaks
+

@@ -3,9 +3,7 @@ package io.sentry.android.core;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.sentry.core.ISerializer;
-import io.sentry.core.SentryEnvelope;
-import io.sentry.core.SentryEvent;
+import io.sentry.core.*;
 import io.sentry.core.protocol.SentryId;
 import java.util.Date;
 
@@ -22,11 +20,6 @@ public class AndroidSerializer implements ISerializer {
           .create();
 
   @Override
-  public SentryEnvelope deserializeEnvelope(String envelope) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public SentryEvent deserializeEvent(String envelope) {
     return gson.fromJson(envelope, SentryEvent.class);
   }
@@ -34,5 +27,18 @@ public class AndroidSerializer implements ISerializer {
   @Override
   public String serialize(SentryEvent event) {
     return gson.toJson(event);
+  }
+
+  @Override
+  public SentryEnvelopeHeader deserializeEnvelopeHeader(byte[] buffer, int offset, int length) {
+    // TODO
+    return null;
+  }
+
+  @Override
+  public SentryEnvelopeItemHeader deserializeEnvelopeItemHeader(
+      byte[] buffer, int offset, int length) {
+    // TODO
+    return null;
   }
 }

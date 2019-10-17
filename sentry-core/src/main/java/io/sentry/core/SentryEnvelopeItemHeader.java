@@ -4,13 +4,13 @@ public final class SentryEnvelopeItemHeader {
   private final String contentType;
   private final String fileName;
   private final String type;
-  private final long length;
+  private final int length;
 
   public String getType() {
     return type;
   }
 
-  public long getLength() {
+  public int getLength() {
     return length;
   }
 
@@ -22,7 +22,7 @@ public final class SentryEnvelopeItemHeader {
     return fileName;
   }
 
-  public SentryEnvelopeItemHeader(String type, long length, String contentType, String fileName) {
+  public SentryEnvelopeItemHeader(String type, int length, String contentType, String fileName) {
     this.type = type;
     this.length = length;
     this.contentType = contentType;
