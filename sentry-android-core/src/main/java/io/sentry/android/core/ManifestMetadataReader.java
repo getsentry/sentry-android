@@ -21,16 +21,19 @@ class ManifestMetadataReader {
       Bundle metadata = getMetadata(context);
 
       if (metadata != null) {
-        options.setDebug(metadata.getBoolean(DEBUG_KEY, options.isDebug()));
+        boolean debug = metadata.getBoolean(DEBUG_KEY, options.isDebug());
+        options.getLogger().log(SentryLevel.DEBUG, "debug read: %s", debug);
+        options.setDebug(debug);
+
         String dsn = metadata.getString(DSN_KEY, null);
         if (dsn != null) {
-          options.getLogger().log(SentryLevel.INFO, "DSN read: %s", dsn);
+          options.getLogger().log(SentryLevel.DEBUG, "DSN read: %s", dsn);
           options.setDsn(dsn);
         }
       }
       options
           .getLogger()
-          .log(SentryLevel.DEBUG, "Retrieving configuration from AndroidManifest.xml");
+          .log(SentryLevel.INFO, "Retrieving configuration from AndroidManifest.xml");
     } catch (Exception e) {
       options
           .getLogger()
@@ -49,6 +52,7 @@ class ManifestMetadataReader {
         autoInit = metadata.getBoolean(AUTO_INIT, true);
         logger.log(SentryLevel.DEBUG, "Auto-init: %s", autoInit);
       }
+      logger.log(SentryLevel.INFO, "Retrieving auto-init from AndroidManifest.xml");
     } catch (Exception e) {
       logger.log(SentryLevel.ERROR, "Failed to read auto-init from android manifest metadata.", e);
     }
