@@ -2,6 +2,7 @@ package io.sentry.android.core;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.net.ConnectivityManager;
 import android.os.*;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import io.sentry.android.core.util.Permissions;
 import io.sentry.core.*;
 import io.sentry.core.protocol.*;
 import io.sentry.core.util.Objects;
@@ -34,14 +36,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
   @Override
   public SentryEvent process(SentryEvent event) {
-    if (event.getSdkVersion() == null) {
-      SdkVersion sdkVersion = new SdkVersion();
-      sdkVersion.setName("sentry-android");
-      // version, don't we have getRelease() for that?
-      // packages, which packages?
+    setSdkVersion(event);
 
-      event.setSdkVersion(sdkVersion);
-    }
     if (event.getUser() == null) {
       event.setUser(getUser());
     }
@@ -58,10 +54,9 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
         event.getContexts().setApp(getApp(packageInfo));
       }
     }
-    // sentry interface? we dont need anymore, only user
+    setAppExtras(event);
 
-    // proguard uuids? check if we need sentry-debug-meta.properties
-    //
+    // TODO: proguard UUIDs and debug-meta
 
     if (event.getContexts().getDevice() == null) {
       event.getContexts().setDevice(getDevice());
@@ -73,6 +68,31 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     // whats about Runtime, Browser, GPU object, do they make sense to Android?
 
     return event;
+  }
+
+  private void setAppExtras(SentryEvent event) {
+    App app = event.getContexts().getApp();
+    if (event.getContexts().getApp() == null) {
+      app = new App();
+    }
+    app.setAppName(getApplicationName());
+    app.setAppStartTime(
+        DateUtils.getCurrentDateTime()); // TODO: this is App. start, so should be a static field
+    // together with Sentry.init()
+  }
+
+  private void setSdkVersion(SentryEvent event) {
+    SdkVersion sdkVersion = event.getSdkVersion();
+    if (sdkVersion == null) {
+      sdkVersion = new SdkVersion();
+    }
+    sdkVersion.setName("sentry-android");
+    String version =
+        Integer.toString(BuildConfig.VERSION_CODE); // do we need the version of each package?
+    sdkVersion.setVersion(version); // TODO: check BuildConfig
+    sdkVersion.addPackage("sentry-core", version);
+    sdkVersion.addPackage("sentry-android-core", version);
+    // sentry-android-ndk, integrations...
   }
 
   private String getVersionCode(PackageInfo packageInfo) {
@@ -115,12 +135,12 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   private void setArchitectures(Device device) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       String[] supportedAbis = Build.SUPPORTED_ABIS;
-      device.setArchitecture(supportedAbis[0]);
-      device.setArchitectures(supportedAbis);
+      device.setArch(supportedAbis[0]);
+      device.setArchs(supportedAbis);
     } else {
       String[] supportedAbis = {getAbi(), getAbi2()};
-      device.setArchitecture(supportedAbis[0]);
-      device.setArchitectures(supportedAbis);
+      device.setArch(supportedAbis[0]);
+      device.setArchs(supportedAbis);
       // we were not checking CPU_ABI2, but I've added to the list now
     }
   }
@@ -164,6 +184,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       // device.setUsableMemory(); // TODO: check that
     }
 
+    // this way of getting the size of storage might be problematic for storages bigger than 2GB
+    // check the use of https://developer.android.com/reference/java/io/File.html#getFreeSpace%28%29
     StatFs internalStorageStat = getInternalStorageStat();
     device.setStorageSize(getTotalInternalStorage(internalStorageStat));
     device.setFreeStorage(getUnusedInternalStorage(internalStorageStat));
@@ -177,8 +199,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     DisplayMetrics displayMetrics = getDisplayMetrics();
     if (displayMetrics != null) {
       setScreenResolution(device, displayMetrics);
-      device.setWidthPixels(displayMetrics.widthPixels);
-      device.setHeightPixels(displayMetrics.heightPixels);
+      device.setScreenWidthPixels(displayMetrics.widthPixels);
+      device.setScreenHeightPixels(displayMetrics.heightPixels);
       device.setScreenDensity(displayMetrics.density);
       device.setScreenDpi(displayMetrics.densityDpi);
     }
@@ -310,7 +332,6 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       return null;
     }
     return getActiveNetworkInfo(connectivityManager);
-    // does the connection type matters? wifi, lte...
     // do we care about VPNs? getActiveNetworkInfo might return null if VPN doesn't specify its
     // underlying network
 
@@ -318,8 +339,13 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     // connectivityManager.registerDefaultNetworkCallback(...)
   }
 
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings({"deprecation", "MissingPermission"})
   private Boolean getActiveNetworkInfo(ConnectivityManager connectivityManager) {
+    if (!Permissions.hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE)) {
+      log(SentryLevel.INFO, "No permission (ACCESS_NETWORK_STATE) to check network status.");
+      return null;
+    }
+
     // do not import class or deprecation lint will throw
     android.net.NetworkInfo activeNetwork =
         connectivityManager.getActiveNetworkInfo(); // it requires ACCESS_NETWORK_STATE
@@ -460,16 +486,11 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   private StatFs getExternalStorageStat() {
-    // might need READ_EXTERNAL_STORAGE permission
-
     if (!isExternalStorageMounted()) {
       // check in real device and see if its compatible with the old way of doing it
       File path = getExternalStorageDep(); // /storage/sdcard0 or /storage/emulated/0
-
-      //      if (path == null || !path.canRead()) {
-      //        context.getExternalFilesDir(null); // /storage/sdcard0/Android/data/package/files or
+      // context.getExternalFilesDir(null); /storage/sdcard0/Android/data/package/files or
       // /storage/emulated/0/Android/data/io.sentry.sample/files
-      //      }
 
       if (path != null) { // && path.canRead()) { canRead() will read return false
         return new StatFs(path.getPath());
@@ -546,26 +567,19 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     os.setBuild(Build.DISPLAY);
     os.setKernelVersion(getKernelVersion());
     os.setRooted(isRooted());
-    //    os.setRawDescription("");  whats that? maybe the const of VERSION_CODES?
 
     return os;
   }
 
   private App getApp(PackageInfo packageInfo) {
     App app = new App();
-    app.setIdentifier(packageInfo.packageName);
-    app.setStartTime(
-        DateUtils
-            .getCurrentDateTime()); // is it App. start? this was not supposed to be a lazy class?
+    app.setAppIdentifier(packageInfo.packageName);
+
     //    app.setHash(); whats that?
     //    app.setBuildType(); whats that? might be possible with BuildConfig.BUILD_VARIANT but Apps
     // side, also for flavor
-    app.setName(getApplicationName());
-    app.setVersion(packageInfo.versionName);
-    app.setBuild(getVersionCode(packageInfo));
-
-    // App name and starttime don't depend on packageInfo, should we move outside of the packageInfo
-    // NPE check like the old the SDK?
+    app.setAppVersion(packageInfo.versionName);
+    app.setAppBuild(getVersionCode(packageInfo));
 
     return app;
   }

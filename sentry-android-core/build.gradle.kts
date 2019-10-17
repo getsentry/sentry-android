@@ -73,11 +73,11 @@ android {
     }
 
     // replace with https://issuetracker.google.com/issues/72050365 once released.
-    libraryVariants.all {
-        generateBuildConfigProvider?.configure {
-            enabled = false
-        }
-    }
+//    libraryVariants.all {
+//        generateBuildConfigProvider?.configure {
+//            enabled = false
+//        }
+//    }
 }
 
 dependencies {

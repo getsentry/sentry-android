@@ -13,12 +13,12 @@ public class Device {
   private String model;
   private String modelId;
 
-  @Deprecated private String architecture; // it was only arch, did we change it?
+  @Deprecated private String arch;
 
-  private String[] architectures;
+  private String[] archs;
   private Float batteryLevel;
-  private Boolean isCharging; // charging
-  private Boolean isOnline; // online
+  private Boolean charging;
+  private Boolean online;
   private DeviceOrientation orientation;
   private Boolean simulator;
   private Long memorySize;
@@ -32,8 +32,8 @@ public class Device {
 
   @Deprecated private String screenResolution;
 
-  private Integer widthPixels;
-  private Integer heightPixels;
+  private Integer screenWidthPixels;
+  private Integer screenHeightPixels;
 
   private Float screenDensity;
   private Integer screenDpi;
@@ -89,21 +89,21 @@ public class Device {
   }
 
   /**
-   * @deprecated use {@link #getArchitectures} instead.
+   * @deprecated use {@link #getArchs} instead.
    * @return device architecture
    */
   @Deprecated
-  public String getArchitecture() {
-    return architecture;
+  public String getArch() {
+    return arch;
   }
 
   /**
-   * @deprecated use {@link #setArchitectures} instead.
-   * @param architecture device architecture
+   * @deprecated use {@link #setArchs} instead.
+   * @param arch device architecture
    */
   @Deprecated
-  public void setArchitecture(String architecture) {
-    this.architecture = architecture;
+  public void setArch(String arch) {
+    this.arch = arch;
   }
 
   public Float getBatteryLevel() {
@@ -114,20 +114,20 @@ public class Device {
     this.batteryLevel = batteryLevel;
   }
 
-  public Boolean getCharging() {
-    return isCharging;
+  public Boolean isCharging() {
+    return charging;
   }
 
   public void setCharging(Boolean charging) {
-    isCharging = charging;
+    this.charging = charging;
   }
 
-  public Boolean getOnline() {
-    return isOnline;
+  public Boolean isOnline() {
+    return online;
   }
 
   public void setOnline(Boolean online) {
-    isOnline = online;
+    this.online = online;
   }
 
   public DeviceOrientation getOrientation() {
@@ -138,7 +138,7 @@ public class Device {
     this.orientation = orientation;
   }
 
-  public Boolean getSimulator() {
+  public Boolean isSimulator() {
     return simulator;
   }
 
@@ -170,7 +170,7 @@ public class Device {
     this.usableMemory = usableMemory;
   }
 
-  public Boolean getLowMemory() {
+  public Boolean isLowMemory() {
     return lowMemory;
   }
 
@@ -211,7 +211,7 @@ public class Device {
   }
 
   /**
-   * @deprecated use {@link #getWidthPixels, #getHeightPixels} instead.
+   * @deprecated use {@link #getScreenWidthPixels , #getScreenHeightPixels} instead.
    * @return screen resolution largest + smallest
    */
   @Deprecated
@@ -220,7 +220,7 @@ public class Device {
   }
 
   /**
-   * @deprecated use {@link #setWidthPixels} , #getHeightPixels} instead.
+   * @deprecated use {@link #setScreenWidthPixels} , #getScreenHeightPixels} instead.
    * @param screenResolution screen resolution largest + smallest
    */
   @Deprecated
@@ -260,28 +260,28 @@ public class Device {
     this.timezone = timezone;
   }
 
-  public String[] getArchitectures() {
-    return architectures;
+  public String[] getArchs() {
+    return archs;
   }
 
-  public void setArchitectures(String[] architectures) {
-    this.architectures = architectures;
+  public void setArchs(String[] archs) {
+    this.archs = archs;
   }
 
-  public Integer getWidthPixels() {
-    return widthPixels;
+  public Integer getScreenWidthPixels() {
+    return screenWidthPixels;
   }
 
-  public void setWidthPixels(Integer widthPixels) {
-    this.widthPixels = widthPixels;
+  public void setScreenWidthPixels(Integer screenWidthPixels) {
+    this.screenWidthPixels = screenWidthPixels;
   }
 
-  public Integer getHeightPixels() {
-    return heightPixels;
+  public Integer getScreenHeightPixels() {
+    return screenHeightPixels;
   }
 
-  public void setHeightPixels(Integer heightPixels) {
-    this.heightPixels = heightPixels;
+  public void setScreenHeightPixels(Integer screenHeightPixels) {
+    this.screenHeightPixels = screenHeightPixels;
   }
 
   public enum DeviceOrientation {

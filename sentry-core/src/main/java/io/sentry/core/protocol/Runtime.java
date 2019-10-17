@@ -6,7 +6,8 @@ public class Runtime {
   private String name;
   private String version;
   private String rawDescription;
-  private String build;
+  private String build; // this is not in the documentation
+  // https://docs.sentry.io/development/sdk-dev/event-payloads/contexts/#runtime-context
 
   public String getName() {
     return name;
