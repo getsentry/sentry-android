@@ -1,14 +1,15 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-import java.util.ArrayDeque;
+import io.sentry.core.util.Nullable;
 import java.util.Deque;
+import java.util.concurrent.LinkedBlockingDeque;
 
-public class Hub implements IHub {
+public class Hub implements IHub, Cloneable {
 
   private static final class StackItem {
-    ISentryClient client;
-    Scope scope;
+    private volatile ISentryClient client;
+    private volatile Scope scope;
 
     public StackItem(ISentryClient client, Scope scope) {
       this.client = client;
@@ -19,17 +20,25 @@ public class Hub implements IHub {
   private volatile SentryId lastEventId;
   private final SentryOptions options;
   private volatile boolean isEnabled;
-  private final Deque<StackItem> stack = new ArrayDeque<>();
+  private final Deque<StackItem> stack = new LinkedBlockingDeque<>();
 
   public Hub(SentryOptions options) {
-    this.options = options;
+    this(options, createRootStackItem(options));
+  }
 
+  private Hub(SentryOptions options, @Nullable StackItem rootStackItem) {
+    this.options = options;
+    if (rootStackItem != null) {
+      this.stack.push(rootStackItem);
+    }
+    this.isEnabled = true;
+  }
+
+  static StackItem createRootStackItem(SentryOptions options) {
     Scope scope = new Scope();
     ISentryClient client = new SentryClient(options);
     StackItem item = new StackItem(client, scope);
-    stack.push(item);
-
-    isEnabled = true;
+    return item;
   }
 
   @Override
@@ -127,12 +136,16 @@ public class Hub implements IHub {
   @Override
   public void flush(long timeoutMills) {
     StackItem item = stack.peek();
-    item.client.flush(options.getShutdownTimeout());
+    item.client.flush(timeoutMills);
   }
 
   @Override
   public IHub clone() {
-    // TODO: Clone hub
-    return new Hub(options);
+    // Clone will be invoked in parallel
+    Hub clone = new Hub(this.options, null);
+    for (StackItem item : this.stack) {
+      clone.stack.push(item);
+    }
+    return clone;
   }
 }

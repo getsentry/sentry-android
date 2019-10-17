@@ -2,7 +2,6 @@ package io.sentry.core;
 
 import static io.sentry.core.ILogger.log;
 
-import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.transport.AsyncConnection;
 import io.sentry.core.transport.HttpTransport;
@@ -95,30 +94,6 @@ public class SentryClient implements ISentryClient {
   @Override
   public SentryId captureEvent(SentryEvent event) {
     return captureEvent(event, null);
-  }
-
-  @Override
-  public SentryId captureMessage(String message) {
-    return captureMessage(message, null);
-  }
-
-  @Override
-  public SentryId captureMessage(String message, @Nullable Scope scope) {
-    SentryEvent event = new SentryEvent();
-    Message sentryMessage = new Message();
-    sentryMessage.setFormatted(message);
-    return captureEvent(event);
-  }
-
-  @Override
-  public SentryId captureException(Throwable throwable) {
-    return captureException(throwable, null);
-  }
-
-  @Override
-  public SentryId captureException(Throwable throwable, @Nullable Scope scope) {
-    SentryEvent event = new SentryEvent(throwable);
-    return captureEvent(event);
   }
 
   public void close() {
