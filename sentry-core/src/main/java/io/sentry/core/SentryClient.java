@@ -36,7 +36,7 @@ public class SentryClient implements ISentryClient {
     log(options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
     // process events, should it be done before or after BeforeSecondCallback?
-    for(EventProcessor processor : options.getEventProcessors()) {
+    for (EventProcessor processor : options.getEventProcessors()) {
       processor.process(event);
     }
 

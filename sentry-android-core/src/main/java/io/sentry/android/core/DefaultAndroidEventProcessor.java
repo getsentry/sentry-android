@@ -28,7 +28,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   SentryOptions options;
 
   // it could also be a parameter and get from Sentry.init(...)
-  private final static Date appStartTime = DateUtils.getCurrentDateTime();
+  private static final Date appStartTime = DateUtils.getCurrentDateTime();
 
   public DefaultAndroidEventProcessor(Context context, SentryOptions options) {
     this.context =
@@ -71,14 +71,14 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
     // whats about Runtime, Browser, GPU object, do they make sense to Android?
 
-//    GLESx always return null for those values
-//    if (event.getContexts().getGpu() == null) {
-//      Gpu gpu = new Gpu();
-//      gpu.setApiType(GLES32.glGetString(GLES32.GL_RENDERER));
-//      gpu.setVendorName(GLES32.glGetString(GLES32.GL_VENDOR));
-//      gpu.setVersion(GLES32.glGetString(GLES32.GL_VERSION));
-//      event.getContexts().setGpu(gpu);
-//    }
+    //    GLESx always return null for those values
+    //    if (event.getContexts().getGpu() == null) {
+    //      Gpu gpu = new Gpu();
+    //      gpu.setApiType(GLES32.glGetString(GLES32.GL_RENDERER));
+    //      gpu.setVendorName(GLES32.glGetString(GLES32.GL_VENDOR));
+    //      gpu.setVersion(GLES32.glGetString(GLES32.GL_VERSION));
+    //      event.getContexts().setGpu(gpu);
+    //    }
 
     return event;
   }
@@ -170,8 +170,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     Device device = new Device();
     // name of what? maybe from the BluetoothAdapter or "device_name"
     //    device.setName(Settings.Global.getString(context.getContentResolver(), "device_name"));
-//    device.setName(Settings.Secure.getString(context.getContentResolver(), "bluetooth_name"));
-//    device.setName(BluetoothAdapter.getDefaultAdapter().getName());
+    //    device.setName(Settings.Secure.getString(context.getContentResolver(), "bluetooth_name"));
+    //    device.setName(BluetoothAdapter.getDefaultAdapter().getName());
     device.setManufacturer(Build.MANUFACTURER);
     device.setBrand(Build.BRAND);
     device.setFamily(getFamily());
@@ -194,7 +194,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       device.setMemorySize(getMemorySize(memInfo));
       device.setFreeMemory(memInfo.availMem);
       device.setLowMemory(memInfo.lowMemory);
-      // there are runtime.totalMemory() and runtime.freeMemory(), but I kept the same for compatibility
+      // there are runtime.totalMemory() and runtime.freeMemory(), but I kept the same for
+      // compatibility
     }
 
     // this way of getting the size of storage might be problematic for storages bigger than 2GB
