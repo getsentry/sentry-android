@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     jacoco
+    id("digital.wup.android-maven-publish")
 }
 
 android {
@@ -94,4 +95,16 @@ dependencies {
     testImplementation(Config.TestLibs.androidxRunner)
     testImplementation(Config.TestLibs.androidxJunit)
     testImplementation(Config.TestLibs.mockitoKotlin)
+}
+
+publishing {
+    (publications) {
+
+        // Publish the release aar artifact
+        register("defaultAar", MavenPublication::class) {
+            from(components["android"])
+            groupId = "${project.group}"
+            version = "${project.version}"
+        }
+    }
 }

@@ -2,6 +2,7 @@ plugins {
     java
     kotlin("jvm")
     jacoco
+    `maven-publish`
 }
 
 dependencies {
@@ -38,5 +39,17 @@ tasks {
     check {
         dependsOn(jacocoTestCoverageVerification)
         dependsOn(jacocoTestReport)
+    }
+}
+
+publishing {
+    publications {
+
+        // Publish the release aar artifact
+        register("mavenJava", MavenPublication::class) {
+            from(components["java"])
+            groupId = "${project.group}"
+            version = "${project.version}"
+        }
     }
 }
