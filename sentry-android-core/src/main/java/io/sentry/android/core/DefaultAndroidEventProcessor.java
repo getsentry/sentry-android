@@ -20,11 +20,15 @@ import io.sentry.core.*;
 import io.sentry.core.protocol.*;
 import io.sentry.core.util.Objects;
 import java.io.*;
+import java.lang.Runtime;
 import java.util.*;
 
 public class DefaultAndroidEventProcessor implements EventProcessor {
   Context context;
   SentryOptions options;
+
+  // it could also be a parameter and get from Sentry.init(...)
+  private final static Date appStartTime = DateUtils.getCurrentDateTime();
 
   public DefaultAndroidEventProcessor(Context context, SentryOptions options) {
     this.context =
@@ -67,6 +71,15 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
     // whats about Runtime, Browser, GPU object, do they make sense to Android?
 
+//    GLESx always return null for those values
+//    if (event.getContexts().getGpu() == null) {
+//      Gpu gpu = new Gpu();
+//      gpu.setApiType(GLES32.glGetString(GLES32.GL_RENDERER));
+//      gpu.setVendorName(GLES32.glGetString(GLES32.GL_VENDOR));
+//      gpu.setVersion(GLES32.glGetString(GLES32.GL_VERSION));
+//      event.getContexts().setGpu(gpu);
+//    }
+
     return event;
   }
 
@@ -76,9 +89,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       app = new App();
     }
     app.setAppName(getApplicationName());
-    app.setAppStartTime(
-        DateUtils.getCurrentDateTime()); // TODO: this is App. start, so should be a static field
-    // together with Sentry.init()
+    app.setAppStartTime(appStartTime);
   }
 
   private void setSdkVersion(SentryEvent event) {
@@ -87,9 +98,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       sdkVersion = new SdkVersion();
     }
     sdkVersion.setName("sentry-android");
-    String version =
-        Integer.toString(BuildConfig.VERSION_CODE); // do we need the version of each package?
-    sdkVersion.setVersion(version); // TODO: check BuildConfig
+    String version = BuildConfig.VERSION_NAME; // do we need the version of each package?
+    sdkVersion.setVersion(version);
     sdkVersion.addPackage("sentry-core", version);
     sdkVersion.addPackage("sentry-android-core", version);
     // sentry-android-ndk, integrations...
@@ -150,8 +160,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
       return memInfo.totalMem;
     }
-    // TODO: find a way?
-    return null;
+    // using Runtime as a fallback
+    return Runtime.getRuntime().totalMemory(); // JVM in bytes too
   }
 
   // we can get some inspiration here
@@ -160,6 +170,8 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     Device device = new Device();
     // name of what? maybe from the BluetoothAdapter or "device_name"
     //    device.setName(Settings.Global.getString(context.getContentResolver(), "device_name"));
+//    device.setName(Settings.Secure.getString(context.getContentResolver(), "bluetooth_name"));
+//    device.setName(BluetoothAdapter.getDefaultAdapter().getName());
     device.setManufacturer(Build.MANUFACTURER);
     device.setBrand(Build.BRAND);
     device.setFamily(getFamily());
@@ -178,10 +190,11 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
     ActivityManager.MemoryInfo memInfo = getMemInfo();
     if (memInfo != null) {
+      // in bytes
       device.setMemorySize(getMemorySize(memInfo));
       device.setFreeMemory(memInfo.availMem);
       device.setLowMemory(memInfo.lowMemory);
-      // device.setUsableMemory(); // TODO: check that
+      // there are runtime.totalMemory() and runtime.freeMemory(), but I kept the same for compatibility
     }
 
     // this way of getting the size of storage might be problematic for storages bigger than 2GB

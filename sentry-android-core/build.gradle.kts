@@ -21,6 +21,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         defaultPublishConfig = "${Config.Flavors.production}Release"
+
+        versionName = "$version"
     }
 
     buildTypes {

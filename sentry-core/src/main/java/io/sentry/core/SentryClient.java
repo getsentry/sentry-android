@@ -35,6 +35,11 @@ public class SentryClient implements ISentryClient {
   public SentryId captureEvent(SentryEvent event, @Nullable Scope scope) {
     log(options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
+    // process events, should it be done before or after BeforeSecondCallback?
+    for(EventProcessor processor : options.getEventProcessors()) {
+      processor.process(event);
+    }
+
     SentryOptions.BeforeSecondCallback beforeSend = options.getBeforeSend();
     if (beforeSend != null) {
       event = beforeSend.execute(event);
