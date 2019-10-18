@@ -20,7 +20,6 @@ import io.sentry.core.*;
 import io.sentry.core.protocol.*;
 import io.sentry.core.util.Objects;
 import java.io.*;
-import java.lang.Runtime;
 import java.util.*;
 
 public class DefaultAndroidEventProcessor implements EventProcessor {
@@ -161,7 +160,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       return memInfo.totalMem;
     }
     // using Runtime as a fallback
-    return Runtime.getRuntime().totalMemory(); // JVM in bytes too
+    return java.lang.Runtime.getRuntime().totalMemory(); // JVM in bytes too
   }
 
   // we can get some inspiration here
