@@ -7,11 +7,14 @@ import java.net.URL;
 class AsyncConnectionFactory {
   public static AsyncConnection create(SentryOptions options) {
     try {
-      IConnectionConfigurator setCredentials = new CredentialsSettingConfigurator(options);
+      Dsn parsedDsn = new Dsn(options.getDsn());
+      IConnectionConfigurator setCredentials =
+          new CredentialsSettingConfigurator(parsedDsn, options.getSentryClientName());
+      URL sentryUrl = parsedDsn.getSentryUri().toURL();
 
-      URL sentryUrl = new Dsn(options.getDsn()).getSentryUri().toURL();
       // TODO: Take configuration values from SentryOptions
-      HttpTransport transport = new HttpTransport(options, null, setCredentials, 5000, 5000, false, sentryUrl);
+      HttpTransport transport =
+          new HttpTransport(options, null, setCredentials, 5000, 5000, false, sentryUrl);
 
       // TODO this should be made configurable at least for the Android case where we can
       // just not attempt to send if the device is offline.
