@@ -68,17 +68,6 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       event.getContexts().setOperatingSystem(getOperatingSystem());
     }
 
-    // whats about Runtime, Browser, GPU object, do they make sense to Android?
-
-    //    GLESx always return null for those values
-    //    if (event.getContexts().getGpu() == null) {
-    //      Gpu gpu = new Gpu();
-    //      gpu.setApiType(GLES32.glGetString(GLES32.GL_RENDERER));
-    //      gpu.setVendorName(GLES32.glGetString(GLES32.GL_VENDOR));
-    //      gpu.setVersion(GLES32.glGetString(GLES32.GL_VERSION));
-    //      event.getContexts().setGpu(gpu);
-    //    }
-
     return event;
   }
 
@@ -167,10 +156,6 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   // https://github.com/flutter/plugins/blob/master/packages/device_info/android/src/main/java/io/flutter/plugins/deviceinfo/DeviceInfoPlugin.java
   private Device getDevice() {
     Device device = new Device();
-    // name of what? maybe from the BluetoothAdapter or "device_name"
-    //    device.setName(Settings.Global.getString(context.getContentResolver(), "device_name"));
-    //    device.setName(Settings.Secure.getString(context.getContentResolver(), "bluetooth_name"));
-    //    device.setName(BluetoothAdapter.getDefaultAdapter().getName());
     device.setManufacturer(Build.MANUFACTURER);
     device.setBrand(Build.BRAND);
     device.setFamily(getFamily());
@@ -286,7 +271,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     try {
       return Build.MODEL
           .split(" ")[
-          0]; // might be possible to do it better, should we change that or keep compatibility?
+          0];
     } catch (Exception e) {
       log(SentryLevel.ERROR, "Error getting device family.", e);
       return null;
@@ -361,7 +346,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
     // do not import class or deprecation lint will throw
     android.net.NetworkInfo activeNetwork =
-        connectivityManager.getActiveNetworkInfo(); // it requires ACCESS_NETWORK_STATE
+        connectivityManager.getActiveNetworkInfo();
 
     if (activeNetwork != null) {
       return activeNetwork.isConnected();
@@ -588,7 +573,6 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     App app = new App();
     app.setAppIdentifier(packageInfo.packageName);
 
-    //    app.setHash(); whats that?
     //    app.setBuildType(); whats that? might be possible with BuildConfig.BUILD_VARIANT but Apps
     // side, also for flavor
     app.setAppVersion(packageInfo.versionName);
