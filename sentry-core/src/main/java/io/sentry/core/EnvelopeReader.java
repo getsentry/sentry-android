@@ -1,7 +1,9 @@
 package io.sentry.core;
 
+import io.sentry.core.protocol.SentryId;
 import io.sentry.core.util.Nullable;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,71 +17,110 @@ public class EnvelopeReader {
     this.serializer = serializer;
   }
 
-  public @Nullable SentryEnvelope read(InputStream stream) {
-    try {
-      byte[] buffer = new byte[1024];
-      int currentLength = 0;
-      int streamOffset = 0;
-      int headerOffset = -1;
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-      while ((currentLength = stream.read(buffer)) != -1) {
-        for (int i = 0; headerOffset == -1 && i < currentLength; i++) {
-          if (buffer[i] == '\n') {
-            if (headerOffset == -1) {
-              headerOffset = streamOffset + i;
-              break;
-            }
-          }
-        }
-        outputStream.write(buffer, 0, currentLength);
-        streamOffset += currentLength;
-      }
-      // TODO: Work on the stream instead reading to the whole thing and allocating this array
-      byte[] envelopeBytes = outputStream.toByteArray();
-
-      if (headerOffset == -1 || envelopeBytes.length <= headerOffset) {
-        // Invalid envelope
-        return null;
-      }
-
-      SentryEnvelopeHeader header =
-          serializer.deserializeEnvelopeHeader(envelopeBytes, 0, headerOffset);
-
-      int startHeaderOffset = headerOffset + 1;
-      int headerEndOffset = -1;
-      int envelopeHeaderLength = -1;
-      int payloadEndOffset = -1;
-      List<SentryEnvelopeItem> items = new ArrayList<>();
-      do {
-        // Look from startHeaderOffset until line break to find next header
-        for (int i = startHeaderOffset; i < envelopeBytes.length; i++) {
-          if (envelopeBytes[i] == '\n') {
-            envelopeHeaderLength = i - startHeaderOffset;
+  public @Nullable SentryEnvelope read(InputStream stream) throws IOException {
+    byte[] buffer = new byte[1024];
+    int currentLength = 0;
+    int streamOffset = 0;
+    // Offset of the line break defining the end of the envelope header
+    int envelopeEndHeaderOffset = -1;
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    while ((currentLength = stream.read(buffer)) > 0) {
+      for (int i = 0; envelopeEndHeaderOffset == -1 && i < currentLength; i++) {
+        if (buffer[i] == '\n') {
+          if (envelopeEndHeaderOffset == -1) {
+            envelopeEndHeaderOffset = streamOffset + i;
             break;
           }
         }
+      }
+      outputStream.write(buffer, 0, currentLength);
+      streamOffset += currentLength;
+    }
+    // TODO: Work on the stream instead reading to the whole thing and allocating this array
+    byte[] envelopeBytes = outputStream.toByteArray();
 
-        SentryEnvelopeItemHeader itemHeader =
-            serializer.deserializeEnvelopeItemHeader(
-                envelopeBytes, startHeaderOffset, envelopeHeaderLength);
+    if (envelopeBytes.length == 0) {
+      throw new IllegalArgumentException("Empty stream.");
+    }
+    if (envelopeEndHeaderOffset == -1) {
+      throw new IllegalArgumentException("Envelope contains no header.");
+    }
 
-        headerEndOffset = startHeaderOffset + envelopeHeaderLength + 1; // \n
-        payloadEndOffset = headerEndOffset + itemHeader.getLength();
-        byte[] envelopeItemBytes =
-            Arrays.copyOfRange(envelopeBytes, headerEndOffset, payloadEndOffset);
-        SentryEnvelopeItem item = new SentryEnvelopeItem(itemHeader, envelopeItemBytes);
-        items.add(item);
-        startHeaderOffset = payloadEndOffset + 1;
-        // TODO: test
-        if (startHeaderOffset < envelopeBytes.length || envelopeBytes[startHeaderOffset] != '\n') {
+    SentryEnvelopeHeader header =
+        serializer.deserializeEnvelopeHeader(envelopeBytes, 0, envelopeEndHeaderOffset);
+    if (header.getEventId() == null || header.getEventId() == SentryId.EMPTY_ID) {
+      throw new IllegalArgumentException("Envelope header is missing required 'event_id'.");
+    }
+
+    int itemHeaderStartOffset = envelopeEndHeaderOffset + 1;
+
+    int payloadEndOffset;
+    List<SentryEnvelopeItem> items = new ArrayList<>();
+    do {
+      int lineBreakIndex = -1;
+      // Look from startHeaderOffset until line break to find next header
+      for (int i = itemHeaderStartOffset; i < envelopeBytes.length; i++) {
+        if (envelopeBytes[i] == '\n') {
+          lineBreakIndex = i;
           break;
         }
-      } while (true);
+      }
 
-      return new SentryEnvelope(header, items);
-    } catch (Exception e) {
-      // TODO Log
-    }
-    return null;
+      if (lineBreakIndex == -1) {
+        throw new IllegalArgumentException(
+            "Invalid envelope. Item at index '"
+                + items.size()
+                + "'. "
+                + "has no header delimiter.");
+      }
+
+      SentryEnvelopeItemHeader itemHeader =
+          serializer.deserializeEnvelopeItemHeader(
+              envelopeBytes, itemHeaderStartOffset, lineBreakIndex - itemHeaderStartOffset);
+
+      if (itemHeader.getLength() <= 0) {
+        throw new IllegalArgumentException(
+            "Item header at index '"
+                + items.size()
+                + "' has an invalid value: '"
+                + itemHeader.getLength()
+                + "'.");
+      }
+
+      payloadEndOffset = lineBreakIndex + itemHeader.getLength();
+      if (payloadEndOffset > envelopeBytes.length) {
+        throw new IllegalArgumentException(
+            "Invalid length for item at index '"
+                + items.size()
+                + "'. "
+                + "Item is '"
+                + payloadEndOffset
+                + "' bytes. There are '"
+                + envelopeBytes.length
+                + "' in the buffer.");
+      }
+      byte[] envelopeItemBytes =
+          Arrays.copyOfRange(
+              envelopeBytes, lineBreakIndex + 1, payloadEndOffset + 1 /* to is exclusive */);
+
+      SentryEnvelopeItem item = new SentryEnvelopeItem(itemHeader, envelopeItemBytes);
+      items.add(item);
+
+      if (payloadEndOffset == envelopeBytes.length) {
+        // End of envelope
+        break;
+      } else if (payloadEndOffset + 1 == envelopeBytes.length) {
+        // Envelope items can be closed with a final line break
+        if (envelopeBytes[payloadEndOffset] == '\n') {
+          break;
+        } else {
+          throw new IllegalArgumentException("Envelope has invalid data following an item.");
+        }
+      }
+
+      itemHeaderStartOffset = payloadEndOffset + 2; // Skip over delimiter
+    } while (true);
+
+    return new SentryEnvelope(header, items);
   }
 }
