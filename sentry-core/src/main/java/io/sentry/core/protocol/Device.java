@@ -1,9 +1,11 @@
 package io.sentry.core.protocol;
 
+import io.sentry.core.IUnknownPropertiesConsumer;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 
-public class Device {
+public class Device implements IUnknownPropertiesConsumer {
   static final String TYPE = "device";
 
   private String name;
@@ -31,6 +33,7 @@ public class Device {
   private Integer screenDpi;
   private Date bootTime;
   private TimeZone timezone;
+  private Map<String, Object> unknown;
 
   public String getName() {
     return name;
@@ -230,6 +233,11 @@ public class Device {
 
   public void setTimezone(TimeZone timezone) {
     this.timezone = timezone;
+  }
+
+  @Override
+  public void acceptUnknownProperties(Map<String, Object> unknown) {
+    this.unknown = unknown;
   }
 
   public enum DeviceOrientation {

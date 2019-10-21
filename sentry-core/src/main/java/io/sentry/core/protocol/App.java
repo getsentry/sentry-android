@@ -1,8 +1,10 @@
 package io.sentry.core.protocol;
 
+import io.sentry.core.IUnknownPropertiesConsumer;
 import java.util.Date;
+import java.util.Map;
 
-public class App {
+public class App implements IUnknownPropertiesConsumer {
   static final String TYPE = "app";
 
   private String identifier;
@@ -12,6 +14,7 @@ public class App {
   private String name;
   private String version;
   private String build;
+  private Map<String, Object> unknown;
 
   public String getIdentifier() {
     return identifier;
@@ -67,5 +70,10 @@ public class App {
 
   public void setBuild(String build) {
     this.build = build;
+  }
+
+  @Override
+  public void acceptUnknownProperties(Map<String, Object> unknown) {
+    this.unknown = unknown;
   }
 }
