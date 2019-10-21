@@ -29,17 +29,4 @@ public class AndroidSerializer implements ISerializer {
   public void serialize(SentryEvent event, Writer writer) {
     gson.toJson(event, SentryEvent.class, writer);
   }
-
-  @Override
-  public SentryEnvelopeHeader deserializeEnvelopeHeader(byte[] buffer, int offset, int length) {
-    // TODO
-    return null;
-  }
-
-  @Override
-  public SentryEnvelopeItemHeader deserializeEnvelopeItemHeader(
-      byte[] buffer, int offset, int length) {
-    // TODO
-    return null;
-  }
 }
