@@ -54,7 +54,7 @@ public class OperatingSystem implements IUnknownPropertiesConsumer {
     this.kernelVersion = kernelVersion;
   }
 
-  public Boolean getRooted() {
+  public Boolean isRooted() {
     return rooted;
   }
 
