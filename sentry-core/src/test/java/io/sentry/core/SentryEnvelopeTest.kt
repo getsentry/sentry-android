@@ -5,13 +5,11 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import java.io.InputStream
 import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import org.apache.commons.io.IOUtils
 
 class SentryEnvelopeTest {
     private val UTF_8 = Charset.forName("UTF-8")
@@ -57,7 +55,7 @@ class SentryEnvelopeTest {
     @Test
     fun `when envelope has no line break, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader()
-        val stream = IOUtils.toInputStream("{}", StandardCharsets.UTF_8)
+        val stream = "{}".toInputStream()
         val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
         assertEquals("Envelope contains no header.", exception.message)
     }
@@ -65,7 +63,7 @@ class SentryEnvelopeTest {
     @Test
     fun `when envelope header has no event_id, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader()
-        val stream = IOUtils.toInputStream("{}\n{\"item_header\":\"value\",\"length\":\"2\"}\n{}", StandardCharsets.UTF_8)
+        val stream = "{}\n{\"item_header\":\"value\",\"length\":\"2\"}\n{}".toInputStream()
         val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
         assertEquals("Envelope header is missing required 'event_id'.", exception.message)
     }
@@ -73,7 +71,7 @@ class SentryEnvelopeTest {
     @Test
     fun `when envelope item length is bigger than the rest of the payload, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader()
-        val stream = IOUtils.toInputStream("{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}\n{\"length\":\"3\"}\n{}", StandardCharsets.UTF_8)
+        val stream = "{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}\n{\"length\":\"3\"}\n{}".toInputStream()
         val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
         assertEquals("Invalid length for item at index '0'. Item is '66' bytes. There are '65' in the buffer.", exception.message)
     }
@@ -81,7 +79,7 @@ class SentryEnvelopeTest {
     @Test
     fun `when envelope has only a header without line break, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader()
-        val stream = IOUtils.toInputStream("{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}", StandardCharsets.UTF_8)
+        val stream = "{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}".toInputStream()
         val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
         assertEquals("Envelope contains no header.", exception.message)
     }
@@ -89,7 +87,7 @@ class SentryEnvelopeTest {
     @Test
     fun `when envelope has only a header and line break, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader()
-        val stream = IOUtils.toInputStream("{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}\n", StandardCharsets.UTF_8)
+        val stream = "{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}\n".toInputStream()
         val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
         assertEquals("Invalid envelope. Item at index '0'. has no header delimiter.", exception.message)
     }
@@ -97,9 +95,9 @@ class SentryEnvelopeTest {
     @Test
     fun `when envelope has the first item missing length, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader()
-        val stream = IOUtils.toInputStream("""{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc"}
+        val stream = """{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc"}
 {"content_type":"application/json","type":"event"}
-{}""", UTF_8)
+{}""".toInputStream()
         val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
         assertEquals("Item header at index '0' has an invalid value: '0'.", exception.message)
     }
@@ -107,11 +105,11 @@ class SentryEnvelopeTest {
     @Test
     fun `when envelope two items, returns envelope with items`() {
         val envelopeReader = EnvelopeReader()
-        val stream = IOUtils.toInputStream("""{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc"}
+        val stream = """{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc"}
 {"type":"event","length":"2"}
 {}
 {"content_type":"application/octet-stream","type":"attachment","length":"10","filename":"null.bin"}
-abcdefghij""", UTF_8)
+abcdefghij""".toInputStream()
         val envelope = envelopeReader.read(stream)
 
         assertNotNull(envelope)
