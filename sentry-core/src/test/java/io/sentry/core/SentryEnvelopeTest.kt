@@ -3,6 +3,7 @@ package io.sentry.core
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import java.io.InputStream
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,6 +14,7 @@ import org.apache.commons.io.IOUtils
 import org.mockito.Mockito.`when`
 
 class SentryEnvelopeTest {
+    private val UTF_8 = Charset.forName("UTF-8")
 
     @Test
     fun `deserialize sample envelope with event and two attachments`() {
@@ -96,8 +98,8 @@ class SentryEnvelopeTest {
     fun `when envelope has the first item missing length, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader()
         val stream = IOUtils.toInputStream("""{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc"}
-{"content-type":"application/json","type":"event"}
-{}""", StandardCharsets.UTF_8)
+{"content_type":"application/json","type":"event"}
+{}""", UTF_8)
         val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
         assertEquals("Item header at index '0' has an invalid value: '0'.", exception.message)
     }
@@ -109,7 +111,7 @@ class SentryEnvelopeTest {
 {"type":"event","length":"2"}
 {}
 {"content_type":"application/octet-stream","type":"attachment","length":"10","filename":"null.bin"}
-abcdefghij""", StandardCharsets.UTF_8)
+abcdefghij""", UTF_8)
         val envelope = envelopeReader.read(stream)
 
         assertNotNull(envelope)

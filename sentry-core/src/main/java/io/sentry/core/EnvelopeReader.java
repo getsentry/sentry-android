@@ -10,13 +10,14 @@ import io.sentry.core.util.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class EnvelopeReader {
 
+  private static final Charset UTF_8 = Charset.forName("UTF-8");
   private final Gson gson =
       new GsonBuilder()
           .registerTypeAdapter(
@@ -136,12 +137,12 @@ public class EnvelopeReader {
   }
 
   SentryEnvelopeHeader deserializeEnvelopeHeader(byte[] buffer, int offset, int length) {
-    String json = new String(buffer, offset, length, StandardCharsets.UTF_8);
+    String json = new String(buffer, offset, length, UTF_8);
     return gson.fromJson(json, SentryEnvelopeHeader.class);
   }
 
   SentryEnvelopeItemHeader deserializeEnvelopeItemHeader(byte[] buffer, int offset, int length) {
-    String json = new String(buffer, offset, length, StandardCharsets.UTF_8);
+    String json = new String(buffer, offset, length, UTF_8);
     return gson.fromJson(json, SentryEnvelopeItemHeader.class);
   }
 
@@ -154,7 +155,6 @@ public class EnvelopeReader {
 
       reader.beginObject();
       while (reader.hasNext()) {
-
         switch (reader.nextName()) {
           case "event_id":
             sentryId = new SentryId(reader.nextString());
@@ -186,22 +186,24 @@ public class EnvelopeReader {
       int length = 0;
 
       reader.beginObject();
-      switch (reader.nextName()) {
-        case "content_type":
-          contentType = reader.nextString();
-          break;
-        case "filename":
-          fileName = reader.nextString();
-          break;
-        case "type":
-          type = reader.nextString();
-          break;
-        case "length":
-          length = reader.nextInt();
-          break;
-        default:
-          reader.skipValue();
-          break;
+      while (reader.hasNext()) {
+        switch (reader.nextName()) {
+          case "content_type":
+            contentType = reader.nextString();
+            break;
+          case "filename":
+            fileName = reader.nextString();
+            break;
+          case "type":
+            type = reader.nextString();
+            break;
+          case "length":
+            length = reader.nextInt();
+            break;
+          default:
+            reader.skipValue();
+            break;
+        }
       }
       reader.endObject();
 
