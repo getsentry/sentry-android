@@ -1,8 +1,7 @@
 package io.sentry.core.transport;
 
 import static io.sentry.core.ILogger.log;
-import static io.sentry.core.SentryLevel.DEBUG;
-import static io.sentry.core.SentryLevel.ERROR;
+import static io.sentry.core.SentryLevel.*;
 
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
@@ -126,29 +125,18 @@ public class HttpTransport implements ITransport {
                     + "' was rejected by the Sentry server due to a filter.");
           }
         }
+        LogErrorInPayload(connection);
         return TransportResult.error(retryAfterMs, responseCode);
       } catch (IOException responseCodeException) {
         // this should not stop us from continuing. We'll just use -1 as response code.
         log(
             options.getLogger(),
-            DEBUG,
+            WARNING,
             "Failed to obtain response code while analyzing event send failure.",
             e);
       }
 
-      if (options.isDebug()) {
-        String errorMessage = null;
-        final InputStream errorStream = connection.getErrorStream();
-        if (errorStream != null) {
-          errorMessage = getErrorMessageFromStream(errorStream);
-        }
-        if (null == errorMessage || errorMessage.isEmpty()) {
-          errorMessage = "An exception occurred while submitting the event to the Sentry server.";
-        }
-
-        log(options.getLogger(), DEBUG, errorMessage);
-      }
-
+      LogErrorInPayload(connection);
       return TransportResult.error(retryAfterMs, responseCode);
     } finally {
       if (outputStream != null) {
@@ -159,6 +147,21 @@ public class HttpTransport implements ITransport {
         }
       }
       connection.disconnect();
+    }
+  }
+
+  private void LogErrorInPayload(HttpURLConnection connection) {
+    if (options.isDebug()) {
+      String errorMessage = null;
+      final InputStream errorStream = connection.getErrorStream();
+      if (errorStream != null) {
+        errorMessage = getErrorMessageFromStream(errorStream);
+      }
+      if (null == errorMessage || errorMessage.isEmpty()) {
+        errorMessage = "An exception occurred while submitting the event to the Sentry server.";
+      }
+
+      log(options.getLogger(), DEBUG, errorMessage);
     }
   }
 
