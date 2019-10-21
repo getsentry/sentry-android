@@ -21,8 +21,6 @@ import org.mockito.Mockito.`when`
 
 class SentryEnvelopeTest {
 
-    // TODO: test getLength + start index larger than available bytes
-
     @Test
     fun `deserialize sample envelope with event and two attachments`() {
         val envelopeReader = EnvelopeReader(TestSerializer())
@@ -78,6 +76,14 @@ class SentryEnvelopeTest {
     }
 
     @Test
+    fun `when envelope item length is bigger than the rest of the payload, reader throws illegal argument`() {
+        val envelopeReader = EnvelopeReader(TestSerializer())
+        val stream = IOUtils.toInputStream("{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}\n{\"length\":\"3\"}\n{}", StandardCharsets.UTF_8)
+        val exception = assertFailsWith<IllegalArgumentException> { envelopeReader.read(stream) }
+        assertEquals("Invalid length for item at index '0'. Item is '66' bytes. There are '65' in the buffer.", exception.message)
+    }
+
+    @Test
     fun `when envelope has only a header without line break, reader throws illegal argument`() {
         val envelopeReader = EnvelopeReader(TestSerializer())
         val stream = IOUtils.toInputStream("{\"event_id\":\"9ec79c33ec9942ab8353589fcb2e04dc\"}", StandardCharsets.UTF_8)
@@ -110,7 +116,7 @@ class SentryEnvelopeTest {
 {"type":"event","length":"2"}
 {}
 {"content_type":"application/octet-stream","type":"attachment","length":"10","filename":"null.bin"}
-abcdefghi""", StandardCharsets.UTF_8)
+abcdefghij""", StandardCharsets.UTF_8)
         val envelope = envelopeReader.read(stream)
 
         assertNotNull(envelope)

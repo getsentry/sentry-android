@@ -87,7 +87,7 @@ public class EnvelopeReader {
                 + "'.");
       }
 
-      payloadEndOffset = lineBreakIndex + itemHeader.getLength();
+      payloadEndOffset = lineBreakIndex + itemHeader.getLength() + 1;
       if (payloadEndOffset > envelopeBytes.length) {
         throw new IllegalArgumentException(
             "Invalid length for item at index '"
@@ -99,9 +99,12 @@ public class EnvelopeReader {
                 + envelopeBytes.length
                 + "' in the buffer.");
       }
+
+      // if 'to' parameter overflows, copyOfRange is happy to pretend nothing happened. Bound need
+      // checking.
       byte[] envelopeItemBytes =
           Arrays.copyOfRange(
-              envelopeBytes, lineBreakIndex + 1, payloadEndOffset + 1 /* to is exclusive */);
+              envelopeBytes, lineBreakIndex + 1, payloadEndOffset /* to is exclusive */);
 
       SentryEnvelopeItem item = new SentryEnvelopeItem(itemHeader, envelopeItemBytes);
       items.add(item);
@@ -111,14 +114,14 @@ public class EnvelopeReader {
         break;
       } else if (payloadEndOffset + 1 == envelopeBytes.length) {
         // Envelope items can be closed with a final line break
-        if (envelopeBytes[payloadEndOffset] == '\n') {
+        if (envelopeBytes[payloadEndOffset + 1] == '\n') {
           break;
         } else {
           throw new IllegalArgumentException("Envelope has invalid data following an item.");
         }
       }
 
-      itemHeaderStartOffset = payloadEndOffset + 2; // Skip over delimiter
+      itemHeaderStartOffset = payloadEndOffset + 1; // Skip over delimiter
     } while (true);
 
     return new SentryEnvelope(header, items);
