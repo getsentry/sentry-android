@@ -27,8 +27,6 @@ public class Contexts extends ConcurrentHashMap<String, Object> {
   }
 
   public Device getDevice() {
-    // getter is not working -> Cannot cast com.google.gson.internal.LinkedTreeMap to
-    // io.sentry.core.protocol.Device
     return toContextType(Device.TYPE, Device.class);
   }
 

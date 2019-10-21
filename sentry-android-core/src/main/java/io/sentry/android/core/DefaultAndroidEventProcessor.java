@@ -86,7 +86,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       sdkVersion = new SdkVersion();
     }
     sdkVersion.setName("sentry-android");
-    String version = BuildConfig.VERSION_NAME; // do we need the version of each package?
+    String version = BuildConfig.VERSION_NAME;
     sdkVersion.setVersion(version);
     sdkVersion.addPackage("sentry-core", version);
     sdkVersion.addPackage("sentry-android-core", version);
@@ -330,7 +330,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
       return null;
     }
     return getActiveNetworkInfo(connectivityManager);
-    // do we care about VPNs? getActiveNetworkInfo might return null if VPN doesn't specify its
+    // getActiveNetworkInfo might return null if VPN doesn't specify its
     // underlying network
 
     // when min. API 24, use:
@@ -485,7 +485,6 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
   private StatFs getExternalStorageStat() {
     if (!isExternalStorageMounted()) {
-      // check in real device and see if its compatible with the old way of doing it
       File path = getExternalStorageDep(); // /storage/sdcard0 or /storage/emulated/0
       // context.getExternalFilesDir(null); /storage/sdcard0/Android/data/package/files or
       // /storage/emulated/0/Android/data/io.sentry.sample/files
@@ -573,7 +572,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     App app = new App();
     app.setAppIdentifier(packageInfo.packageName);
 
-    //    app.setBuildType(); whats that? might be possible with BuildConfig.BUILD_VARIANT but Apps
+    //    app.setBuildType(); possible with BuildConfig.BUILD_VARIANT but Apps
     // side, also for flavor
     app.setAppVersion(packageInfo.versionName);
     app.setAppBuild(getVersionCode(packageInfo));
@@ -669,9 +668,6 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
    * @return Application name
    */
   private String getApplicationName() {
-    // possible to get also from
-    // context.getPackageManager().getApplicationLabel(context.getPackageManager().getApplicationInfo(context.getPackageName(), 0))
-    // should we fallback?
     try {
       ApplicationInfo applicationInfo = context.getApplicationInfo();
       int stringId = applicationInfo.labelRes;
@@ -679,6 +675,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
         if (applicationInfo.nonLocalizedLabel != null) {
           return applicationInfo.nonLocalizedLabel.toString();
         }
+        return context.getPackageManager().getApplicationLabel(applicationInfo).toString();
       } else {
         return context.getString(stringId);
       }
