@@ -16,10 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.Proxy;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import javax.net.ssl.HttpsURLConnection;
@@ -49,28 +46,26 @@ public class HttpTransport implements ITransport {
    * @param proxy the proxy to use, if any
    * @param connectionConfigurator this consumer is given a chance to set up the request before it
    *     is sent
-   * @param connectionTimeout connection timeout
-   * @param readTimeout read timeout
+   * @param connectionTimeoutMills connection timeout in milliseconds
+   * @param readTimeoutMills read timeout in milliseconds
    * @param bypassSecurity whether to ignore TLS errors
-   * @throws URISyntaxException when options contain invalid DSN
-   * @throws MalformedURLException when options contain invalid DSN
    */
   public HttpTransport(
       SentryOptions options,
       @Nullable Proxy proxy,
       IConnectionConfigurator connectionConfigurator,
-      int connectionTimeout,
-      int readTimeout,
-      boolean bypassSecurity)
-      throws URISyntaxException, MalformedURLException {
+      int connectionTimeoutMills,
+      int readTimeoutMills,
+      boolean bypassSecurity,
+      URL sentryUrl) {
     this.proxy = proxy;
     this.connectionConfigurator = connectionConfigurator;
     this.serializer = options.getSerializer();
-    this.connectionTimeout = connectionTimeout;
-    this.readTimeout = readTimeout;
+    this.connectionTimeout = connectionTimeoutMills;
+    this.readTimeout = readTimeoutMills;
     this.options = options;
-    this.sentryUrl = new URI(options.getDsn()).toURL();
     this.bypassSecurity = bypassSecurity;
+    this.sentryUrl = sentryUrl;
   }
 
   // giving up on testing this method is probably the simplest way of having the rest of the class

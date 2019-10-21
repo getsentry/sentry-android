@@ -2,14 +2,16 @@ package io.sentry.core;
 
 import io.sentry.core.transport.*;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.net.URL;
 
 class AsyncConnectionFactory {
   public static AsyncConnection create(SentryOptions options) {
     try {
       IConnectionConfigurator setCredentials = new CredentialsSettingConfigurator(options);
 
-      HttpTransport transport = new HttpTransport(options, null, setCredentials, 60, 60, true);
+      URL sentryUrl = new Dsn(options.getDsn()).getSentryUri().toURL();
+      // TODO: Take configuration values from SentryOptions
+      HttpTransport transport = new HttpTransport(options, null, setCredentials, 5000, 5000, false, sentryUrl);
 
       // TODO this should be made configurable at least for the Android case where we can
       // just not attempt to send if the device is offline.
@@ -42,7 +44,7 @@ class AsyncConnectionFactory {
       // the connection doesn't do any retries of failed sends and can hold at most 10
       // pending events. The rest is dropped.
       return new AsyncConnection(transport, alwaysOn, linearBackoff, blackHole, 0, 10, options);
-    } catch (URISyntaxException | MalformedURLException e) {
+    } catch (MalformedURLException e) {
       throw new IllegalArgumentException(
           "Failed to compose the connection to the Sentry server.", e);
     }
