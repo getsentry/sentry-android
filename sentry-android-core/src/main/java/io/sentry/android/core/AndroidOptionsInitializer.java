@@ -13,6 +13,6 @@ class AndroidOptionsInitializer {
 
     ManifestMetadataReader.applyMetadata(context, options);
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
-    options.setSerializer(new AndroidSerializer());
+    options.setSerializer(new AndroidSerializer(options.getLogger()));
   }
 }
