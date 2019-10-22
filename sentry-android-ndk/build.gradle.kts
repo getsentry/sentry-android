@@ -25,6 +25,8 @@ android {
         ndk {
             abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
         }
+
+        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
 
     externalNativeBuild {
@@ -32,4 +34,9 @@ android {
             setPath("CMakeLists.txt")
         }
     }
+}
+
+dependencies {
+    api(project(":sentry-core"))
+    api(project(":sentry-android-core"))
 }

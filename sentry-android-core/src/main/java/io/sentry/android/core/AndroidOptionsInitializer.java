@@ -3,6 +3,8 @@ package io.sentry.android.core;
 import android.content.Context;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -19,8 +21,17 @@ class AndroidOptionsInitializer {
       try {
         // TODO: Create Integrations interface and use that to initialize NDK
         Class cls = Class.forName("io.sentry.android.ndk.SentryNdk");
-        Method method = cls.getMethod("init", String.class);
-        method.invoke(null, new Object[0]);
+
+        // XXX: temporary hack
+        String cacheDirPath = context.getCacheDir().getAbsolutePath() + "/sentry-envelopes";
+        File f = new File(cacheDirPath);
+        f.mkdirs();
+
+        Method method = cls.getMethod("init", SentryOptions.class, String.class);
+        Object[] args = new Object[2];
+        args[0] = options;
+        args[1] = cacheDirPath;
+        method.invoke(null, args);
       } catch (ClassNotFoundException exc) {
         options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.");
       } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
