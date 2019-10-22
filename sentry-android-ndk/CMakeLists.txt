@@ -5,7 +5,7 @@ project("sentry-android")
 add_subdirectory(${SENTRY_NATIVE_SRC})
 
 # sentry-native submodule include path.
-include_directories("sentry-native/include")
+include_directories(${SENTRY_NATIVE_SRC}/include)
 
 # sentry-native source code.
 file(GLOB SENTRY_ANDROID_SOURCES ${CMAKE_SOURCE_DIR}/src/main/jni/*.c)

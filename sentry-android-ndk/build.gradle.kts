@@ -3,7 +3,18 @@ plugins {
     id("com.android.library")
 }
 
-val sentryNativeSrc = "sentry-native"
+tasks.register("initNative") {
+    doFirst {
+        var sentryNativeSrc = "sentry-native"
+        if (File("${project.projectDir}/sentry-native-local").exists()) {
+            sentryNativeSrc = "sentry-native-local"
+        } else {
+            // TODO submodule init
+        }
+        println("Sentry-Native sources: $sentryNativeSrc")
+        throw IllegalArgumentException()
+    }
+}
 
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
@@ -22,7 +33,7 @@ android {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
-                arguments.add(0, "-DSENTRY_NATIVE_SRC=" + sentryNativeSrc)
+                // arguments.add(0, "-DSENTRY_NATIVE_SRC=" + sentryNativeSrc)
             }
         }
         ndk {
@@ -42,5 +53,9 @@ android {
 dependencies {
     api(project(":sentry-core"))
     api(project(":sentry-android-core"))
+}
+
+tasks.named("assemble") {
+    dependsOn(":processResources")
 }
 
