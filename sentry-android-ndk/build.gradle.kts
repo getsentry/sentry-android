@@ -6,7 +6,10 @@ plugins {
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
     buildToolsVersion(Config.Android.buildToolsVersion)
-
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
         javaCompileOptions {
