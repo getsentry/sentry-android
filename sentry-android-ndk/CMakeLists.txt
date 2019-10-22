@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4.1)
 project("sentry-android")
 
 # Adding sentry-native submodule subdirectory
-add_subdirectory("sentry-native")
+add_subdirectory(${SENTRY_NATIVE_SRC})
 
 # sentry-native submodule include path.
 include_directories("sentry-native/include")
