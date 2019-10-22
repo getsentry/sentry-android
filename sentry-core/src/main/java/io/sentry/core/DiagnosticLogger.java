@@ -5,8 +5,8 @@ import io.sentry.core.util.Objects;
 
 /** Sentry SDK internal diagnostic logger. */
 public class DiagnosticLogger implements ILogger {
-  private SentryOptions options;
-  private ILogger logger;
+  private final SentryOptions options;
+  private final ILogger logger;
 
   /**
    * Creates a new instance of DiagnosticLogger with the wrapped ILogger.
@@ -16,7 +16,6 @@ public class DiagnosticLogger implements ILogger {
    */
   public DiagnosticLogger(SentryOptions options, @Nullable ILogger logger) {
     this.options = Objects.requireNonNull(options, "SentryOptions is required.");
-    ;
     this.logger = logger;
   }
 

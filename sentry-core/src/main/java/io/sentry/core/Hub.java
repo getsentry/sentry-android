@@ -37,8 +37,7 @@ public class Hub implements IHub, Cloneable {
   static StackItem createRootStackItem(SentryOptions options) {
     Scope scope = new Scope();
     ISentryClient client = new SentryClient(options);
-    StackItem item = new StackItem(client, scope);
-    return item;
+    return new StackItem(client, scope);
   }
 
   @Override
@@ -50,7 +49,7 @@ public class Hub implements IHub, Cloneable {
   public SentryId captureEvent(SentryEvent event) {
     SentryId sentryId;
     StackItem item = stack.peek();
-    sentryId = item.client.captureEvent(event, item.scope);
+    sentryId = item != null ? item.client.captureEvent(event, item.scope) : SentryId.EMPTY_ID;
     this.lastEventId = sentryId;
     return sentryId;
   }
@@ -59,7 +58,7 @@ public class Hub implements IHub, Cloneable {
   public SentryId captureMessage(String message) {
     SentryId sentryId;
     StackItem item = stack.peek();
-    sentryId = item.client.captureMessage(message, item.scope);
+    sentryId = item != null ? item.client.captureMessage(message, item.scope) : SentryId.EMPTY_ID;
     this.lastEventId = sentryId;
     return sentryId;
   }
@@ -68,7 +67,8 @@ public class Hub implements IHub, Cloneable {
   public SentryId captureException(Throwable throwable) {
     SentryId sentryId;
     StackItem item = stack.peek();
-    sentryId = item.client.captureException(throwable, item.scope);
+    sentryId =
+        item != null ? item.client.captureException(throwable, item.scope) : SentryId.EMPTY_ID;
     this.lastEventId = sentryId;
     return sentryId;
   }
@@ -77,14 +77,18 @@ public class Hub implements IHub, Cloneable {
   public void close() {
     // Close the top-most client
     StackItem item = stack.peek();
-    item.client.close();
+    if (item != null) {
+      item.client.close();
+    }
     isEnabled = false;
   }
 
   @Override
   public void addBreadcrumb(Breadcrumb breadcrumb) {
     StackItem item = stack.peek();
-    item.scope.addBreadcrumb(breadcrumb);
+    if (item != null) {
+      item.scope.addBreadcrumb(breadcrumb);
+    }
   }
 
   @Override
@@ -95,9 +99,13 @@ public class Hub implements IHub, Cloneable {
   @Override
   public void pushScope() {
     StackItem item = stack.peek();
-    Scope clone = item.scope.clone();
-    StackItem newItem = new StackItem(item.client, clone);
-    stack.push(newItem);
+    if (item != null) {
+      Scope clone = item.scope.clone();
+      if (clone != null) {
+        StackItem newItem = new StackItem(item.client, clone);
+        stack.push(newItem);
+      }
+    }
   }
 
   @Override
@@ -115,7 +123,9 @@ public class Hub implements IHub, Cloneable {
     pushScope();
     try {
       StackItem item = stack.peek();
-      callback.run(item.scope);
+      if (item != null) {
+        callback.run(item.scope);
+      }
     } finally {
       popScope();
     }
@@ -124,19 +134,25 @@ public class Hub implements IHub, Cloneable {
   @Override
   public void configureScope(ScopeCallback callback) {
     StackItem item = stack.peek();
-    callback.run(item.scope);
+    if (item != null) {
+      callback.run(item.scope);
+    }
   }
 
   @Override
   public void bindClient(SentryClient client) {
     StackItem item = stack.peek();
-    item.client = client;
+    if (item != null) {
+      item.client = client;
+    }
   }
 
   @Override
   public void flush(long timeoutMills) {
     StackItem item = stack.peek();
-    item.client.flush(timeoutMills);
+    if (item != null) {
+      item.client.flush(timeoutMills);
+    }
   }
 
   @Override
