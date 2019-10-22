@@ -3,19 +3,6 @@ plugins {
     id("com.android.library")
 }
 
-tasks.register("initNative") {
-    doFirst {
-        var sentryNativeSrc = "sentry-native"
-        if (File("${project.projectDir}/sentry-native-local").exists()) {
-            sentryNativeSrc = "sentry-native-local"
-        } else {
-            // TODO submodule init
-        }
-        println("Sentry-Native sources: $sentryNativeSrc")
-        throw IllegalArgumentException()
-    }
-}
-
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
     buildToolsVersion(Config.Android.buildToolsVersion)
@@ -30,10 +17,15 @@ android {
 
         minSdkVersion(21)
         externalNativeBuild {
+            val sentryNativeSrc = if (File("${project.projectDir}/sentry-native-local").exists()) {
+                "sentry-native-local"
+            } else {
+                "sentry-native"
+            }
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
-                // arguments.add(0, "-DSENTRY_NATIVE_SRC=" + sentryNativeSrc)
+                arguments.add(0, "-DSENTRY_NATIVE_SRC=" + sentryNativeSrc)
             }
         }
         ndk {
@@ -55,7 +47,11 @@ dependencies {
     api(project(":sentry-android-core"))
 }
 
-tasks.named("assemble") {
-    dependsOn(":processResources")
+val initNative = tasks.register<Exec>("initNative") {
+    logger.log(LogLevel.LIFECYCLE, "Initializing git submodules")
+    commandLine("git", "submodule", "update", "--init", "--recursive")
 }
 
+tasks.named("preBuild") {
+    dependsOn(initNative)
+}
