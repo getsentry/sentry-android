@@ -1,24 +1,20 @@
 package io.sentry.core.transport;
 
-import static io.sentry.core.ILogger.log;
-import static io.sentry.core.SentryLevel.*;
-
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Nullable;
 import io.sentry.core.util.VisibleForTesting;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+
+import javax.net.ssl.HttpsURLConnection;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
-import javax.net.ssl.HttpsURLConnection;
+
+import static io.sentry.core.ILogger.log;
+import static io.sentry.core.SentryLevel.*;
 
 /**
  * An implementation of the {@link ITransport} interface that sends the events to the Sentry server
@@ -71,6 +67,7 @@ public class HttpTransport implements ITransport {
   // testable...
   @VisibleForTesting
   protected HttpURLConnection open(URL url, Proxy proxy) throws IOException {
+    // why do we need url here? its not used
     return (HttpURLConnection)
         (proxy == null ? sentryUrl.openConnection() : sentryUrl.openConnection(proxy));
   }
@@ -83,6 +80,12 @@ public class HttpTransport implements ITransport {
     connection.setRequestMethod("POST");
     connection.setDoOutput(true);
     connection.setRequestProperty("Content-Encoding", "UTF-8");
+    connection.setRequestProperty("Content-Type", "application/json");
+    connection.setRequestProperty("Accept", "application/json");
+
+    // https://stackoverflow.com/questions/52726909/java-io-ioexception-unexpected-end-of-stream-on-connection/53089882
+    connection.setRequestProperty("Connection","close");
+
     connection.setConnectTimeout(connectionTimeout);
     connection.setReadTimeout(readTimeout);
 
@@ -92,9 +95,7 @@ public class HttpTransport implements ITransport {
 
     connection.connect();
 
-    OutputStream outputStream = null;
-    try {
-      outputStream = connection.getOutputStream();
+    try (OutputStream outputStream = connection.getOutputStream()) {
       serializer.serialize(event, new OutputStreamWriter(outputStream, UTF_8));
 
       // need to also close the input stream of the connection
@@ -106,7 +107,7 @@ public class HttpTransport implements ITransport {
       if (retryAfterHeader != null) {
         try {
           retryAfterMs =
-              (long) (Double.parseDouble(retryAfterHeader) * 1000L); // seconds -> milliseconds
+            (long) (Double.parseDouble(retryAfterHeader) * 1000L); // seconds -> milliseconds
         } catch (NumberFormatException __) {
           // let's use the default then
         }
@@ -118,11 +119,11 @@ public class HttpTransport implements ITransport {
         if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
           if (options.isDebug()) {
             log(
-                options.getLogger(),
-                DEBUG,
-                "Event '"
-                    + event.getEventId()
-                    + "' was rejected by the Sentry server due to a filter.");
+              options.getLogger(),
+              DEBUG,
+              "Event '"
+                + event.getEventId()
+                + "' was rejected by the Sentry server due to a filter.");
           }
         }
         logErrorInPayload(connection);
@@ -130,22 +131,15 @@ public class HttpTransport implements ITransport {
       } catch (IOException responseCodeException) {
         // this should not stop us from continuing. We'll just use -1 as response code.
         log(
-            options.getLogger(),
-            WARNING,
-            "Failed to obtain response code while analyzing event send failure.",
-            e);
+          options.getLogger(),
+          WARNING,
+          "Failed to obtain response code while analyzing event send failure.",
+          e);
       }
 
       logErrorInPayload(connection);
       return TransportResult.error(retryAfterMs, responseCode);
     } finally {
-      if (outputStream != null) {
-        try {
-          outputStream.close();
-        } catch (IOException e) {
-          // ignored...
-        }
-      }
       connection.disconnect();
     }
   }
