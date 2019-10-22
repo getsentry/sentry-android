@@ -1,9 +1,11 @@
 package io.sentry.core.protocol;
 
+import io.sentry.core.IUnknownPropertiesConsumer;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 
-public class Device {
+public class Device implements IUnknownPropertiesConsumer {
   static final String TYPE = "device";
 
   private String name;
@@ -12,10 +14,13 @@ public class Device {
   private String family;
   private String model;
   private String modelId;
-  private String architecture;
-  private Short batteryLevel;
-  private Boolean isCharging;
-  private Boolean isOnline;
+
+  @Deprecated private String arch;
+
+  private String[] archs;
+  private Float batteryLevel;
+  private Boolean charging;
+  private Boolean online;
   private DeviceOrientation orientation;
   private Boolean simulator;
   private Long memorySize;
@@ -26,11 +31,17 @@ public class Device {
   private Long freeStorage;
   private Long externalStorageSize;
   private Long externalFreeStorage;
-  private String screenResolution;
+
+  @Deprecated private String screenResolution;
+
+  private Integer screenWidthPixels;
+  private Integer screenHeightPixels;
+
   private Float screenDensity;
   private Integer screenDpi;
   private Date bootTime;
   private TimeZone timezone;
+  private Map<String, Object> unknown;
 
   public String getName() {
     return name;
@@ -80,36 +91,46 @@ public class Device {
     this.modelId = modelId;
   }
 
-  public String getArchitecture() {
-    return architecture;
+  /**
+   * @deprecated use {@link #getArchs} instead.
+   * @return device architecture
+   */
+  @Deprecated
+  public String getArch() {
+    return arch;
   }
 
-  public void setArchitecture(String architecture) {
-    this.architecture = architecture;
+  /**
+   * @deprecated use {@link #setArchs} instead.
+   * @param arch device architecture
+   */
+  @Deprecated
+  public void setArch(String arch) {
+    this.arch = arch;
   }
 
-  public Short getBatteryLevel() {
+  public Float getBatteryLevel() {
     return batteryLevel;
   }
 
-  public void setBatteryLevel(Short batteryLevel) {
+  public void setBatteryLevel(Float batteryLevel) {
     this.batteryLevel = batteryLevel;
   }
 
-  public Boolean getCharging() {
-    return isCharging;
+  public Boolean isCharging() {
+    return charging;
   }
 
   public void setCharging(Boolean charging) {
-    isCharging = charging;
+    this.charging = charging;
   }
 
-  public Boolean getOnline() {
-    return isOnline;
+  public Boolean isOnline() {
+    return online;
   }
 
   public void setOnline(Boolean online) {
-    isOnline = online;
+    this.online = online;
   }
 
   public DeviceOrientation getOrientation() {
@@ -120,7 +141,7 @@ public class Device {
     this.orientation = orientation;
   }
 
-  public Boolean getSimulator() {
+  public Boolean isSimulator() {
     return simulator;
   }
 
@@ -152,7 +173,7 @@ public class Device {
     this.usableMemory = usableMemory;
   }
 
-  public Boolean getLowMemory() {
+  public Boolean isLowMemory() {
     return lowMemory;
   }
 
@@ -192,10 +213,20 @@ public class Device {
     this.externalFreeStorage = externalFreeStorage;
   }
 
+  /**
+   * @deprecated use {@link #getScreenWidthPixels , #getScreenHeightPixels} instead.
+   * @return screen resolution largest + smallest
+   */
+  @Deprecated
   public String getScreenResolution() {
     return screenResolution;
   }
 
+  /**
+   * @deprecated use {@link #setScreenWidthPixels} , #getScreenHeightPixels} instead.
+   * @param screenResolution screen resolution largest + smallest
+   */
+  @Deprecated
   public void setScreenResolution(String screenResolution) {
     this.screenResolution = screenResolution;
   }
@@ -232,8 +263,36 @@ public class Device {
     this.timezone = timezone;
   }
 
+  public String[] getArchs() {
+    return archs;
+  }
+
+  public void setArchs(String[] archs) {
+    this.archs = archs;
+  }
+
+  public Integer getScreenWidthPixels() {
+    return screenWidthPixels;
+  }
+
+  public void setScreenWidthPixels(Integer screenWidthPixels) {
+    this.screenWidthPixels = screenWidthPixels;
+  }
+
+  public Integer getScreenHeightPixels() {
+    return screenHeightPixels;
+  }
+
+  public void setScreenHeightPixels(Integer screenHeightPixels) {
+    this.screenHeightPixels = screenHeightPixels;
+  }
+
   public enum DeviceOrientation {
     PORTRAIT,
     LANDSCAPE
+  }
+
+  public void acceptUnknownProperties(Map<String, Object> unknown) {
+    this.unknown = unknown;
   }
 }

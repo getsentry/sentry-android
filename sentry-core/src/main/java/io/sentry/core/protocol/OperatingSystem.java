@@ -1,6 +1,9 @@
 package io.sentry.core.protocol;
 
-public class OperatingSystem {
+import io.sentry.core.IUnknownPropertiesConsumer;
+import java.util.Map;
+
+public class OperatingSystem implements IUnknownPropertiesConsumer {
   static final String TYPE = "os";
 
   private String name;
@@ -9,6 +12,7 @@ public class OperatingSystem {
   private String build;
   private String kernelVersion;
   private Boolean rooted;
+  private Map<String, Object> unknown;
 
   public String getName() {
     return name;
@@ -50,11 +54,16 @@ public class OperatingSystem {
     this.kernelVersion = kernelVersion;
   }
 
-  public Boolean getRooted() {
+  public Boolean isRooted() {
     return rooted;
   }
 
   public void setRooted(Boolean rooted) {
     this.rooted = rooted;
+  }
+
+  @Override
+  public void acceptUnknownProperties(Map<String, Object> unknown) {
+    this.unknown = unknown;
   }
 }
