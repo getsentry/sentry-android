@@ -125,7 +125,7 @@ public class HttpTransport implements ITransport {
                     + "' was rejected by the Sentry server due to a filter.");
           }
         }
-        LogErrorInPayload(connection);
+        logErrorInPayload(connection);
         return TransportResult.error(retryAfterMs, responseCode);
       } catch (IOException responseCodeException) {
         // this should not stop us from continuing. We'll just use -1 as response code.
@@ -136,7 +136,7 @@ public class HttpTransport implements ITransport {
             e);
       }
 
-      LogErrorInPayload(connection);
+      logErrorInPayload(connection);
       return TransportResult.error(retryAfterMs, responseCode);
     } finally {
       if (outputStream != null) {
@@ -150,7 +150,7 @@ public class HttpTransport implements ITransport {
     }
   }
 
-  private void LogErrorInPayload(HttpURLConnection connection) {
+  private void logErrorInPayload(HttpURLConnection connection) {
     if (options.isDebug()) {
       String errorMessage = null;
       final InputStream errorStream = connection.getErrorStream();
