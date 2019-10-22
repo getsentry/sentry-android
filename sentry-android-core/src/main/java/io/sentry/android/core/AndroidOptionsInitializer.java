@@ -3,7 +3,6 @@ package io.sentry.android.core;
 import android.content.Context;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
