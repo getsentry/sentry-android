@@ -19,20 +19,10 @@ class AsyncConnectionFactory {
       // TODO this should be made configurable at least for the Android case where we can
       // just not attempt to send if the device is offline.
       ITransportGate alwaysOn =
-          new ITransportGate() {
-            @Override
-            public boolean isSendingAllowed() {
-              return true;
-            }
-          };
+        () -> true;
 
       IBackOffIntervalStrategy linearBackoff =
-          new IBackOffIntervalStrategy() {
-            @Override
-            public long nextDelayMillis(int attempt) {
-              return attempt * 500;
-            }
-          };
+        attempt -> attempt * 500;
 
       // TODO this is obviously provisional and should be constructed based on the config in options
       IEventCache blackHole =
