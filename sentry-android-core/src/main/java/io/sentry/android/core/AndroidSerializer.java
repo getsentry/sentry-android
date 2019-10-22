@@ -9,7 +9,6 @@ import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.SentryId;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;

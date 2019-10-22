@@ -20,8 +20,7 @@ public class EnvelopeReader {
   private static final Charset UTF_8 = Charset.forName("UTF-8");
   private final Gson gson =
       new GsonBuilder()
-          .registerTypeAdapter(
-              SentryEnvelopeHeader.class, new SentryEnvelopeHeaderAdapter())
+          .registerTypeAdapter(SentryEnvelopeHeader.class, new SentryEnvelopeHeaderAdapter())
           .registerTypeAdapter(
               SentryEnvelopeItemHeader.class, new SentryEnvelopeItemHeaderAdapter())
           .create();

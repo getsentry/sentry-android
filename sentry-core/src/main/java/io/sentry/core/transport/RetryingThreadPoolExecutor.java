@@ -1,7 +1,6 @@
 package io.sentry.core.transport;
 
 import io.sentry.core.util.NonNull;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Delayed;
