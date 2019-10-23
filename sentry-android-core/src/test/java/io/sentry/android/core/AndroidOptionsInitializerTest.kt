@@ -13,6 +13,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
@@ -57,7 +58,7 @@ class AndroidOptionsInitializerTest {
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
 
-        assertEquals("${File.separator}cache${File.separator}sentry-envelopes", sentryOptions.cacheDirPath)
+        assertTrue(sentryOptions.cacheDirPath.endsWith("${File.separator}cache${File.separator}sentry-envelopes"))
     }
 
     private fun createMockContext(): Context {
