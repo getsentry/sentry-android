@@ -1,8 +1,8 @@
 package io.sentry.core;
 
-import io.sentry.core.util.Objects;
-
 import static io.sentry.core.ILogger.log;
+
+import io.sentry.core.util.Objects;
 
 /**
  * Sends any uncaught exception to Sentry, then passes the exception on to the pre-existing uncaught
