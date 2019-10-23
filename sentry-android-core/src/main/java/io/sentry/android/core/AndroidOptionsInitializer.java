@@ -5,7 +5,6 @@ import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 class AndroidOptionsInitializer {
@@ -39,7 +38,7 @@ class AndroidOptionsInitializer {
         method.invoke(null, args);
       } catch (ClassNotFoundException exc) {
         options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.");
-      } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      } catch (Exception e) {
         options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
       }
     }
