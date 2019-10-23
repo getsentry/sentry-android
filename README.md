@@ -21,4 +21,4 @@ For example, if you had `sentry-native` checked-out in a sibling directory to th
 `ln -s ../../sentry-native sentry-android-ndk/sentry-native-local`
 
 which will be picked up by `gradle` and used instead of the git submodule.
-This directory is algo included in `.gitignore` not to be shown as pending changes.
+This directory is also included in `.gitignore` not to be shown as pending changes.
