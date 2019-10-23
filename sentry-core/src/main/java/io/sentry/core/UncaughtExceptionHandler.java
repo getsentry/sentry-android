@@ -12,7 +12,7 @@ interface UncaughtExceptionHandler {
       return Adapter.INSTANCE;
     }
 
-    static Adapter INSTANCE = new Adapter();
+    final static Adapter INSTANCE = new Adapter();
 
     private Adapter() {}
 
