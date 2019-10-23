@@ -15,7 +15,7 @@ Android SDK for Sentry
 # Development
 
 This repository includes [`sentry-native`](https://github.com/getsentry/sentry-native/) as a git submodule.
-To build against `sentry-native` checked-out elsewhere in your file system, create a symlink to `sentry-android-ndk/sentry-native-local`.
+To build against `sentry-native` checked-out elsewhere in your file system, create a symlink `sentry-android-ndk/sentry-native-local` that points to your `sentry-native` directory.
 For example, if you had `sentry-native` checked-out in a sibling directory to this repo:
 
 `ln -s ../../sentry-native sentry-android-ndk/sentry-native-local`
