@@ -8,30 +8,27 @@ import kotlin.test.Test
 
 class UncaughtExceptionHandlerIntegrationTest {
     @Test
-    fun `when UncaughtExceptionHandlerIntegration is initialized, uncaught handler is unchanged`()
-    {
+    fun `when UncaughtExceptionHandlerIntegration is initialized, uncaught handler is unchanged`() {
         val handlerMock = mock<UncaughtExceptionHandler>()
-        UncaughtExceptionHandlerIntegration(handlerMock);
+        UncaughtExceptionHandlerIntegration(handlerMock)
         verifyZeroInteractions(handlerMock)
     }
 
     @Test
-    fun `when uncaughtException is called, sentry captures exception`()
-    {
+    fun `when uncaughtException is called, sentry captures exception`() {
         val handlerMock = mock<UncaughtExceptionHandler>()
         val threadMock = mock<Thread>()
         val throwableMock = mock<Throwable>()
         val hubMock = mock<IHub>()
         val options = SentryOptions()
-        val sut = UncaughtExceptionHandlerIntegration(handlerMock);
+        val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
         verify(hubMock).captureException(throwableMock)
     }
 
     @Test
-    fun `when register is called, current handler is not lost`()
-    {
+    fun `when register is called, current handler is not lost`() {
         val handlerMock = mock<UncaughtExceptionHandler>()
         val threadMock = mock<Thread>()
         val throwableMock = mock<Throwable>()
@@ -39,7 +36,7 @@ class UncaughtExceptionHandlerIntegrationTest {
         whenever(handlerMock.defaultUncaughtExceptionHandler).thenReturn(defaultHandlerMock)
         val hubMock = mock<IHub>()
         val options = SentryOptions()
-        val sut = UncaughtExceptionHandlerIntegration(handlerMock);
+        val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
         verify(defaultHandlerMock).uncaughtException(threadMock, throwableMock)

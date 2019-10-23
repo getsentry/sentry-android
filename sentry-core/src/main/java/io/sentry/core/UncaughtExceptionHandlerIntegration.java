@@ -1,5 +1,7 @@
 package io.sentry.core;
 
+import io.sentry.core.util.Objects;
+
 import static io.sentry.core.ILogger.log;
 
 /**
@@ -22,11 +24,7 @@ public class UncaughtExceptionHandlerIntegration
   }
 
   UncaughtExceptionHandlerIntegration(UncaughtExceptionHandler threadAdapter) {
-    if (threadAdapter == null) {
-      throw new IllegalArgumentException("threadAdapter is required.");
-    }
-
-    this.threadAdapter = threadAdapter;
+    this.threadAdapter = Objects.requireNonNull(threadAdapter, "threadAdapter is required.");
   }
 
   @Override
