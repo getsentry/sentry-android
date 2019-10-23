@@ -9,8 +9,8 @@ import io.sentry.core.ILogger
 import io.sentry.core.SentryOptions
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
@@ -35,7 +35,7 @@ class AndroidOptionsInitializerTest {
         val loggerField = logger.get(sentryOptions)
         val innerLogger = loggerField.javaClass.declaredFields.first { it.name == "logger" }
         innerLogger.isAccessible = true
-        assertEquals(AndroidLogger::class, innerLogger.get(loggerField)::class)
+        assertTrue(innerLogger.get(loggerField) is AndroidLogger)
     }
 
     @Test
@@ -47,7 +47,20 @@ class AndroidOptionsInitializerTest {
         val mockLogger = mock<ILogger>()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
-        val actual = sentryOptions.eventProcessors.firstOrNull { it::class == DefaultAndroidEventProcessor::class }
+        val actual = sentryOptions.eventProcessors.any { it is DefaultAndroidEventProcessor }
+        assertNotNull(actual)
+    }
+
+    @Test
+    fun `MainEventProcessor added to processors list and its the 1st`() {
+        val sentryOptions = SentryOptions()
+        val mockContext = mock<Context> {
+            on { applicationContext } doReturn context
+        }
+        val mockLogger = mock<ILogger>()
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
+        val actual = sentryOptions.eventProcessors.firstOrNull { it is DefaultAndroidEventProcessor }
         assertNotNull(actual)
     }
 }

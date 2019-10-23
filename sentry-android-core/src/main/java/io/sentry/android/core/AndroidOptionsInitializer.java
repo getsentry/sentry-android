@@ -2,6 +2,7 @@ package io.sentry.android.core;
 
 import android.content.Context;
 import io.sentry.core.ILogger;
+import io.sentry.core.MainEventProcessor;
 import io.sentry.core.SentryOptions;
 
 class AndroidOptionsInitializer {
@@ -17,7 +18,12 @@ class AndroidOptionsInitializer {
     options.setSentryClientName("sentry-android/0.0.1");
 
     ManifestMetadataReader.applyMetadata(context, options);
-    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
+    addProcessors(options, context);
     options.setSerializer(new AndroidSerializer(options.getLogger()));
+  }
+
+  private static void addProcessors(SentryOptions options, Context context) {
+    options.addEventProcessor(new MainEventProcessor(options));
+    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
   }
 }
