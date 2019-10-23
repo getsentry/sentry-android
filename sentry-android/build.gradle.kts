@@ -9,8 +9,6 @@ android {
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersionNdk)
-
-        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
 
     compileOptions {
