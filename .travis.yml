@@ -14,6 +14,8 @@ licenses:
 before_install:
   - touch $HOME/.android/repositories.cfg
   - yes | sdkmanager --update
+script:
+  - ./gradlew buildRelease
 android:
   components:
     - platform-tools
