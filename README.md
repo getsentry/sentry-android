@@ -18,7 +18,7 @@ This repository includes [`sentry-native`](https://github.com/getsentry/sentry-n
 To build against `sentry-native` checked-out elsewhere in your file system, create a symlink to `sentry-android-ndk/sentry-native-local`.
 For example, if you had `sentry-native` checked-out in a sibling directory to this repo:
 
-`ln -s ../sentry-native sentry-android-ndk/sentry-native-local`
+`ln -s ../../sentry-native sentry-android-ndk/sentry-native-local`
 
 which will be picked up by `gradle` and used instead of the git submodule.
 This directory is algo included in `.gitignore` not to be shown as pending changes.
