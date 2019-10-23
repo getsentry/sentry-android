@@ -41,6 +41,12 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
+    tasks.forEach {
+        if (it.name.contains("signingConfigWriter")) {
+            it.enabled = false
+        }
+    }
+
 }
 
 dependencies {
