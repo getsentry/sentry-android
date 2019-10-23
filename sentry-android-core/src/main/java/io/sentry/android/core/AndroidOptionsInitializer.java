@@ -22,20 +22,17 @@ class AndroidOptionsInitializer {
     ManifestMetadataReader.applyMetadata(context, options);
     createsEnvelopeDirPath(options, context);
 
+    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
+    options.setSerializer(new AndroidSerializer(options.getLogger()));
+
     if (options.isEnableNdk()) {
       try {
         // TODO: Create Integrations interface and use that to initialize NDK
         Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
 
-        // TODO: temporary hack
-        String cacheDirPath = context.getCacheDir().getAbsolutePath() + "/sentry-envelopes";
-        File f = new File(cacheDirPath);
-        f.mkdirs();
-
-        Method method = cls.getMethod("init", SentryOptions.class, String.class);
-        Object[] args = new Object[2];
+        Method method = cls.getMethod("init", SentryOptions.class);
+        Object[] args = new Object[1];
         args[0] = options;
-        args[1] = cacheDirPath;
         method.invoke(null, args);
       } catch (ClassNotFoundException exc) {
         options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.");
@@ -43,9 +40,6 @@ class AndroidOptionsInitializer {
         options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
       }
     }
-
-    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
-    options.setSerializer(new AndroidSerializer(options.getLogger()));
   }
 
   private static void createsEnvelopeDirPath(SentryOptions options, Context context) {
