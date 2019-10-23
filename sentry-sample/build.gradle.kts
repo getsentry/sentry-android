@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "io.sentry.sample"
-        minSdkVersion(Config.Android.minSdkVersion)
+        minSdkVersion(21) // 21 is the min supported by sentry-android-ndk
         targetSdkVersion(Config.Android.targetSdkVersion)
         versionCode = 1
         versionName = "1.0"
