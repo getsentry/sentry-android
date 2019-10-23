@@ -15,7 +15,7 @@ before_install:
   - touch $HOME/.android/repositories.cfg
   - yes | sdkmanager --update
 script:
-  - ./gradlew buildRelease
+  - ./gradlew testRelease assembleRelease
 android:
   components:
     - platform-tools
