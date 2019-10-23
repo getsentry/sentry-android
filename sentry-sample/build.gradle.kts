@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "io.sentry.sample"
-        minSdkVersion(21) // 21 is the min supported by sentry-android-ndk
+        minSdkVersion(Config.Android.minSdkVersionNdk) // NDK requires a higher API level than core.
         targetSdkVersion(Config.Android.targetSdkVersion)
         versionCode = 1
         versionName = "1.0"

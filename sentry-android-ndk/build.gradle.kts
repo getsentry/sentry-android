@@ -18,7 +18,7 @@ android {
             }
         }
 
-        minSdkVersion(21)
+        minSdkVersion(Config.Android.minSdkVersionNdk)
         externalNativeBuild {
             val sentryNativeSrc = if (File("${project.projectDir}/sentry-native-local").exists()) {
                 "sentry-native-local"
