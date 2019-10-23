@@ -1,5 +1,7 @@
 package io.sentry.core
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.protocol.User
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,5 +34,15 @@ class HubTest {
         assertEquals("test", scope.fingerprint[0])
         assertEquals("test", clone.tags["test"])
         assertEquals("a@a.com", clone.user.email)
+    }
+
+    @Test
+    fun `when hub is initialized, integrations are registed`() {
+        val integrationMock = mock<Integration>()
+        val options = SentryOptions()
+        options.dsn = "https://key@sentry.io/proj"
+        options.addIntegration(integrationMock)
+        val expected = Hub(options)
+        verify(integrationMock).register(expected, options)
     }
 }
