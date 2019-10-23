@@ -25,7 +25,7 @@ class AndroidOptionsInitializer {
     if (options.isEnableNdk()) {
       try {
         // TODO: Create Integrations interface and use that to initialize NDK
-        Class cls = Class.forName("io.sentry.android.ndk.SentryNdk");
+        Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
 
         // TODO: temporary hack
         String cacheDirPath = context.getCacheDir().getAbsolutePath() + "/sentry-envelopes";
