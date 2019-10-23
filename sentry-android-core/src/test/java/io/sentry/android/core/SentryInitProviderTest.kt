@@ -143,7 +143,7 @@ class SentryInitProviderTest {
         val mockContext = mock<Context> {
             on { applicationContext } doReturn context
         }
-        whenever(mockContext.cacheDir).thenReturn(File("/cache"))
+        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
         return mockContext
     }
 

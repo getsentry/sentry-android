@@ -57,14 +57,14 @@ class AndroidOptionsInitializerTest {
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
 
-        assertEquals("/cache/sentry-envelopes", sentryOptions.cacheDirPath)
+        assertEquals("${File.separator}cache${File.separator}sentry-envelopes", sentryOptions.cacheDirPath)
     }
 
     private fun createMockContext(): Context {
         val mockContext = mock<Context> {
             on { applicationContext } doReturn context
         }
-        whenever(mockContext.cacheDir).thenReturn(File("/cache"))
+        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
         return mockContext
     }
 }
