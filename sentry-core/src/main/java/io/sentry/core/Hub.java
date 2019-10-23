@@ -1,5 +1,7 @@
 package io.sentry.core;
 
+import static io.sentry.core.ILogger.log;
+
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.util.Nullable;
 import java.util.Deque;
@@ -100,7 +102,16 @@ public class Hub implements IHub, Cloneable {
   public void pushScope() {
     StackItem item = stack.peek();
     if (item != null) {
-      Scope clone = item.scope.clone();
+      Scope clone = null;
+      try {
+        clone = item.scope.clone();
+      } catch (CloneNotSupportedException e) {
+        log(
+            options.getLogger(),
+            SentryLevel.ERROR,
+            "An error has occurred when cloning a Scope",
+            e);
+      }
       if (clone != null) {
         StackItem newItem = new StackItem(item.client, clone);
         stack.push(newItem);
@@ -143,7 +154,7 @@ public class Hub implements IHub, Cloneable {
   public void bindClient(SentryClient client) {
     StackItem item = stack.peek();
     if (item != null) {
-      item.client = client;
+      item.client = client != null ? client : NoOpSentryClient.getInstance();
     }
   }
 
