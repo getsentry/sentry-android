@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -20,12 +19,11 @@ class SentryEventTest {
 
     @Test
     fun `constructor defines timestamp after now`() =
-            assertTrue(Instant.now().plus(1, ChronoUnit.HOURS).isAfter(SentryEvent().timestamp.toInstant()))
+            assertTrue(Instant.now().plus(1, ChronoUnit.HOURS).isAfter(Instant.parse(DateUtils.getTimestamp(SentryEvent().timestamp))))
 
     @Test
-    @Ignore("fix me")
     fun `constructor defines timestamp before hour ago`() =
-            assertTrue(Instant.now().minus(1, ChronoUnit.HOURS).isBefore(SentryEvent().timestamp.toInstant()))
+            assertTrue(Instant.now().minus(1, ChronoUnit.HOURS).isBefore(Instant.parse(DateUtils.getTimestamp(SentryEvent().timestamp))))
 
     @Test
     fun `timestamp is formatted in ISO 8601 in UTC with Z format`() {
