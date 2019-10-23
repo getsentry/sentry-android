@@ -41,9 +41,10 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
-    tasks.forEach {
-        if (it.name.contains("signingConfigWriter")) {
-            it.enabled = false
+    tasks.all {
+        if (this.name == "signingConfigWriterDebugAndroidTest") {
+            this.enabled = false
+            println("${this.name} is SKIPPED")
         }
     }
 
