@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "io.sentry.sample"
-        minSdkVersion(Config.Android.minSdkVersion)
+        minSdkVersion(Config.Android.minSdkVersionNdk) // NDK requires a higher API level than core.
         targetSdkVersion(Config.Android.targetSdkVersion)
         versionCode = 1
         versionName = "1.0"
@@ -20,8 +20,6 @@ android {
         testInstrumentationRunnerArguments = mapOf(
             "clearPackageData" to "true"
         )
-
-        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
 
     buildTypes {

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="io.sentry.sample">
-
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <application
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
@@ -24,5 +24,4 @@
     <meta-data android:name="io.sentry.debug" android:value="true" />
 <!--    <meta-data android:name="io.sentry.auto-init" android:value="false" /> // how to disable the auto-init-->
   </application>
-
 </manifest>
