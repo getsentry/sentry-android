@@ -8,6 +8,7 @@ public class SentryOptions {
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
 
   private List<EventProcessor> eventProcessors = new ArrayList<>();
+  private List<Integration> integrations = new ArrayList<>();
 
   private String dsn;
   private long shutdownTimeoutMills;
@@ -24,6 +25,14 @@ public class SentryOptions {
 
   public List<EventProcessor> getEventProcessors() {
     return eventProcessors;
+  }
+
+  public void addIntegration(Integration integration) {
+    integrations.add(integration);
+  }
+
+  public List<Integration> getIntegrations() {
+    return integrations;
   }
 
   public String getDsn() {
@@ -95,5 +104,9 @@ public class SentryOptions {
 
   public interface BeforeSecondCallback {
     SentryEvent execute(SentryEvent event);
+  }
+
+  public SentryOptions() {
+    integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }
