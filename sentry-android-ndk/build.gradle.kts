@@ -32,7 +32,12 @@ android {
             }
         }
         ndk {
-            abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
+            val platform = System.getenv("ABI")
+            if (platform == null || platform.toLowerCase() == "all") {
+                abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
+            } else {
+                abiFilters(platform)
+            }
         }
 
         missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
