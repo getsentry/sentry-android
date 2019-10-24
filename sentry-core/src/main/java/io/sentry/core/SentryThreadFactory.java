@@ -11,16 +11,16 @@ import java.util.Map;
 class SentryThreadFactory {
 
   // Assumes its being called from the crashed thread.
-  Iterable<SentryThread> getCurrentThreadsForCrash() {
+  List<SentryThread> getCurrentThreadsForCrash() {
     return getCurrentThreads(Thread.currentThread());
   }
 
   // Doesn't mark a thread either crashed or not.
-  Iterable<SentryThread> getCurrentThreads() {
+  List<SentryThread> getCurrentThreads() {
     return getCurrentThreads(null);
   }
 
-  private Iterable<SentryThread> getCurrentThreads(@Nullable Thread crashedThread) {
+  private List<SentryThread> getCurrentThreads(@Nullable Thread crashedThread) {
     Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
     List<SentryThread> result = new ArrayList<>();
 
@@ -45,7 +45,7 @@ class SentryThreadFactory {
     sentryThread.setDaemon(thread.isDaemon());
     sentryThread.setState(thread.getState().name());
     if (crashedThread != null) {
-        sentryThread.setCrashed(crashedThread == thread);
+      sentryThread.setCrashed(crashedThread == thread);
     }
     sentryThread.setCurrent(thread == currentThread);
 
@@ -54,7 +54,10 @@ class SentryThreadFactory {
       frames.add(getSentryStackFrame(element));
     }
 
-    sentryThread.setStacktrace(new SentryStackTrace(frames));
+    if (frames.size() > 0) {
+      sentryThread.setStacktrace(new SentryStackTrace(frames));
+    }
+
     return sentryThread;
   }
 
