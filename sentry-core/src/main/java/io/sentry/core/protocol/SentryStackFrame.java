@@ -11,18 +11,18 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
   private Map<String, String> vars;
   private List<Integer> framesOmitted;
   private String filename;
-  private String function;
+  private String rawFunction;
   private String module;
   private Integer lineno;
   private Integer colno;
-  private String absolutePath;
+  private String absPath;
   private String contextLine;
   private Boolean inApp;
-  private String _package;
+  private String _package; // TODO: _package as its a reserverd word
   private String platform;
-  private Long imageAddress;
-  private Long SymbolAddress;
-  private Long instructionOffset;
+  private Long imageAddr;
+  private Long symbolAddr;
+  private Long instructionAddr;
   private Map<String, Object> unknown;
 
   public List<String> getPreContext() {
@@ -65,12 +65,12 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
     this.filename = filename;
   }
 
-  public String getFunction() {
-    return function;
+  public String getRawFunction() {
+    return rawFunction;
   }
 
-  public void setFunction(String function) {
-    this.function = function;
+  public void setRawFunction(String rawFunction) {
+    this.rawFunction = rawFunction;
   }
 
   public String getModule() {
@@ -97,12 +97,12 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
     this.colno = colno;
   }
 
-  public String getAbsolutePath() {
-    return absolutePath;
+  public String getAbsPath() {
+    return absPath;
   }
 
-  public void setAbsolutePath(String absolutePath) {
-    this.absolutePath = absolutePath;
+  public void setAbsPath(String absPath) {
+    this.absPath = absPath;
   }
 
   public String getContextLine() {
@@ -137,28 +137,28 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
     this.platform = platform;
   }
 
-  public Long getImageAddress() {
-    return imageAddress;
+  public Long getImageAddr() {
+    return imageAddr;
   }
 
-  public void setImageAddress(Long imageAddress) {
-    this.imageAddress = imageAddress;
+  public void setImageAddr(Long imageAddr) {
+    this.imageAddr = imageAddr;
   }
 
-  public Long getSymbolAddress() {
-    return SymbolAddress;
+  public Long getSymbolAddr() {
+    return symbolAddr;
   }
 
-  public void setSymbolAddress(Long symbolAddress) {
-    SymbolAddress = symbolAddress;
+  public void setSymbolAddr(Long symbolAddr) {
+    this.symbolAddr = symbolAddr;
   }
 
-  public Long getInstructionOffset() {
-    return instructionOffset;
+  public Long getInstructionAddr() {
+    return instructionAddr;
   }
 
-  public void setInstructionOffset(Long instructionOffset) {
-    this.instructionOffset = instructionOffset;
+  public void setInstructionAddr(Long instructionAddr) {
+    this.instructionAddr = instructionAddr;
   }
 
   @Override

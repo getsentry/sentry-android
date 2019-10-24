@@ -2,6 +2,7 @@ package io.sentry.android.core;
 
 import android.content.Context;
 import io.sentry.core.ILogger;
+import io.sentry.core.MainEventProcessor;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import java.io.File;
@@ -20,22 +21,19 @@ class AndroidOptionsInitializer {
     options.setSentryClientName("sentry.java.android/0.0.1");
 
     ManifestMetadataReader.applyMetadata(context, options);
-    createsEnvelopeDirPath(options, context);
 
     if (options.isEnableNdk()) {
       try {
+        // create sentry-envelopes folder for NDK envelopes
+        createsEnvelopeDirPath(options, context);
+
         // TODO: Create Integrations interface and use that to initialize NDK
         Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
-
-        // TODO: temporary hack
-        String cacheDirPath = context.getCacheDir().getAbsolutePath() + "/sentry-envelopes";
-        File f = new File(cacheDirPath);
-        f.mkdirs();
 
         Method method = cls.getMethod("init", SentryOptions.class, String.class);
         Object[] args = new Object[2];
         args[0] = options;
-        args[1] = cacheDirPath;
+        args[1] = options.getCacheDirPath();
         method.invoke(null, args);
       } catch (ClassNotFoundException exc) {
         options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.");
@@ -44,8 +42,8 @@ class AndroidOptionsInitializer {
       }
     }
 
-    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
+    addProcessors(options, context);
   }
 
   private static void createsEnvelopeDirPath(SentryOptions options, Context context) {
@@ -55,5 +53,10 @@ class AndroidOptionsInitializer {
       envelopesDir.mkdirs();
     }
     options.setCacheDirPath(envelopesDir.getAbsolutePath());
+  }
+
+  private static void addProcessors(SentryOptions options, Context context) {
+    options.addEventProcessor(new MainEventProcessor(options));
+    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
   }
 }

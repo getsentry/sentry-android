@@ -25,7 +25,9 @@ public class MainEventProcessor implements EventProcessor {
         event.setMessage(getMessage(throwable));
       }
 
-      //      event.set
+//      List<SentryException> exceptions = new ArrayList<>();
+//      exceptions.add(extractExceptionQueue(event.getThrowable()));
+//      event.setException(exceptions);
     }
 
     return event;
@@ -46,7 +48,7 @@ public class MainEventProcessor implements EventProcessor {
 
     for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
       SentryStackFrame stackFrame = new SentryStackFrame();
-      stackFrame.setFunction(stackTraceElement.getMethodName());
+      stackFrame.setRawFunction(stackTraceElement.getMethodName());
       stackFrame.setModule(stackTraceElement.getClassName());
       stackFrame.setFilename(stackTraceElement.getFileName());
       stackFrame.setLineno(stackTraceElement.getLineNumber());
