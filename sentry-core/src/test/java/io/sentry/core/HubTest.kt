@@ -12,15 +12,15 @@ class HubTest {
 
     @Test
     fun `when cloning Scope it returns the same values`() {
-        val scope = Scope()
-        scope.extra["test"] = "test"
+        val scope = Scope(10)
+        scope.extra["extra"] = "extra"
         val breadcrumb = Breadcrumb()
-        breadcrumb.message = "test"
+        breadcrumb.message = "message"
         scope.breadcrumbs.add(breadcrumb)
         scope.level = SentryLevel.DEBUG
-        scope.transaction = "test"
-        scope.fingerprint.add("test")
-        scope.tags["test"] = "test"
+        scope.transaction = "transaction"
+        scope.fingerprint.add("fingerprint")
+        scope.tags["tags"] = "tags"
         val user = User()
         user.email = "a@a.com"
         scope.user = user
@@ -28,11 +28,11 @@ class HubTest {
         val clone = scope.clone()
         assertNotNull(clone)
         assertNotSame(scope, clone)
-        assertEquals("test", clone.extra["test"])
-        assertEquals("test", clone.breadcrumbs[0].message)
-        assertEquals("test", scope.transaction)
-        assertEquals("test", scope.fingerprint[0])
-        assertEquals("test", clone.tags["test"])
+        assertEquals("extra", clone.extra["extra"])
+        assertEquals("message", clone.breadcrumbs.first().message)
+        assertEquals("transaction", scope.transaction)
+        assertEquals("fingerprint", scope.fingerprint[0])
+        assertEquals("tags", clone.tags["tags"])
         assertEquals("a@a.com", clone.user.email)
     }
 
@@ -44,5 +44,19 @@ class HubTest {
         options.addIntegration(integrationMock)
         val expected = Hub(options)
         verify(integrationMock).register(expected, options)
+    }
+
+    @Test
+    fun `when hub is initialized, breadcrumbs are capped as per options`() {
+        val options = SentryOptions()
+        options.maxBreadcrumbs = 5
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        (1..10).forEach { _ -> sut.addBreadcrumb(Breadcrumb()) }
+        var actual = 0
+        sut.configureScope {
+            actual = it.breadcrumbs.size
+        }
+        assertEquals(options.maxBreadcrumbs, actual)
     }
 }

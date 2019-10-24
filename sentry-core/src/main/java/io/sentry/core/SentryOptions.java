@@ -20,6 +20,7 @@ public class SentryOptions {
   private String sentryClientName;
   private BeforeSecondCallback beforeSend;
   private String cacheDirPath;
+  private int maxBreadcrumbs = 100;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -118,6 +119,14 @@ public class SentryOptions {
 
   public void setCacheDirPath(String cacheDirPath) {
     this.cacheDirPath = cacheDirPath;
+  }
+
+  public int getMaxBreadcrumbs() {
+    return maxBreadcrumbs;
+  }
+
+  public void setMaxBreadcrumbs(int maxBreadcrumbs) {
+    this.maxBreadcrumbs = maxBreadcrumbs;
   }
 
   public interface BeforeSecondCallback {
