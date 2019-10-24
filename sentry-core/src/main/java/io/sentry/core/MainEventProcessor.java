@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.exception.SentryExceptionReader;
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SentryException;
 import io.sentry.core.protocol.SentryStackFrame;
@@ -28,6 +29,7 @@ public class MainEventProcessor implements EventProcessor {
 //      List<SentryException> exceptions = new ArrayList<>();
 //      exceptions.add(extractExceptionQueue(event.getThrowable()));
 //      event.setException(exceptions);
+      event.setException(SentryExceptionReader.sentryExceptionReader(throwable));
     }
 
     return event;
@@ -48,7 +50,7 @@ public class MainEventProcessor implements EventProcessor {
 
     for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
       SentryStackFrame stackFrame = new SentryStackFrame();
-      stackFrame.setRawFunction(stackTraceElement.getMethodName());
+      stackFrame.setFunction(stackTraceElement.getMethodName());
       stackFrame.setModule(stackTraceElement.getClassName());
       stackFrame.setFilename(stackTraceElement.getFileName());
       stackFrame.setLineno(stackTraceElement.getLineNumber());

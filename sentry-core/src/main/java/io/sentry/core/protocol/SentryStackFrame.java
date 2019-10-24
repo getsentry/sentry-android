@@ -11,7 +11,7 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
   private Map<String, String> vars;
   private List<Integer> framesOmitted;
   private String filename;
-  private String rawFunction;
+  private String function;
   private String module;
   private Integer lineno;
   private Integer colno;
@@ -24,6 +24,7 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
   private Long symbolAddr;
   private Long instructionAddr;
   private Map<String, Object> unknown;
+  // TODO: missing locals?
 
   public List<String> getPreContext() {
     return preContext;
@@ -65,12 +66,12 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
     this.filename = filename;
   }
 
-  public String getRawFunction() {
-    return rawFunction;
+  public String getFunction() {
+    return function;
   }
 
-  public void setRawFunction(String rawFunction) {
-    this.rawFunction = rawFunction;
+  public void setFunction(String function) {
+    this.function = function;
   }
 
   public String getModule() {
