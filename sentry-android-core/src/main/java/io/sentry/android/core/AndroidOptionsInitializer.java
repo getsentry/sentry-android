@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import android.content.Context;
+import android.os.Build;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -25,7 +26,7 @@ class AndroidOptionsInitializer {
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
 
-    if (options.isEnableNdk()) {
+    if (options.isEnableNdk() && isNdkAvailable()) {
       try {
         // TODO: Create Integrations interface and use that to initialize NDK
         Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
@@ -49,5 +50,9 @@ class AndroidOptionsInitializer {
       envelopesDir.mkdirs();
     }
     options.setCacheDirPath(envelopesDir.getAbsolutePath());
+  }
+
+  private static boolean isNdkAvailable() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
   }
 }
