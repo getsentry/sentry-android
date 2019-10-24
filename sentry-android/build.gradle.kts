@@ -8,9 +8,7 @@ android {
 
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
-        minSdkVersion(Config.Android.minSdkVersion)
-
-        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
+        minSdkVersion(Config.Android.minSdkVersionNdk)
     }
 
     compileOptions {
@@ -28,5 +26,5 @@ android {
 
 dependencies {
     api(project(":sentry-android-core"))
-    // TODO: Add NDK: api(project(":sentry-android-ndk"))
+    api(project(":sentry-android-ndk"))
 }

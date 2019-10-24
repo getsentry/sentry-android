@@ -5,8 +5,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.ILogger
 import io.sentry.core.SentryOptions
+import java.io.File
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -25,9 +27,7 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `logger set to AndroidLogger`() {
         val sentryOptions = SentryOptions()
-        val mockContext = mock<Context> {
-            on { applicationContext } doReturn context
-        }
+        val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
         val logger = sentryOptions.javaClass.declaredFields.first { it.name == "logger" }
@@ -41,9 +41,7 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `AndroidEventProcessor added to processors list`() {
         val sentryOptions = SentryOptions()
-        val mockContext = mock<Context> {
-            on { applicationContext } doReturn context
-        }
+        val mockContext = createMockContext()
         val mockLogger = mock<ILogger>()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
@@ -62,5 +60,24 @@ class AndroidOptionsInitializerTest {
         AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
         val actual = sentryOptions.eventProcessors.firstOrNull { it is DefaultAndroidEventProcessor }
         assertNotNull(actual)
+    }
+
+    @Test
+    fun `envelopesDir should be created at initialization`() {
+        val sentryOptions = SentryOptions()
+        val mockContext = createMockContext()
+        val mockLogger = mock<ILogger>()
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
+
+        assertTrue(sentryOptions.cacheDirPath.endsWith("${File.separator}cache${File.separator}sentry-envelopes"))
+    }
+
+    private fun createMockContext(): Context {
+        val mockContext = mock<Context> {
+            on { applicationContext } doReturn context
+        }
+        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
+        return mockContext
     }
 }

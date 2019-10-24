@@ -23,8 +23,8 @@ import java.io.*;
 import java.util.*;
 
 public class DefaultAndroidEventProcessor implements EventProcessor {
-  Context context;
-  SentryOptions options;
+  final Context context;
+  final SentryOptions options;
 
   // it could also be a parameter and get from Sentry.init(...)
   private static final Date appStartTime = DateUtils.getCurrentDateTime();
@@ -85,12 +85,12 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   private SdkVersion getSdkVersion() {
     SdkVersion sdkVersion = new SdkVersion();
 
-    sdkVersion.setName("sentry-android");
+    sdkVersion.setName("sentry.java.android");
     String version = BuildConfig.VERSION_NAME;
     sdkVersion.setVersion(version);
     sdkVersion.addPackage("sentry-core", version);
     sdkVersion.addPackage("sentry-android-core", version);
-    // sentry-android-ndk, integrations...
+    // TODO: sentry-android-ndk, integrations...
 
     return sdkVersion;
   }

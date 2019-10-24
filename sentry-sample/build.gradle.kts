@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "io.sentry.sample"
-        minSdkVersion(Config.Android.minSdkVersion)
+        minSdkVersion(Config.Android.minSdkVersionNdk) // NDK requires a higher API level than core.
         targetSdkVersion(Config.Android.targetSdkVersion)
         versionCode = 1
         versionName = "1.0"
@@ -20,8 +20,6 @@ android {
         testInstrumentationRunnerArguments = mapOf(
             "clearPackageData" to "true"
         )
-
-        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
     }
 
     buildTypes {
@@ -37,9 +35,23 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    // due https://github.com/gradle/gradle/issues/11083
+//    kotlinOptions {
+//        jvmTarget = JavaVersion.VERSION_1_8.toString()
+//    }
+    withGroovyBuilder {
+        "kotlinOptions" {
+            setProperty("jvmTarget", JavaVersion.VERSION_1_8.toString())
+        }
     }
+
+    // if travis ci hangs again on this task, remove comments
+//    tasks.all {
+//        if (this.name == "signingConfigWriterDebugAndroidTest") {
+//            this.enabled = false
+//            println("${this.name} is SKIPPED")
+//        }
+//    }
 
 }
 

@@ -8,15 +8,18 @@ public class SentryOptions {
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
 
   private List<EventProcessor> eventProcessors = new ArrayList<>();
+  private List<Integration> integrations = new ArrayList<>();
 
   private String dsn;
   private long shutdownTimeoutMills;
   private boolean debug;
+  private boolean enableNdk = true;
   private @NonNull ILogger logger = NoOpLogger.getInstance();
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
   private ISerializer serializer;
   private String sentryClientName;
   private BeforeSecondCallback beforeSend;
+  private String cacheDirPath;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -24,6 +27,14 @@ public class SentryOptions {
 
   public List<EventProcessor> getEventProcessors() {
     return eventProcessors;
+  }
+
+  public void addIntegration(Integration integration) {
+    integrations.add(integration);
+  }
+
+  public List<Integration> getIntegrations() {
+    return integrations;
   }
 
   public String getDsn() {
@@ -69,6 +80,14 @@ public class SentryOptions {
     this.serializer = serializer;
   }
 
+  public boolean isEnableNdk() {
+    return enableNdk;
+  }
+
+  public void setEnableNdk(boolean enableNdk) {
+    this.enableNdk = enableNdk;
+  }
+
   public long getShutdownTimeout() {
     return shutdownTimeoutMills;
   }
@@ -93,7 +112,19 @@ public class SentryOptions {
     this.beforeSend = beforeSend;
   }
 
+  public String getCacheDirPath() {
+    return cacheDirPath;
+  }
+
+  public void setCacheDirPath(String cacheDirPath) {
+    this.cacheDirPath = cacheDirPath;
+  }
+
   public interface BeforeSecondCallback {
     SentryEvent execute(SentryEvent event);
+  }
+
+  public SentryOptions() {
+    integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }

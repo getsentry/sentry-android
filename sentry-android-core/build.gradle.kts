@@ -12,6 +12,7 @@ android {
 
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
+        minSdkVersion(Config.Android.minSdkVersion)
         javaCompileOptions {
             annotationProcessorOptions {
                 includeCompileClasspath = true
@@ -19,8 +20,6 @@ android {
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        defaultPublishConfig = "${Config.Flavors.production}Release"
 
         versionName = "$version"
     }
@@ -32,24 +31,19 @@ android {
         }
     }
 
-    flavorDimensions(Config.Flavors.dimension)
-
-    productFlavors {
-        create(Config.Flavors.staging) {
-            minSdkVersion(Config.Android.minSdkVersionDebug)
-        }
-        create(Config.Flavors.production) {
-            minSdkVersion(Config.Android.minSdkVersion)
-        }
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    // due https://github.com/gradle/gradle/issues/11083
+//    kotlinOptions {
+//        jvmTarget = JavaVersion.VERSION_1_8.toString()
+//    }
+    withGroovyBuilder {
+        "kotlinOptions" {
+            setProperty("jvmTarget", JavaVersion.VERSION_1_8.toString())
+        }
     }
 
     testOptions {
