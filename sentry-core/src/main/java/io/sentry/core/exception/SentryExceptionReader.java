@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SentryExceptionReader {
+public final class SentryExceptionReader {
 
   /**
    * Creates a new instance from the given {@code throwable}.
@@ -45,7 +45,7 @@ public class SentryExceptionReader {
    */
   private static SentryException sentryExceptionReader(
     Throwable throwable,
-    StackTraceElement[] childExceptionStackTrace,
+    StackTraceElement[] childExceptionStackTrace, // TODO: do we need that?
     Mechanism exceptionMechanism) {
 
     Package exceptionPackage = throwable.getClass().getPackage();
@@ -63,18 +63,14 @@ public class SentryExceptionReader {
       : null;
     // TODO: whats about those missing fields? message, classname, packagename, ...
 
-//    StackTraceReader stackTraceInterface = new StackTraceReader(
-//      throwable.getStackTrace(),
-//      childExceptionStackTrace,
-//      FrameCache.get(throwable));
     SentryStackTrace sentryStackTrace = new SentryStackTrace();
     sentryStackTrace.setFrames(
       Arrays.asList(SentryStackFrameReader.fromStackTraceElements(
         throwable.getStackTrace(), null))); // TODO: cached frames
 
-//    SentryStackTrace sentryStackTrace = new SentryStackTrace();
     exception.setStacktrace(sentryStackTrace);
     exception.setType("ValueError"); // TODO ?
+//    exception.setValue(); type or value is mandatory
 
     exception.setMechanism(exceptionMechanism);
     return exception;

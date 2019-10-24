@@ -4,7 +4,7 @@ import io.sentry.core.protocol.SentryStackFrame;
 
 import java.util.Map;
 
-public class SentryStackFrameReader {
+public final class SentryStackFrameReader {
 
   /**
    * Convert an array of {@link StackTraceElement}s to {@link SentryStackFrame}s.

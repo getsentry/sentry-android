@@ -26,9 +26,6 @@ public class MainEventProcessor implements EventProcessor {
         event.setMessage(getMessage(throwable));
       }
 
-//      List<SentryException> exceptions = new ArrayList<>();
-//      exceptions.add(extractExceptionQueue(event.getThrowable()));
-//      event.setException(exceptions);
       event.setException(SentryExceptionReader.sentryExceptionReader(throwable));
     }
 
@@ -39,27 +36,5 @@ public class MainEventProcessor implements EventProcessor {
     Message message = new Message();
     message.setFormatted(throwable.getMessage());
     return message;
-  }
-
-  private SentryException extractExceptionQueue(Throwable throwable) {
-    //    throwable.
-
-    SentryException sentryException = new SentryException();
-    SentryStackTrace sentryStackTrace = new SentryStackTrace();
-    List<SentryStackFrame> frames = new ArrayList<>();
-
-    for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
-      SentryStackFrame stackFrame = new SentryStackFrame();
-      stackFrame.setFunction(stackTraceElement.getMethodName());
-      stackFrame.setModule(stackTraceElement.getClassName());
-      stackFrame.setFilename(stackTraceElement.getFileName());
-      stackFrame.setLineno(stackTraceElement.getLineNumber());
-
-      frames.add(stackFrame);
-    }
-    sentryStackTrace.setFrames(frames);
-    sentryException.setStacktrace(sentryStackTrace);
-
-    return sentryException;
   }
 }

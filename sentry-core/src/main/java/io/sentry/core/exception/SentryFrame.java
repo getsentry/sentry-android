@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: should we use that? why?
 public class SentryFrame {
   /**
    * Method that this frame originated in.
