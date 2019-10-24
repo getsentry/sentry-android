@@ -2,8 +2,9 @@ package io.sentry.core;
 
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SentryException;
+import io.sentry.core.protocol.SentryStackFrame;
+import io.sentry.core.protocol.SentryStackTrace;
 import io.sentry.core.util.Objects;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class MainEventProcessor implements EventProcessor {
         event.setMessage(getMessage(throwable));
       }
 
-      event.setExceptions(getExceptions(throwable));
+      //      event.set
     }
 
     return event;
@@ -36,9 +37,25 @@ public class MainEventProcessor implements EventProcessor {
     return message;
   }
 
-  private List<SentryException> getExceptions(Throwable throwable) {
-    List<SentryException> exceptions = new ArrayList<>();
+  private SentryException extractExceptionQueue(Throwable throwable) {
+    //    throwable.
 
-    return exceptions;
+    SentryException sentryException = new SentryException();
+    SentryStackTrace sentryStackTrace = new SentryStackTrace();
+    List<SentryStackFrame> frames = new ArrayList<>();
+
+    for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
+      SentryStackFrame stackFrame = new SentryStackFrame();
+      stackFrame.setFunction(stackTraceElement.getMethodName());
+      stackFrame.setModule(stackTraceElement.getClassName());
+      stackFrame.setFilename(stackTraceElement.getFileName());
+      stackFrame.setLineno(stackTraceElement.getLineNumber());
+
+      frames.add(stackFrame);
+    }
+    sentryStackTrace.setFrames(frames);
+    sentryException.setStacktrace(sentryStackTrace);
+
+    return sentryException;
   }
 }
