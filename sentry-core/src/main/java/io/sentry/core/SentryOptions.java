@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import io.sentry.core.util.NonNull;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class SentryOptions {
   private String sentryClientName;
   private BeforeSecondCallback beforeSend;
   private String cacheDirPath;
+  private Proxy proxy;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -118,6 +120,14 @@ public class SentryOptions {
 
   public void setCacheDirPath(String cacheDirPath) {
     this.cacheDirPath = cacheDirPath;
+  }
+
+  public Proxy getProxy() {
+    return proxy;
+  }
+
+  public void setProxy(Proxy proxy) {
+    this.proxy = proxy;
   }
 
   public interface BeforeSecondCallback {
