@@ -20,6 +20,8 @@ public class SentryOptions {
   private String sentryClientName;
   private BeforeSecondCallback beforeSend;
   private String cacheDirPath;
+  private String release;
+  private String environment;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -118,6 +120,22 @@ public class SentryOptions {
 
   public void setCacheDirPath(String cacheDirPath) {
     this.cacheDirPath = cacheDirPath;
+  }
+
+  public String getRelease() {
+    return release;
+  }
+
+  public void setRelease(String release) {
+    this.release = release;
+  }
+
+  public String getEnvironment() {
+    return environment;
+  }
+
+  public void setEnvironment(String environment) {
+    this.environment = environment;
   }
 
   public interface BeforeSecondCallback {
