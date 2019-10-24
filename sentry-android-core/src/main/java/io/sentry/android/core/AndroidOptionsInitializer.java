@@ -2,7 +2,6 @@ package io.sentry.android.core;
 
 import android.content.Context;
 import io.sentry.core.ILogger;
-import io.sentry.core.MainEventProcessor;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import java.io.File;
@@ -56,7 +55,7 @@ class AndroidOptionsInitializer {
   }
 
   private static void addProcessors(SentryOptions options, Context context) {
-    options.addEventProcessor(new MainEventProcessor(options));
+    //    options.addEventProcessor(new MainEventProcessor(options));
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
   }
 }

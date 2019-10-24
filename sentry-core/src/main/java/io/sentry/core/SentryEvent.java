@@ -32,7 +32,6 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
   private Map<String, String> tags = new HashMap<>();
   private Map<String, Object> extra = new HashMap<>();
   private Map<String, Object> unknown;
-  // TODO modules is missing?
 
   SentryEvent(SentryId eventId, Date timestamp) {
     this.eventId = eventId;
@@ -134,14 +133,6 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
 
   public void setThrowable(Throwable throwable) {
     this.throwable = throwable;
-  }
-
-  public void setThreads(SentryValues<SentryThread> threads) {
-    this.threads = threads;
-  }
-
-  public void setExceptions(SentryValues<SentryException> exceptions) {
-    this.exception = exceptions;
   }
 
   public SentryLevel getLevel() {

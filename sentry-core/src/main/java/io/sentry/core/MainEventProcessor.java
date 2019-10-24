@@ -1,13 +1,7 @@
 package io.sentry.core;
 
 import io.sentry.core.exception.SentryExceptionReader;
-import io.sentry.core.protocol.Message;
-import io.sentry.core.protocol.SentryException;
-import io.sentry.core.protocol.SentryStackFrame;
-import io.sentry.core.protocol.SentryStackTrace;
 import io.sentry.core.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainEventProcessor implements EventProcessor {
 
@@ -22,19 +16,19 @@ public class MainEventProcessor implements EventProcessor {
     Throwable throwable = event.getThrowable();
     if (throwable != null) {
 
-      if (event.getMessage() == null) {
-        event.setMessage(getMessage(throwable));
-      }
+      //      if (event.getMessage() == null) {
+      //        event.setMessage(getMessage(throwable));
+      //      }
 
-      event.setException(SentryExceptionReader.sentryExceptionReader(throwable));
+      event.setException(SentryExceptionReader.createSentryException(throwable));
     }
 
     return event;
   }
 
-  private Message getMessage(Throwable throwable) {
-    Message message = new Message();
-    message.setFormatted(throwable.getMessage());
-    return message;
-  }
+  //  private Message getMessage(Throwable throwable) {
+  //    Message message = new Message();
+  //    message.setFormatted(throwable.getMessage());
+  //    return message;
+  //  }
 }
