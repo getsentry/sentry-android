@@ -4,6 +4,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import io.sentry.core.protocol.User
 import io.sentry.core.transport.AsyncConnection
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -155,5 +156,49 @@ class SentryClientTest {
         val sut = fixture.getSut()
         sut.captureEvent(event)
         assertEquals(expected, event.environment)
+    }
+
+    @Test
+    fun `when captureEvent with scope, event should have its data`() {
+        val event = SentryEvent()
+        val scope = createScope()
+
+        val sut = fixture.getSut()
+
+        sut.captureEvent(event, scope)
+        assertEquals("message", event.breadcrumbs[0].message)
+        assertEquals("extra", event.extra["extra"])
+        assertEquals("tags", event.tags["tags"])
+        assertEquals("fp", event.fingerprint[0])
+        assertEquals("transaction", event.transaction)
+        assertEquals("id", event.user.id)
+    }
+
+    @Test
+    fun `when captureEvent with scope, event should have its data but Level`() {
+        val event = SentryEvent()
+        event.level = SentryLevel.DEBUG
+        val scope = createScope()
+
+        val sut = fixture.getSut()
+
+        sut.captureEvent(event, scope)
+        assertEquals(SentryLevel.DEBUG, event.level)
+    }
+
+    private fun createScope(): Scope {
+        return Scope().apply {
+            breadcrumbs.add(Breadcrumb().apply {
+                message = "message"
+            })
+            extra["extra"] = "extra"
+            tags["tags"] = "tags"
+            fingerprint.add("fp")
+            transaction = "transaction"
+            level = SentryLevel.FATAL
+            user = User().apply {
+                id = "id"
+            }
+        }
     }
 }
