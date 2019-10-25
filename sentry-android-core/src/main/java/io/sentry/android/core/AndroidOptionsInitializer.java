@@ -4,11 +4,7 @@ import android.content.Context;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.lang.reflect.Method;
 
 class AndroidOptionsInitializer {

@@ -1,7 +1,5 @@
 package io.sentry.android.ndk;
 
-import java.io.File;
-
 import io.sentry.core.SentryOptions;
 
 public class SentryNdk {
