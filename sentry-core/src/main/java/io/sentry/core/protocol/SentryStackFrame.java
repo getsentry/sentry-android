@@ -19,12 +19,12 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
   private String contextLine;
   private Boolean inApp;
   private String _package; // TODO: _package as its a reserverd word
+  private Boolean _native; // TODO: _native as its a reserverd word
   private String platform;
   private Long imageAddr;
   private Long symbolAddr;
   private Long instructionAddr;
   private Map<String, Object> unknown;
-  // TODO: missing locals?
 
   public List<String> getPreContext() {
     return preContext;
@@ -160,6 +160,14 @@ public class SentryStackFrame implements IUnknownPropertiesConsumer {
 
   public void setInstructionAddr(Long instructionAddr) {
     this.instructionAddr = instructionAddr;
+  }
+
+  public Boolean isNative() {
+    return _native;
+  }
+
+  public void setNative(Boolean _native) {
+    this._native = _native;
   }
 
   @Override

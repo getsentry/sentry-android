@@ -35,11 +35,24 @@ public class SentryClient implements ISentryClient {
   public SentryId captureEvent(SentryEvent event, @Nullable Scope scope) {
     log(options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
+    // TODO: This will go into the MainEventProcessor
+    if (event.getThreads() == null) {
+      SentryThreadFactory sentryThreadFactory = new SentryThreadFactory();
+      event.setThreads(sentryThreadFactory.getCurrentThreads());
+    }
+    // TODO: To be done in the main processor
+    if (event.getRelease() == null) {
+      event.setRelease(options.getRelease());
+    }
+    if (event.getEnvironment() == null) {
+      event.setEnvironment(options.getEnvironment());
+    }
+
     for (EventProcessor processor : options.getEventProcessors()) {
       processor.process(event);
     }
 
-    SentryOptions.BeforeSecondCallback beforeSend = options.getBeforeSend();
+    SentryOptions.BeforeSendCallback beforeSend = options.getBeforeSend();
     if (beforeSend != null) {
       event = beforeSend.execute(event);
       if (event == null) {

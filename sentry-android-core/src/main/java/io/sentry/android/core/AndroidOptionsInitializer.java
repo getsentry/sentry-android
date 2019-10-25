@@ -55,7 +55,6 @@ class AndroidOptionsInitializer {
   }
 
   private static void addProcessors(SentryOptions options, Context context) {
-    //    options.addEventProcessor(new MainEventProcessor(options));
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
   }
 }

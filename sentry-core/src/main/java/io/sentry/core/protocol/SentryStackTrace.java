@@ -10,6 +10,11 @@ public class SentryStackTrace implements IUnknownPropertiesConsumer {
   // TODO registers is missing?
   private Map<String, Object> unknown;
 
+  public SentryStackTrace() {}
+
+  public SentryStackTrace(List<SentryStackFrame> frames) {
+    this.frames = frames;
+  }
   /**
    * Gets the frames of this stacktrace.
    *

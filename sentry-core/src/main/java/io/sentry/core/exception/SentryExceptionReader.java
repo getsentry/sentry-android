@@ -75,7 +75,7 @@ public final class SentryExceptionReader {
   private static List<SentryStackFrame> getStackFrames(StackTraceElement[] elements) {
     List<SentryStackFrame> sentryStackFrames = new ArrayList<>();
 
-    for(StackTraceElement item : elements) {
+    for (StackTraceElement item : elements) {
       SentryStackFrame sentryStackFrame = new SentryStackFrame();
       sentryStackFrame.setModule(item.getClassName());
       sentryStackFrame.setFunction(item.getMethodName());
