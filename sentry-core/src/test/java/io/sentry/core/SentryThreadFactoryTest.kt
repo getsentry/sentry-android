@@ -34,5 +34,5 @@ class SentryThreadFactoryTest {
 
     @Test
     fun `when currentThreads is called, some thread stack frames are captured`() =
-        assertTrue(sut.currentThreads.any { it.stacktrace.frames.count() > 0 })
+        assertTrue(sut.currentThreads.filter { it.stacktrace != null }.any { it.stacktrace.frames.count() > 0 })
 }
