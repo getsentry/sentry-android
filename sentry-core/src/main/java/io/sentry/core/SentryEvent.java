@@ -207,7 +207,7 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     return breadcrumbs;
   }
 
-  public void setBreadcrumbs(ArrayList<Breadcrumb> breadcrumbs) {
+  public void setBreadcrumbs(List<Breadcrumb> breadcrumbs) {
     this.breadcrumbs = breadcrumbs;
   }
 
@@ -215,7 +215,7 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     return tags;
   }
 
-  public void setTags(HashMap<String, String> tags) {
+  public void setTags(Map<String, String> tags) {
     this.tags = tags;
   }
 
@@ -223,7 +223,7 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     return extra;
   }
 
-  public void setExtra(HashMap<String, Object> extra) {
+  public void setExtra(Map<String, Object> extra) {
     this.extra = extra;
   }
 
