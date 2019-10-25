@@ -24,15 +24,7 @@ class AndroidOptionsInitializer {
     options.setSentryClientName("sentry.java.android/0.0.1");
 
     ManifestMetadataReader.applyMetadata(context, options);
-    createsEnvelopeDirPath(options, context);
-
-    try {
-      FileReader f = new FileReader("/proc/sys/kernel/random/uuid");
-      BufferedReader br = new BufferedReader(f);
-      System.out.println("Hello: " + br.readLine());
-    } catch (java.io.IOException e) {
-      e.printStackTrace();
-    }
+    initializeCacheDirs(context, options);
 
     if (options.isEnableNdk()) {
       try {
@@ -54,12 +46,10 @@ class AndroidOptionsInitializer {
     options.setSerializer(new AndroidSerializer(options.getLogger()));
   }
 
-  private static void createsEnvelopeDirPath(SentryOptions options, Context context) {
-    File cacheDir = context.getCacheDir().getAbsoluteFile();
-    File envelopesDir = new File(cacheDir, "sentry-envelopes");
-    if (!envelopesDir.exists()) {
-      envelopesDir.mkdirs();
-    }
-    options.setCacheDirPath(envelopesDir.getAbsolutePath());
+  private static void initializeCacheDirs(Context context, SentryOptions options) {
+    File cacheDir = new File(context.getCacheDir(), "sentry");
+    cacheDir.mkdirs();
+    options.setCacheDirPath(cacheDir.getAbsolutePath());
+    (new File(options.getOutboxPath())).mkdirs();
   }
 }

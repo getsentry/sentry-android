@@ -20,8 +20,6 @@ public class SentryNdk {
   }
 
   public static void init(SentryOptions options) {
-    // make sure the cache dir path has been created ahead of time.
-    (new File(options.getOutboxPath())).mkdirs();
     initSentryNative(options);
   }
 }
