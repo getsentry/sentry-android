@@ -43,7 +43,7 @@ JNIEXPORT void JNICALL Java_io_sentry_android_ndk_SentryNdk_initSentryNative(JNI
     jstring dsn = (jstring)(*env)->CallObjectMethod(env, sentry_sdk_options, dsn_mid);
 
     jmethodID is_debug_mid = (*env)->GetMethodID(env, options_cls, "isDebug", "()Z");
-    g_transport_options.debug = (jstring)(*env)->CallBooleanMethod(env, sentry_sdk_options, is_debug_mid);
+    g_transport_options.debug = (*env)->CallBooleanMethod(env, sentry_sdk_options, is_debug_mid);
 
     g_transport_options.env = env;
     g_transport_options.cls = cls;
