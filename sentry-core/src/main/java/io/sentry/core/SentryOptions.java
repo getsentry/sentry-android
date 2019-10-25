@@ -13,7 +13,7 @@ public class SentryOptions {
   private String dsn;
   private long shutdownTimeoutMills;
   private boolean debug;
-  private boolean enableNdk;
+  private boolean enableNdk = true;
   private @NonNull ILogger logger = NoOpLogger.getInstance();
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
   private ISerializer serializer;

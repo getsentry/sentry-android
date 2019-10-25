@@ -35,9 +35,11 @@ class AndroidOptionsInitializer {
         Object[] args = new Object[1];
         args[0] = options;
         method.invoke(null, args);
-      } catch (ClassNotFoundException exc) {
-        options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.");
+      } catch (ClassNotFoundException e) {
+        options.setEnableNdk(false);
+        options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.", e);
       } catch (Exception e) {
+        options.setEnableNdk(false);
         options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
       }
     }

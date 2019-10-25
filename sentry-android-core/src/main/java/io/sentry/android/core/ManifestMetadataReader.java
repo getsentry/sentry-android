@@ -34,7 +34,7 @@ class ManifestMetadataReader {
           options.setDsn(dsn);
         }
 
-        boolean ndk = metadata.getBoolean(ENABLE_NDK, false);
+        boolean ndk = metadata.getBoolean(ENABLE_NDK, options.isEnableNdk());
         log(options.getLogger(), SentryLevel.DEBUG, "NDK read: %s", ndk);
         options.setEnableNdk(ndk);
       }
