@@ -1,9 +1,10 @@
-package io.sentry.core.exception;
+package io.sentry.core;
 
+import io.sentry.core.exception.ExceptionMechanismThrowable;
 import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.protocol.SentryException;
-import io.sentry.core.protocol.SentryStackFrame;
 import io.sentry.core.protocol.SentryStackTrace;
+import io.sentry.core.util.VisibleForTesting;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -11,15 +12,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public final class SentryExceptionReader {
-
+/** class responsible for converting Java Throwable to SentryExceptions */
+class SentryExceptionFactory {
   /**
    * Creates a new instance from the given {@code throwable}.
    *
    * @param throwable the {@link Throwable} to build this instance from
    */
-  public static List<SentryException> createSentryException(final Throwable throwable) {
-    return createSentryException(extractExceptionQueue(throwable));
+  List<SentryException> getSentryExceptions(final Throwable throwable) {
+    return getSentryExceptions(extractExceptionQueue(throwable));
   }
 
   /**
@@ -27,8 +28,7 @@ public final class SentryExceptionReader {
    *
    * @param exceptions a {@link Deque} of {@link SentryException} to build this instance from
    */
-  private static List<SentryException> createSentryException(
-      final Deque<SentryException> exceptions) {
+  private List<SentryException> getSentryExceptions(final Deque<SentryException> exceptions) {
     return new ArrayList<>(exceptions);
   }
 
@@ -42,8 +42,8 @@ public final class SentryExceptionReader {
    * @param exceptionMechanism The optional {@link Mechanism} of the {@code throwable}. Or null if
    *     none exist.
    */
-  private static SentryException createSentryException(
-      Throwable throwable, Mechanism exceptionMechanism) {
+  private SentryException getSentryException(
+      final Throwable throwable, final Mechanism exceptionMechanism) {
 
     Package exceptionPackage = throwable.getClass().getPackage();
     String fullClassName = throwable.getClass().getName();
@@ -61,7 +61,9 @@ public final class SentryExceptionReader {
 
     SentryStackTrace sentryStackTrace = new SentryStackTrace();
 
-    sentryStackTrace.setFrames(getStackFrames(throwable.getStackTrace()));
+    SentryStackTraceFactory sentryStackTraceFactory = new SentryStackTraceFactory();
+
+    sentryStackTrace.setFrames(sentryStackTraceFactory.getStackFrames(throwable.getStackTrace()));
 
     exception.setStacktrace(sentryStackTrace);
     exception.setType(exceptionClassName);
@@ -72,20 +74,6 @@ public final class SentryExceptionReader {
     return exception;
   }
 
-  private static List<SentryStackFrame> getStackFrames(StackTraceElement[] elements) {
-    List<SentryStackFrame> sentryStackFrames = new ArrayList<>();
-
-    for (StackTraceElement item : elements) {
-      SentryStackFrame sentryStackFrame = new SentryStackFrame();
-      sentryStackFrame.setModule(item.getClassName());
-      sentryStackFrame.setFunction(item.getMethodName());
-      sentryStackFrame.setFilename(item.getFileName());
-      sentryStackFrame.setLineno(item.getLineNumber());
-      sentryStackFrames.add(sentryStackFrame);
-    }
-    return sentryStackFrames;
-  }
-
   /**
    * Transforms a {@link Throwable} into a Queue of {@link SentryException}.
    *
@@ -94,26 +82,29 @@ public final class SentryExceptionReader {
    * @param throwable throwable to transform in a queue of exceptions.
    * @return a queue of exception with StackTrace.
    */
-  private static Deque<SentryException> extractExceptionQueue(Throwable throwable) {
+  @VisibleForTesting
+  Deque<SentryException> extractExceptionQueue(final Throwable throwable) {
     Deque<SentryException> exceptions = new ArrayDeque<>();
     Set<Throwable> circularityDetector = new HashSet<>();
     Mechanism exceptionMechanism;
 
+    Throwable currentThrowable = throwable;
+
     // Stack the exceptions to send them in the reverse order
-    while (throwable != null && circularityDetector.add(throwable)) {
-      if (throwable instanceof ExceptionMechanismThrowable) {
+    while (currentThrowable != null && circularityDetector.add(currentThrowable)) {
+      if (currentThrowable instanceof ExceptionMechanismThrowable) {
         // this is for ANR I believe
         ExceptionMechanismThrowable exceptionMechanismThrowable =
-            (ExceptionMechanismThrowable) throwable;
+            (ExceptionMechanismThrowable) currentThrowable;
         exceptionMechanism = exceptionMechanismThrowable.getExceptionMechanism();
-        throwable = exceptionMechanismThrowable.getThrowable();
+        currentThrowable = exceptionMechanismThrowable.getThrowable();
       } else {
         exceptionMechanism = null;
       }
 
-      SentryException exception = createSentryException(throwable, exceptionMechanism);
+      SentryException exception = getSentryException(currentThrowable, exceptionMechanism);
       exceptions.add(exception);
-      throwable = throwable.getCause();
+      currentThrowable = currentThrowable.getCause();
     }
 
     return exceptions;

@@ -1,6 +1,5 @@
 package io.sentry.core;
 
-import io.sentry.core.exception.SentryExceptionReader;
 import io.sentry.core.util.Objects;
 
 public class MainEventProcessor implements EventProcessor {
@@ -15,20 +14,10 @@ public class MainEventProcessor implements EventProcessor {
   public SentryEvent process(SentryEvent event) {
     Throwable throwable = event.getThrowable();
     if (throwable != null) {
-
-      //      if (event.getMessage() == null) {
-      //        event.setMessage(getMessage(throwable));
-      //      }
-
-      event.setException(SentryExceptionReader.createSentryException(throwable));
+      SentryExceptionFactory sentryExceptionFactory = new SentryExceptionFactory();
+      event.setException(sentryExceptionFactory.getSentryExceptions(throwable));
     }
 
     return event;
   }
-
-  //  private Message getMessage(Throwable throwable) {
-  //    Message message = new Message();
-  //    message.setFormatted(throwable.getMessage());
-  //    return message;
-  //  }
 }
