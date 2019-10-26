@@ -11,7 +11,7 @@ public class SentryNdk {
     System.loadLibrary("sentry-android");
   }
 
-  private static native void initSentryNative(SentryOptions cacheDirPath);
+  private static native void initSentryNative(SentryOptions options);
 
   public static void notifyNewSerializedEnvelope(String path) {
     System.out.println("envelope written to " + path);
