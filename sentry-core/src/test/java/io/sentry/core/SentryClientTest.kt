@@ -159,7 +159,7 @@ class SentryClientTest {
     }
 
     @Test
-    fun `when captureEvent with scope, event should have its data`() {
+    fun `when captureEvent with scope, event should have its data if not set`() {
         val event = SentryEvent()
         val scope = createScope()
 
@@ -172,10 +172,41 @@ class SentryClientTest {
         assertEquals("fp", event.fingerprint[0])
         assertEquals("transaction", event.transaction)
         assertEquals("id", event.user.id)
+        assertEquals(SentryLevel.FATAL, event.level)
     }
 
     @Test
-    fun `when captureEvent with scope, event should have its data but Level`() {
+    fun `when captureEvent with scope, event data has priority over scope but level`() {
+        val event = SentryEvent().apply {
+            addBreadcrumb(Breadcrumb().apply {
+                message = "eventMessage"
+            })
+            addExtra("eventExtra", "eventExtra")
+            addTag("eventTag", "eventTag")
+            addFingerprint("eventFp")
+            transaction = "eventTransaction"
+            level = SentryLevel.DEBUG
+            user = User().apply {
+                id = "eventId"
+            }
+        }
+
+        val scope = createScope()
+
+        val sut = fixture.getSut()
+
+        sut.captureEvent(event, scope)
+        assertEquals("eventMessage", event.breadcrumbs[0].message)
+        assertEquals("eventExtra", event.extra["eventExtra"])
+        assertEquals("eventTag", event.tags["eventTag"])
+        assertEquals("eventFp", event.fingerprint[0])
+        assertEquals("eventTransaction", event.transaction)
+        assertEquals("eventId", event.user.id)
+        assertEquals(SentryLevel.FATAL, event.level)
+    }
+
+    @Test
+    fun `when captureEvent with scope, event should have its level if set`() {
         val event = SentryEvent()
         event.level = SentryLevel.DEBUG
         val scope = createScope()
@@ -183,7 +214,7 @@ class SentryClientTest {
         val sut = fixture.getSut()
 
         sut.captureEvent(event, scope)
-        assertEquals(SentryLevel.DEBUG, event.level)
+        assertEquals(SentryLevel.FATAL, event.level)
     }
 
     private fun createScope(): Scope {

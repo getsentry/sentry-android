@@ -49,12 +49,27 @@ public class SentryClient implements ISentryClient {
     }
 
     if (scope != null) {
-      event.setTransaction(scope.getTransaction());
-      event.setUser(scope.getUser());
-      event.setFingerprint(scope.getFingerprint());
-      event.setBreadcrumbs(scope.getBreadcrumbs());
-      event.setTags(scope.getTags());
-      event.setExtra(scope.getExtra());
+      if (event.getTransaction() == null) {
+        event.setTransaction(scope.getTransaction());
+      }
+      if (event.getUser() == null) {
+        event.setUser(scope.getUser());
+      }
+      if (event.getFingerprint() == null) {
+        event.setFingerprint(scope.getFingerprint());
+      }
+      if (event.getBreadcrumbs() == null) {
+        event.setBreadcrumbs(scope.getBreadcrumbs());
+      }
+      if (event.getTags() == null) {
+        event.setTags(scope.getTags());
+      }
+      if (event.getExtra() == null) {
+        event.setExtra(scope.getExtra());
+      }
+      if (scope.getLevel() != null) {
+        event.setLevel(scope.getLevel());
+      }
     }
 
     for (EventProcessor processor : options.getEventProcessors()) {

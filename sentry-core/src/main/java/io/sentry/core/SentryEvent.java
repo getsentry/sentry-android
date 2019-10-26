@@ -27,10 +27,10 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
   private Request request;
   private SdkVersion sdk;
   private Contexts contexts = new Contexts();
-  private List<String> fingerprint = new ArrayList<>();
-  private List<Breadcrumb> breadcrumbs = new ArrayList<>();
-  private Map<String, String> tags = new HashMap<>();
-  private Map<String, Object> extra = new HashMap<>();
+  private List<String> fingerprint;
+  private List<Breadcrumb> breadcrumbs;
+  private Map<String, String> tags;
+  private Map<String, Object> extra;
   private Map<String, Object> unknown;
 
   SentryEvent(SentryId eventId, Date timestamp) {
@@ -203,12 +203,26 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.fingerprint = fingerprint;
   }
 
+  public void addFingerprint(String fingerprint) {
+    if (this.fingerprint == null) {
+      this.fingerprint = new ArrayList<>();
+    }
+    this.fingerprint.add(fingerprint);
+  }
+
   public List<Breadcrumb> getBreadcrumbs() {
     return breadcrumbs;
   }
 
   public void setBreadcrumbs(List<Breadcrumb> breadcrumbs) {
     this.breadcrumbs = breadcrumbs;
+  }
+
+  public void addBreadcrumb(Breadcrumb breadcrumb) {
+    if (breadcrumbs == null) {
+      breadcrumbs = new ArrayList<>();
+    }
+    breadcrumbs.add(breadcrumb);
   }
 
   public Map<String, String> getTags() {
@@ -219,12 +233,26 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.tags = tags;
   }
 
+  public void addTag(String key, String value) {
+    if (tags == null) {
+      tags = new HashMap<>();
+    }
+    tags.put(key, value);
+  }
+
   public Map<String, Object> getExtra() {
     return extra;
   }
 
   public void setExtra(Map<String, Object> extra) {
     this.extra = extra;
+  }
+
+  public void addExtra(String key, Object value) {
+    if (extra == null) {
+      extra = new HashMap<>();
+    }
+    extra.put(key, value);
   }
 
   public Contexts getContexts() {
