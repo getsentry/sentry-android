@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SentryExceptionFactoryTest {
-    private val sut = SentryExceptionFactory()
+    private val sut = SentryExceptionFactory(SentryStackTraceFactory())
 
     @Test
     fun `when getSentryExceptions is called passing an Exception, not empty result`() {

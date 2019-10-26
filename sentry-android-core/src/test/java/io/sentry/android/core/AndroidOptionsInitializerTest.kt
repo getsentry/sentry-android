@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.ILogger
+import io.sentry.core.MainEventProcessor
 import io.sentry.core.SentryOptions
 import java.io.File
 import kotlin.test.BeforeTest
@@ -52,13 +53,11 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `MainEventProcessor added to processors list and its the 1st`() {
         val sentryOptions = SentryOptions()
-        val mockContext = mock<Context> {
-            on { applicationContext } doReturn context
-        }
+        val mockContext = createMockContext()
         val mockLogger = mock<ILogger>()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
-        val actual = sentryOptions.eventProcessors.firstOrNull { it is DefaultAndroidEventProcessor }
+        val actual = sentryOptions.eventProcessors.firstOrNull { it is MainEventProcessor }
         assertNotNull(actual)
     }
 

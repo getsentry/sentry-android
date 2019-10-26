@@ -4,6 +4,7 @@ import io.sentry.core.exception.ExceptionMechanismThrowable;
 import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.protocol.SentryException;
 import io.sentry.core.protocol.SentryStackTrace;
+import io.sentry.core.util.Objects;
 import io.sentry.core.util.VisibleForTesting;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -14,6 +15,14 @@ import java.util.Set;
 
 /** class responsible for converting Java Throwable to SentryExceptions */
 class SentryExceptionFactory {
+
+  private final SentryStackTraceFactory sentryStackTraceFactory;
+
+  public SentryExceptionFactory(SentryStackTraceFactory sentryStackTraceFactory) {
+    this.sentryStackTraceFactory =
+        Objects.requireNonNull(sentryStackTraceFactory, "The SentryStackTraceFactory is required.");
+  }
+
   /**
    * Creates a new instance from the given {@code throwable}.
    *
@@ -60,9 +69,6 @@ class SentryExceptionFactory {
     String exceptionPackageName = exceptionPackage != null ? exceptionPackage.getName() : null;
 
     SentryStackTrace sentryStackTrace = new SentryStackTrace();
-
-    SentryStackTraceFactory sentryStackTraceFactory = new SentryStackTraceFactory();
-
     sentryStackTrace.setFrames(sentryStackTraceFactory.getStackFrames(throwable.getStackTrace()));
 
     exception.setStacktrace(sentryStackTrace);

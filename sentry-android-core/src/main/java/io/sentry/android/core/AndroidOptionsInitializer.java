@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import android.content.Context;
+import android.os.Build;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -20,29 +21,28 @@ class AndroidOptionsInitializer {
     options.setSentryClientName("sentry.java.android/0.0.1");
 
     ManifestMetadataReader.applyMetadata(context, options);
+    createsEnvelopeDirPath(options, context);
 
-    if (options.isEnableNdk()) {
+    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
+    options.setSerializer(new AndroidSerializer(options.getLogger()));
+
+    if (options.isEnableNdk() && isNdkAvailable()) {
       try {
-        // create sentry-envelopes folder for NDK envelopes
-        createsEnvelopeDirPath(options, context);
-
         // TODO: Create Integrations interface and use that to initialize NDK
         Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
 
-        Method method = cls.getMethod("init", SentryOptions.class, String.class);
-        Object[] args = new Object[2];
+        Method method = cls.getMethod("init", SentryOptions.class);
+        Object[] args = new Object[1];
         args[0] = options;
-        args[1] = options.getCacheDirPath();
         method.invoke(null, args);
-      } catch (ClassNotFoundException exc) {
-        options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.");
+      } catch (ClassNotFoundException e) {
+        options.setEnableNdk(false);
+        options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.", e);
       } catch (Exception e) {
+        options.setEnableNdk(false);
         options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
       }
     }
-
-    options.setSerializer(new AndroidSerializer(options.getLogger()));
-    addProcessors(options, context);
   }
 
   private static void createsEnvelopeDirPath(SentryOptions options, Context context) {
@@ -54,7 +54,7 @@ class AndroidOptionsInitializer {
     options.setCacheDirPath(envelopesDir.getAbsolutePath());
   }
 
-  private static void addProcessors(SentryOptions options, Context context) {
-    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
+  private static boolean isNdkAvailable() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
   }
 }
