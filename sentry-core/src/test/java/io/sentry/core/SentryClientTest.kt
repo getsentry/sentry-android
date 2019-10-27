@@ -176,33 +176,55 @@ class SentryClientTest {
     }
 
     @Test
-    fun `when captureEvent with scope, event data has priority over scope but level`() {
-        val event = SentryEvent().apply {
-            addBreadcrumb(Breadcrumb().apply {
-                message = "eventMessage"
-            })
-            setExtra("eventExtra", "eventExtra")
-            setTag("eventTag", "eventTag")
-            addFingerprint("eventFp")
-            transaction = "eventTransaction"
-            level = SentryLevel.DEBUG
-            user = User().apply {
-                id = "eventId"
-            }
-        }
+    fun `when captureEvent with scope, event data has priority over scope but level and it should append extras, tags and breadcrumbs`() {
+        val event = createEvent()
 
         val scope = createScope()
 
         val sut = fixture.getSut()
 
         sut.captureEvent(event, scope)
+
+        // breadcrumbs are appending
         assertEquals("eventMessage", event.breadcrumbs[0].message)
+        assertEquals("message", event.breadcrumbs[1].message)
+
+        // extras are appending
         assertEquals("eventExtra", event.extra["eventExtra"])
+        assertEquals("extra", event.extra["extra"])
+
+        // tags are appending
         assertEquals("eventTag", event.tags["eventTag"])
+        assertEquals("tags", event.tags["tags"])
+
+        // fingerprint is replaced
         assertEquals("eventFp", event.fingerprint[0])
+        assertEquals(1, event.fingerprint.size)
+
         assertEquals("eventTransaction", event.transaction)
+
         assertEquals("eventId", event.user.id)
+
         assertEquals(SentryLevel.FATAL, event.level)
+    }
+
+    @Test
+    fun `when captureEvent with scope, event extras and tags are only append if key is absent`() {
+        val event = createEvent()
+
+        val scope = createScope()
+        scope.setExtra("eventExtra", "extra")
+        scope.setTag("eventTag", "tags")
+
+        val sut = fixture.getSut()
+
+        sut.captureEvent(event, scope)
+
+        // extras are appending
+        assertEquals("eventExtra", event.extra["eventExtra"])
+
+        // tags are appending
+        assertEquals("eventTag", event.tags["eventTag"])
     }
 
     @Test
@@ -219,16 +241,32 @@ class SentryClientTest {
 
     private fun createScope(): Scope {
         return Scope().apply {
-            breadcrumbs.add(Breadcrumb().apply {
+            addBreadcrumb(Breadcrumb().apply {
                 message = "message"
             })
-            extra["extra"] = "extra"
-            tags["tags"] = "tags"
-            fingerprint.add("fp")
+            setExtra("extra", "extra")
+            setTag("tags", "tags")
+            addFingerprint("fp")
             transaction = "transaction"
             level = SentryLevel.FATAL
             user = User().apply {
                 id = "id"
+            }
+        }
+    }
+
+    private fun createEvent(): SentryEvent {
+        return SentryEvent().apply {
+            addBreadcrumb(Breadcrumb().apply {
+                message = "eventMessage"
+            })
+            setExtra("eventExtra", "eventExtra")
+            setTag("eventTag", "eventTag")
+            addFingerprint("eventFp")
+            transaction = "eventTransaction"
+            level = SentryLevel.DEBUG
+            user = User().apply {
+                id = "eventId"
             }
         }
     }

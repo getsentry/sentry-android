@@ -8,6 +8,7 @@ import io.sentry.core.util.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class SentryClient implements ISentryClient {
   static final String SENTRY_PROTOCOL_VERSION = "7";
@@ -68,12 +69,20 @@ public class SentryClient implements ISentryClient {
       if (event.getTags() == null) {
         event.setTags(new HashMap<>(scope.getTags()));
       } else {
-        event.getTags().putAll(scope.getTags());
+        for (Map.Entry<String, String> item : scope.getTags().entrySet()) {
+          if (!event.getTags().containsKey(item.getKey())) {
+            event.getTags().put(item.getKey(), item.getValue());
+          }
+        }
       }
       if (event.getExtra() == null) {
         event.setExtra(new HashMap<>(scope.getExtra()));
       } else {
-        event.getExtra().putAll(scope.getExtra());
+        for (Map.Entry<String, Object> item : scope.getExtra().entrySet()) {
+          if (!event.getExtra().containsKey(item.getKey())) {
+            event.getExtra().put(item.getKey(), item.getValue());
+          }
+        }
       }
       if (scope.getLevel() != null) {
         event.setLevel(scope.getLevel());
