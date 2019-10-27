@@ -6,6 +6,8 @@ import io.sentry.core.protocol.SentryId;
 import io.sentry.core.transport.AsyncConnection;
 import io.sentry.core.util.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SentryClient implements ISentryClient {
   static final String SENTRY_PROTOCOL_VERSION = "7";
@@ -59,13 +61,19 @@ public class SentryClient implements ISentryClient {
         event.setFingerprint(scope.getFingerprint());
       }
       if (event.getBreadcrumbs() == null) {
-        event.setBreadcrumbs(scope.getBreadcrumbs());
+        event.setBreadcrumbs(new ArrayList<>(scope.getBreadcrumbs()));
+      } else {
+        event.getBreadcrumbs().addAll(scope.getBreadcrumbs());
       }
       if (event.getTags() == null) {
-        event.setTags(scope.getTags());
+        event.setTags(new HashMap<>(scope.getTags()));
+      } else {
+        event.getTags().putAll(scope.getTags());
       }
       if (event.getExtra() == null) {
-        event.setExtra(scope.getExtra());
+        event.setExtra(new HashMap<>(scope.getExtra()));
+      } else {
+        event.getExtra().putAll(scope.getExtra());
       }
       if (scope.getLevel() != null) {
         event.setLevel(scope.getLevel());

@@ -181,8 +181,8 @@ class SentryClientTest {
             addBreadcrumb(Breadcrumb().apply {
                 message = "eventMessage"
             })
-            addExtra("eventExtra", "eventExtra")
-            addTag("eventTag", "eventTag")
+            setExtra("eventExtra", "eventExtra")
+            setTag("eventTag", "eventTag")
             addFingerprint("eventFp")
             transaction = "eventTransaction"
             level = SentryLevel.DEBUG

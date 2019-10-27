@@ -233,7 +233,7 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.tags = tags;
   }
 
-  public void addTag(String key, String value) {
+  public void setTag(String key, String value) {
     if (tags == null) {
       tags = new HashMap<>();
     }
@@ -248,7 +248,7 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.extra = extra;
   }
 
-  public void addExtra(String key, Object value) {
+  public void setExtra(String key, Object value) {
     if (extra == null) {
       extra = new HashMap<>();
     }
