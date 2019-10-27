@@ -2,7 +2,6 @@ package io.sentry.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class SentryStackTraceFactoryTest {
     private val sut = SentryStackTraceFactory()
@@ -10,7 +9,8 @@ class SentryStackTraceFactoryTest {
     @Test
     fun `when getStackFrames is called passing a valid Array, not empty result`() {
         val stacktraces = Thread.currentThread().stackTrace
-        assertTrue(sut.getStackFrames(stacktraces).count() > 0)
+        val count = stacktraces.size
+        assertEquals(count, sut.getStackFrames(stacktraces).count())
     }
 
     @Test
