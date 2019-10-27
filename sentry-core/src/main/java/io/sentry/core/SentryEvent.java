@@ -203,13 +203,6 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.fingerprint = fingerprint;
   }
 
-  public void addFingerprint(String fingerprint) {
-    if (this.fingerprint == null) {
-      this.fingerprint = new ArrayList<>();
-    }
-    this.fingerprint.add(fingerprint);
-  }
-
   public List<Breadcrumb> getBreadcrumbs() {
     return breadcrumbs;
   }

@@ -48,10 +48,6 @@ public class Scope implements Cloneable {
     this.fingerprint = fingerprint;
   }
 
-  public void addFingerprint(String fingerprint) {
-    this.fingerprint.add(fingerprint);
-  }
-
   public List<Breadcrumb> getBreadcrumbs() {
     return breadcrumbs;
   }
