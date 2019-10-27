@@ -67,6 +67,7 @@ public class SentryClient implements ISentryClient {
       if (event.getExtra() == null) {
         event.setExtra(scope.getExtra());
       }
+      // Level from scope exceptionally take precedence over the event
       if (scope.getLevel() != null) {
         event.setLevel(scope.getLevel());
       }
