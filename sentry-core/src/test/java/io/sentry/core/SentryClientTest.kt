@@ -11,6 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.mockito.Mockito
 
 class SentryClientTest {
 
@@ -237,6 +238,26 @@ class SentryClientTest {
 
         sut.captureEvent(event, scope)
         assertEquals(SentryLevel.FATAL, event.level)
+    }
+
+    @Test
+    fun `when captureEvent with sampling, some events not captured`() {
+        fixture.sentryOptions.sampling = 0.000000001
+        val sut = fixture.getSut()
+
+        val allEvents = 10
+        (0..allEvents).forEach { _ -> sut.captureEvent(SentryEvent()) }
+        assertTrue(allEvents > Mockito.mockingDetails(fixture.connection).invocations.size)
+    }
+
+    @Test
+    fun `when captureEvent without sampling, all events are captured`() {
+        fixture.sentryOptions.sampling = null
+        val sut = fixture.getSut()
+
+        val allEvents = 10
+        (0..allEvents).forEach { _ -> sut.captureEvent(SentryEvent()) }
+        assertEquals(allEvents, Mockito.mockingDetails(fixture.connection).invocations.size - 1) // 1 extra invocation outside .send()
     }
 
     private fun createScope(): Scope {
