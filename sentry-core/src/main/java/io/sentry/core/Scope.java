@@ -1,7 +1,6 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.User;
-import io.sentry.core.util.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,6 @@ public final class Scope implements Cloneable {
     this.fingerprint = fingerprint;
   }
 
-  @VisibleForTesting
   Queue<Breadcrumb> getBreadcrumbs() {
     return breadcrumbs;
   }
