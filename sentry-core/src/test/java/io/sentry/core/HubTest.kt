@@ -17,7 +17,7 @@ class HubTest {
         scope.extra["extra"] = "extra"
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        scope.breadcrumbs.add(breadcrumb)
+        scope.addBreadcrumb(breadcrumb)
         scope.level = SentryLevel.DEBUG
         scope.transaction = "transaction"
         scope.fingerprint.add("fingerprint")
@@ -61,6 +61,7 @@ class HubTest {
         assertEquals(options.maxBreadcrumbs, actual)
     }
 
+    @Test
     fun `when beforeBreadcrumb returns null, crumb is dropped`() {
         val options = SentryOptions()
         options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { null }
@@ -79,7 +80,7 @@ class HubTest {
         options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { it.message = expected; it }
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
-        var crumb = Breadcrumb()
+        val crumb = Breadcrumb()
         crumb.message = "original"
         sut.addBreadcrumb(crumb)
         var breadcrumbs: Queue<Breadcrumb>? = null
@@ -93,7 +94,7 @@ class HubTest {
         options.beforeBreadcrumb = null
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
-        var expected = Breadcrumb()
+        val expected = Breadcrumb()
         sut.addBreadcrumb(expected)
         var breadcrumbs: Queue<Breadcrumb>? = null
         sut.configureScope { breadcrumbs = it.breadcrumbs }
