@@ -33,7 +33,6 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
   private Map<String, Object> extra;
   private Map<String, Object> unknown;
   private Map<String, String> modules;
-  // TODO: missing Debug Meta Interface?
 
   SentryEvent(SentryId eventId, Date timestamp) {
     this.eventId = eventId;
