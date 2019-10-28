@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    `maven-publish`
 }
 
 android {
@@ -9,6 +10,9 @@ android {
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersionNdk)
+
+        // Required when setting minSdkVersion to 20 or lower
+        multiDexEnabled = true
     }
 
     compileOptions {
@@ -27,4 +31,14 @@ android {
 dependencies {
     api(project(":sentry-android-core"))
     api(project(":sentry-android-ndk"))
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            register("release", MavenPublication::class) {
+                from(components["release"])
+            }
+        }
+    }
 }

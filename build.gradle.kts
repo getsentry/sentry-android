@@ -15,8 +15,10 @@ configure<JavaPluginConvention> {
 
 buildscript {
     repositories {
+        mavenLocal()
         google()
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath(Config.BuildPlugins.androidGradle)
@@ -26,6 +28,7 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         jcenter()
         mavenCentral()

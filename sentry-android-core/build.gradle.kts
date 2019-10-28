@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     jacoco
+    `maven-publish`
 }
 
 android {
@@ -13,6 +14,10 @@ android {
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersion)
+
+        // Required when setting minSdkVersion to 20 or lower
+        multiDexEnabled = true
+
         javaCompileOptions {
             annotationProcessorOptions {
                 includeCompileClasspath = true
@@ -83,4 +88,14 @@ dependencies {
     testImplementation(Config.TestLibs.androidxRunner)
     testImplementation(Config.TestLibs.androidxJunit)
     testImplementation(Config.TestLibs.mockitoKotlin)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            register("release", MavenPublication::class) {
+                from(components["release"])
+            }
+        }
+    }
 }

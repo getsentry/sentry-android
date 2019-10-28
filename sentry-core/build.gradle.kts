@@ -2,6 +2,7 @@ plugins {
     java
     kotlin("jvm")
     jacoco
+    `maven-publish`
 }
 
 dependencies {
@@ -40,5 +41,19 @@ tasks {
     check {
         dependsOn(jacocoTestCoverageVerification)
         dependsOn(jacocoTestReport)
+    }
+}
+
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets["main"].allSource)
+}
+
+publishing {
+    publications {
+        register("release", MavenPublication::class) {
+            from(components["java"])
+            artifact(sourcesJar.get())
+        }
     }
 }

@@ -1,6 +1,7 @@
 
 plugins {
     id("com.android.library")
+    `maven-publish`
 }
 
 android {
@@ -19,6 +20,10 @@ android {
         }
 
         minSdkVersion(Config.Android.minSdkVersionNdk)
+
+        // Required when setting minSdkVersion to 20 or lower
+        multiDexEnabled = true
+
         externalNativeBuild {
             val sentryNativeSrc = if (File("${project.projectDir}/sentry-native-local").exists()) {
                 "sentry-native-local"
@@ -62,4 +67,14 @@ val initNative = tasks.register<Exec>("initNative") {
 
 tasks.named("preBuild") {
     dependsOn(initNative)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            register("release", MavenPublication::class) {
+                from(components["release"])
+            }
+        }
+    }
 }
