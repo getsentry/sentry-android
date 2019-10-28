@@ -3,6 +3,7 @@ package io.sentry.core
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.protocol.User
+import java.util.Queue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -37,7 +38,7 @@ class HubTest {
     }
 
     @Test
-    fun `when hub is initialized, integrations are registed`() {
+    fun `when hub is initialized, integrations are registered`() {
         val integrationMock = mock<Integration>()
         val options = SentryOptions()
         options.dsn = "https://key@sentry.io/proj"
@@ -58,5 +59,44 @@ class HubTest {
             actual = it.breadcrumbs.size
         }
         assertEquals(options.maxBreadcrumbs, actual)
+    }
+
+    fun `when beforeBreadcrumb returns null, crumb is dropped`() {
+        val options = SentryOptions()
+        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { null }
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        sut.addBreadcrumb(Breadcrumb())
+        var breadcrumbs: Queue<Breadcrumb>? = null
+        sut.configureScope { breadcrumbs = it.breadcrumbs }
+        assertEquals(0, breadcrumbs!!.size)
+    }
+
+    @Test
+    fun `when beforeBreadcrumb modifies crumb, crumb is stored modified`() {
+        val options = SentryOptions()
+        val expected = "expected"
+        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { it.message = expected; it }
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        var crumb = Breadcrumb()
+        crumb.message = "original"
+        sut.addBreadcrumb(crumb)
+        var breadcrumbs: Queue<Breadcrumb>? = null
+        sut.configureScope { breadcrumbs = it.breadcrumbs }
+        assertEquals(expected, breadcrumbs!!.first().message)
+    }
+
+    @Test
+    fun `when beforeBreadcrumb is null, crumb is stored`() {
+        val options = SentryOptions()
+        options.beforeBreadcrumb = null
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        var expected = Breadcrumb()
+        sut.addBreadcrumb(expected)
+        var breadcrumbs: Queue<Breadcrumb>? = null
+        sut.configureScope { breadcrumbs = it.breadcrumbs }
+        assertEquals(expected, breadcrumbs!!.single())
     }
 }

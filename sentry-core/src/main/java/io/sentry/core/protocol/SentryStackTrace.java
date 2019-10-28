@@ -7,8 +7,14 @@ import java.util.Map;
 /** The Sentry stacktrace. */
 public class SentryStackTrace implements IUnknownPropertiesConsumer {
   private List<SentryStackFrame> frames;
+  // TODO registers is missing?
   private Map<String, Object> unknown;
 
+  public SentryStackTrace() {}
+
+  public SentryStackTrace(List<SentryStackFrame> frames) {
+    this.frames = frames;
+  }
   /**
    * Gets the frames of this stacktrace.
    *

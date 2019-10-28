@@ -1,6 +1,8 @@
 package io.sentry.core;
 
 import io.sentry.core.util.NonNull;
+import java.io.File;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +20,13 @@ public class SentryOptions {
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
   private ISerializer serializer;
   private String sentryClientName;
-  private BeforeSecondCallback beforeSend;
+  private BeforeSendCallback beforeSend;
+  private BeforeBreadcrumbCallback beforeBreadcrumb;
   private String cacheDirPath;
   private int maxBreadcrumbs = 100;
+  private String release;
+  private String environment;
+  private Proxy proxy;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -105,16 +111,28 @@ public class SentryOptions {
     this.sentryClientName = sentryClientName;
   }
 
-  public BeforeSecondCallback getBeforeSend() {
+  public BeforeSendCallback getBeforeSend() {
     return beforeSend;
   }
 
-  public void setBeforeSend(BeforeSecondCallback beforeSend) {
+  public void setBeforeSend(BeforeSendCallback beforeSend) {
     this.beforeSend = beforeSend;
+  }
+
+  public BeforeBreadcrumbCallback getBeforeBreadcrumb() {
+    return beforeBreadcrumb;
+  }
+
+  public void setBeforeBreadcrumb(BeforeBreadcrumbCallback beforeBreadcrumb) {
+    this.beforeBreadcrumb = beforeBreadcrumb;
   }
 
   public String getCacheDirPath() {
     return cacheDirPath;
+  }
+
+  public String getOutboxPath() {
+    return cacheDirPath + File.separator + "outbox";
   }
 
   public void setCacheDirPath(String cacheDirPath) {
@@ -129,11 +147,40 @@ public class SentryOptions {
     this.maxBreadcrumbs = maxBreadcrumbs;
   }
 
-  public interface BeforeSecondCallback {
+  public String getRelease() {
+    return release;
+  }
+
+  public void setRelease(String release) {
+    this.release = release;
+  }
+
+  public String getEnvironment() {
+    return environment;
+  }
+
+  public void setEnvironment(String environment) {
+    this.environment = environment;
+  }
+
+  public Proxy getProxy() {
+    return proxy;
+  }
+
+  public void setProxy(Proxy proxy) {
+    this.proxy = proxy;
+  }
+
+  public interface BeforeSendCallback {
     SentryEvent execute(SentryEvent event);
   }
 
+  public interface BeforeBreadcrumbCallback {
+    Breadcrumb execute(Breadcrumb breadcrumb);
+  }
+
   public SentryOptions() {
+    eventProcessors.add(new MainEventProcessor(this));
     integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }

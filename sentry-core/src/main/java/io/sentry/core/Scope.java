@@ -2,9 +2,9 @@ package io.sentry.core;
 
 import io.sentry.core.protocol.User;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Scope implements Cloneable {
@@ -12,7 +12,7 @@ public class Scope implements Cloneable {
   private String transaction;
   private User user;
   private List<String> fingerprint = new ArrayList<>();
-  private final CircularFifoQueue<Breadcrumb> breadcrumbs;
+  private final Queue<Breadcrumb> breadcrumbs;
   private Map<String, String> tags = new ConcurrentHashMap<>();
   private Map<String, Object> extra = new ConcurrentHashMap<>();
 
@@ -52,7 +52,7 @@ public class Scope implements Cloneable {
     this.fingerprint = fingerprint;
   }
 
-  public Collection<Breadcrumb> getBreadcrumbs() {
+  public Queue<Breadcrumb> getBreadcrumbs() {
     return breadcrumbs;
   }
 
