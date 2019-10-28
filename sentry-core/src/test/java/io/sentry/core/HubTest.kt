@@ -19,7 +19,7 @@ class HubTest {
         scope.breadcrumbs.add(breadcrumb)
         scope.level = SentryLevel.DEBUG
         scope.transaction = "test"
-        scope.fingerprints.add("test")
+        scope.fingerprint.add("test")
         scope.tags["test"] = "test"
         val user = User()
         user.email = "a@a.com"
@@ -31,7 +31,7 @@ class HubTest {
         assertEquals("test", clone.extras["test"])
         assertEquals("test", clone.breadcrumbs[0].message)
         assertEquals("test", scope.transaction)
-        assertEquals("test", scope.fingerprints[0])
+        assertEquals("test", scope.fingerprint[0])
         assertEquals("test", clone.tags["test"])
         assertEquals("a@a.com", clone.user.email)
     }

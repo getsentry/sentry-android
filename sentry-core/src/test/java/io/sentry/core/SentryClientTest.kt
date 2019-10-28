@@ -246,7 +246,7 @@ class SentryClientTest {
             })
             setExtra("extra", "extra")
             setTag("tags", "tags")
-            fingerprints.add("fp")
+            fingerprint.add("fp")
             transaction = "transaction"
             level = SentryLevel.FATAL
             user = User().apply {

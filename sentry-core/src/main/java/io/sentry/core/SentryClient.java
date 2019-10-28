@@ -46,7 +46,7 @@ public class SentryClient implements ISentryClient {
         event.setUser(scope.getUser());
       }
       if (event.getFingerprints() == null) {
-        event.setFingerprints(scope.getFingerprints());
+        event.setFingerprints(scope.getFingerprint());
       }
       if (event.getBreadcrumbs() == null) {
         event.setBreadcrumbs(new ArrayList<>(scope.getBreadcrumbs()));
