@@ -40,11 +40,11 @@ public class Scope implements Cloneable {
     this.user = user;
   }
 
-  public List<String> getFingerprint() {
+  public List<String> getFingerprints() {
     return fingerprint;
   }
 
-  public void setFingerprint(List<String> fingerprint) {
+  public void setFingerprints(List<String> fingerprint) {
     this.fingerprint = fingerprint;
   }
 
@@ -67,7 +67,7 @@ public class Scope implements Cloneable {
     this.tags.put(key, value);
   }
 
-  public Map<String, Object> getExtra() {
+  public Map<String, Object> getExtras() {
     return extra;
   }
 
