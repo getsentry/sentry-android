@@ -13,6 +13,11 @@ android {
         versionName = "$version"
     }
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
     // replace with https://issuetracker.google.com/issues/72050365 once released.
     libraryVariants.all {
         generateBuildConfigProvider?.configure {
