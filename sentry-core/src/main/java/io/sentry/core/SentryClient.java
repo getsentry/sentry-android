@@ -145,7 +145,7 @@ public class SentryClient implements ISentryClient {
     // https://docs.sentry.io/development/sdk-dev/features/#event-sampling
     if (options.getSampling() != null && random != null) {
       double sampling = options.getSampling();
-      if (sampling < random.nextFloat()) {
+      if (sampling < random.nextDouble()) {
         return false; // bad luck
       }
     }

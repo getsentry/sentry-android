@@ -1,6 +1,7 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.mockingDetails
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
@@ -11,7 +12,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.mockito.Mockito
 
 class SentryClientTest {
 
@@ -247,7 +247,7 @@ class SentryClientTest {
 
         val allEvents = 10
         (0..allEvents).forEach { _ -> sut.captureEvent(SentryEvent()) }
-        assertTrue(allEvents > Mockito.mockingDetails(fixture.connection).invocations.size)
+        assertTrue(allEvents > mockingDetails(fixture.connection).invocations.size)
     }
 
     @Test
@@ -257,7 +257,7 @@ class SentryClientTest {
 
         val allEvents = 10
         (0..allEvents).forEach { _ -> sut.captureEvent(SentryEvent()) }
-        assertEquals(allEvents, Mockito.mockingDetails(fixture.connection).invocations.size - 1) // 1 extra invocation outside .send()
+        assertEquals(allEvents, mockingDetails(fixture.connection).invocations.size - 1) // 1 extra invocation outside .send()
     }
 
     private fun createScope(): Scope {
