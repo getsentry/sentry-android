@@ -20,7 +20,6 @@ public class MainEventProcessor implements EventProcessor {
       event.setThreads(sentryThreadFactory.getCurrentThreads());
     }
 
-    // DefaultAndroidEventProcessor also sets it, which one is correct or which one should be 1st?
     if (event.getRelease() == null) {
       event.setRelease(options.getRelease());
     }
