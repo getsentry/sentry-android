@@ -9,11 +9,8 @@ android {
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersionNdk)
-    }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        versionName = "$version"
     }
 
     // replace with https://issuetracker.google.com/issues/72050365 once released.
