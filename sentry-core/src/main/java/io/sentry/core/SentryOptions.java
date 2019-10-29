@@ -28,6 +28,7 @@ public class SentryOptions {
   private String environment;
   private Proxy proxy;
   private Double sampling;
+  private String inAppPrefix = "io.sentry";
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -187,6 +188,14 @@ public class SentryOptions {
     this.sampling = sampling;
   }
 
+  public String getInAppPrefix() {
+    return inAppPrefix;
+  }
+
+  public void setInAppPrefix(String inAppPrefix) {
+    this.inAppPrefix = inAppPrefix;
+  }
+
   public interface BeforeSendCallback {
     SentryEvent execute(SentryEvent event);
   }
@@ -196,7 +205,12 @@ public class SentryOptions {
   }
 
   public SentryOptions() {
-    eventProcessors.add(new MainEventProcessor(this));
+    SentryStackTraceFactory sentryStackTraceFactory = new SentryStackTraceFactory(this.inAppPrefix);
+    SentryExceptionFactory sentryExceptionFactory =
+        new SentryExceptionFactory(sentryStackTraceFactory);
+    SentryThreadFactory sentryThreadFactory = new SentryThreadFactory(sentryStackTraceFactory);
+
+    eventProcessors.add(new MainEventProcessor(this, sentryThreadFactory, sentryExceptionFactory));
     integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }
