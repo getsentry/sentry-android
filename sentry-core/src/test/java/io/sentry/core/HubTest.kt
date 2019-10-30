@@ -1,13 +1,16 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
+import io.sentry.core.protocol.SentryId
 import io.sentry.core.protocol.User
 import java.util.Queue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
+import kotlin.test.assertTrue
 
 class HubTest {
 
@@ -99,5 +102,62 @@ class HubTest {
         var breadcrumbs: Queue<Breadcrumb>? = null
         sut.configureScope { breadcrumbs = it.breadcrumbs }
         assertEquals(expected, breadcrumbs!!.single())
+    }
+
+    @Test
+    fun `when initialized, lastEventId is empty`() {
+        val options = SentryOptions()
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        assertEquals(SentryId.EMPTY_ID, sut.lastEventId)
+    }
+
+    @Test
+    fun `when addBreadcrumb is called on disabled client, no-op`() {
+        val options = SentryOptions()
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        var breadcrumbs: Queue<Breadcrumb>? = null
+        sut.configureScope { breadcrumbs = it.breadcrumbs }
+        sut.close()
+        sut.addBreadcrumb(Breadcrumb())
+        assertTrue(breadcrumbs!!.isEmpty())
+    }
+
+    @Test
+    fun `when addBreadcrumb is called on with null, no-op`() {
+        val options = SentryOptions()
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        var breadcrumbs: Queue<Breadcrumb>? = null
+        sut.configureScope { breadcrumbs = it.breadcrumbs }
+        sut.close()
+        sut.addBreadcrumb(null)
+        assertTrue(breadcrumbs!!.isEmpty())
+    }
+
+    @Test
+    fun `when flush is called on disabled client, no-op`() {
+        val options = SentryOptions()
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        val mockClient = mock<ISentryClient>()
+        sut.bindClient(mockClient)
+        sut.close()
+
+        sut.flush(1000)
+        verify(mockClient, never()).flush(1000)
+    }
+
+    @Test
+    fun `when flush is called, client flush gets called`() {
+        val options = SentryOptions()
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+        val mockClient = mock<ISentryClient>()
+        sut.bindClient(mockClient)
+
+        sut.flush(1000)
+        verify(mockClient).flush(1000)
     }
 }
