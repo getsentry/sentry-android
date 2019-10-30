@@ -42,7 +42,7 @@ public final class SentryClient implements ISentryClient {
   @Override
   public SentryId captureEvent(SentryEvent event, @Nullable Scope scope) {
     if (!sample()) {
-      ILogger.logIfNotNull(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.DEBUG,
           "Event %s was dropped due to sampling decision.",
@@ -50,8 +50,7 @@ public final class SentryClient implements ISentryClient {
       return SentryId.EMPTY_ID;
     }
 
-    ILogger.logIfNotNull(
-        options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
+    logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
     if (scope != null) {
       if (event.getTransaction() == null) {
@@ -125,7 +124,7 @@ public final class SentryClient implements ISentryClient {
 
   @Override
   public void close() {
-    ILogger.logIfNotNull(options.getLogger(), SentryLevel.INFO, "Closing SDK.");
+    logIfNotNull(options.getLogger(), SentryLevel.INFO, "Closing SDK.");
 
     try {
       flush(options.getShutdownTimeout());

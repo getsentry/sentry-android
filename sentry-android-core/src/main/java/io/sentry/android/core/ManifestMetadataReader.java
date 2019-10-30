@@ -27,20 +27,20 @@ final class ManifestMetadataReader {
 
       if (metadata != null) {
         boolean debug = metadata.getBoolean(DEBUG_KEY, options.isDebug());
-        ILogger.logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "debug read: %s", debug);
+        logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "debug read: %s", debug);
         options.setDebug(debug);
 
         String dsn = metadata.getString(DSN_KEY, null);
         if (dsn != null) {
-          ILogger.logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "DSN read: %s", dsn);
+          logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "DSN read: %s", dsn);
           options.setDsn(dsn);
         }
 
         boolean ndk = metadata.getBoolean(ENABLE_NDK, options.isEnableNdk());
-        ILogger.logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "NDK read: %s", ndk);
+        logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "NDK read: %s", ndk);
         options.setEnableNdk(ndk);
       }
-      ILogger.logIfNotNull(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.INFO,
           "Retrieving configuration from AndroidManifest.xml");
@@ -61,10 +61,9 @@ final class ManifestMetadataReader {
       Bundle metadata = getMetadata(context);
       if (metadata != null) {
         autoInit = metadata.getBoolean(AUTO_INIT, true);
-        ILogger.logIfNotNull(logger, SentryLevel.DEBUG, "Auto-init: %s", autoInit);
+        logIfNotNull(logger, SentryLevel.DEBUG, "Auto-init: %s", autoInit);
       }
-      ILogger.logIfNotNull(
-          logger, SentryLevel.INFO, "Retrieving auto-init from AndroidManifest.xml");
+      logIfNotNull(logger, SentryLevel.INFO, "Retrieving auto-init from AndroidManifest.xml");
     } catch (Exception e) {
       logIfNotNull(
           logger, SentryLevel.ERROR, "Failed to read auto-init from android manifest metadata.", e);

@@ -30,7 +30,7 @@ public final class UncaughtExceptionHandlerIntegration
   @Override
   public void register(IHub hub, SentryOptions options) {
     if (isRegistered) {
-      ILogger.logIfNotNull(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.ERROR,
           "Attempt to register a UncaughtExceptionHandlerIntegration twice. ");
@@ -43,7 +43,7 @@ public final class UncaughtExceptionHandlerIntegration
     Thread.UncaughtExceptionHandler currentHandler =
         threadAdapter.getDefaultUncaughtExceptionHandler();
     if (currentHandler != null) {
-      ILogger.logIfNotNull(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.DEBUG,
           "default UncaughtExceptionHandler class='" + currentHandler.getClass().getName() + "'");
@@ -55,7 +55,7 @@ public final class UncaughtExceptionHandlerIntegration
 
   @Override
   public void uncaughtException(Thread thread, Throwable thrown) {
-    ILogger.logIfNotNull(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
+    logIfNotNull(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
 
     try {
       // TODO: Set Thread info to the scope?

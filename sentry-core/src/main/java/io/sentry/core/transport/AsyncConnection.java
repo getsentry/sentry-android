@@ -1,6 +1,7 @@
 package io.sentry.core.transport;
 
-import io.sentry.core.ILogger;
+import static io.sentry.core.ILogger.logIfNotNull;
+
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -90,7 +91,7 @@ public final class AsyncConnection implements Closeable {
     executor.shutdown();
     try {
       if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
-        ILogger.logIfNotNull(
+        logIfNotNull(
             options.getLogger(),
             SentryLevel.WARNING,
             "Failed to shutdown the async connection async sender within 1 minute. Trying to force it now.");
@@ -99,7 +100,7 @@ public final class AsyncConnection implements Closeable {
       transport.close();
     } catch (InterruptedException e) {
       // ok, just give up then...
-      ILogger.logIfNotNull(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.DEBUG,
           "Thread interrupted while closing the connection.");

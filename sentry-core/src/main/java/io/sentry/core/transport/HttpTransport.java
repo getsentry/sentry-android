@@ -4,7 +4,6 @@ import static io.sentry.core.ILogger.logIfNotNull;
 import static io.sentry.core.SentryLevel.*;
 
 import com.jakewharton.nopen.annotation.Open;
-import io.sentry.core.ILogger;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryOptions;
@@ -118,7 +117,7 @@ public class HttpTransport implements ITransport {
         responseCode = connection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
           if (options.isDebug()) {
-            ILogger.logIfNotNull(
+            logIfNotNull(
                 options.getLogger(),
                 DEBUG,
                 "Event '"
@@ -155,7 +154,7 @@ public class HttpTransport implements ITransport {
         errorMessage = "An exception occurred while submitting the event to the Sentry server.";
       }
 
-      ILogger.logIfNotNull(options.getLogger(), DEBUG, errorMessage);
+      logIfNotNull(options.getLogger(), DEBUG, errorMessage);
     }
   }
 
@@ -174,7 +173,7 @@ public class HttpTransport implements ITransport {
         first = false;
       }
     } catch (Exception e2) {
-      ILogger.logIfNotNull(
+      logIfNotNull(
           options.getLogger(),
           ERROR,
           "Exception while reading the error message from the connection: " + e2.getMessage());
