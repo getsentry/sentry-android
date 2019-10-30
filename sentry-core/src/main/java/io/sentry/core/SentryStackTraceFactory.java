@@ -46,13 +46,13 @@ class SentryStackTraceFactory {
   }
 
   private boolean isInApp(String className) {
-    //    if (inAppIncludes != null) {
-    //      for (String include : inAppIncludes) {
-    //        if (className.startsWith(include)) {
-    //          return false;
-    //        }
-    //      }
-    //    }
+    if (inAppIncludes != null) {
+      for (String include : inAppIncludes) {
+        if (className.startsWith(include)) {
+          return true;
+        }
+      }
+    }
     if (inAppExcludes != null) {
       for (String exclude : inAppExcludes) {
         if (className.startsWith(exclude)) {

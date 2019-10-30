@@ -55,7 +55,7 @@ class SentryStackTraceFactoryTest {
 
     @Test
     fun `when getStackFrames is called passing an invalid inAppExcludes, inApp should be false`() {
-        val element = generateStackTrace("io.myapp.MyActivity")
+        val element = generateStackTrace("io.sentry.MyActivity")
         val elements = arrayOf(element)
         val sentryStackTraceFactory = SentryStackTraceFactory(null, null)
         val sentryElements = sentryStackTraceFactory.getStackFrames(elements)
@@ -64,37 +64,37 @@ class SentryStackTraceFactoryTest {
     }
     //endregion
 
-//    //region inAppIncludes
-//    @Test
-//    fun `when getStackFrames is called passing a valid inAppIncludes, inApp should be true if prefix doesnt matches it`() {
-//        val element = generateStackTrace("io.myotherapp.MyActivity")
-//        val elements = arrayOf(element)
-//        val sentryStackTraceFactory = SentryStackTraceFactory(null, listOf("io.myapp"))
-//        val sentryElements = sentryStackTraceFactory.getStackFrames(elements)
-//
-//        assertFalse(sentryElements.first().inApp)
-//    }
-//
-//    @Test
-//    fun `when getStackFrames is called passing a valid inAppIncludes, inApp should be false`() {
-//        val element = generateStackTrace("io.myapp.MyActivity")
-//        val elements = arrayOf(element)
-//        val sentryStackTraceFactory = SentryStackTraceFactory(null, listOf("io.myapp"))
-//        val sentryElements = sentryStackTraceFactory.getStackFrames(elements)
-//
-//        assertFalse(sentryElements.first().inApp)
-//    }
-//
-//    @Test
-//    fun `when getStackFrames is called passing an invalid inAppIncludes, inApp should be false`() {
-//        val element = generateStackTrace("io.myotherapp.MyActivity")
-//        val elements = arrayOf(element)
-//        val sentryStackTraceFactory = SentryStackTraceFactory(null, null)
-//        val sentryElements = sentryStackTraceFactory.getStackFrames(elements)
-//
-//        assertFalse(sentryElements.first().inApp)
-//    }
-//    //endregion
+    //region inAppIncludes
+    @Test
+    fun `when getStackFrames is called passing a valid inAppIncludes, inApp should be true if prefix matches it`() {
+        val element = generateStackTrace("io.sentry.MyActivity")
+        val elements = arrayOf(element)
+        val sentryStackTraceFactory = SentryStackTraceFactory(null, listOf("io.sentry"))
+        val sentryElements = sentryStackTraceFactory.getStackFrames(elements)
+
+        assertTrue(sentryElements.first().inApp)
+    }
+
+    @Test
+    fun `when getStackFrames is called passing a valid inAppIncludes, inApp should be false if prefix doesnt matches it`() {
+        val element = generateStackTrace("io.myapp.MyActivity")
+        val elements = arrayOf(element)
+        val sentryStackTraceFactory = SentryStackTraceFactory(null, listOf("io.sentry"))
+        val sentryElements = sentryStackTraceFactory.getStackFrames(elements)
+
+        assertFalse(sentryElements.first().inApp)
+    }
+
+    @Test
+    fun `when getStackFrames is called passing an invalid inAppIncludes, inApp should be false`() {
+        val element = generateStackTrace("io.sentry.MyActivity")
+        val elements = arrayOf(element)
+        val sentryStackTraceFactory = SentryStackTraceFactory(null, null)
+        val sentryElements = sentryStackTraceFactory.getStackFrames(elements)
+
+        assertFalse(sentryElements.first().inApp)
+    }
+    //endregion
 
     private fun generateStackTrace(className: String) =
         StackTraceElement(className, "method", "fileName", -2)
