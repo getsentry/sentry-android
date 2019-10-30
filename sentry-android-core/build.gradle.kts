@@ -24,6 +24,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = "$version"
+
+        buildConfigField("String", "SENTRY_CLIENT_NAME", "\"${Config.Sentry.SENTRY_CLIENT_NAME}\"")
     }
 
     buildTypes {
@@ -82,6 +84,7 @@ dependencies {
     errorprone(Config.CompileOnly.noopenProne)
     errorprone(Config.CompileOnly.errorprone)
     errorproneJavac(Config.CompileOnly.errorProneJavac)
+    compileOnly(Config.CompileOnly.annotations)
 
     // tests
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))

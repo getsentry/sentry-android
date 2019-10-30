@@ -13,7 +13,6 @@ object Config {
         val buildToolsVersion = "29.0.2"
         val minSdkVersion = 14
         val minSdkVersionNdk = 21
-        val minSdkVersionDebug = 21
         val targetSdkVersion = sdkVersion
         val compileSdkVersion = sdkVersion
     }
@@ -37,7 +36,6 @@ object Config {
         val espressoCore = "androidx.test.espresso:espresso-core:3.2.0"
         val androidxOrchestrator = "androidx.test:orchestrator:$androidxTestVersion"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
-        val apacheCommonsIo = "commons-io:commons-io:2.6"
     }
 
     object QualityPlugins {
@@ -46,15 +44,14 @@ object Config {
         val errorpronePlugin = "net.ltgt.gradle:gradle-errorprone-plugin:1.1.1"
     }
 
-    object Flavors {
-        val dimension = "version"
-        val staging = "staging"
-        val production = "production"
+    object Sentry {
+        val SENTRY_CLIENT_NAME = "sentry.java.android"
     }
 
     object CompileOnly {
         private val nopenVersion = "1.0.1"
 
+        val annotations = "org.jetbrains:annotations:17.0.0"
         val noopen = "com.jakewharton.nopen:nopen-annotations:$nopenVersion"
         val noopenProne = "com.jakewharton.nopen:nopen-checker:$nopenVersion"
         val errorprone = "com.google.errorprone:error_prone_core:2.3.3"

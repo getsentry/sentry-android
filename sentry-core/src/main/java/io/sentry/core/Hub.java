@@ -3,10 +3,10 @@ package io.sentry.core;
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.util.Nullable;
 import io.sentry.core.util.Objects;
 import java.util.Deque;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.jetbrains.annotations.Nullable;
 
 public final class Hub implements IHub, Cloneable {
 

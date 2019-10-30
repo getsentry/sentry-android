@@ -13,6 +13,7 @@ dependencies {
     errorprone(Config.CompileOnly.noopenProne)
     errorprone(Config.CompileOnly.errorprone)
     errorproneJavac(Config.CompileOnly.errorProneJavac)
+    compileOnly(Config.CompileOnly.annotations)
 
     // tests
     testImplementation(kotlin(Config.kotlinStdLib))
