@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SentryEvent implements IUnknownPropertiesConsumer {
+public final class SentryEvent implements IUnknownPropertiesConsumer {
   private SentryId eventId;
   private Date timestamp;
   private transient Throwable throwable;

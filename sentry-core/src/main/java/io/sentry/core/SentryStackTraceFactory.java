@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** class responsible for converting Java StackTraceElements to SentryStackFrames */
-class SentryStackTraceFactory {
+final class SentryStackTraceFactory {
 
   /**
    * convert an Array of Java StackTraceElements to a list of SentryStackFrames

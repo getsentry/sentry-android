@@ -6,7 +6,7 @@ import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SentryOptions {
+public final class SentryOptions {
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
 
   private List<EventProcessor> eventProcessors = new ArrayList<>();

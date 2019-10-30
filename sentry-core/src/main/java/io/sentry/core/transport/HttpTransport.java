@@ -1,8 +1,10 @@
 package io.sentry.core.transport;
 
-import static io.sentry.core.ILogger.log;
+import static io.sentry.core.ILogger.logIfNotNull;
 import static io.sentry.core.SentryLevel.*;
 
+import com.jakewharton.nopen.annotation.Open;
+import io.sentry.core.ILogger;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryOptions;
@@ -19,6 +21,7 @@ import javax.net.ssl.HttpsURLConnection;
  * An implementation of the {@link ITransport} interface that sends the events to the Sentry server
  * over HTTP(S) in UTF-8 encoding.
  */
+@Open // TODO: make it final and disable nopen check for testing
 public class HttpTransport implements ITransport {
   private static final Charset UTF_8 = Charset.forName("UTF-8");
 
@@ -115,7 +118,7 @@ public class HttpTransport implements ITransport {
         responseCode = connection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
           if (options.isDebug()) {
-            log(
+            ILogger.logIfNotNull(
                 options.getLogger(),
                 DEBUG,
                 "Event '"
@@ -127,7 +130,7 @@ public class HttpTransport implements ITransport {
         return TransportResult.error(retryAfterMs, responseCode);
       } catch (IOException responseCodeException) {
         // this should not stop us from continuing. We'll just use -1 as response code.
-        log(
+        logIfNotNull(
             options.getLogger(),
             WARNING,
             "Failed to obtain response code while analyzing event send failure.",
@@ -152,7 +155,7 @@ public class HttpTransport implements ITransport {
         errorMessage = "An exception occurred while submitting the event to the Sentry server.";
       }
 
-      log(options.getLogger(), DEBUG, errorMessage);
+      ILogger.logIfNotNull(options.getLogger(), DEBUG, errorMessage);
     }
   }
 
@@ -171,7 +174,7 @@ public class HttpTransport implements ITransport {
         first = false;
       }
     } catch (Exception e2) {
-      log(
+      ILogger.logIfNotNull(
           options.getLogger(),
           ERROR,
           "Exception while reading the error message from the connection: " + e2.getMessage());

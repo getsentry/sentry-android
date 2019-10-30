@@ -1,6 +1,6 @@
 package io.sentry.core;
 
-import static io.sentry.core.ILogger.log;
+import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.util.Nullable;
@@ -8,7 +8,7 @@ import io.sentry.core.util.Objects;
 import java.util.Deque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-public class Hub implements IHub, Cloneable {
+public final class Hub implements IHub, Cloneable {
 
   private static final class StackItem {
     private volatile ISentryClient client;
@@ -59,7 +59,8 @@ public class Hub implements IHub, Cloneable {
     if (item != null) {
       sentryId = item.client.captureEvent(event, item.scope);
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when captureEvent");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when captureEvent");
       sentryId = SentryId.EMPTY_ID;
     }
     this.lastEventId = event.getEventId();
@@ -73,7 +74,8 @@ public class Hub implements IHub, Cloneable {
     if (item != null) {
       sentryId = item.client.captureMessage(message, item.scope);
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when captureMessage");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when captureMessage");
       sentryId = SentryId.EMPTY_ID;
     }
     this.lastEventId = sentryId;
@@ -87,7 +89,8 @@ public class Hub implements IHub, Cloneable {
     if (item != null) {
       sentryId = item.client.captureException(throwable, item.scope);
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when captureException");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when captureException");
       sentryId = SentryId.EMPTY_ID;
     }
     this.lastEventId = sentryId;
@@ -101,7 +104,8 @@ public class Hub implements IHub, Cloneable {
     if (item != null) {
       item.client.close();
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when closing Hub");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when closing Hub");
     }
     isEnabled = false;
   }
@@ -118,7 +122,8 @@ public class Hub implements IHub, Cloneable {
         item.scope.addBreadcrumb(breadcrumb);
       }
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when addBreadcrumb");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when addBreadcrumb");
     }
   }
 
@@ -135,7 +140,7 @@ public class Hub implements IHub, Cloneable {
       try {
         clone = item.scope.clone();
       } catch (CloneNotSupportedException e) {
-        log(
+        logIfNotNull(
             options.getLogger(),
             SentryLevel.ERROR,
             "An error has occurred when cloning a Scope",
@@ -146,7 +151,8 @@ public class Hub implements IHub, Cloneable {
         stack.push(newItem);
       }
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when pushScope");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when pushScope");
     }
   }
 
@@ -168,7 +174,8 @@ public class Hub implements IHub, Cloneable {
       if (item != null) {
         callback.run(item.scope);
       } else {
-        log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when withScope");
+        ILogger.logIfNotNull(
+            options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when withScope");
       }
     } finally {
       popScope();
@@ -181,7 +188,8 @@ public class Hub implements IHub, Cloneable {
     if (item != null) {
       callback.run(item.scope);
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when configureScope");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when configureScope");
     }
   }
 
@@ -191,7 +199,8 @@ public class Hub implements IHub, Cloneable {
     if (item != null) {
       item.client = client != null ? client : NoOpSentryClient.getInstance();
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when bindClient");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when bindClient");
     }
   }
 
@@ -201,7 +210,8 @@ public class Hub implements IHub, Cloneable {
     if (item != null) {
       item.client.flush(timeoutMills);
     } else {
-      log(options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when flush");
+      ILogger.logIfNotNull(
+          options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when flush");
     }
   }
 

@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     jacoco
+    id("net.ltgt.errorprone")
 }
 
 android {
@@ -76,6 +77,11 @@ dependencies {
 
     // libs
     implementation(Config.Libs.gson)
+
+    compileOnly(Config.CompileOnly.noopen)
+    errorprone(Config.CompileOnly.noopenProne)
+    errorprone(Config.CompileOnly.errorprone)
+    errorproneJavac(Config.CompileOnly.errorProneJavac)
 
     // tests
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))

@@ -43,6 +43,7 @@ public final class Sentry {
       return;
     }
 
+    @SuppressWarnings("unused")
     Dsn parsedDsn = new Dsn(dsn);
 
     ILogger logger = options.getLogger();

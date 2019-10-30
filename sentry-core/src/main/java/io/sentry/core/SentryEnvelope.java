@@ -3,7 +3,7 @@ package io.sentry.core;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.util.Nullable;
 
-public class SentryEnvelope {
+public final class SentryEnvelope {
 
   private final SentryEnvelopeHeader header;
   private final Iterable<SentryEnvelopeItem> items;

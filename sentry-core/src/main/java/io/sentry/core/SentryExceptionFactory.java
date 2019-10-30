@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 /** class responsible for converting Java Throwable to SentryExceptions */
-class SentryExceptionFactory {
+final class SentryExceptionFactory {
 
   private final SentryStackTraceFactory sentryStackTraceFactory;
 

@@ -43,11 +43,21 @@ object Config {
     object QualityPlugins {
         val jacocoVersion = "0.8.4"
         val spotlessVersion = "3.25.0"
+        val errorpronePlugin = "net.ltgt.gradle:gradle-errorprone-plugin:1.1.1"
     }
 
     object Flavors {
         val dimension = "version"
         val staging = "staging"
         val production = "production"
+    }
+
+    object CompileOnly {
+        private val nopenVersion = "1.0.1"
+
+        val noopen = "com.jakewharton.nopen:nopen-annotations:$nopenVersion"
+        val noopenProne = "com.jakewharton.nopen:nopen-checker:$nopenVersion"
+        val errorprone = "com.google.errorprone:error_prone_core:2.3.3"
+        val errorProneJavac = "com.google.errorprone:javac:9+181-r4173-1"
     }
 }
