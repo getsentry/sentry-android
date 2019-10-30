@@ -23,6 +23,7 @@ final class AndroidOptionsInitializer {
 
     ManifestMetadataReader.applyMetadata(context, options);
     initializeCacheDirs(context, options);
+    setDefaultInApp(context, options);
 
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
@@ -44,6 +45,15 @@ final class AndroidOptionsInitializer {
         options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
       }
     }
+  }
+
+  private static void setDefaultInApp(Context context, SentryOptions options) {
+    // If context passed in is an application-defined class, we can use to white-list frames
+    String packageName = context.getClass().getPackage().getName();
+    if (!packageName.startsWith("android.")) {
+      options.addInAppInclude(packageName);
+    }
+    options.addInAppExclude("android.");
   }
 
   private static void initializeCacheDirs(Context context, SentryOptions options) {

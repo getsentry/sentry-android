@@ -194,16 +194,22 @@ public final class SentryOptions {
     return inAppExcludes;
   }
 
-  public void setInAppExcludes(List<String> inAppExcludes) {
-    this.inAppExcludes = inAppExcludes;
+  public void addInAppExclude(String exclude) {
+    if (this.inAppExcludes == null) {
+      this.inAppExcludes = new ArrayList<>();
+    }
+    this.inAppExcludes.add(exclude);
   }
 
   public List<String> getInAppIncludes() {
     return inAppIncludes;
   }
 
-  public void setInAppIncludes(List<String> inAppIncludes) {
-    this.inAppIncludes = inAppIncludes;
+  public void addInAppInclude(String include) {
+    if (this.inAppIncludes == null) {
+      this.inAppIncludes = new ArrayList<>();
+    }
+    this.inAppIncludes.add(include);
   }
 
   public interface BeforeSendCallback {
