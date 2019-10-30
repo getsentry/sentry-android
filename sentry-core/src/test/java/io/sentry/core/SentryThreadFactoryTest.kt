@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 
 class SentryThreadFactoryTest {
 
-    private val sut = SentryThreadFactory(SentryStackTraceFactory("io.sentry"))
+    private val sut = SentryThreadFactory(SentryStackTraceFactory(listOf("io.sentry"), listOf()))
 
     @Test
     fun `when getCurrentThreads is called, not empty result`() {

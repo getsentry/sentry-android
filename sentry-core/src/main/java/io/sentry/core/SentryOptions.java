@@ -28,7 +28,8 @@ public class SentryOptions {
   private String environment;
   private Proxy proxy;
   private Double sampling;
-  private String inAppPrefix = "io.sentry";
+  private List<String> inAppExcludes;
+  private List<String> inAppIncludes;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -188,12 +189,20 @@ public class SentryOptions {
     this.sampling = sampling;
   }
 
-  public String getInAppPrefix() {
-    return inAppPrefix;
+  public List<String> getInAppExcludes() {
+    return inAppExcludes;
   }
 
-  public void setInAppPrefix(String inAppPrefix) {
-    this.inAppPrefix = inAppPrefix;
+  public void setInAppExcludes(List<String> inAppExcludes) {
+    this.inAppExcludes = inAppExcludes;
+  }
+
+  public List<String> getInAppIncludes() {
+    return inAppIncludes;
+  }
+
+  public void setInAppIncludes(List<String> inAppIncludes) {
+    this.inAppIncludes = inAppIncludes;
   }
 
   public interface BeforeSendCallback {
@@ -205,12 +214,10 @@ public class SentryOptions {
   }
 
   public SentryOptions() {
-    SentryStackTraceFactory sentryStackTraceFactory = new SentryStackTraceFactory(this.inAppPrefix);
-    SentryExceptionFactory sentryExceptionFactory =
-        new SentryExceptionFactory(sentryStackTraceFactory);
-    SentryThreadFactory sentryThreadFactory = new SentryThreadFactory(sentryStackTraceFactory);
+    inAppExcludes = new ArrayList<>();
+    inAppExcludes.add("io.sentry");
 
-    eventProcessors.add(new MainEventProcessor(this, sentryThreadFactory, sentryExceptionFactory));
+    eventProcessors.add(new MainEventProcessor(this));
     integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }

@@ -8,6 +8,16 @@ public class MainEventProcessor implements EventProcessor {
   private final SentryThreadFactory sentryThreadFactory;
   private final SentryExceptionFactory sentryExceptionFactory;
 
+  MainEventProcessor(final SentryOptions options) {
+    this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
+
+    SentryStackTraceFactory sentryStackTraceFactory =
+        new SentryStackTraceFactory(options.getInAppExcludes(), options.getInAppIncludes());
+
+    sentryExceptionFactory = new SentryExceptionFactory(sentryStackTraceFactory);
+    sentryThreadFactory = new SentryThreadFactory(sentryStackTraceFactory);
+  }
+
   MainEventProcessor(
       final SentryOptions options,
       final SentryThreadFactory sentryThreadFactory,
