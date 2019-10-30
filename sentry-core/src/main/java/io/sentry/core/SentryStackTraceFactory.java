@@ -46,6 +46,10 @@ class SentryStackTraceFactory {
   }
 
   private boolean isInApp(String className) {
+    if (className == null || className.isEmpty()) {
+      return true;
+    }
+
     if (inAppIncludes != null) {
       for (String include : inAppIncludes) {
         if (className.startsWith(include)) {
@@ -56,10 +60,10 @@ class SentryStackTraceFactory {
     if (inAppExcludes != null) {
       for (String exclude : inAppExcludes) {
         if (className.startsWith(exclude)) {
-          return true;
+          return false;
         }
       }
     }
-    return false;
+    return true;
   }
 }
