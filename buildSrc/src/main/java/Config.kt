@@ -50,4 +50,8 @@ object Config {
         val staging = "staging"
         val production = "production"
     }
+
+    object Sentry {
+        val SENTRY_CLIENT_NAME = "sentry.java.android"
+    }
 }
