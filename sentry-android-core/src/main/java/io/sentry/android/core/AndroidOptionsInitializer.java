@@ -8,7 +8,9 @@ import io.sentry.core.SentryOptions;
 import java.io.File;
 import java.lang.reflect.Method;
 
-class AndroidOptionsInitializer {
+final class AndroidOptionsInitializer {
+  private AndroidOptionsInitializer() {}
+
   static void init(SentryOptions options, Context context) {
     init(options, context, new AndroidLogger());
   }
@@ -17,8 +19,7 @@ class AndroidOptionsInitializer {
     // Firstly set the logger, if `debug=true` configured, logging can start asap.
     options.setLogger(logger);
 
-    // TODO this needs to fetch the data from somewhere - defined at build time?
-    options.setSentryClientName("sentry.java.android/0.0.1");
+    options.setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
 
     ManifestMetadataReader.applyMetadata(context, options);
     initializeCacheDirs(context, options);
@@ -49,7 +50,7 @@ class AndroidOptionsInitializer {
     File cacheDir = new File(context.getCacheDir(), "sentry");
     cacheDir.mkdirs();
     options.setCacheDirPath(cacheDir.getAbsolutePath());
-    (new File(options.getOutboxPath())).mkdirs();
+    new File(options.getOutboxPath()).mkdirs();
   }
 
   private static boolean isNdkAvailable() {

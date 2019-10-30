@@ -3,13 +3,13 @@ package io.sentry.core;
 import io.sentry.core.protocol.SentryStackFrame;
 import io.sentry.core.protocol.SentryStackTrace;
 import io.sentry.core.protocol.SentryThread;
-import io.sentry.core.util.Nullable;
 import io.sentry.core.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.jetbrains.annotations.Nullable;
 
-class SentryThreadFactory {
+final class SentryThreadFactory {
 
   private final SentryStackTraceFactory sentryStackTraceFactory;
 

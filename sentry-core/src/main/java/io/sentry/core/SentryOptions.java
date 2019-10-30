@@ -1,12 +1,13 @@
 package io.sentry.core;
 
-import io.sentry.core.util.NonNull;
 import java.io.File;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class SentryOptions {
+public final class SentryOptions {
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
 
   private List<EventProcessor> eventProcessors = new ArrayList<>();
@@ -16,7 +17,7 @@ public class SentryOptions {
   private long shutdownTimeoutMills;
   private boolean debug;
   private boolean enableNdk = true;
-  private @NonNull ILogger logger = NoOpLogger.getInstance();
+  private @NotNull ILogger logger = NoOpLogger.getInstance();
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
   private ISerializer serializer;
   private String sentryClientName;
@@ -63,11 +64,11 @@ public class SentryOptions {
     this.debug = debug;
   }
 
-  public @NonNull ILogger getLogger() {
+  public @NotNull ILogger getLogger() {
     return logger;
   }
 
-  public void setLogger(ILogger logger) {
+  public void setLogger(@Nullable ILogger logger) {
     this.logger = logger == null ? NoOpLogger.getInstance() : new DiagnosticLogger(this, logger);
   }
 

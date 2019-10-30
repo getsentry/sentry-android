@@ -1,9 +1,9 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.util.Nullable;
+import org.jetbrains.annotations.Nullable;
 
-class NoOpSentryClient implements ISentryClient {
+final class NoOpSentryClient implements ISentryClient {
 
   private static final NoOpSentryClient instance = new NoOpSentryClient();
 

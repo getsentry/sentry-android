@@ -6,7 +6,6 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.util.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +13,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
-public class EnvelopeReader {
+public final class EnvelopeReader {
 
   private static final Charset UTF_8 = Charset.forName("UTF-8");
   private final Gson gson =
@@ -144,8 +144,11 @@ public class EnvelopeReader {
   }
 
   private static final class SentryEnvelopeHeaderAdapter extends TypeAdapter<SentryEnvelopeHeader> {
+
+    @Override
     public void write(JsonWriter out, SentryEnvelopeHeader value) {}
 
+    @Override
     public SentryEnvelopeHeader read(JsonReader reader) throws IOException {
       SentryId sentryId = SentryId.EMPTY_ID;
       String auth = null;

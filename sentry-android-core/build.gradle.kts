@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     jacoco
+    id("net.ltgt.errorprone")
 }
 
 android {
@@ -23,6 +24,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = "$version"
+
+        buildConfigField("String", "SENTRY_CLIENT_NAME", "\"${Config.Sentry.SENTRY_CLIENT_NAME}\"")
     }
 
     buildTypes {
@@ -76,6 +79,12 @@ dependencies {
 
     // libs
     implementation(Config.Libs.gson)
+
+    compileOnly(Config.CompileOnly.noopen)
+    errorprone(Config.CompileOnly.noopenProne)
+    errorprone(Config.CompileOnly.errorprone)
+    errorproneJavac(Config.CompileOnly.errorProneJavac)
+    compileOnly(Config.CompileOnly.annotations)
 
     // tests
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))

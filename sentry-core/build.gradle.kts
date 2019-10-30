@@ -2,11 +2,19 @@ plugins {
     java
     kotlin("jvm")
     jacoco
+    id("net.ltgt.errorprone")
 }
 
 dependencies {
     // Envelopes require JSON. Until a parse is done without GSON, we'll depend on it explicitly here
     implementation(Config.Libs.gson)
+
+    compileOnly(Config.CompileOnly.noopen)
+    errorprone(Config.CompileOnly.noopenProne)
+    errorprone(Config.CompileOnly.errorprone)
+    errorproneJavac(Config.CompileOnly.errorProneJavac)
+    compileOnly(Config.CompileOnly.annotations)
+
     // tests
     testImplementation(kotlin(Config.kotlinStdLib))
     testImplementation(Config.TestLibs.kotlinTestJunit)

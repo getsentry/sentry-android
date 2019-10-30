@@ -1,6 +1,5 @@
 package io.sentry.core.transport;
 
-import io.sentry.core.util.NonNull;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Delayed;
@@ -13,6 +12,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This is a thread pool executor enriched for the possibility of retrying the supplied tasks.
@@ -63,6 +63,8 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
    *
    * @param task the task to execute
    */
+  @SuppressWarnings("FutureReturnValueIgnored") // TODO:
+  // https://errorprone.info/bugpattern/FutureReturnValueIgnored
   public void submit(Retryable task) {
     if (isSchedulingAllowed()) {
       super.submit(task);
@@ -116,6 +118,8 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     currentlyRunning.incrementAndGet();
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored") // TODO:
+  // https://errorprone.info/bugpattern/FutureReturnValueIgnored
   @Override
   protected void afterExecute(Runnable r, Throwable t) {
     try {
@@ -199,12 +203,12 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public long getDelay(@NonNull TimeUnit unit) {
+    public long getDelay(@NotNull TimeUnit unit) {
       return task.getDelay(unit);
     }
 
     @Override
-    public int compareTo(@NonNull Delayed o) {
+    public int compareTo(@NotNull Delayed o) {
       return task.compareTo(o);
     }
 
@@ -236,7 +240,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public V get(long timeout, @NonNull TimeUnit unit)
+    public V get(long timeout, @NotNull TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException {
       task.get(timeout, unit);
       return null;
@@ -283,7 +287,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public T get(long timeout, @NonNull TimeUnit unit) {
+    public T get(long timeout, @NotNull TimeUnit unit) {
       throw new CancellationException();
     }
   }
