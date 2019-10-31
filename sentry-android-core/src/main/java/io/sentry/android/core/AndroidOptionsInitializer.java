@@ -48,12 +48,14 @@ final class AndroidOptionsInitializer {
   }
 
   private static void setDefaultInApp(Context context, SentryOptions options) {
-    // If context passed in is an application-defined class, we can use to white-list frames
-    String packageName = context.getClass().getPackage().getName();
-    if (!packageName.startsWith("android.")) {
+    String packageName = context.getPackageName();
+    if (packageName != null && !packageName.startsWith("android.")) {
       options.addInAppInclude(packageName);
     }
     options.addInAppExclude("android.");
+    options.addInAppExclude("com.android.");
+    options.addInAppExclude("androidx.");
+    options.addInAppExclude("kotlin.");
   }
 
   private static void initializeCacheDirs(Context context, SentryOptions options) {

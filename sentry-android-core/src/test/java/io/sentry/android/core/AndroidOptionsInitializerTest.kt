@@ -79,11 +79,12 @@ class AndroidOptionsInitializerTest {
             on { applicationContext } doReturn context
         }
         whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
+        whenever(mockContext.packageName).thenReturn("io.sentry.app")
         val mockLogger = mock<ILogger>()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
 
-        assertTrue(sentryOptions.inAppIncludes.contains("${mockContext.javaClass.`package`!!.name}"))
+        assertTrue(sentryOptions.inAppIncludes.contains("io.sentry.app"))
     }
 
     @Test
