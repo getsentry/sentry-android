@@ -22,7 +22,7 @@ buildscript {
         classpath(Config.BuildPlugins.androidGradle)
         classpath(kotlin(Config.BuildPlugins.kotlinGradlePlugin, version = Config.kotlinVersion))
         classpath(Config.QualityPlugins.errorpronePlugin)
-//        classpath("io.sentry:sentry-android-gradle-plugin:1.7.28")
+        classpath("io.sentry:sentry-android-gradle-plugin:1.7.28")
     }
 }
 
