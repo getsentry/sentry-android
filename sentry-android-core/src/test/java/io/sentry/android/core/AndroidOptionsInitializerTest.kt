@@ -75,7 +75,7 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `init should set context package name as appInclude`() {
         val sentryOptions = SentryOptions()
-        val mockContext = mock<FakeApplication> {
+        val mockContext = mock<ApplicationStub> {
             on { applicationContext } doReturn context
         }
         whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
