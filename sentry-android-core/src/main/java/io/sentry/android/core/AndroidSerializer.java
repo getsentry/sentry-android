@@ -11,6 +11,8 @@ import io.sentry.core.SentryLevel;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.Date;
 import java.util.TimeZone;
@@ -46,8 +48,13 @@ public final class AndroidSerializer implements ISerializer {
   }
 
   @Override
-  public SentryEvent deserializeEvent(String envelope) {
-    return gson.fromJson(envelope, SentryEvent.class);
+  public SentryEvent deserializeEvent(String eventString) {
+    return gson.fromJson(eventString, SentryEvent.class);
+  }
+
+  @Override
+  public SentryEvent deserializeEvent(Reader eventReader) {
+    return gson.fromJson(eventReader, SentryEvent.class);
   }
 
   @Override

@@ -25,6 +25,7 @@ final class AndroidOptionsInitializer {
     initializeCacheDirs(context, options);
     setDefaultInApp(context, options);
 
+    options.addIntegration(new CachedEventReaderIntegration());
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
 
