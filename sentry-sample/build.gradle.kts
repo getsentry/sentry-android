@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.config.KotlinCompilerVersion
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("io.sentry.android.gradle")
+//    id("io.sentry.android.gradle") how to add sentry gradle plugin
 }
 
 android {
