@@ -48,7 +48,7 @@ final class AndroidOptionsInitializer {
   }
 
   private static void setDefaultInApp(Context context, SentryOptions options) {
-    // If context passed in is an application-defined class, we can use to white-list frames
+    // If context passed in is an application-defined class, we can use to mark frames as `InApp`
     String packageName = context.getClass().getPackage().getName();
     if (!packageName.startsWith("android.")) {
       options.addInAppInclude(packageName);
