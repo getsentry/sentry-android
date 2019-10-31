@@ -195,10 +195,10 @@ public final class SentryOptions {
   }
 
   public void addInAppExclude(String exclude) {
-    if (this.inAppExcludes == null) {
-      this.inAppExcludes = new ArrayList<>();
+    if (inAppExcludes == null) {
+      inAppExcludes = new ArrayList<>();
     }
-    this.inAppExcludes.add(exclude);
+    inAppExcludes.add(exclude);
   }
 
   public List<String> getInAppIncludes() {
@@ -206,10 +206,10 @@ public final class SentryOptions {
   }
 
   public void addInAppInclude(String include) {
-    if (this.inAppIncludes == null) {
-      this.inAppIncludes = new ArrayList<>();
+    if (inAppIncludes == null) {
+      inAppIncludes = new ArrayList<>();
     }
-    this.inAppIncludes.add(include);
+    inAppIncludes.add(include);
   }
 
   public interface BeforeSendCallback {
