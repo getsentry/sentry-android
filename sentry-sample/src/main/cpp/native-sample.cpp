@@ -1,4 +1,3 @@
-#include <string.h>
 #include <jni.h>
 #include <signal.h>
 #include <android/log.h>
