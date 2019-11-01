@@ -1,0 +1,1878 @@
+{
+  "contexts": {},
+  "debug_meta": {
+    "images": [
+      {
+        "code_file": "/system/bin/linker",
+        "code_id": "d0eff4c95d54375b45a236f201d6f485",
+        "debug_id": "d0eff4c9-5d54-375b-45a2-36f201d6f485",
+        "image_addr": "0xec1da000",
+        "image_size": 1378124,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/bin/app_process32",
+        "code_id": "b7a60bc7d078521421fd5a8d201915ae",
+        "debug_id": "b7a60bc7-d078-5214-21fd-5a8d201915ae",
+        "image_addr": "0x6244e000",
+        "image_size": 36492,
+        "type": "elf"
+      },
+      {
+        "code_file": "[vdso]",
+        "image_addr": "0xec1d9000",
+        "image_size": 2954,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libandroid_runtime.so",
+        "code_id": "6ceb9761bceb97a18c92f8a4b7072247",
+        "debug_id": "6ceb9761-bceb-97a1-8c92-f8a4b7072247",
+        "image_addr": "0xea456000",
+        "image_size": 1995240,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbinder.so",
+        "code_id": "d9d050cc38e87de79206ca07c3b8bcca",
+        "debug_id": "d9d050cc-38e8-7de7-9206-ca07c3b8bcca",
+        "image_addr": "0xe9fcc000",
+        "image_size": 623040,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libcutils.so",
+        "code_id": "694a448fe6c98b0be45825842ee7eece",
+        "debug_id": "694a448f-e6c9-8b0b-e458-25842ee7eece",
+        "image_addr": "0xeb1a8000",
+        "image_size": 82048,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhidlbase.so",
+        "code_id": "defe0bb01519c0072131032aee9c52e5",
+        "debug_id": "defe0bb0-1519-c007-2131-032aee9c52e5",
+        "image_addr": "0xe9463000",
+        "image_size": 893456,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/liblog.so",
+        "code_id": "93a4440437c37798a143e598876eda6e",
+        "debug_id": "93a44404-37c3-7798-a143-e598876eda6e",
+        "image_addr": "0xe74e2000",
+        "image_size": 94328,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libnativeloader.so",
+        "code_id": "563584a7178125ef1a93c8a9ceb74f8d",
+        "debug_id": "563584a7-1781-25ef-1a93-c8a9ceb74f8d",
+        "image_addr": "0xeab9f000",
+        "image_size": 102528,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libutils.so",
+        "code_id": "288ba3aff5b46dbd7e74be954af88b83",
+        "debug_id": "288ba3af-f5b4-6dbd-7e74-be954af88b83",
+        "image_addr": "0xe9d57000",
+        "image_size": 122932,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libwilhelm.so",
+        "code_id": "bc29f58c0cf4d1248d62f9a9c4e26149",
+        "debug_id": "bc29f58c-0cf4-d124-8d62-f9a9c4e26149",
+        "image_addr": "0xe86d5000",
+        "image_size": 262336,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libc++.so",
+        "code_id": "da119c8dac8dad63397846fac8d85f56",
+        "debug_id": "da119c8d-ac8d-ad63-3978-46fac8d85f56",
+        "image_addr": "0xe759f000",
+        "image_size": 879116,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/bionic/libc.so",
+        "code_id": "76290498408016ad14f4b98c3ab6c65c",
+        "debug_id": "76290498-4080-16ad-14f4-b98c3ab6c65c",
+        "image_addr": "0xe8942000",
+        "image_size": 1274956,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/bionic/libm.so",
+        "code_id": "1cfa7c7b9dce73e6c88e547e773d2b86",
+        "debug_id": "1cfa7c7b-9dce-73e6-c88e-547e773d2b86",
+        "image_addr": "0xe9686000",
+        "image_size": 225292,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/bionic/libdl.so",
+        "code_id": "108f1100326466498e655588e72a3e1e",
+        "debug_id": "108f1100-3264-6649-8e65-5588e72a3e1e",
+        "image_addr": "0xea1ae000",
+        "image_size": 16384,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbpf_android.so",
+        "code_id": "1087b1809d6dcea0aee06294125227ee",
+        "debug_id": "1087b180-9d6d-cea0-aee0-6294125227ee",
+        "image_addr": "0xea6e9000",
+        "image_size": 73776,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libnetdbpf.so",
+        "code_id": "bdadff691c2bf4aea323fff56259bc01",
+        "debug_id": "bdadff69-1c2b-f4ae-a323-fff56259bc01",
+        "image_addr": "0xe8833000",
+        "image_size": 45104,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libnetdutils.so",
+        "code_id": "61a9dd03fa7bb6c5a7815ee4df541a5b",
+        "debug_id": "61a9dd03-fa7b-b6c5-a781-5ee4df541a5b",
+        "image_addr": "0xe9e61000",
+        "image_size": 82312,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmemtrack.so",
+        "code_id": "77226d65dbc7ec5450022c2c3102fc9f",
+        "debug_id": "77226d65-dbc7-ec54-5002-2c2c3102fc9f",
+        "image_addr": "0xeb628000",
+        "image_size": 20492,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libandroidfw.so",
+        "code_id": "4021da115a3330ba886ed16bcca20e8f",
+        "debug_id": "4021da11-5a33-30ba-886e-d16bcca20e8f",
+        "image_addr": "0xea093000",
+        "image_size": 438564,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libappfuse.so",
+        "code_id": "608d6dc162cf0b7d6d7c0ecc8e70e177",
+        "debug_id": "608d6dc1-62cf-0b7d-6d7c-0ecc8e70e177",
+        "image_addr": "0xe82d4000",
+        "image_size": 53876,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbase.so",
+        "code_id": "e6c80e0dfebf299cd41f1c732ad018a9",
+        "debug_id": "e6c80e0d-febf-299c-d41f-1c732ad018a9",
+        "image_addr": "0xeb542000",
+        "image_size": 82008,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libcrypto.so",
+        "code_id": "67f03ee7c38488f52741092513bc71d9",
+        "debug_id": "67f03ee7-c384-88f5-2741-092513bc71d9",
+        "image_addr": "0xe849f000",
+        "image_size": 1338440,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libnativehelper.so",
+        "code_id": "af570a3db9ea2bbebc46d7d7f41b99d7",
+        "debug_id": "af570a3d-b9ea-2bbe-bc46-d7d7f41b99d7",
+        "image_addr": "0xeaad8000",
+        "image_size": 32848,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libdebuggerd_client.so",
+        "code_id": "a5f47d33991eb9a6bf48c923153c6504",
+        "debug_id": "a5f47d33-991e-b9a6-bf48-c923153c6504",
+        "image_addr": "0xe7733000",
+        "image_size": 25076,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libui.so",
+        "code_id": "8c4a0d0b3f3042928be925b6b482a7b1",
+        "debug_id": "8c4a0d0b-3f30-4292-8be9-25b6b482a7b1",
+        "image_addr": "0xe8900000",
+        "image_size": 200780,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libgraphicsenv.so",
+        "code_id": "0b0d0f16764ea015518bc5cc7069c2c4",
+        "debug_id": "0b0d0f16-764e-a015-518b-c5cc7069c2c4",
+        "image_addr": "0xeb290000",
+        "image_size": 57616,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libgui.so",
+        "code_id": "2ed3054c447f628e90ae977b71ed47b5",
+        "debug_id": "2ed3054c-447f-628e-90ae-977b71ed47b5",
+        "image_addr": "0xe8114000",
+        "image_size": 917808,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libsensor.so",
+        "code_id": "8d22a3ac64191e57ee55fac84768bcad",
+        "debug_id": "8d22a3ac-6419-1e57-ee55-fac84768bcad",
+        "image_addr": "0xe8d1f000",
+        "image_size": 94240,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libinput.so",
+        "code_id": "309011489c2c02a6361a247e89e8fdd4",
+        "debug_id": "30901148-9c2c-02a6-361a-247e89e8fdd4",
+        "image_addr": "0xeb0cb000",
+        "image_size": 213012,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libcamera_client.so",
+        "code_id": "90bbf91114fdb8c84fc2152fe457b3f1",
+        "debug_id": "90bbf911-14fd-b8c8-4fc2-152fe457b3f1",
+        "image_addr": "0xe834e000",
+        "image_size": 376928,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libcamera_metadata.so",
+        "code_id": "255f978f91efd89db0606ef6e7c1d446",
+        "debug_id": "255f978f-91ef-d89d-b060-6ef6e7c1d446",
+        "image_addr": "0xe9656000",
+        "image_size": 45064,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libsqlite.so",
+        "code_id": "f90ca5ebb1c8672837afcab57c68123f",
+        "debug_id": "f90ca5eb-b1c8-6728-37af-cab57c68123f",
+        "image_addr": "0xea283000",
+        "image_size": 1266620,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libEGL.so",
+        "code_id": "9aa8783f9fb68b313a19dd252113e6d7",
+        "debug_id": "9aa8783f-9fb6-8b31-3a19-dd252113e6d7",
+        "image_addr": "0xe748a000",
+        "image_size": 217140,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libGLESv1_CM.so",
+        "code_id": "635f22db97bf3e44e40244fa48dc359a",
+        "debug_id": "635f22db-97bf-3e44-e402-44fa48dc359a",
+        "image_addr": "0xe7503000",
+        "image_size": 37160,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libGLESv2.so",
+        "code_id": "dc6793146a37b140503b8e24e54b7f9b",
+        "debug_id": "dc679314-6a37-b140-503b-8e24e54b7f9b",
+        "image_addr": "0xea24f000",
+        "image_size": 98556,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libGLESv3.so",
+        "code_id": "93cdd9bf322d9f4ebf79d1634abc45d5",
+        "debug_id": "93cdd9bf-322d-9f4e-bf79-d1634abc45d5",
+        "image_addr": "0xe9e0a000",
+        "image_size": 98556,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libvulkan.so",
+        "code_id": "5be72cb6702bb84bae0e72072b3f3765",
+        "debug_id": "5be72cb6-702b-b84b-ae0e-72072b3f3765",
+        "image_addr": "0xeb6d0000",
+        "image_size": 188612,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libziparchive.so",
+        "code_id": "80f91fc42eb415605b678eb937cb4106",
+        "debug_id": "80f91fc4-2eb4-1560-5b67-8eb937cb4106",
+        "image_addr": "0xe9369000",
+        "image_size": 54168,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libETC1.so",
+        "code_id": "98374da5c609adb2e30735d1e1ee22ee",
+        "debug_id": "98374da5-c609-adb2-e307-35d1e1ee22ee",
+        "image_addr": "0xe76e0000",
+        "image_size": 16652,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhardware.so",
+        "code_id": "296fdb826249a357706086cf5ee07b22",
+        "debug_id": "296fdb82-6249-a357-7060-86cf5ee07b22",
+        "image_addr": "0xea66f000",
+        "image_size": 12636,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhardware_legacy.so",
+        "code_id": "c422e403023699e2aff95b940149f8c5",
+        "debug_id": "c422e403-0236-99e2-aff9-5b940149f8c5",
+        "image_addr": "0xea403000",
+        "image_size": 24600,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libselinux.so",
+        "code_id": "50b72aa03570d5b0ab278f1d5b11a573",
+        "debug_id": "50b72aa0-3570-d5b0-ab27-8f1d5b11a573",
+        "image_addr": "0xea154000",
+        "image_size": 106308,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libandroidicu.so",
+        "code_id": "42b10b460fc63dbc738b933ec10dd4f4",
+        "debug_id": "42b10b46-0fc6-3dbc-738b-933ec10dd4f4",
+        "image_addr": "0xeb884000",
+        "image_size": 217156,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmedia.so",
+        "code_id": "832fe1bdeecc401f78f56a45dbc5df13",
+        "debug_id": "832fe1bd-eecc-401f-78f5-6a45dbc5df13",
+        "image_addr": "0xe9b04000",
+        "image_size": 651492,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmedia_helper.so",
+        "code_id": "a3d54acaf80d20b377e8dff875252d6f",
+        "debug_id": "a3d54aca-f80d-20b3-77e8-dff875252d6f",
+        "image_addr": "0xe7909000",
+        "image_size": 89828,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmediametrics.so",
+        "code_id": "29e4b9d979c69138533389577bdcdf1f",
+        "debug_id": "29e4b9d9-79c6-9138-5333-89577bdcdf1f",
+        "image_addr": "0xeab24000",
+        "image_size": 69676,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmeminfo.so",
+        "code_id": "5d73feaf2184be15025141a34ee47738",
+        "debug_id": "5d73feaf-2184-be15-0251-41a34ee47738",
+        "image_addr": "0xe9dea000",
+        "image_size": 57396,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libaudioclient.so",
+        "code_id": "4a182c5ae196b1b3c87306222ba09430",
+        "debug_id": "4a182c5a-e196-b1b3-c873-06222ba09430",
+        "image_addr": "0xe8d4c000",
+        "image_size": 561260,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libaudiopolicy.so",
+        "code_id": "760f1acc47158ee656c60b3c2b0a534c",
+        "debug_id": "760f1acc-4715-8ee6-56c6-0b3c2b0a534c",
+        "image_addr": "0xe76a4000",
+        "image_size": 20992,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libjpeg.so",
+        "code_id": "59d8076e28996f578dfa77c772b82ccf",
+        "debug_id": "59d8076e-2899-6f57-8dfa-77c772b82ccf",
+        "image_addr": "0xe8b1a000",
+        "image_size": 643073,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libusbhost.so",
+        "code_id": "6de7f5566ce0a42f6db277aede206160",
+        "debug_id": "6de7f556-6ce0-a42f-6db2-77aede206160",
+        "image_addr": "0xe8798000",
+        "image_size": 20868,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libharfbuzz_ng.so",
+        "code_id": "f36fa9d6cf509008f57b13c1926ae553",
+        "debug_id": "f36fa9d6-cf50-9008-f57b-13c1926ae553",
+        "image_addr": "0xe8c05000",
+        "image_size": 710328,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libz.so",
+        "code_id": "e3e948a09ac3db43ec4aa11c6fe4410d",
+        "debug_id": "e3e948a0-9ac3-db43-ec4a-a11c6fe4410d",
+        "image_addr": "0xeae54000",
+        "image_size": 103060,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libpdfium.so",
+        "code_id": "1f44c7fc8965e4ba2841217c7865a471",
+        "debug_id": "1f44c7fc-8965-e4ba-2841-217c7865a471",
+        "image_addr": "0xe8e2b000",
+        "image_size": 5260172,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libimg_utils.so",
+        "code_id": "aa41810c83cc01851c9c85303b608c56",
+        "debug_id": "aa41810c-83cc-0185-1c9c-85303b608c56",
+        "image_addr": "0xe9607000",
+        "image_size": 82000,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libnetd_client.so",
+        "code_id": "088a20e52842d3393a1739f51308e00e",
+        "debug_id": "088a20e5-2842-d339-3a17-39f51308e00e",
+        "image_addr": "0xe8af2000",
+        "image_size": 28692,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libsoundtrigger.so",
+        "code_id": "b56b69fb1288ebd539adf4090f9dbc04",
+        "debug_id": "b56b69fb-1288-ebd5-39ad-f4090f9dbc04",
+        "image_addr": "0xe8be5000",
+        "image_size": 61476,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libminikin.so",
+        "code_id": "861b79bcc3e1f5d2abd5c008a0ce098d",
+        "debug_id": "861b79bc-c3e1-f5d2-abd5-c008a0ce098d",
+        "image_addr": "0xe8cca000",
+        "image_size": 188636,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libprocessgroup.so",
+        "code_id": "878eb31c28b6e4b3479bb4fea8ff1726",
+        "debug_id": "878eb31c-28b6-e4b3-479b-b4fea8ff1726",
+        "image_addr": "0xe8410000",
+        "image_size": 262216,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libnativebridge_lazy.so",
+        "code_id": "5072a6edd81a5ad8d0d4714a5bdd5a78",
+        "debug_id": "5072a6ed-d81a-5ad8-d0d4-714a5bdd5a78",
+        "image_addr": "0xe9f19000",
+        "image_size": 20756,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libnativeloader_lazy.so",
+        "code_id": "9ae7eae2d9770d67e14b01f7e9bdfbca",
+        "debug_id": "9ae7eae2-d977-0d67-e14b-01f7e9bdfbca",
+        "image_addr": "0xe9a1b000",
+        "image_size": 16504,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmemunreachable.so",
+        "code_id": "51ea4f1b3ad9b2f0143851f54290a683",
+        "debug_id": "51ea4f1b-3ad9-b2f0-1438-51f54290a683",
+        "image_addr": "0xe77cb000",
+        "image_size": 180620,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhidltransport.so",
+        "code_id": "242216d208183df2c9adae78ad4e2db4",
+        "debug_id": "242216d2-0818-3df2-c9ad-ae78ad4e2db4",
+        "image_addr": "0xe99aa000",
+        "image_size": 12512,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhwbinder.so",
+        "code_id": "860bd22addd417ea0ed79660a1645830",
+        "debug_id": "860bd22a-ddd4-17ea-0ed7-9660a1645830",
+        "image_addr": "0xe8893000",
+        "image_size": 12512,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libvintf.so",
+        "code_id": "7bc4bd269afb00a9dd18b86a8bc03ee0",
+        "debug_id": "7bc4bd26-9afb-00a9-dd18-b86a8bc03ee0",
+        "image_addr": "0xe9a42000",
+        "image_size": 634904,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libnativewindow.so",
+        "code_id": "95f2040ec2510a15122120c643cb2f72",
+        "debug_id": "95f2040e-c251-0a15-1221-20c643cb2f72",
+        "image_addr": "0xeb335000",
+        "image_size": 29148,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhwui.so",
+        "code_id": "10d1e316b7aa14d35052a448bd944fde",
+        "debug_id": "10d1e316-b7aa-14d3-5052-a448bd944fde",
+        "image_addr": "0xe7947000",
+        "image_size": 8063638,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libdl_android.so",
+        "code_id": "a718c0bb1422789c331ee88e5ec4b789",
+        "debug_id": "a718c0bb-1422-789c-331e-e88e5ec4b789",
+        "image_addr": "0xe8a90000",
+        "image_size": 8372,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libstatslog.so",
+        "code_id": "1679d2adc074e3e8b65a195adbd8865f",
+        "debug_id": "1679d2ad-c074-e3e8-b65a-195adbd8865f",
+        "image_addr": "0xeb1c7000",
+        "image_size": 188512,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/server_configurable_flags.so",
+        "code_id": "69975b4f266c094ecc242e5c6e24f9da",
+        "debug_id": "69975b4f-266c-094e-cc24-2e5c6e24f9da",
+        "image_addr": "0xea212000",
+        "image_size": 90152,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbinderthreadstate.so",
+        "code_id": "a7e7623da087446c801240721905d594",
+        "debug_id": "a7e7623d-a087-446c-8012-40721905d594",
+        "image_addr": "0xe9ecc000",
+        "image_size": 24588,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libvndksupport.so",
+        "code_id": "0d9eca3083d827d16765174a47f2280b",
+        "debug_id": "0d9eca30-83d8-27d1-6765-174a47f2280b",
+        "image_addr": "0xe7756000",
+        "image_size": 16392,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libnativebridge.so",
+        "code_id": "76c7ebcfb20743f288b74e8735fc329b",
+        "debug_id": "76c7ebcf-b207-43f2-88b7-4e8735fc329b",
+        "image_addr": "0xea3e8000",
+        "image_size": 24600,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmedia_omx.so",
+        "code_id": "f94e06643fd0c6d24921fadbe9bf122d",
+        "debug_id": "f94e0664-3fd0-c6d2-4921-fadbe9bf122d",
+        "image_addr": "0xeb06b000",
+        "image_size": 282728,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libaudiomanager.so",
+        "code_id": "c203965d031a2d6542a4832f2b28aeb1",
+        "debug_id": "c203965d-031a-2d65-42a4-832f2b28aeb1",
+        "image_addr": "0xea12d000",
+        "image_size": 24584,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libstagefright.so",
+        "code_id": "601a84edb5e7b7c9d9dfe39d1a270936",
+        "debug_id": "601a84ed-b5e7-b7c9-d9df-e39d1a270936",
+        "image_addr": "0xeac0b000",
+        "image_size": 1868532,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libstagefright_foundation.so",
+        "code_id": "c0f9be5246139bc0763db64f9b11a34c",
+        "debug_id": "c0f9be52-4613-9bc0-763d-b64f9b11a34c",
+        "image_addr": "0xe9c8b000",
+        "image_size": 205004,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libstagefright_http_support.so",
+        "code_id": "539a40bf12b6264b36396b49ca3c6ee1",
+        "debug_id": "539a40bf-12b6-264b-3639-6b49ca3c6ee1",
+        "image_addr": "0xe7875000",
+        "image_size": 16712,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbpf.so",
+        "code_id": "77854b5020911fc58b40e1d7556e2caf",
+        "debug_id": "77854b50-2091-1fc5-8b40-e1d7556e2caf",
+        "image_addr": "0xe78c0000",
+        "image_size": 38084,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.memtrack@1.0.so",
+        "code_id": "d78d25ba49712afa1aa0678a71238032",
+        "debug_id": "d78d25ba-4971-2afa-1aa0-678a71238032",
+        "image_addr": "0xe9cde000",
+        "image_size": 84908,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libprocinfo.so",
+        "code_id": "545ba8df55eb7cf7b6642335d7343a0b",
+        "debug_id": "545ba8df-55eb-7cf7-b664-2335d7343a0b",
+        "image_addr": "0xeb13b000",
+        "image_size": 16800,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.frameworks.bufferhub@1.0.so",
+        "code_id": "2bae05c24a42b7b2778adca0d27a387b",
+        "debug_id": "2bae05c2-4a42-b7b2-778a-dca0d27a387b",
+        "image_addr": "0xeb150000",
+        "image_size": 152892,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.allocator@2.0.so",
+        "code_id": "6d1b4afa4552550e079a8359e26a1e7c",
+        "debug_id": "6d1b4afa-4552-550e-079a-8359e26a1e7c",
+        "image_addr": "0xe9f87000",
+        "image_size": 93236,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.allocator@3.0.so",
+        "code_id": "e5eb8980fee62bf0d513ef5f6d11fc0f",
+        "debug_id": "e5eb8980-fee6-2bf0-d513-ef5f6d11fc0f",
+        "image_addr": "0xe8869000",
+        "image_size": 93252,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.common@1.2.so",
+        "code_id": "a43a317a81ea5c9c3c45cd1dfea9e775",
+        "debug_id": "a43a317a-81ea-5c9c-3c45-cd1dfea9e775",
+        "image_addr": "0xe9d1d000",
+        "image_size": 12584,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.mapper@2.0.so",
+        "code_id": "1df9a09189040ad77bbeccc97142e719",
+        "debug_id": "1df9a091-8904-0ad7-7bbe-ccc97142e719",
+        "image_addr": "0xeabce000",
+        "image_size": 105736,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.mapper@2.1.so",
+        "code_id": "4dbb4db3ca042287ba18fa5a953dc260",
+        "debug_id": "4dbb4db3-ca04-2287-ba18-fa5a953dc260",
+        "image_addr": "0xe87c3000",
+        "image_size": 114364,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.mapper@3.0.so",
+        "code_id": "28b827c7969c7d011b4010af330e84b3",
+        "debug_id": "28b827c7-969c-7d01-1b40-10af330e84b3",
+        "image_addr": "0xe88df000",
+        "image_size": 122340,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libsync.so",
+        "code_id": "17e6311aa4984009dc4a503a63651242",
+        "debug_id": "17e6311a-a498-4009-dc4a-503a63651242",
+        "image_addr": "0xe9e92000",
+        "image_size": 16388,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.bufferqueue@1.0.so",
+        "code_id": "a5d251445768120ee14d8caae586f691",
+        "debug_id": "a5d25144-5768-120e-e14d-8caae586f691",
+        "image_addr": "0xeb701000",
+        "image_size": 285292,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.bufferqueue@2.0.so",
+        "code_id": "fc6c75bd3e4e93cbe2990608ccf8b333",
+        "debug_id": "fc6c75bd-3e4e-93cb-e299-0608ccf8b333",
+        "image_addr": "0xeae01000",
+        "image_size": 248020,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.common@1.1.so",
+        "code_id": "2082bf56d1b7ac3887a97384f6a4a3df",
+        "debug_id": "2082bf56-d1b7-ac38-87a9-7384f6a4a3df",
+        "image_addr": "0xe99cf000",
+        "image_size": 12568,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hidl.token@1.0-utils.so",
+        "code_id": "2dc13d5749fa9e60f0ded711f56bdb67",
+        "debug_id": "2dc13d57-49fa-9e60-f0de-d711f56bdb67",
+        "image_addr": "0xe781f000",
+        "image_size": 16396,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbufferhub.so",
+        "code_id": "18f7c90bc0de458e6ed452ae392e836e",
+        "debug_id": "18f7c90b-c0de-458e-6ed4-52ae392e836e",
+        "image_addr": "0xeb528000",
+        "image_size": 73748,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbufferhubqueue.so",
+        "code_id": "bd0b31e6b5625cdde2e519bc59b64ede",
+        "debug_id": "bd0b31e6-b562-5cdd-e2e5-19bc59b64ede",
+        "image_addr": "0xe8697000",
+        "image_size": 135188,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libpdx_default_transport.so",
+        "code_id": "770ea51426c780425749768e250b0561",
+        "debug_id": "770ea514-26c7-8042-5749-768e250b0561",
+        "image_addr": "0xea706000",
+        "image_size": 159780,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbacktrace.so",
+        "code_id": "9b84d50447e8a081ddb8c1991bcbc3d2",
+        "debug_id": "9b84d504-47e8-a081-ddb8-c1991bcbc3d2",
+        "image_addr": "0xeaf97000",
+        "image_size": 114700,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.configstore@1.0.so",
+        "code_id": "eab1606cc11dfbda3202ec54619df994",
+        "debug_id": "eab1606c-c11d-fbda-3202-ec54619df994",
+        "image_addr": "0xeb355000",
+        "image_size": 159764,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.configstore-utils.so",
+        "code_id": "8afc709d535e513f895aaa5b6e9946f1",
+        "debug_id": "8afc709d-535e-513f-895a-aa5b6e9946f1",
+        "image_addr": "0xea8b2000",
+        "image_size": 12640,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.graphics.common@1.0.so",
+        "code_id": "cafd95dc884bf972b769322c84944c10",
+        "debug_id": "cafd95dc-884b-f972-b769-322c84944c10",
+        "image_addr": "0xe9598000",
+        "image_size": 12560,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.system.suspend@1.0.so",
+        "code_id": "efebf04a8f7244f5530afe4b39a7735e",
+        "debug_id": "efebf04a-8f72-44f5-530a-fe4b39a7735e",
+        "image_addr": "0xeb588000",
+        "image_size": 136204,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libpcre2.so",
+        "code_id": "774981f63a25e6bd662b0b443973b712",
+        "debug_id": "774981f6-3a25-e6bd-662b-0b443973b712",
+        "image_addr": "0xeaeeb000",
+        "image_size": 332672,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libpackagelistparser.so",
+        "code_id": "a39b3c50137a6961e3fd45570f1926ff",
+        "debug_id": "a39b3c50-137a-6961-e3fd-45570f1926ff",
+        "image_addr": "0xe78a1000",
+        "image_size": 12624,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libicuuc.so",
+        "code_id": "a232e2b15597ff6f7f8602680097e25a",
+        "debug_id": "a232e2b1-5597-ff6f-7f86-02680097e25a",
+        "image_addr": "0xea900000",
+        "image_size": 1824687,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libicui18n.so",
+        "code_id": "5d5a4a840648b8a0d31932dce088c776",
+        "debug_id": "5d5a4a84-0648-b8a0-d319-32dce088c776",
+        "image_addr": "0xe96e6000",
+        "image_size": 2701132,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libsonivox.so",
+        "code_id": "24b1c4e9be98faf2c1477bd91b5f1872",
+        "debug_id": "24b1c4e9-be98-faf2-c147-7bd91b5f1872",
+        "image_addr": "0xe9bc7000",
+        "image_size": 596268,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libexpat.so",
+        "code_id": "face3fa1a77b8d0b5fbdb4e6c77b2398",
+        "debug_id": "face3fa1-a77b-8d0b-5fbd-b4e6c77b2398",
+        "image_addr": "0xe8601000",
+        "image_size": 169612,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libaudioutils.so",
+        "code_id": "3de1c60a3179efbeb82a4affc2ec7625",
+        "debug_id": "3de1c60a-3179-efbe-b82a-4affc2ec7625",
+        "image_addr": "0xe9560000",
+        "image_size": 95376,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmediautils.so",
+        "code_id": "18ca4f6053dd9f47b359cacefe4d1831",
+        "debug_id": "18ca4f60-53dd-9f47-b359-cacefe4d1831",
+        "image_addr": "0xe7556000",
+        "image_size": 77960,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libnblog.so",
+        "code_id": "a58d51f76b2bf1c556d9d9a5744515de",
+        "debug_id": "a58d51f7-6b2b-f1c5-56d9-d9a5744515de",
+        "image_addr": "0xe8300000",
+        "image_size": 204924,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libvibrator.so",
+        "code_id": "8d31431add44e0ac0a7cad834c206517",
+        "debug_id": "8d31431a-dd44-e0ac-0a7c-ad834c206517",
+        "image_addr": "0xe8754000",
+        "image_size": 49168,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libft2.so",
+        "code_id": "e83056ebe5a6b70e32b4f425c5923e18",
+        "debug_id": "e83056eb-e5a6-b70e-32b4-f425c5923e18",
+        "image_addr": "0xeb401000",
+        "image_size": 647056,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libcgrouprc.so",
+        "code_id": "8f81320dd0ad7803f5bd879264adc47e",
+        "debug_id": "8f81320d-d0ad-7803-f5bd-879264adc47e",
+        "image_addr": "0xe9f77000",
+        "image_size": 16396,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhidl-gen-utils.so",
+        "code_id": "56e89ed888471ea1e823190b924bed1a",
+        "debug_id": "56e89ed8-8847-1ea1-e823-190b924bed1a",
+        "image_addr": "0xe9d98000",
+        "image_size": 147984,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libtinyxml2.so",
+        "code_id": "6ed73b38e72ef2166b2e04ee2626724b",
+        "debug_id": "6ed73b38-e72e-f216-6b2e-04ee2626724b",
+        "image_addr": "0xeb206000",
+        "image_size": 79228,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libdng_sdk.so",
+        "code_id": "3bb317104ceb33ca1b3c1a9433cef6af",
+        "debug_id": "3bb31710-4ceb-33ca-1b3c-1a9433cef6af",
+        "image_addr": "0xeb780000",
+        "image_size": 874956,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libpiex.so",
+        "code_id": "a2b9aee8b8559d24bcd619c2404a2afd",
+        "debug_id": "a2b9aee8-b855-9d24-bcd6-19c2404a2afd",
+        "image_addr": "0xea1cd000",
+        "image_size": 111760,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libpng.so",
+        "code_id": "854869c19f4eedc1141cd769e826875b",
+        "debug_id": "854869c1-9f4e-edc1-141c-d769e826875b",
+        "image_addr": "0xe95c5000",
+        "image_size": 230756,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libprotobuf-cpp-lite.so",
+        "code_id": "d34094331a118a8f2e7b40347f9b47ba",
+        "debug_id": "d3409433-1a11-8a8f-2e7b-40347f9b47ba",
+        "image_addr": "0xeb390000",
+        "image_size": 282780,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libheif.so",
+        "code_id": "958a8b838e6bfbee0488fb442a7c1687",
+        "debug_id": "958a8b83-8e6b-fbee-0488-fb442a7c1687",
+        "image_addr": "0xeb2f0000",
+        "image_size": 30500,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.media.omx@1.0.so",
+        "code_id": "e81b5d8d6211c4ae1ff5355c10f85332",
+        "debug_id": "e81b5d8d-6211-c4ae-1ff5-355c10f85332",
+        "image_addr": "0xe93b0000",
+        "image_size": 565220,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libdrmframework.so",
+        "code_id": "3db0d15a2c86dd5303b87ee2540b3719",
+        "debug_id": "3db0d15a-2c86-dd53-03b8-7ee2540b3719",
+        "image_addr": "0xe8249000",
+        "image_size": 143424,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmedia_omx_client.so",
+        "code_id": "bba92f97654c9a0ded6a7385f39c5b6c",
+        "debug_id": "bba92f97-654c-9a0d-ed6a-7385f39c5b6c",
+        "image_addr": "0xea752000",
+        "image_size": 25244,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libstagefright_codecbase.so",
+        "code_id": "ee882473db0f589e66db5655019e3436",
+        "debug_id": "ee882473-db0f-589e-66db-5655019e3436",
+        "image_addr": "0xea8da000",
+        "image_size": 25040,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libstagefright_omx_utils.so",
+        "code_id": "e86eb8033fa1ddaf444079a9a389368c",
+        "debug_id": "e86eb803-3fa1-ddaf-4440-79a9a389368c",
+        "image_addr": "0xea829000",
+        "image_size": 29004,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libRScpp.so",
+        "code_id": "d829596268744f0d7f4810570431f3a6",
+        "debug_id": "d8295962-6874-4f0d-7f48-10570431f3a6",
+        "image_addr": "0xea7ba000",
+        "image_size": 266253,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhidlallocatorutils.so",
+        "code_id": "16a9cb4d1a92b7f6ab1daffd12d248be",
+        "debug_id": "16a9cb4d-1a92-b7f6-ab1d-affd12d248be",
+        "image_addr": "0xeaf7a000",
+        "image_size": 12612,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libhidlmemory.so",
+        "code_id": "61bc66040e4fd1272a482525a0f52e96",
+        "debug_id": "61bc6604-0e4f-d127-2a48-2525a0f52e96",
+        "image_addr": "0xeae84000",
+        "image_size": 28688,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hidl.allocator@1.0.so",
+        "code_id": "042653f298efce5d69fa130a9b002874",
+        "debug_id": "042653f2-98ef-ce5d-69fa-130a9b002874",
+        "image_addr": "0xeab54000",
+        "image_size": 93212,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.cas.native@1.0.so",
+        "code_id": "efdb7961301c472e6316d8e8f1d730e5",
+        "debug_id": "efdb7961-301c-472e-6316-d8e8f1d730e5",
+        "image_addr": "0xeb24c000",
+        "image_size": 97620,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.media@1.0.so",
+        "code_id": "41c1e5660c655132c26cd244aaf405bb",
+        "debug_id": "41c1e566-0c65-5132-c26c-d244aaf405bb",
+        "image_addr": "0xeb4e4000",
+        "image_size": 12576,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hidl.token@1.0.so",
+        "code_id": "200c126b65d96457c75618aa1edf573e",
+        "debug_id": "200c126b-65d9-6457-c756-18aa1edf573e",
+        "image_addr": "0xea687000",
+        "image_size": 97280,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libunwindstack.so",
+        "code_id": "d8578bd2b51271e5123cc6120445b9bb",
+        "debug_id": "d8578bd2-b512-71e5-123c-c6120445b9bb",
+        "image_addr": "0xeb654000",
+        "image_size": 417805,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.configstore@1.1.so",
+        "code_id": "05f95344b9a26cd98dfb9dd4512e9934",
+        "debug_id": "05f95344-b9a2-6cd9-8dfb-9dd4512e9934",
+        "image_addr": "0xe778c000",
+        "image_size": 127020,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libstdc++.so",
+        "code_id": "f0911846c68d66770c297a4505e7d6bf",
+        "debug_id": "f0911846-c68d-6677-0c29-7a4505e7d6bf",
+        "image_addr": "0xeb5d8000",
+        "image_size": 16692,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libspeexresampler.so",
+        "code_id": "c3c68272103f059a10dd3a8eb7aae131",
+        "debug_id": "c3c68272-103f-059a-10dd-3a8eb7aae131",
+        "image_addr": "0xea874000",
+        "image_size": 25160,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hidl.memory@1.0.so",
+        "code_id": "cba318e9d79d99594fa8a23b57ae6d90",
+        "debug_id": "cba318e9-d79d-9959-4fa8-a23b57ae6d90",
+        "image_addr": "0xe8643000",
+        "image_size": 156848,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hidl.memory.token@1.0.so",
+        "code_id": "b483c5c21374d5701907f052ab23d80d",
+        "debug_id": "b483c5c2-1374-d570-1907-f052ab23d80d",
+        "image_addr": "0xe8290000",
+        "image_size": 84892,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.cas@1.0.so",
+        "code_id": "c91f77f910c3d295c3bbb26168876dec",
+        "debug_id": "c91f77f9-10c3-d295-c3bb-b26168876dec",
+        "image_addr": "0xeafec000",
+        "image_size": 317308,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libdexfile_support.so",
+        "code_id": "d19f562653588182c3670c237ab5dfa5",
+        "debug_id": "d19f5626-5358-8182-c367-0c237ab5dfa5",
+        "image_addr": "0xe83c1000",
+        "image_size": 16420,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/liblzma.so",
+        "code_id": "a576f74f7dad26be6d1105a14fdefc73",
+        "debug_id": "a576f74f-7dad-26be-6d11-05a14fdefc73",
+        "image_addr": "0xe820c000",
+        "image_size": 205080,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libart.so",
+        "code_id": "a0a062684495092d1756e30ba2dff37d",
+        "debug_id": "a0a06268-4495-092d-1756-e30ba2dff37d",
+        "image_addr": "0xe6d51000",
+        "image_size": 6987400,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libartpalette.so",
+        "code_id": "aadb6cbcf8c418714f4c52b67de5e396",
+        "debug_id": "aadb6cbc-f8c4-1871-4f4c-52b67de5e396",
+        "image_addr": "0xeb95f000",
+        "image_size": 16428,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libartbase.so",
+        "code_id": "b3a3a0a741f44556d02d009140734527",
+        "debug_id": "b3a3a0a7-41f4-4556-d02d-009140734527",
+        "image_addr": "0xeb998000",
+        "image_size": 529088,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libdexfile.so",
+        "code_id": "de7534f802565645ebb82a1dfb3137af",
+        "debug_id": "de7534f8-0256-5645-ebb8-2a1dfb3137af",
+        "image_addr": "0xeba67000",
+        "image_size": 293484,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libprofile.so",
+        "code_id": "a1a9d15eb8a193d03984bbd7be2cb916",
+        "debug_id": "a1a9d15e-b8a1-93d0-3984-bbd7be2cb916",
+        "image_addr": "0xeb909000",
+        "image_size": 205988,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libsigchain.so",
+        "code_id": "7e937d539bc8f82f6b45eee8c850f531",
+        "debug_id": "7e937d53-9bc8-f82f-6b45-eee8c850f531",
+        "image_addr": "0xe6d22000",
+        "image_size": 16724,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libartpalette-system.so",
+        "code_id": "210d599ba7b9f43efdb82ac5b70b2419",
+        "debug_id": "210d599b-a7b9-f43e-fdb8-2ac5b70b2419",
+        "image_addr": "0xe6c75000",
+        "image_size": 12744,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libtombstoned_client.so",
+        "code_id": "7fff0546b69578320c101419aa1d662c",
+        "debug_id": "7fff0546-b695-7832-0c10-1419aa1d662c",
+        "image_addr": "0xe6c28000",
+        "image_size": 25016,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot.oat",
+        "code_id": "4356b7beb1aac85a6f92995bf5ee901be3975d03",
+        "debug_id": "4356b7be-b1aa-c85a-6f92-995bf5ee901b",
+        "image_addr": "0x713fe000",
+        "image_size": 3674168,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-core-libart.oat",
+        "code_id": "57f1815888a5b4d64b9db7bfb22ea0f14b564d4a",
+        "debug_id": "57f18158-88a5-b4d6-4b9d-b7bfb22ea0f1",
+        "image_addr": "0x71780000",
+        "image_size": 1404984,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-okhttp.oat",
+        "code_id": "9427bc5d1e5194b92b7a0b4b481c969749980c34",
+        "debug_id": "9427bc5d-1e51-94b9-2b7a-0b4b481c9697",
+        "image_addr": "0x718d8000",
+        "image_size": 266296,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-bouncycastle.oat",
+        "code_id": "79f99a4694d49b53e659cfda27ea863ec4cdb2cd",
+        "debug_id": "79f99a46-94d4-9b53-e659-cfda27ea863e",
+        "image_addr": "0x7191a000",
+        "image_size": 151608,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-apache-xml.oat",
+        "code_id": "8b8e7301fc8fb81c9815f18d440938ace05349e4",
+        "debug_id": "8b8e7301-fc8f-b81c-9815-f18d440938ac",
+        "image_addr": "0x71940000",
+        "image_size": 28728,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-framework.oat",
+        "code_id": "0dba87984ea26fa9a20f3a6da8f726cd30a44914",
+        "debug_id": "0dba8798-4ea2-6fa9-a20f-3a6da8f726cd",
+        "image_addr": "0x71948000",
+        "image_size": 12091448,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-ext.oat",
+        "code_id": "7ea6fe6ab97c6def982a84853077e1e27674cb71",
+        "debug_id": "7ea6fe6a-b97c-6def-982a-84853077e1e2",
+        "image_addr": "0x724d1000",
+        "image_size": 143416,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-telephony-common.oat",
+        "code_id": "eb27f521181de0f3cf72fa01e40cd730f3ec2d62",
+        "debug_id": "eb27f521-181d-e0f3-cf72-fa01e40cd730",
+        "image_addr": "0x724f5000",
+        "image_size": 1867832,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-voip-common.oat",
+        "code_id": "d6d520c79e0a35dda75bf2e8a57ee36fde173042",
+        "debug_id": "d6d520c7-9e0a-35dd-a75b-f2e8a57ee36f",
+        "image_addr": "0x726be000",
+        "image_size": 24632,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-ims-common.oat",
+        "code_id": "45e078268b6a1109a6b61d6b3a7d3e9c83a500cd",
+        "debug_id": "45e07826-8b6a-1109-a6b6-1d6b3a7d3e9c",
+        "image_addr": "0x726c5000",
+        "image_size": 77880,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/x86/boot-android.test.base.oat",
+        "code_id": "9b0643f6f1a2bc9a47b35bf7869be0159a7ef65e",
+        "debug_id": "9b0643f6-f1a2-bc9a-47b3-5bf7869be015",
+        "image_addr": "0x726d9000",
+        "image_size": 16440,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libadbconnection.so",
+        "code_id": "cabc6d9c1292404d6b6d02562ac6d94f",
+        "debug_id": "cabc6d9c-1292-404d-6b6d-02562ac6d94f",
+        "image_addr": "0xdf581000",
+        "image_size": 57348,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libandroid.so",
+        "code_id": "2b4362d3e0db6d6e8fbea7ad8414fbae",
+        "debug_id": "2b4362d3-e0db-6d6e-8fbe-a7ad8414fbae",
+        "image_addr": "0xdf544000",
+        "image_size": 147504,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libxml2.so",
+        "code_id": "c5c77bd33847febd958dbe91c0b72aaa",
+        "debug_id": "c5c77bd3-3847-febd-958d-be91c0b72aaa",
+        "image_addr": "0xdf3ef000",
+        "image_size": 1363016,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libaaudio.so",
+        "code_id": "763922c0b912534fb5c7a27226c6187a",
+        "debug_id": "763922c0-b912-534f-b5c7-a27226c6187a",
+        "image_addr": "0xdf385000",
+        "image_size": 208948,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libamidi.so",
+        "code_id": "1d5156989f820745b4f99cf431715772",
+        "debug_id": "1d515698-9f82-0745-b4f9-9cf431715772",
+        "image_addr": "0xdf112000",
+        "image_size": 32780,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmediandk.so",
+        "code_id": "c61893f790469e3152edd627fed7f733",
+        "debug_id": "c61893f7-9046-9e31-52ed-d627fed7f733",
+        "image_addr": "0xdf003000",
+        "image_size": 151556,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libandroid_runtime_lazy.so",
+        "code_id": "def2b8d3c94bfa8369b4b9ed00ec646a",
+        "debug_id": "def2b8d3-c94b-fa83-69b4-b9ed00ec646a",
+        "image_addr": "0xdf34f000",
+        "image_size": 16400,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmedia_jni_utils.so",
+        "code_id": "97b75171cf9dbe247da5e43484c1800b",
+        "debug_id": "97b75171-cf9d-be24-7da5-e43484c1800b",
+        "image_addr": "0xdf1f6000",
+        "image_size": 12620,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmediadrm.so",
+        "code_id": "e8cc8cba7bd49df5798745fe2824e144",
+        "debug_id": "e8cc8cba-7bd4-9df5-7987-45fe2824e144",
+        "image_addr": "0xdf200000",
+        "image_size": 237616,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmedia2_jni_core.so",
+        "code_id": "361e2fcc858159f4dd9a8be3fc62ed3f",
+        "debug_id": "361e2fcc-8581-59f4-dd9a-8be3fc62ed3f",
+        "image_addr": "0xdf063000",
+        "image_size": 61444,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmediandk_utils.so",
+        "code_id": "32c6768e28262464881a5aa0f6b6119e",
+        "debug_id": "32c6768e-2826-2464-881a-5aa0f6b6119e",
+        "image_addr": "0xdf0ed000",
+        "image_size": 16648,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmediadrmmetrics_lite.so",
+        "code_id": "e41c3de5cb1ccb8d38c148b6f470afed",
+        "debug_id": "e41c3de5-cb1c-cb8d-38c1-48b6f470afed",
+        "image_addr": "0xdf085000",
+        "image_size": 155670,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.drm@1.0.so",
+        "code_id": "9a73f996dad30e09312ba1dd3f91c6be",
+        "debug_id": "9a73f996-dad3-0e09-312b-a1dd3f91c6be",
+        "image_addr": "0xdf240000",
+        "image_size": 522164,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.drm@1.1.so",
+        "code_id": "a71df88628024a2488636ee3fa070fa1",
+        "debug_id": "a71df886-2802-4a24-8863-6ee3fa070fa1",
+        "image_addr": "0xdf16d000",
+        "image_size": 334324,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.drm@1.2.so",
+        "code_id": "031e6941edc77c4b210197688bc774b2",
+        "debug_id": "031e6941-edc7-7c4b-2101-97688bc774b2",
+        "image_addr": "0xdf2c1000",
+        "image_size": 513372,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libbinder_ndk.so",
+        "code_id": "d6e3246bb2118055189a9eec5ca64131",
+        "debug_id": "d6e3246b-b211-8055-189a-9eec5ca64131",
+        "image_addr": "0xdefd7000",
+        "image_size": 69640,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libcamera2ndk.so",
+        "code_id": "cc40310f69514bc80d6f987d08d5f2ec",
+        "debug_id": "cc40310f-6951-4bc8-0d6f-987d08d5f2ec",
+        "image_addr": "0xdef86000",
+        "image_size": 176156,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libjnigraphics.so",
+        "code_id": "9235b0e674a195122e193cc47df0bf93",
+        "debug_id": "9235b0e6-74a1-9512-2e19-3cc47df0bf93",
+        "image_addr": "0xdef5e000",
+        "image_size": 12548,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libneuralnetworks.so",
+        "code_id": "d94acb2d187619406ac256932ce29271",
+        "debug_id": "d94acb2d-1876-1940-6ac2-56932ce29271",
+        "image_addr": "0xde96e000",
+        "image_size": 5270636,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libfmq.so",
+        "code_id": "b48819f2495567d5ea2819aa6a1c2fba",
+        "debug_id": "b48819f2-4955-67d5-ea28-19aa6a1c2fba",
+        "image_addr": "0xde88e000",
+        "image_size": 16780,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libtextclassifier_hash.so",
+        "code_id": "d542a67c95785f7dfbd9229610f07971",
+        "debug_id": "d542a67c-9578-5f7d-fbd9-229610f07971",
+        "image_addr": "0xdeef2000",
+        "image_size": 24852,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.neuralnetworks@1.0.so",
+        "code_id": "afb9bd1176a9bd5e13aac6313f87b8a8",
+        "debug_id": "afb9bd11-76a9-bd5e-13aa-c6313f87b8a8",
+        "image_addr": "0xde80f000",
+        "image_size": 267832,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.neuralnetworks@1.1.so",
+        "code_id": "e13f2edffff0fb1b8cafdf5adc6cd94a",
+        "debug_id": "e13f2edf-fff0-fb1b-8caf-df5adc6cd94a",
+        "image_addr": "0xdef19000",
+        "image_size": 114256,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.neuralnetworks@1.2.so",
+        "code_id": "43d6b851cea27efbc0b6defea5dce909",
+        "debug_id": "43d6b851-cea2-7efb-c0b6-defea5dce909",
+        "image_addr": "0xde8c3000",
+        "image_size": 508432,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hidl.safe_union@1.0.so",
+        "code_id": "1597406b8d1197785351da0679c551c5",
+        "debug_id": "1597406b-8d11-9778-5351-da0679c551c5",
+        "image_addr": "0xdeea3000",
+        "image_size": 12560,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libOpenMAXAL.so",
+        "code_id": "652f0ba47ceb218812a3c97b997d2f33",
+        "debug_id": "652f0ba4-7ceb-2188-12a3-c97b997d2f33",
+        "image_addr": "0xde7d3000",
+        "image_size": 12756,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libOpenSLES.so",
+        "code_id": "fad43bd4daa39d5b8f4a33d12e1edb39",
+        "debug_id": "fad43bd4-daa3-9d5b-8f4a-33d12e1edb39",
+        "image_addr": "0xde7b0000",
+        "image_size": 16900,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libRS.so",
+        "code_id": "93fbe45267beaaf9be6e983140c13d99",
+        "debug_id": "93fbe452-67be-aaf9-be6e-983140c13d99",
+        "image_addr": "0xde6e3000",
+        "image_size": 78848,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libutilscallstack.so",
+        "code_id": "481bae1c6ae437292232039ab6a3dc82",
+        "debug_id": "481bae1c-6ae4-3729-2232-039ab6a3dc82",
+        "image_addr": "0xde69e000",
+        "image_size": 25148,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/android.hardware.renderscript@1.0.so",
+        "code_id": "16c15d15c01ef1247b7b4131d48e6cf2",
+        "debug_id": "16c15d15-c01e-f124-7b7b-4131d48e6cf2",
+        "image_addr": "0xde700000",
+        "image_size": 520076,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libwebviewchromium_plat_support.so",
+        "code_id": "46c322041d9081d51385a657f077e6ed",
+        "debug_id": "46c32204-1d90-81d5-1385-a657f077e6ed",
+        "image_addr": "0xde646000",
+        "image_size": 24628,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libjavacore.so",
+        "code_id": "688305bcfab3d72450178332b5c29bc2",
+        "debug_id": "688305bc-fab3-d724-5017-8332b5c29bc2",
+        "image_addr": "0xde5c2000",
+        "image_size": 250996,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libandroidio.so",
+        "code_id": "e8b204309f2028b677ec1dde918838ed",
+        "debug_id": "e8b20430-9f20-28b6-77ec-1dde918838ed",
+        "image_addr": "0xde62a000",
+        "image_size": 16392,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libopenjdk.so",
+        "code_id": "6cd6c19636f5d353c3faff537c666342",
+        "debug_id": "6cd6c196-36f5-d353-c3fa-ff537c666342",
+        "image_addr": "0xdce44000",
+        "image_size": 213452,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libopenjdkjvm.so",
+        "code_id": "e4568632fe6a16299efa79d28e35778d",
+        "debug_id": "e4568632-fe6a-1629-9efa-79d28e35778d",
+        "image_addr": "0xdce28000",
+        "image_size": 37480,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libart-compiler.so",
+        "code_id": "ac1dbc56ab582d3528631cd24e43d6e0",
+        "debug_id": "ac1dbc56-ab58-2d35-2863-1cd24e43d6e0",
+        "image_addr": "0xdcb96000",
+        "image_size": 2503360,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmedia_jni.so",
+        "code_id": "898c884be05ae52ebc9f27316fb246d3",
+        "debug_id": "898c884b-e05a-e52e-bc9f-27316fb246d3",
+        "image_addr": "0xd300a000",
+        "image_size": 460080,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libmtp.so",
+        "code_id": "979fc366be9388281df72fd1330488ae",
+        "debug_id": "979fc366-be93-8828-1df7-2fd1330488ae",
+        "image_addr": "0xd308f000",
+        "image_size": 192597,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libexif.so",
+        "code_id": "7b0e59c82d99ba38c0b60584bb36ee5d",
+        "debug_id": "7b0e59c8-2d99-ba38-c0b6-0584bb36ee5d",
+        "image_addr": "0xd2f88000",
+        "image_size": 198480,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libasyncio.so",
+        "code_id": "96f4be2d33fd42a0af1665c81585e938",
+        "debug_id": "96f4be2d-33fd-42a0-af16-65c81585e938",
+        "image_addr": "0xd2fca000",
+        "image_size": 12516,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libsoundpool.so",
+        "code_id": "150893006f56d4da6ace743b45983ec1",
+        "debug_id": "15089300-6f56-d4da-6ace-743b45983ec1",
+        "image_addr": "0xd2f6a000",
+        "image_size": 53276,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.conscrypt/lib/libjavacrypto.so",
+        "code_id": "1532d9cb7b20bba36dd34cb98d4dcd1f",
+        "debug_id": "1532d9cb-7b20-bba3-6dd3-4cb98d4dcd1f",
+        "image_addr": "0xd2bd0000",
+        "image_size": 262332,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.conscrypt/lib/libcrypto.so",
+        "code_id": "67f03ee7c38488f52741092513bc71d9",
+        "debug_id": "67f03ee7-c384-88f5-2741-092513bc71d9",
+        "image_addr": "0xd2c62000",
+        "image_size": 1338440,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.conscrypt/lib/libssl.so",
+        "code_id": "7c16bdf285a45fd8e4a552295818c534",
+        "debug_id": "7c16bdf2-85a4-5fd8-e4a5-52295818c534",
+        "image_addr": "0xd2dd5000",
+        "image_size": 381788,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.conscrypt/lib/libc++.so",
+        "code_id": "da119c8dac8dad63397846fac8d85f56",
+        "debug_id": "da119c8d-ac8d-ad63-3978-46fac8d85f56",
+        "image_addr": "0xd2e5b000",
+        "image_size": 879116,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/oat/x86/android.hidl.base-V1.0-java.odex",
+        "code_id": "cee084731cd430f7462d772ce3cd611a25260f08",
+        "debug_id": "cee08473-1cd4-30f7-462d-772ce3cd611a",
+        "image_addr": "0xd2bbb000",
+        "image_size": 16440,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/framework/oat/x86/android.hidl.manager-V1.0-java.odex",
+        "code_id": "7fb46ac61d40c4dedcc428ee187a649bd8f61e1b",
+        "debug_id": "7fb46ac6-1d40-c4de-dcc4-28ee187a649b",
+        "image_addr": "0xd2b77000",
+        "image_size": 16440,
+        "type": "elf"
+      },
+      {
+        "code_file": "/vendor/lib/hw/android.hardware.graphics.mapper@2.0-impl.so",
+        "code_id": "95171004e88ecf057d54da24a6ed4e80",
+        "debug_id": "95171004-e88e-cf05-7d54-da24a6ed4e80",
+        "image_addr": "0xd0b6a000",
+        "image_size": 36876,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/android.hardware.graphics.mapper@2.0.so",
+        "code_id": "d03f4e79fc0971d9185cae2ec31c2938",
+        "debug_id": "d03f4e79-fc09-71d9-185c-ae2ec31c2938",
+        "image_addr": "0xd0814000",
+        "image_size": 105736,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libbase.so",
+        "code_id": "e337cfe38750c1a113ff2bad2b65e029",
+        "debug_id": "e337cfe3-8750-c1a1-13ff-2bad2b65e029",
+        "image_addr": "0xd09c1000",
+        "image_size": 82008,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libcutils.so",
+        "code_id": "9729252363163c8db223105a306a24fe",
+        "debug_id": "97292523-6316-3c8d-b223-105a306a24fe",
+        "image_addr": "0xd0a07000",
+        "image_size": 77888,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libhardware.so",
+        "code_id": "6a3440551304f5a7ee5a7d29ac996e6d",
+        "debug_id": "6a344055-1304-f5a7-ee5a-7d29ac996e6d",
+        "image_addr": "0xd0940000",
+        "image_size": 12628,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libhidlbase.so",
+        "code_id": "a513f27b4f1fb1ddbcff967708ec9af9",
+        "debug_id": "a513f27b-4f1f-b1dd-bcff-967708ec9af9",
+        "image_addr": "0xd0b84000",
+        "image_size": 893456,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libhidltransport.so",
+        "code_id": "242216d208183df2c9adae78ad4e2db4",
+        "debug_id": "242216d2-0818-3df2-c9ad-ae78ad4e2db4",
+        "image_addr": "0xd07c8000",
+        "image_size": 12512,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libutils.so",
+        "code_id": "0ec119d14d171e87708e79ba5e0d1919",
+        "debug_id": "0ec119d1-4d17-1e87-708e-79ba5e0d1919",
+        "image_addr": "0xd0a5e000",
+        "image_size": 122932,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libc++.so",
+        "code_id": "4022e3ac8fea90fe5c7d4ed870fcbbba",
+        "debug_id": "4022e3ac-8fea-90fe-5c7d-4ed870fcbbba",
+        "image_addr": "0xd0846000",
+        "image_size": 879116,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/android.hardware.graphics.common@1.0.so",
+        "code_id": "df3dbe21d19f97561318b6197fe95e41",
+        "debug_id": "df3dbe21-d19f-9756-1318-b6197fe95e41",
+        "image_addr": "0xd0a88000",
+        "image_size": 12560,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libhwbinder.so",
+        "code_id": "860bd22addd417ea0ed79660a1645830",
+        "debug_id": "860bd22a-ddd4-17ea-0ed7-9660a1645830",
+        "image_addr": "0xd07af000",
+        "image_size": 12512,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libbinderthreadstate.so",
+        "code_id": "bfc10c5828493964c193deff19fa610a",
+        "debug_id": "bfc10c58-2849-3964-c193-deff19fa610a",
+        "image_addr": "0xd0996000",
+        "image_size": 24588,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/vndk-sp-29/libprocessgroup.so",
+        "code_id": "b3df13fa415d0635de47178edce40912",
+        "debug_id": "b3df13fa-415d-0635-de47-178edce40912",
+        "image_addr": "0xd0ad4000",
+        "image_size": 262216,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libcompiler_rt.so",
+        "code_id": "59a893ad4dbfec086e3c55b47fb829b2",
+        "debug_id": "59a893ad-4dbf-ec08-6e3c-55b47fb829b2",
+        "image_addr": "0xd074c000",
+        "image_size": 168256,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libwebviewchromium_loader.so",
+        "code_id": "c7f2e6b4e6ff05c45bdb09791b318ba7",
+        "debug_id": "c7f2e6b4-e6ff-05c4-5bdb-09791b318ba7",
+        "image_addr": "0xd06ab000",
+        "image_size": 16412,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/libashmemd_client.so",
+        "code_id": "483a2cf0665bc72a5df4516f68fb4507",
+        "debug_id": "483a2cf0-665b-c72a-5df4-516f68fb4507",
+        "image_addr": "0xc845c000",
+        "image_size": 16396,
+        "type": "elf"
+      },
+      {
+        "code_file": "/system/lib/ashmemd_aidl_interface-cpp.so",
+        "code_id": "f2403142910896eb7513ae9e00b62b9e",
+        "debug_id": "f2403142-9108-96eb-7513-ae9e00b62b9e",
+        "image_addr": "0xc841a000",
+        "image_size": 28680,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libopenjdkjvmti.so",
+        "code_id": "34b9b3ee4fc212f4e2346324751d67a1",
+        "debug_id": "34b9b3ee-4fc2-12f4-e234-6324751d67a1",
+        "image_addr": "0xc1b02000",
+        "image_size": 766116,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libart-dexlayout.so",
+        "code_id": "94d0a749cbe7baeaa372a0febe16d69e",
+        "debug_id": "94d0a749-cbe7-baea-a372-a0febe16d69e",
+        "image_addr": "0xc1a94000",
+        "image_size": 324800,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libjdwp.so",
+        "code_id": "f2318c2010ed8e75bc0266e5c22a2947",
+        "debug_id": "f2318c20-10ed-8e75-bc02-66e5c22a2947",
+        "image_addr": "0xc1a2f000",
+        "image_size": 300529,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libnpt.so",
+        "code_id": "a0e6d775ffb6036f567c2447959daf2a",
+        "debug_id": "a0e6d775-ffb6-036f-567c-2447959daf2a",
+        "image_addr": "0xc19eb000",
+        "image_size": 12648,
+        "type": "elf"
+      },
+      {
+        "code_file": "/apex/com.android.runtime/lib/libdt_fd_forward.so",
+        "code_id": "3f3f87c9901efc51bea432b077d16620",
+        "debug_id": "3f3f87c9-901e-fc51-bea4-32b077d16620",
+        "image_addr": "0xc186a000",
+        "image_size": 40980,
+        "type": "elf"
+      },
+      {
+        "code_file": "/data/app/io.sentry.sample-C9JzxwBeD7eJYL0d_x90mA==/lib/x86/libsentry.so",
+        "code_id": "537da0688d8b34e791bd899fdaff91ea5e41429c",
+        "debug_id": "537da068-8d8b-34e7-91bd-899fdaff91ea",
+        "image_addr": "0xc0680000",
+        "image_size": 2358476,
+        "type": "elf"
+      },
+      {
+        "code_file": "/data/app/io.sentry.sample-C9JzxwBeD7eJYL0d_x90mA==/lib/x86/libsentry-android.so",
+        "code_id": "dc81c010b56e274f01dcd764f588bd449c1c7148",
+        "debug_id": "dc81c010-b56e-274f-01dc-d764f588bd44",
+        "image_addr": "0xc0647000",
+        "image_size": 16404,
+        "type": "elf"
+      }
+    ]
+  },
+  "event_id": "087be0b0-f5de-424f-62fc-21adbf8d8dcf",
+  "extra": {},
+  "level": "error",
+
+  "sdk": {
+    "name": "sentry-native",
+    "packages": [
+      {
+        "name": "github:getsentry/sentry-native",
+        "version": "0.1.2"
+      }
+    ],
+    "version": "0.1.2"
+  },
+  "tags": {},
+  "timestamp": "2019-11-01T00:41:06Z",
+  "user": null
+}
