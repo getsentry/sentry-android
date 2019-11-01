@@ -3,7 +3,6 @@ package io.sentry.android.core;
 import android.os.FileObserver;
 import io.sentry.core.*;
 import io.sentry.core.util.Objects;
-
 import java.io.*;
 import java.nio.charset.Charset;
 
@@ -34,6 +33,10 @@ final class EnvelopeFileObserver extends FileObserver {
 
   @Override
   public void onEvent(int eventType, @android.support.annotation.Nullable String relativePath) {
+    if (relativePath == null) {
+      return;
+    }
+
     // TODO: read throwing the event types
     logger.log(
         SentryLevel.DEBUG,
@@ -63,15 +66,16 @@ final class EnvelopeFileObserver extends FileObserver {
             eventReader = new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8);
             SentryEvent event = serializer.deserializeEvent(eventReader);
             // TODO: Until sentry-native sends event_id in the header
-//            if (envelope.getHeader().getEventId() != event.getEventId()) {
-//              logger.log(
-//                  SentryLevel.ERROR,
-//                  "Item %d of has a different event id (%s) to the envelope header (s)",
-//                  items,
-//                  envelope.getHeader().getEventId(),
-//                  event.getEventId());
-//              continue;
-//            }
+            //            if (envelope.getHeader().getEventId() != event.getEventId()) {
+            //              logger.log(
+            //                  SentryLevel.ERROR,
+            //                  "Item %d of has a different event id (%s) to the envelope header
+            // (s)",
+            //                  items,
+            //                  envelope.getHeader().getEventId(),
+            //                  event.getEventId());
+            //              continue;
+            //            }
             hub.captureEvent(event);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
           } finally {
