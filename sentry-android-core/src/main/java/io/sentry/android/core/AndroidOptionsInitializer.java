@@ -22,9 +22,11 @@ final class AndroidOptionsInitializer {
     initializeCacheDirs(context, options);
     setDefaultInApp(context, options);
 
-    // Integrations are registered in the same order:
-    options.addIntegration(new CachedEventReaderIntegration());
+    // Integrations are registered in the same order. Watch outbox before adding NDK:
+    options.addIntegration(EnvelopeFileObserverIntegration.getCachedEnvelopeFileObserver());
+    options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
     options.addIntegration(new NdkIntegration());
+
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
   }

@@ -13,9 +13,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class EnvelopeReader {
+public final class EnvelopeReader implements IEnvelopeReader {
 
   private static final Charset UTF_8 = Charset.forName("UTF-8");
   private final Gson gson =
@@ -25,7 +27,7 @@ public final class EnvelopeReader {
               SentryEnvelopeItemHeader.class, new SentryEnvelopeItemHeaderAdapter())
           .create();
 
-  public @Nullable SentryEnvelope read(InputStream stream) throws IOException {
+  public @Override @Nullable SentryEnvelope read(@NotNull InputStream stream) throws IOException {
     byte[] buffer = new byte[1024];
     int currentLength;
     int streamOffset = 0;
