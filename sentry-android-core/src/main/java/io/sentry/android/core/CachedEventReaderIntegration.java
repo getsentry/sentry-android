@@ -8,11 +8,14 @@ import org.jetbrains.annotations.Nullable;
 
 final class CachedEventReaderIntegration implements Integration {
   private @Nullable EnvelopeFileObserver observer;
+
   @Override
   public void register(IHub hub, SentryOptions options) {
-    String path = options.getCacheDirPath();
+    String path = options.getOutboxPath();
     if (path != null) {
-      observer = new EnvelopeFileObserver(path, hub, new EnvelopeReader(), options.getSerializer(), options.getLogger());
+      observer =
+          new EnvelopeFileObserver(
+              path, hub, new EnvelopeReader(), options.getSerializer(), options.getLogger());
       observer.startWatching();
     }
   }

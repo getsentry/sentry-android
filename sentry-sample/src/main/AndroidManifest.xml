@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="io.sentry.sample">
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <application
     android:name=".MyApplication"
     android:allowBackup="false"
@@ -21,11 +20,10 @@
       </intent-filter>
     </activity>
 
-    <meta-data android:name="io.sentry.dsn" android:value="https://key@sentry.io/123" />
+    <meta-data android:name="io.sentry.dsn" android:value="https://46fee3fb0e2a45cca85f2f2c41efe52c@sentry.io/1379099" />
     <meta-data android:name="io.sentry.debug" android:value="true" />
 
 <!--    <meta-data android:name="io.sentry.auto-init" android:value="false" /> // how to disable the auto-init-->
-
 <!--    <meta-data android:name="io.sentry.ndk" android:value="false" /> // how to disable the NDK-->
   </application>
 </manifest>

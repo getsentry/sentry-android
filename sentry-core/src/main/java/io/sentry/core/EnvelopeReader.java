@@ -54,13 +54,15 @@ public final class EnvelopeReader {
 
     SentryEnvelopeHeader header =
         deserializeEnvelopeHeader(envelopeBytes, 0, envelopeEndHeaderOffset);
-    if (header.getEventId() == null || header.getEventId() == SentryId.EMPTY_ID) {
-      throw new IllegalArgumentException("Envelope header is missing required 'event_id'.");
-    }
+    // TODO: until sentry-native writes envelopes header containing event_id
+    // TODO: Remove @Ignore of unit test
+    // if (header.getEventId() == null || header.getEventId() == SentryId.EMPTY_ID) {
+    //   throw new IllegalArgumentException("Envelope header is missing required 'event_id'.");
+    // }
 
     int itemHeaderStartOffset = envelopeEndHeaderOffset + 1;
 
-    int payloadEndOffset;
+    int payloadEndOffsetExclusive;
     List<SentryEnvelopeItem> items = new ArrayList<>();
     do {
       int lineBreakIndex = -1;
@@ -93,14 +95,14 @@ public final class EnvelopeReader {
                 + "'.");
       }
 
-      payloadEndOffset = lineBreakIndex + itemHeader.getLength() + 1;
-      if (payloadEndOffset > envelopeBytes.length) {
+      payloadEndOffsetExclusive = lineBreakIndex + itemHeader.getLength() + 1;
+      if (payloadEndOffsetExclusive > envelopeBytes.length) {
         throw new IllegalArgumentException(
             "Invalid length for item at index '"
                 + items.size()
                 + "'. "
                 + "Item is '"
-                + payloadEndOffset
+                + payloadEndOffsetExclusive
                 + "' bytes. There are '"
                 + envelopeBytes.length
                 + "' in the buffer.");
@@ -110,24 +112,24 @@ public final class EnvelopeReader {
       // checking.
       byte[] envelopeItemBytes =
           Arrays.copyOfRange(
-              envelopeBytes, lineBreakIndex + 1, payloadEndOffset /* to is exclusive */);
+              envelopeBytes, lineBreakIndex + 1, payloadEndOffsetExclusive /* to is exclusive */);
 
       SentryEnvelopeItem item = new SentryEnvelopeItem(itemHeader, envelopeItemBytes);
       items.add(item);
 
-      if (payloadEndOffset == envelopeBytes.length) {
+      if (payloadEndOffsetExclusive == envelopeBytes.length) {
         // End of envelope
         break;
-      } else if (payloadEndOffset + 1 == envelopeBytes.length) {
+      } else if (payloadEndOffsetExclusive + 1 == envelopeBytes.length) {
         // Envelope items can be closed with a final line break
-        if (envelopeBytes[payloadEndOffset + 1] == '\n') {
+        if (envelopeBytes[payloadEndOffsetExclusive] == '\n') {
           break;
         } else {
           throw new IllegalArgumentException("Envelope has invalid data following an item.");
         }
       }
 
-      itemHeaderStartOffset = payloadEndOffset + 1; // Skip over delimiter
+      itemHeaderStartOffset = payloadEndOffsetExclusive + 1; // Skip over delimiter
     } while (true);
 
     return new SentryEnvelope(header, items);
