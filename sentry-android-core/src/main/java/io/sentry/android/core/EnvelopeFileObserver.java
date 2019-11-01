@@ -12,10 +12,7 @@ final class EnvelopeFileObserver extends FileObserver {
 
   // The preferred overload (Taking File instead of String) is only available from API 29
   @SuppressWarnings("deprecation")
-  EnvelopeFileObserver(
-      String path,
-      IEnvelopeSender envelopeSender,
-      ILogger logger) {
+  EnvelopeFileObserver(String path, IEnvelopeSender envelopeSender, ILogger logger) {
     super(path);
     this.rootPath = Objects.requireNonNull(path, "File path is required.");
     this.envelopeSender = Objects.requireNonNull(envelopeSender, "Envelope sender is required.");
@@ -29,11 +26,11 @@ final class EnvelopeFileObserver extends FileObserver {
     }
 
     logger.log(
-      SentryLevel.DEBUG,
-      "onEvent fired for EnvelopeFileObserver with event type %d on path: %s for file %s.",
-      eventType,
-      this.rootPath,
-      relativePath);
+        SentryLevel.DEBUG,
+        "onEvent fired for EnvelopeFileObserver with event type %d on path: %s for file %s.",
+        eventType,
+        this.rootPath,
+        relativePath);
 
     // TODO: Only some event types should be pass through?
 

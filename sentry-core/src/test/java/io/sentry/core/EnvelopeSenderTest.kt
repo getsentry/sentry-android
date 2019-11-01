@@ -1,12 +1,22 @@
 package io.sentry.core
 
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argWhere
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.Reader
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class EnvelopeSenderTest {
     private class Fixture {
@@ -46,7 +56,7 @@ class EnvelopeSenderTest {
         sut.processEnvelopeFile(path)
         assertFalse(File(path).exists())
         // Additionally make sure we have a error logged
-        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), any(), any<Object>())
+        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), any(), any<Any>())
     }
 
     @Test
@@ -62,7 +72,7 @@ class EnvelopeSenderTest {
         verify(fixture.hub, times(1))!!.captureEvent(expected)
         assertFalse(File(path).exists())
         // Additionally make sure we have no errors logged
-        verify(fixture.logger, never())!!.log(eq(SentryLevel.ERROR), any(), any<Object>())
+        verify(fixture.logger, never())!!.log(eq(SentryLevel.ERROR), any(), any<Any>())
         verify(fixture.logger, never())!!.log(eq(SentryLevel.ERROR), any(), any())
     }
 
@@ -76,7 +86,7 @@ class EnvelopeSenderTest {
         sut.processEnvelopeFile(path)
 
         // Additionally make sure we have no errors logged
-        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), any(), any<Object>())
+        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), any(), any<Any>())
         verify(fixture.hub, never())!!.captureEvent(any())
         assertFalse(File(path).exists())
     }
@@ -91,24 +101,24 @@ class EnvelopeSenderTest {
     @Test
     fun `when hub is null, ctor throws`() {
         fixture.hub = null
-        assertFailsWith<IllegalArgumentException>{ fixture.getSut() }
+        assertFailsWith<IllegalArgumentException> { fixture.getSut() }
     }
 
     @Test
     fun `when envelopeReader is null, ctor throws`() {
         fixture.envelopeReader = null
-        assertFailsWith<IllegalArgumentException>{ fixture.getSut() }
+        assertFailsWith<IllegalArgumentException> { fixture.getSut() }
     }
 
     @Test
     fun `when serializer is null, ctor throws`() {
         fixture.serializer = null
-        assertFailsWith<IllegalArgumentException>{ fixture.getSut() }
+        assertFailsWith<IllegalArgumentException> { fixture.getSut() }
     }
 
     @Test
     fun `when logger is null, ctor throws`() {
         fixture.logger = null
-        assertFailsWith<IllegalArgumentException>{ fixture.getSut() }
+        assertFailsWith<IllegalArgumentException> { fixture.getSut() }
     }
 }

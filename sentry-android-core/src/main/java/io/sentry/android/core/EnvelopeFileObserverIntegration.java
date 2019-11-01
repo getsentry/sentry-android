@@ -18,7 +18,9 @@ abstract class EnvelopeFileObserverIntegration implements Integration {
     } else {
       logger.log(SentryLevel.DEBUG, "Registering CachedEventReaderIntegration for path: %s", path);
 
-      EnvelopeSender envelopeSender = new EnvelopeSender(hub, new io.sentry.core.EnvelopeReader(), options.getSerializer(), logger);
+      EnvelopeSender envelopeSender =
+          new EnvelopeSender(
+              hub, new io.sentry.core.EnvelopeReader(), options.getSerializer(), logger);
 
       observer = new EnvelopeFileObserver(path, envelopeSender, logger);
       observer.startWatching();
@@ -33,16 +35,19 @@ abstract class EnvelopeFileObserverIntegration implements Integration {
     return new JavaCachedEnvelopeFileObserverIntegration();
   }
 
-  @TestOnly abstract String getPath(SentryOptions options);
+  @TestOnly
+  abstract String getPath(SentryOptions options);
 
-  private static class OutboxEnvelopeFileObserverIntegration extends EnvelopeFileObserverIntegration {
+  private static class OutboxEnvelopeFileObserverIntegration
+      extends EnvelopeFileObserverIntegration {
     @Override
     protected String getPath(SentryOptions options) {
       return options.getOutboxPath();
     }
   }
 
-  private static class JavaCachedEnvelopeFileObserverIntegration extends EnvelopeFileObserverIntegration {
+  private static class JavaCachedEnvelopeFileObserverIntegration
+      extends EnvelopeFileObserverIntegration {
     @Override
     protected String getPath(SentryOptions options) {
       // TODO: Wherever we're caching events from the Java layer

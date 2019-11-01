@@ -2,9 +2,9 @@ package io.sentry.android.core
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.sentry.core.SentryOptions
-import org.junit.runner.RunWith
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class EnvelopeFileObserverIntegrationTest {
@@ -13,7 +13,7 @@ class EnvelopeFileObserverIntegrationTest {
         var options = SentryOptions()
         options.cacheDirPath = "some_dir"
 
-        val sut = EnvelopeFileObserverIntegration.getCachedEnvelopeFileObserver()
+        val sut = EnvelopeFileObserverIntegration.getOutboxFileObserver()
         assertEquals(options.outboxPath, sut.getPath(options))
     }
 

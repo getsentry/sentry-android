@@ -1,10 +1,15 @@
 package io.sentry.core;
 
 import io.sentry.core.util.Objects;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
+import org.jetbrains.annotations.NotNull;
 
 public final class EnvelopeSender implements IEnvelopeSender {
   private static final Charset UTF_8 = Charset.forName("UTF-8");
@@ -15,10 +20,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
   private final ILogger logger;
 
   public EnvelopeSender(
-    IHub hub,
-    IEnvelopeReader envelopeReader,
-    ISerializer serializer,
-    ILogger logger) {
+      IHub hub, IEnvelopeReader envelopeReader, ISerializer serializer, ILogger logger) {
     this.hub = Objects.requireNonNull(hub, "Hub is required.");
     this.envelopeReader = Objects.requireNonNull(envelopeReader, "Envelope reader is required.");
     this.serializer = Objects.requireNonNull(serializer, "Serializer is required.");
@@ -72,7 +74,11 @@ public final class EnvelopeSender implements IEnvelopeSender {
           eventReader = new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8);
           SentryEvent event = serializer.deserializeEvent(eventReader);
           if (event == null) {
-            logger.log(SentryLevel.ERROR, "Item %d of type %s returned null by the parser.", items, item.getHeader().getType());
+            logger.log(
+                SentryLevel.ERROR,
+                "Item %d of type %s returned null by the parser.",
+                items,
+                item.getHeader().getType());
           } else {
             // TODO: Until sentry-native sends event_id in the header
             //            if (envelope.getHeader().getEventId() != event.getEventId()) {
@@ -94,10 +100,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
       } else {
         // TODO: Handle attachments and other types
         logger.log(
-          SentryLevel.WARNING,
-          "Item %d of type: %s ignored.",
-          items,
-          item.getHeader().getType());
+            SentryLevel.WARNING, "Item %d of type: %s ignored.", items, item.getHeader().getType());
       }
     }
   }
