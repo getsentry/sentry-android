@@ -254,6 +254,7 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
     return device;
   }
 
+  @SuppressWarnings("ObsoleteSdkInt")
   private String getDeviceName() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       return Settings.Global.getString(context.getContentResolver(), "device_name");
