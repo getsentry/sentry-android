@@ -28,7 +28,7 @@ public interface IHub {
 
   void bindClient(SentryClient client);
 
-  void flush(long timeoutMills);
+  void flush(long timeoutMills) throws InterruptedException;
 
   IHub clone();
 }

@@ -200,7 +200,7 @@ public final class Hub implements IHub, Cloneable {
   }
 
   @Override
-  public void flush(long timeoutMills) {
+  public void flush(long timeoutMills) throws InterruptedException {
     StackItem item = stack.peek();
     if (item != null) {
       item.client.flush(timeoutMills);

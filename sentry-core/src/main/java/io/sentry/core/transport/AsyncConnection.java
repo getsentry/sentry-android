@@ -7,7 +7,7 @@ import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.TestOnly;
 public final class AsyncConnection implements Closeable {
   private final ITransport transport;
   private final ITransportGate transportGate;
-  private final ExecutorService executor;
+  private final FlushableExecutorService executor;
   private final IEventCache eventCache;
   private final SentryOptions options;
 
@@ -43,7 +43,7 @@ public final class AsyncConnection implements Closeable {
       ITransport transport,
       ITransportGate transportGate,
       IEventCache eventCache,
-      ExecutorService executorService,
+      FlushableExecutorService executorService,
       SentryOptions options) {
     this.transport = transport;
     this.transportGate = transportGate;
@@ -84,6 +84,10 @@ public final class AsyncConnection implements Closeable {
   // https://errorprone.info/bugpattern/FutureReturnValueIgnored
   public void send(SentryEvent event) throws IOException {
     executor.submit(new EventSender(event));
+  }
+
+  public Future<Void> flush(long timeout, TimeUnit unit) {
+    return executor.flush(timeout, unit);
   }
 
   @Override

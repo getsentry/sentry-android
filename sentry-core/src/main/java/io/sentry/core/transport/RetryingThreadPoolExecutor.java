@@ -2,16 +2,20 @@ package io.sentry.core.transport;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.RunnableScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,11 +31,14 @@ import org.jetbrains.annotations.NotNull;
  *
  * <p>This class is not public because it is used solely in {@link AsyncConnection}.
  */
-final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
+final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor
+    implements FlushableExecutorService {
   private final int maxRetries;
   private final int maxQueueSize;
   private final AtomicInteger currentlyRunning;
   private final IBackOffIntervalStrategy backOffIntervalStrategy;
+  private final AtomicReference<Future<Void>> flushing = new AtomicReference<>();
+  private volatile CountDownLatch flushLatch;
 
   /**
    * Creates a new instance of the thread pool.
@@ -69,6 +76,78 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     if (isSchedulingAllowed()) {
       super.submit(task);
     }
+  }
+
+  @Override
+  public Future<Void> flush(long timeout, TimeUnit unit) {
+    Future<Void> prev = flushing.get();
+
+    // just a quick check before we start to allocate stuff. We will need to check again later
+    // though.
+    if (prev != null) {
+      return prev;
+    }
+
+    // We need to do a manual clean up if the flush is cancelled before the flusher thread starts.
+    // This variable tells us whether the thread started and is therefore in charge of the clean up
+    // or whether we need to do the clean up on the main thread.
+    AtomicBoolean cleanupHandled = new AtomicBoolean();
+
+    // this is our flush routine
+    Runnable payload =
+        () -> {
+          if (!cleanupHandled.compareAndSet(false, true)) {
+            // cleanup was already handled - this means the future was cancelled before the
+            // thread even started
+            return;
+          }
+
+          try {
+            flushLatch = new CountDownLatch(currentlyRunning.get());
+            flushLatch.await(timeout, unit);
+          } catch (InterruptedException e) {
+            // we just have to clean up in the finally block
+          } finally {
+            flushing.set(null);
+            flushLatch = null;
+          }
+        };
+
+    // this is the future that we are going to be returning and which will run our payload
+    FutureTask<Void> flusher =
+        new FutureTask<Void>(payload, null) {
+          @Override
+          public boolean cancel(boolean mayInterruptIfRunning) {
+            if (cleanupHandled.compareAndSet(false, true)) {
+              flushing.set(null);
+              flushLatch = null;
+            }
+            return super.cancel(mayInterruptIfRunning);
+          }
+        };
+
+    // while there is some flushing going on...
+    while (!flushing.compareAndSet(null, flusher)) {
+
+      // get the current flushing future
+      prev = flushing.get();
+      if (prev != null) {
+        // flushing in progress, so let's not initiate a second one
+        return prev;
+      }
+
+      // we reach this place if we could not set the flusher in the loop, yet we successfully seen
+      // it null in the get() call above. Therefore we are going to retry to use our flusher.
+      // This only happens when multiple threads "fight" over which is going to initiate the
+      // flushing, so we settle down quite quickly here.
+    }
+
+    // phew, all clear... Let's start the flusher now...
+    Thread t = new Thread(flusher, "SentryAsyncConnection-flusher");
+    t.setDaemon(true);
+    t.start();
+
+    return flusher;
   }
 
   @Override
@@ -164,6 +243,14 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
       }
     } finally {
       currentlyRunning.decrementAndGet();
+
+      // it is important to use the local var instead of flushLatch directly, because flushLatch
+      // could theoretically be nulled by another thread between the null-check and
+      // the countDown() call.
+      CountDownLatch latch = flushLatch;
+      if (latch != null) {
+        latch.countDown();
+      }
     }
   }
 

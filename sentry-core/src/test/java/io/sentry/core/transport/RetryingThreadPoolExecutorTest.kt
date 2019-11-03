@@ -157,15 +157,156 @@ class RetryingThreadPoolExecutorTest {
         synchronized(jobBlocker) { jobBlocker.notify() }
         atLeastOneFinished.await()
 
+        // wait for the thread pool to realize that the job indeed finished
+        while (threadPool?.completedTaskCount == 0L) {
+            Thread.sleep(100)
+        }
+
         // now try to test that the above actually made room in the queue again
         val jobBlocker2 = CountDownLatch(1)
         val sync2 = CountDownLatch(1)
 
         f = threadPool?.submit { sync2.countDown(); jobBlocker2.await() }
-        sync2.await()
         assertFalse(f != null && f.isCancelled, "A task should be successfully enqueued after making a place in the queue")
+        sync2.await()
 
         synchronized(jobBlocker) { jobBlocker.notifyAll() }
         jobBlocker2.countDown()
+    }
+
+    @Test
+    fun `flush should drain the queue`() {
+        val gate = Object()
+        val twoJobsFinished = CountDownLatch(2)
+
+        (1..3).map {
+            threadPool?.submit {
+                synchronized(gate) { gate.wait() }
+                twoJobsFinished.countDown()
+            }
+        }
+
+        // this is just to check that we have our queue in the shape for the rest of the tests
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // initiate the flush
+        val flushFuture = threadPool?.flush(1, TimeUnit.DAYS)
+
+        // check that the flush has started but since we're blocking all the jobs, nothing really changed.
+        assertEquals(false, flushFuture?.isDone)
+        assertEquals(false, flushFuture?.isCancelled)
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // let 2 tasks finish
+        synchronized(gate) { gate.notify(); gate.notify() }
+        twoJobsFinished.await()
+
+        assertEquals(false, flushFuture?.isDone)
+        assertEquals(false, flushFuture?.isCancelled)
+
+        // let the 3rd task run as well
+        synchronized(gate) { gate.notify(); }
+
+        // and wait for the flush completion
+        flushFuture?.get()
+
+        assertEquals(true, flushFuture?.isDone)
+        assertEquals(false, flushFuture?.isCancelled)
+    }
+
+    @Test
+    fun `flush should time out`() {
+        val gate = Object()
+
+        (1..3).map {
+            threadPool?.submit {
+                synchronized(gate) { gate.wait() }
+            }
+        }
+
+        // this is just to check that we have our queue in the shape for the rest of the tests
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // initiate the flush
+        val flushFuture = threadPool?.flush(1, TimeUnit.SECONDS)
+
+        Thread.sleep(1100)
+
+        assertEquals(true, flushFuture?.isDone)
+        assertEquals(false, flushFuture?.isCancelled)
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // this shouldn't throw anything
+        flushFuture?.get()
+    }
+
+    @Test
+    fun `flush can be cancelled`() {
+        val gate = Object()
+
+        (1..(maxQueueSize - 2)).map {
+            threadPool?.submit {
+                synchronized(gate) { gate.wait() }
+            }
+        }
+
+        // this is just to check that we have our queue in the shape for the rest of the tests
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // initiate the flush
+        val flushFuture = threadPool?.flush(1, TimeUnit.DAYS)
+
+        // check that the flush has started but since we're blocking all the jobs, nothing really changed.
+        assertEquals(false, flushFuture?.isDone)
+        assertEquals(false, flushFuture?.isCancelled)
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // cancel the flush
+        flushFuture?.cancel(true)
+
+        assertEquals(true, flushFuture?.isDone)
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // now that the flush is cancelled, new jobs should be submittable
+        val jobFinished = CountDownLatch(1)
+
+        // we have no control over the cancelled flushing thread will actually finish after it's been interrupted
+        // by the cancel above, so we just have to retry here until we're allowed to schedule again...
+
+        var submitFuture = threadPool?.submit {
+            jobFinished.countDown()
+        }
+        var attempt = 0
+        while (submitFuture != null && submitFuture.isCancelled && attempt++ < 60) {
+            Thread.sleep(1000)
+            submitFuture = threadPool?.submit {
+                jobFinished.countDown()
+            }
+        }
+
+        assertTrue(attempt < 60)
+
+        jobFinished.await()
+    }
+
+    @Test
+    fun `new jobs accepted during flush`() {
+        val gate = Object()
+
+        (1..3).map {
+            threadPool?.submit {
+                synchronized(gate) { gate.wait() }
+            }
+        }
+
+        // this is just to check that we have our queue in the shape for the rest of the tests
+        assertEquals(0, threadPool?.completedTaskCount)
+
+        // initiate the flush
+        val flushFuture = threadPool?.flush(1, TimeUnit.DAYS)
+
+        // check that submitting is possible during the flush
+        val submitFuture = threadPool?.submit {}
+        assertEquals(false, submitFuture?.isCancelled)
     }
 }

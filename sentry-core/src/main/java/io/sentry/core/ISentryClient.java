@@ -11,7 +11,7 @@ public interface ISentryClient {
 
   void close();
 
-  void flush(long timeoutMills);
+  void flush(long timeoutMills) throws InterruptedException;
 
   default SentryId captureEvent(SentryEvent event) {
     return captureEvent(event, null);

@@ -1,10 +1,12 @@
 package io.sentry.core
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.mockingDetails
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.protocol.User
 import io.sentry.core.transport.AsyncConnection
 import kotlin.test.Ignore
@@ -12,6 +14,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.Before
 
 class SentryClientTest {
 
@@ -24,6 +27,11 @@ class SentryClientTest {
     }
 
     private val fixture = Fixture()
+
+    @Before
+    fun setup() {
+        whenever(fixture.connection.flush(any(), any())).thenReturn(mock())
+    }
 
     @Test
     fun `when fixture is unchanged, client is enabled`() {

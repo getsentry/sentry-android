@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.Nullable;
 
 public final class SentryClient implements ISentryClient {
@@ -135,13 +137,22 @@ public final class SentryClient implements ISentryClient {
           SentryLevel.WARNING,
           "Failed to close the connection to the Sentry Server.",
           e);
+    } catch (InterruptedException e) {
+      // well, close() is supposedly a clean up job, so we're swallowing the interrupted exception
+      // hoping that the current thread is winding down anyway. To be good citizens we at least
+      // set the interrupt flag again..
+      Thread.currentThread().interrupt();
     }
     isEnabled = false;
   }
 
   @Override
-  public void flush(long timeoutMills) {
-    // TODO: Flush transport
+  public void flush(long timeoutMills) throws InterruptedException {
+    try {
+      connection.flush(timeoutMills, TimeUnit.MILLISECONDS).get();
+    } catch (ExecutionException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private boolean sample() {

@@ -99,7 +99,7 @@ public final class Sentry {
     getCurrentHub().bindClient(client);
   }
 
-  public static void flush(int timeoutMills) {
+  public static void flush(int timeoutMills) throws InterruptedException {
     getCurrentHub().flush(timeoutMills);
   }
 

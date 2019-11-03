@@ -12,7 +12,6 @@ import io.sentry.core.SentryEvent
 import io.sentry.core.SentryOptions
 import io.sentry.core.dsnString
 import java.io.IOException
-import java.util.concurrent.ExecutorService
 import kotlin.test.Test
 
 class AsyncConnectionTest {
@@ -21,7 +20,7 @@ class AsyncConnectionTest {
         var transport = mock<ITransport>()
         var transportGate = mock<ITransportGate>()
         var eventCache = mock<IEventCache>()
-        var executor = mock<ExecutorService>()
+        var executor = mock<FlushableExecutorService>()
         var sentryOptions: SentryOptions = SentryOptions().apply {
             dsn = dsnString
         }
