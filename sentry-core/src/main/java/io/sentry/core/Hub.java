@@ -13,13 +13,13 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class Hub implements IHub, Cloneable {
+public final class Hub implements IHub {
 
   private static final class StackItem {
     private volatile @NotNull ISentryClient client;
     private volatile @NotNull Scope scope;
 
-    public StackItem(@NotNull ISentryClient client, @NotNull Scope scope) {
+    StackItem(@NotNull ISentryClient client, @NotNull Scope scope) {
       this.client = client;
       this.scope = scope;
     }
@@ -46,7 +46,7 @@ public final class Hub implements IHub, Cloneable {
     this.lastEventId = SentryId.EMPTY_ID;
   }
 
-  static StackItem createRootStackItem(@NotNull SentryOptions options) {
+  private static StackItem createRootStackItem(@NotNull SentryOptions options) {
     Objects.requireNonNull(options, "SentryOptions is required.");
     Scope scope = new Scope(options.getMaxBreadcrumbs());
     ISentryClient client = new SentryClient(options);
@@ -173,9 +173,8 @@ public final class Hub implements IHub, Cloneable {
         }
       } catch (Exception e) {
         logIfNotNull(options.getLogger(), SentryLevel.ERROR, "Error while closing the Hub.", e);
-      } finally {
-        isEnabled = false;
       }
+      isEnabled = false;
     }
   }
 
@@ -294,22 +293,18 @@ public final class Hub implements IHub, Cloneable {
           "Instance is disabled and this 'withScope' call is a no-op.");
     } else {
       pushScope();
-      try {
-        StackItem item = stack.peek();
-        if (item != null) {
-          try {
-            callback.run(item.scope);
-          } catch (Exception e) {
-            logIfNotNull(
-                options.getLogger(), SentryLevel.ERROR, "Error in the 'withScope' callback.", e);
-          }
-        } else {
+      StackItem item = stack.peek();
+      if (item != null) {
+        try {
+          callback.run(item.scope);
+        } catch (Exception e) {
           logIfNotNull(
-              options.getLogger(), SentryLevel.FATAL, "Stack peek was null when withScope");
+              options.getLogger(), SentryLevel.ERROR, "Error in the 'withScope' callback.", e);
         }
-      } finally {
-        popScope();
+      } else {
+        logIfNotNull(options.getLogger(), SentryLevel.FATAL, "Stack peek was null when withScope");
       }
+      popScope();
     }
   }
 
