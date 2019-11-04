@@ -28,7 +28,7 @@ final class SentryThreadFactory {
     return getCurrentThreads(null);
   }
 
-  private List<SentryThread> getCurrentThreads(@Nullable final Thread crashedThread) {
+  List<SentryThread> getCurrentThreads(@Nullable final Thread crashedThread) {
     Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
     List<SentryThread> result = new ArrayList<>();
 

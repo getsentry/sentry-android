@@ -2,6 +2,8 @@ package io.sentry.core;
 
 import static io.sentry.core.ILogger.logIfNotNull;
 
+import io.sentry.core.exception.ExceptionMechanismThrowable;
+import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.util.Objects;
 
 /**
@@ -58,8 +60,11 @@ public final class UncaughtExceptionHandlerIntegration
     logIfNotNull(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
 
     try {
-      // TODO: Set Thread info to the scope?
-      this.hub.captureException(thrown);
+      Mechanism mechanism = new Mechanism();
+      mechanism.setHandled(false);
+      mechanism.setType("UncaughtExceptionHandler");
+      Throwable throwable = new ExceptionMechanismThrowable(mechanism, thrown, thread);
+      this.hub.captureException(throwable);
     } catch (Exception e) {
       logIfNotNull(
           options.getLogger(), SentryLevel.ERROR, "Error sending uncaught exception to Sentry.", e);

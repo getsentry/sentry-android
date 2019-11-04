@@ -1,10 +1,11 @@
 package io.sentry.core
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
+import io.sentry.core.exception.ExceptionMechanismThrowable
+import io.sentry.core.protocol.SentryId
 import kotlin.test.Test
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class UncaughtExceptionHandlerIntegrationTest {
     @Test
@@ -24,7 +25,7 @@ class UncaughtExceptionHandlerIntegrationTest {
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
-        verify(hubMock).captureException(throwableMock)
+        verify(hubMock).captureException(any())
     }
 
     @Test
@@ -40,5 +41,25 @@ class UncaughtExceptionHandlerIntegrationTest {
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
         verify(defaultHandlerMock).uncaughtException(threadMock, throwableMock)
+    }
+
+    @Test
+    fun `when uncaughtException is called, exception captured has handled=false`() {
+        val handlerMock = mock<UncaughtExceptionHandler>()
+        val threadMock = mock<Thread>()
+        val throwableMock = mock<Throwable>()
+        val hubMock = mock<IHub>()
+        whenever(hubMock.captureException(any())).thenAnswer { invocation ->
+            val e = (invocation.arguments[1] as ExceptionMechanismThrowable)
+            assertNotNull(e)
+            assertNotNull(e.exceptionMechanism)
+            assertTrue(e.exceptionMechanism.handled)
+            SentryId.EMPTY_ID
+        }
+        val options = SentryOptions()
+        val sut = UncaughtExceptionHandlerIntegration(handlerMock)
+        sut.register(hubMock, options)
+        sut.uncaughtException(threadMock, throwableMock)
+        verify(hubMock).captureException(any())
     }
 }
