@@ -97,7 +97,8 @@ public final class SentryClient implements ISentryClient {
       processor.process(event);
     }
 
-    event = executeBeforeSend(event);
+    // TODO: captureEvent now takes Hint too?
+    event = executeBeforeSend(event, null);
 
     if (event == null) {
       // Event dropped by the beforeSend callback
@@ -117,11 +118,11 @@ public final class SentryClient implements ISentryClient {
     return event.getEventId();
   }
 
-  private SentryEvent executeBeforeSend(SentryEvent event) {
+  private SentryEvent executeBeforeSend(SentryEvent event, Hint hint) {
     SentryOptions.BeforeSendCallback beforeSend = options.getBeforeSend();
     if (beforeSend != null) {
       try {
-        event = beforeSend.execute(event);
+        event = beforeSend.execute(event, hint);
       } catch (Exception e) {
         logIfNotNull(
             options.getLogger(),

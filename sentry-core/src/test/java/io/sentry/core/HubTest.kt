@@ -92,7 +92,7 @@ class HubTest {
         options.maxBreadcrumbs = 5
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
-        (1..10).forEach { _ -> sut.addBreadcrumb(Breadcrumb()) }
+        (1..10).forEach { _ -> sut.addBreadcrumb(Breadcrumb(), null) }
         var actual = 0
         sut.configureScope {
             actual = it.breadcrumbs.size

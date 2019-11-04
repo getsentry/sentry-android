@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import org.jetbrains.annotations.Nullable;
 
 public interface IHub {
 
@@ -14,7 +15,7 @@ public interface IHub {
 
   void close();
 
-  void addBreadcrumb(Breadcrumb breadcrumb);
+  void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Hint hint);
 
   SentryId getLastEventId();
 
