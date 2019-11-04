@@ -1,10 +1,8 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.protocol.User
-import io.sentry.core.transport.AsyncConnection
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.Queue
@@ -14,16 +12,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 
 class HubTest {
-
-    class Fixture {
-        var sentryOptions: SentryOptions = SentryOptions().apply {
-            dsn = dsnString
-        }
-        var connection: AsyncConnection = mock()
-        fun getSut() = SentryClient(sentryOptions, connection)
-    }
-
-    private val fixture = Fixture()
 
     @Test
     fun `when cloning Scope it returns the same values`() {
