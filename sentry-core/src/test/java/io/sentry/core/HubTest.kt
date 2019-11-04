@@ -1,8 +1,12 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.protocol.User
+import io.sentry.core.transport.AsyncConnection
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.Queue
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,6 +14,16 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 
 class HubTest {
+
+    class Fixture {
+        var sentryOptions: SentryOptions = SentryOptions().apply {
+            dsn = dsnString
+        }
+        var connection: AsyncConnection = mock()
+        fun getSut() = SentryClient(sentryOptions, connection)
+    }
+
+    private val fixture = Fixture()
 
     @Test
     fun `when cloning Scope it returns the same values`() {
@@ -99,5 +113,24 @@ class HubTest {
         var breadcrumbs: Queue<Breadcrumb>? = null
         sut.configureScope { breadcrumbs = it.breadcrumbs }
         assertEquals(expected, breadcrumbs!!.single())
+    }
+
+    @Test
+    fun `when beforeSend throws an exception, breadcrumb adds an entry to the data field with exception message and stacktrace`() {
+        val exception = Exception("test")
+        val sw = StringWriter()
+        exception.printStackTrace(PrintWriter(sw))
+        val stacktrace = sw.toString()
+
+        val options = SentryOptions()
+        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { throw exception }
+        options.dsn = "https://key@sentry.io/proj"
+        val sut = Hub(options)
+
+        val actual = Breadcrumb()
+        sut.addBreadcrumb(actual)
+
+        assertEquals("test", actual.data["sentry:message"])
+        assertEquals(stacktrace, actual.data["sentry:stacktrace"])
     }
 }

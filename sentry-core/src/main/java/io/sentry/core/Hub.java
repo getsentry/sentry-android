@@ -4,7 +4,11 @@ import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.util.Objects;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.jetbrains.annotations.Nullable;
 
@@ -114,7 +118,7 @@ public final class Hub implements IHub, Cloneable {
     if (item != null) {
       SentryOptions.BeforeBreadcrumbCallback callback = options.getBeforeBreadcrumb();
       if (callback != null) {
-        breadcrumb = callback.execute(breadcrumb);
+        breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb);
       }
       if (breadcrumb != null) {
         item.scope.addBreadcrumb(breadcrumb);
@@ -123,6 +127,30 @@ public final class Hub implements IHub, Cloneable {
       logIfNotNull(
           options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when addBreadcrumb");
     }
+  }
+
+  private Breadcrumb executeBeforeBreadcrumb(
+      SentryOptions.BeforeBreadcrumbCallback callback, Breadcrumb breadcrumb) {
+    try {
+      breadcrumb = callback.execute(breadcrumb);
+    } catch (Exception e) {
+      logIfNotNull(
+          options.getLogger(),
+          SentryLevel.ERROR,
+          "The BeforeBreadcrumbCallback callback threw an exception. It will be added as breadcrumb and continue.",
+          e);
+
+      Map<String, String> data = breadcrumb.getData();
+      if (breadcrumb.getData() == null) {
+        data = new HashMap<>();
+      }
+      data.put("sentry:message", e.getMessage());
+      StringWriter sw = new StringWriter();
+      e.printStackTrace(new PrintWriter(sw));
+      data.put("sentry:stacktrace", sw.toString());
+      breadcrumb.setData(data);
+    }
+    return breadcrumb;
   }
 
   @Override
