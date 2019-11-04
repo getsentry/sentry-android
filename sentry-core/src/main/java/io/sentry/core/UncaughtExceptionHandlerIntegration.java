@@ -58,6 +58,7 @@ public final class UncaughtExceptionHandlerIntegration
     logIfNotNull(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
 
     try {
+      // set crashed = true
       // TODO: Set Thread info to the scope?
       this.hub.captureException(thrown);
     } catch (Exception e) {
