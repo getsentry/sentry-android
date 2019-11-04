@@ -56,6 +56,7 @@ public final class MainEventProcessor implements EventProcessor {
               // Provide the thread-id if available to mark the thread-list with the crashed one.
               && Boolean.FALSE.equals(exception.getMechanism().getHandled())) {
             crashedThreadId = exception.getThreadId();
+            break;
           }
         }
       }
