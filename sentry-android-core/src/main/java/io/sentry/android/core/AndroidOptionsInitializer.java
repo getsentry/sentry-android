@@ -5,6 +5,8 @@ import android.os.Build;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.util.AsyncFileCreator;
+
 import java.io.File;
 import java.lang.reflect.Method;
 
@@ -58,11 +60,14 @@ final class AndroidOptionsInitializer {
     options.addInAppExclude("kotlin.");
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   private static void initializeCacheDirs(Context context, SentryOptions options) {
-    File cacheDir = new File(context.getCacheDir(), "sentry");
-    cacheDir.mkdirs();
-    options.setCacheDirPath(cacheDir.getAbsolutePath());
-    new File(options.getOutboxPath()).mkdirs();
+    String cacheDirPath = context.getCacheDir().getAbsolutePath() + File.separator + "sentry";
+    options.setCacheDirPath(cacheDirPath);
+
+    // create files async to avoid IO on main thread.
+    new AsyncFileCreator().createFile(cacheDirPath);
+    new AsyncFileCreator().createFile(options.getOutboxPath());
   }
 
   private static boolean isNdkAvailable() {
