@@ -13,14 +13,16 @@ public final class AsyncFileCreator {
 
   /**
    * Method used to create a new file
+   *
    * @param path on disk to be created
    * @return a Future with the file
    */
   public Future<File> createFile(final String path) {
-    return executor.submit(() -> {
-      File file = new File(path);
-      file.mkdirs();
-      return file;
-    });
+    return executor.submit(
+        () -> {
+          File file = new File(path);
+          file.mkdirs();
+          return file;
+        });
   }
 }

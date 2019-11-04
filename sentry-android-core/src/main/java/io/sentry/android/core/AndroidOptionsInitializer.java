@@ -6,7 +6,6 @@ import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.AsyncFileCreator;
-
 import java.io.File;
 import java.lang.reflect.Method;
 
