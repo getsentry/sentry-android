@@ -194,7 +194,7 @@ public final class Hub implements IHub, Cloneable {
       if (item != null) {
         SentryOptions.BeforeBreadcrumbCallback callback = options.getBeforeBreadcrumb();
         if (callback != null) {
-            breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb);
+          breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb);
         }
         if (breadcrumb != null) {
           item.scope.addBreadcrumb(breadcrumb);
