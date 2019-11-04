@@ -1,6 +1,10 @@
 package io.sentry.core
 
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.exception.ExceptionMechanismThrowable
 import io.sentry.core.protocol.SentryId
 import kotlin.test.Test
