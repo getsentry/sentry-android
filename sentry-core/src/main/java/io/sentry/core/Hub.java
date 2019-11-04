@@ -12,25 +12,25 @@ import org.jetbrains.annotations.Nullable;
 public final class Hub implements IHub, Cloneable {
 
   private static final class StackItem {
-    private volatile ISentryClient client;
-    private volatile Scope scope;
+    private volatile @NotNull ISentryClient client;
+    private volatile @NotNull Scope scope;
 
-    public StackItem(ISentryClient client, Scope scope) {
+    public StackItem(@NotNull ISentryClient client, @NotNull Scope scope) {
       this.client = client;
       this.scope = scope;
     }
   }
 
   private volatile @NotNull SentryId lastEventId;
-  private final SentryOptions options;
+  private final @NotNull SentryOptions options;
   private volatile boolean isEnabled;
   private final Deque<StackItem> stack = new LinkedBlockingDeque<>();
 
-  public Hub(SentryOptions options) {
+  public Hub(@NotNull SentryOptions options) {
     this(options, createRootStackItem(options));
   }
 
-  private Hub(SentryOptions options, @Nullable StackItem rootStackItem) {
+  private Hub(@NotNull SentryOptions options, @Nullable StackItem rootStackItem) {
     this.options = options;
     if (rootStackItem != null) {
       this.stack.push(rootStackItem);
@@ -42,7 +42,7 @@ public final class Hub implements IHub, Cloneable {
     this.lastEventId = SentryId.EMPTY_ID;
   }
 
-  static StackItem createRootStackItem(SentryOptions options) {
+  static StackItem createRootStackItem(@NotNull SentryOptions options) {
     Objects.requireNonNull(options, "SentryOptions is required.");
     Scope scope = new Scope(options.getMaxBreadcrumbs());
     ISentryClient client = new SentryClient(options);
@@ -54,8 +54,9 @@ public final class Hub implements IHub, Cloneable {
     return isEnabled;
   }
 
+  @NotNull
   @Override
-  public SentryId captureEvent(@NotNull SentryEvent event) {
+  public SentryId captureEvent(SentryEvent event) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -74,7 +75,7 @@ public final class Hub implements IHub, Cloneable {
           logIfNotNull(
               options.getLogger(), SentryLevel.FATAL, "Stack peek was null when captureEvent");
         }
-      } catch (Throwable e) {
+      } catch (Exception e) {
         logIfNotNull(
             options.getLogger(),
             SentryLevel.ERROR,
@@ -86,8 +87,9 @@ public final class Hub implements IHub, Cloneable {
     return sentryId;
   }
 
+  @NotNull
   @Override
-  public SentryId captureMessage(@NotNull String message) {
+  public SentryId captureMessage(String message) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -106,7 +108,7 @@ public final class Hub implements IHub, Cloneable {
           logIfNotNull(
               options.getLogger(), SentryLevel.FATAL, "Stack peek was null when captureMessage");
         }
-      } catch (Throwable e) {
+      } catch (Exception e) {
         logIfNotNull(
             options.getLogger(), SentryLevel.ERROR, "Error while capturing message: " + message, e);
       }
@@ -115,6 +117,7 @@ public final class Hub implements IHub, Cloneable {
     return sentryId;
   }
 
+  @NotNull
   @Override
   public SentryId captureException(Throwable throwable) {
     SentryId sentryId = SentryId.EMPTY_ID;
@@ -135,7 +138,7 @@ public final class Hub implements IHub, Cloneable {
           logIfNotNull(
               options.getLogger(), SentryLevel.FATAL, "Stack peek was null when captureException");
         }
-      } catch (Throwable e) {
+      } catch (Exception e) {
         logIfNotNull(
             options.getLogger(),
             SentryLevel.ERROR,
@@ -164,7 +167,7 @@ public final class Hub implements IHub, Cloneable {
           logIfNotNull(
               options.getLogger(), SentryLevel.FATAL, "Stack peek was NULL when closing Hub");
         }
-      } catch (Throwable e) {
+      } catch (Exception e) {
         logIfNotNull(options.getLogger(), SentryLevel.ERROR, "Error while closing the Hub.", e);
       } finally {
         isEnabled = false;
@@ -199,6 +202,7 @@ public final class Hub implements IHub, Cloneable {
     }
   }
 
+  @NotNull
   @Override
   public SentryId getLastEventId() {
     return lastEventId;
@@ -243,7 +247,7 @@ public final class Hub implements IHub, Cloneable {
           "Instance is disabled and this 'popScope' call is a no-op.");
     } else {
       // Don't drop the root scope
-      synchronized (stack) {
+      synchronized (stack) { // TODO: is it necessary? we should never sync a concurrent object
         if (stack.size() != 1) {
           stack.pop();
         } else {
@@ -254,7 +258,7 @@ public final class Hub implements IHub, Cloneable {
   }
 
   @Override
-  public void withScope(ScopeCallback callback) {
+  public void withScope(@NotNull ScopeCallback callback) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -267,7 +271,7 @@ public final class Hub implements IHub, Cloneable {
         if (item != null) {
           try {
             callback.run(item.scope);
-          } catch (Throwable e) {
+          } catch (Exception e) {
             logIfNotNull(
                 options.getLogger(), SentryLevel.ERROR, "Error in the 'withScope' callback.", e);
           }
@@ -282,7 +286,7 @@ public final class Hub implements IHub, Cloneable {
   }
 
   @Override
-  public void configureScope(ScopeCallback callback) {
+  public void configureScope(@NotNull ScopeCallback callback) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -293,7 +297,7 @@ public final class Hub implements IHub, Cloneable {
       if (item != null) {
         try {
           callback.run(item.scope);
-        } catch (Throwable e) {
+        } catch (Exception e) {
           logIfNotNull(
               options.getLogger(), SentryLevel.ERROR, "Error in the 'configureScope' callback.", e);
         }
@@ -339,7 +343,7 @@ public final class Hub implements IHub, Cloneable {
       if (item != null) {
         try {
           item.client.flush(timeoutMills);
-        } catch (Throwable e) {
+        } catch (Exception e) {
           logIfNotNull(options.getLogger(), SentryLevel.ERROR, "Error in the 'client.flush'.", e);
         }
       } else {
@@ -348,6 +352,7 @@ public final class Hub implements IHub, Cloneable {
     }
   }
 
+  @NotNull
   @Override
   public IHub clone() {
     if (!isEnabled()) {
