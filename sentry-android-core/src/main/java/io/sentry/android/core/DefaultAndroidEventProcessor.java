@@ -66,7 +66,9 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
     }
     setAppExtras(event);
 
-    // TODO: proguard UUIDs and debug-meta
+    if (event.getDebugMeta() == null) {
+      event.setDebugMeta(getDebugMeta());
+    }
 
     if (event.getContexts().getDevice() == null) {
       event.getContexts().setDevice(getDevice());
@@ -76,6 +78,37 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
     }
 
     return event;
+  }
+
+  private List<DebugImage> getDebugImages() {
+    String[] uuids = getProGuardUuids();
+
+    if (uuids == null || uuids.length == 0) {
+      return null;
+    }
+
+    List<DebugImage> images = new ArrayList<>();
+
+    for (String item : uuids) {
+      DebugImage debugImage = new DebugImage();
+      debugImage.setType("proguard");
+      debugImage.setUuid(item);
+      images.add(debugImage);
+    }
+
+    return images;
+  }
+
+  private DebugMeta getDebugMeta() {
+    List<DebugImage> debugImages = getDebugImages();
+
+    if (debugImages == null) {
+      return null;
+    }
+
+    DebugMeta debugMeta = new DebugMeta();
+    debugMeta.setImages(debugImages);
+    return debugMeta;
   }
 
   private void setAppExtras(SentryEvent event) {
@@ -164,9 +197,10 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
   // we can get some inspiration here
   // https://github.com/flutter/plugins/blob/master/packages/device_info/android/src/main/java/io/flutter/plugins/deviceinfo/DeviceInfoPlugin.java
   private Device getDevice() {
-    // TODO: missing name and usable memory
+    // TODO: missing usable memory
 
     Device device = new Device();
+    device.setName(getDeviceName());
     device.setManufacturer(Build.MANUFACTURER);
     device.setBrand(Build.BRAND);
     device.setFamily(getFamily());
@@ -218,6 +252,15 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
     device.setTimezone(getTimeZone());
 
     return device;
+  }
+
+  @SuppressWarnings("ObsoleteSdkInt")
+  private String getDeviceName() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      return Settings.Global.getString(context.getContentResolver(), "device_name");
+    } else {
+      return null;
+    }
   }
 
   @SuppressWarnings("deprecation")
@@ -714,7 +757,6 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
     return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
   }
 
-  @SuppressWarnings("UnusedMethod")
   private String[] getProGuardUuids() {
     InputStream is = null;
     try {
