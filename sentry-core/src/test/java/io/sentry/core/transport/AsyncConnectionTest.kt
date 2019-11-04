@@ -10,6 +10,7 @@ import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryOptions
+import io.sentry.core.cache.IEventCache
 import io.sentry.core.dsnString
 import java.io.IOException
 import java.util.concurrent.ExecutorService
@@ -34,7 +35,7 @@ class AsyncConnectionTest {
         }
 
         fun getSUT(): AsyncConnection {
-            return AsyncConnection(transport, transportGate, eventCache, executor, sentryOptions)
+            return AsyncConnection(transport, transportGate, eventCache, executor, true, sentryOptions)
         }
     }
 
