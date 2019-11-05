@@ -21,6 +21,28 @@ android {
         testInstrumentationRunnerArguments = mapOf(
             "clearPackageData" to "true"
         )
+
+        externalNativeBuild {
+            cmake {
+                arguments.add(0, "-DANDROID_STL=c++_static")
+                arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
+            }
+        }
+
+        ndk {
+            val platform = System.getenv("ABI")
+            if (platform == null || platform.toLowerCase() == "all") {
+                abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
+            } else {
+                abiFilters(platform)
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            setPath("CMakeLists.txt")
+        }
     }
 
     signingConfigs {
@@ -46,14 +68,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    // due https://github.com/gradle/gradle/issues/11083
-//    kotlinOptions {
-//        jvmTarget = JavaVersion.VERSION_1_8.toString()
-//    }
-    withGroovyBuilder {
-        "kotlinOptions" {
-            setProperty("jvmTarget", JavaVersion.VERSION_1_8.toString())
-        }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     // if travis ci hangs again on this task, remove comments

@@ -7,6 +7,8 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.protocol.User
 import io.sentry.core.transport.AsyncConnection
+import java.io.PrintWriter
+import java.io.StringWriter
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -72,10 +74,7 @@ class SentryClientTest {
     @Test
     fun `when beforeSend is set, callback is invoked`() {
         var invoked = false
-        fixture.sentryOptions.setBeforeSend { e ->
-            invoked = true
-            e
-        }
+        fixture.sentryOptions.setBeforeSend { e, _ -> invoked = true; e }
         val sut = fixture.getSut()
         sut.captureEvent(SentryEvent())
         assertTrue(invoked)
@@ -83,7 +82,7 @@ class SentryClientTest {
 
     @Test
     fun `when beforeSend is returns null, event is dropped`() {
-        fixture.sentryOptions.setBeforeSend { null }
+        fixture.sentryOptions.setBeforeSend { _: SentryEvent, _: Any? -> null }
         val sut = fixture.getSut()
         val event = SentryEvent()
         sut.captureEvent(event)
@@ -93,7 +92,7 @@ class SentryClientTest {
     @Test
     fun `when beforeSend is returns new instance, new instance is sent`() {
         val expected = SentryEvent()
-        fixture.sentryOptions.setBeforeSend { expected }
+        fixture.sentryOptions.setBeforeSend { _, _ -> expected }
         val sut = fixture.getSut()
         val actual = SentryEvent()
         sut.captureEvent(actual)
@@ -101,18 +100,37 @@ class SentryClientTest {
         verify(fixture.connection, times(1)).send(expected)
     }
 
-//    @Test
-//    fun `when captureMessage is called, sentry event contains formatted message`() {
-//        var sentEvent: SentryEvent? = null
-//        fixture.sentryOptions.setBeforeSend { e ->
-//            sentEvent = e
-//            e
-//        }
-//        val sut = fixture.getSut()
-//        val actual = "actual message"
-//        sut.captureMessage(actual)
+    @Test
+    fun `when beforeSend throws an exception, breadcrumb is added and event is sent`() {
+        val exception = Exception("test")
+        val sw = StringWriter()
+        exception.printStackTrace(PrintWriter(sw))
+        val stacktrace = sw.toString()
+
+        exception.stackTrace.toString()
+        fixture.sentryOptions.setBeforeSend { _, _ -> throw exception }
+        val sut = fixture.getSut()
+        val actual = SentryEvent()
+        sut.captureEvent(actual)
+
+        assertEquals("test", actual.breadcrumbs.first().data["sentry:message"])
+        assertEquals(stacktrace, actual.breadcrumbs.first().data["sentry:stacktrace"])
+        assertEquals("SentryClient", actual.breadcrumbs.first().category)
+        assertEquals(SentryLevel.ERROR, actual.breadcrumbs.first().level)
+        assertEquals("BeforeSend callback failed.", actual.breadcrumbs.first().message)
+
+        verify(fixture.connection, times(1)).send(actual)
+    }
+
+    @Test
+    fun `when captureMessage is called, sentry event contains formatted message`() {
+        var sentEvent: SentryEvent? = null
+        fixture.sentryOptions.setBeforeSend { e, _ -> sentEvent = e; e }
+        val sut = fixture.getSut()
+        val actual = "actual message"
+        sut.captureMessage(actual)
 //        assertEquals(actual, sentEvent!!.message.formatted)
-//    }
+    }
 
     @Test
     fun `when event has release, value from options not applied`() {

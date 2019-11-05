@@ -1,8 +1,9 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import org.jetbrains.annotations.Nullable;
 
-public interface IHub {
+public interface IHub extends Cloneable {
 
   boolean isEnabled();
 
@@ -14,7 +15,11 @@ public interface IHub {
 
   void close();
 
-  void addBreadcrumb(Breadcrumb breadcrumb);
+  void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint);
+
+  default void addBreadcrumb(Breadcrumb breadcrumb) {
+    addBreadcrumb(breadcrumb, null);
+  }
 
   SentryId getLastEventId();
 
@@ -26,7 +31,7 @@ public interface IHub {
 
   void configureScope(ScopeCallback callback);
 
-  void bindClient(SentryClient client);
+  void bindClient(ISentryClient client);
 
   void flush(long timeoutMills);
 

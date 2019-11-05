@@ -136,12 +136,13 @@ public final class EnvelopeReader implements IEnvelopeReader {
     return new SentryEnvelope(header, items);
   }
 
-  SentryEnvelopeHeader deserializeEnvelopeHeader(byte[] buffer, int offset, int length) {
+  private SentryEnvelopeHeader deserializeEnvelopeHeader(byte[] buffer, int offset, int length) {
     String json = new String(buffer, offset, length, UTF_8);
     return gson.fromJson(json, SentryEnvelopeHeader.class);
   }
 
-  SentryEnvelopeItemHeader deserializeEnvelopeItemHeader(byte[] buffer, int offset, int length) {
+  private SentryEnvelopeItemHeader deserializeEnvelopeItemHeader(
+      byte[] buffer, int offset, int length) {
     String json = new String(buffer, offset, length, UTF_8);
     return gson.fromJson(json, SentryEnvelopeItemHeader.class);
   }

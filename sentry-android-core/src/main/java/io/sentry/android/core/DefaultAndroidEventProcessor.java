@@ -29,7 +29,7 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
   private static final Charset UTF_8 = Charset.forName("UTF-8");
 
   final Context context;
-  final SentryOptions options;
+  private final SentryOptions options;
 
   // it could also be a parameter and get from Sentry.init(...)
   private static final Date appStartTime = DateUtils.getCurrentDateTime();
@@ -197,9 +197,10 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
   // we can get some inspiration here
   // https://github.com/flutter/plugins/blob/master/packages/device_info/android/src/main/java/io/flutter/plugins/deviceinfo/DeviceInfoPlugin.java
   private Device getDevice() {
-    // TODO: missing name and usable memory
+    // TODO: missing usable memory
 
     Device device = new Device();
+    device.setName(getDeviceName());
     device.setManufacturer(Build.MANUFACTURER);
     device.setBrand(Build.BRAND);
     device.setFamily(getFamily());
@@ -251,6 +252,15 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
     device.setTimezone(getTimeZone());
 
     return device;
+  }
+
+  @SuppressWarnings("ObsoleteSdkInt")
+  private String getDeviceName() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      return Settings.Global.getString(context.getContentResolver(), "device_name");
+    } else {
+      return null;
+    }
   }
 
   @SuppressWarnings("deprecation")
@@ -782,14 +792,14 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
 
   private void log(SentryLevel level, String message, Throwable throwable) {
     ILogger logger = options.getLogger();
-    if (logger != null && options.isDebug()) {
+    if (options.isDebug()) {
       logger.log(level, message, throwable);
     }
   }
 
   private void log(SentryLevel level, String message, Object... args) {
     ILogger logger = options.getLogger();
-    if (logger != null && options.isDebug()) {
+    if (options.isDebug()) {
       logger.log(level, message, args);
     }
   }

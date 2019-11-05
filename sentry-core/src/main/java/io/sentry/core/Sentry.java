@@ -2,6 +2,7 @@ package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /** Sentry SDK main API entry point */
 public final class Sentry {
@@ -12,7 +13,7 @@ public final class Sentry {
 
   private static volatile IHub mainHub = NoOpHub.getInstance();
 
-  static IHub getCurrentHub() {
+  private static IHub getCurrentHub() {
     IHub hub = currentHub.get();
     if (hub == null) {
       currentHub.set(mainHub.clone());
@@ -34,7 +35,7 @@ public final class Sentry {
     init(options);
   }
 
-  static synchronized void init(@NotNull SentryOptions options) {
+  private static synchronized void init(@NotNull SentryOptions options) {
     String dsn = options.getDsn();
     if (dsn == null || dsn.isEmpty()) {
       close();
@@ -71,8 +72,8 @@ public final class Sentry {
     return getCurrentHub().captureException(throwable);
   }
 
-  public static void addBreadcrumb(Breadcrumb breadcrumb) {
-    getCurrentHub().addBreadcrumb(breadcrumb);
+  public static void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {
+    getCurrentHub().addBreadcrumb(breadcrumb, hint);
   }
 
   public static SentryId getLastEventId() {

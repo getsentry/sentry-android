@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import org.jetbrains.annotations.Nullable;
 
 final class NoOpHub implements IHub {
 
@@ -36,7 +37,7 @@ final class NoOpHub implements IHub {
   public void close() {}
 
   @Override
-  public void addBreadcrumb(Breadcrumb breadcrumb) {}
+  public void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {}
 
   @Override
   public SentryId getLastEventId() {
@@ -56,7 +57,7 @@ final class NoOpHub implements IHub {
   public void configureScope(ScopeCallback callback) {}
 
   @Override
-  public void bindClient(SentryClient client) {}
+  public void bindClient(ISentryClient client) {}
 
   @Override
   public void flush(long timeoutMills) {}
