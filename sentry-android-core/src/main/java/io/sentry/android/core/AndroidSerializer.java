@@ -47,11 +47,6 @@ public final class AndroidSerializer implements ISerializer {
   }
 
   @Override
-  public SentryEvent deserializeEvent(String eventString) {
-    return gson.fromJson(eventString, SentryEvent.class);
-  }
-
-  @Override
   public SentryEvent deserializeEvent(Reader eventReader) {
     return gson.fromJson(eventReader, SentryEvent.class);
   }

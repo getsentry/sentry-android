@@ -5,8 +5,6 @@ import java.io.Reader;
 import java.io.Writer;
 
 public interface ISerializer {
-  SentryEvent deserializeEvent(String envelope);
-
   SentryEvent deserializeEvent(Reader eventReader);
 
   void serialize(SentryEvent event, Writer writer) throws IOException;
