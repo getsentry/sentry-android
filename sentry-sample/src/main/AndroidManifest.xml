@@ -26,6 +26,8 @@
     <meta-data android:name="io.sentry.debug" android:value="true" />
     <!-- Raise a ANR event if UI thread blocked for over 1 seconds -->
     <meta-data android:name="io.sentry.anr.timeout-interval-mills" android:value="1000" />
+    <!-- Raise ANR events even if the debugger is attached -->
+    <meta-data android:name="io.sentry.anr.report-debug" android:value="true" />
 
 <!--    <meta-data android:name="io.sentry.auto-init" android:value="false" /> // how to disable the auto-init-->
 

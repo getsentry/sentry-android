@@ -30,6 +30,7 @@ public final class AnrIntegration implements Integration {
       anrWatchDog =
           new ANRWatchDog(
               options.getAnrTimeoutIntervalMills(),
+              options.isAnrReportInDebug(),
               error -> {
                 logIfNotNull(
                     options.getLogger(),

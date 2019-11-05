@@ -23,6 +23,7 @@ final class ANRWatchDog extends Thread {
     void onAppNotResponding(ApplicationNotResponding error);
   }
 
+  private boolean reportInDebug;
   private ANRListener anrListener = null;
   private final Handler _uiHandler = new Handler(Looper.getMainLooper());
   private final int timeoutIntervalMills;
@@ -44,8 +45,9 @@ final class ANRWatchDog extends Thread {
    *     It is therefore the maximum time the UI may freeze before being reported as ANR.
    * @param listener The new listener or null
    */
-  ANRWatchDog(int timeoutIntervalMills, @NotNull ANRListener listener, @NotNull ILogger logger) {
+  ANRWatchDog(int timeoutIntervalMills, boolean reportInDebug, @NotNull ANRListener listener, @NotNull ILogger logger) {
     super();
+    this.reportInDebug = reportInDebug;
     this.anrListener = listener;
     this.timeoutIntervalMills = timeoutIntervalMills;
     this.logger = logger;
@@ -74,7 +76,7 @@ final class ANRWatchDog extends Thread {
       // If the main thread has not handled _ticker, it is blocked. ANR.
       if (_tick.get() != 0 && !_reported) {
         //noinspection ConstantConditions
-        if (Debug.isDebuggerConnected() || Debug.waitingForDebugger()) {
+        if (!reportInDebug && (Debug.isDebuggerConnected() || Debug.waitingForDebugger())) {
           logger.log(
               SentryLevel.DEBUG,
               "An ANR was detected but ignored because the debugger is connected.");

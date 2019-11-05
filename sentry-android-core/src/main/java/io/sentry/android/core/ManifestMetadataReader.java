@@ -16,6 +16,7 @@ final class ManifestMetadataReader {
   static final String DSN_KEY = "io.sentry.dsn";
   static final String DEBUG_KEY = "io.sentry.debug";
   static final String ANR_ENABLE = "io.sentry.anr.enable";
+  static final String ANR_REPORT_DEBUG = "io.sentry.anr.report-debug";
   static final String ANR_TIMEOUT_INTERVAL_MILLS = "io.sentry.anr.timeout-interval-mills";
   static final String AUTO_INIT = "io.sentry.auto-init";
   static final String ENABLE_NDK = "io.sentry.ndk";
@@ -34,6 +35,10 @@ final class ManifestMetadataReader {
         boolean isAnrEnabled = metadata.getBoolean(ANR_ENABLE, options.isAnrEnabled());
         logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "isAnrEnabled read: %s", isAnrEnabled);
         options.setAnrEnabled(isAnrEnabled);
+
+        boolean isAnrReportInDebug = metadata.getBoolean(ANR_REPORT_DEBUG, options.isAnrReportInDebug());
+        logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "isAnrReportInDebug read: %s", isAnrReportInDebug);
+        options.setAnrReportInDebug(isAnrReportInDebug);
 
         int anrTimeoutIntervalMills =
             metadata.getInt(ANR_TIMEOUT_INTERVAL_MILLS, options.getAnrTimeoutIntervalMills());
