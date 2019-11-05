@@ -5,14 +5,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
-import kotlin.test.assertSame
 
 class BreadcrumbTest {
     @Test
     fun `cloning breadcrumb wont have the same references`() {
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        val data = mapOf(Pair("data", "data"))
+        val data = mutableMapOf(Pair("data", "data"))
         breadcrumb.data = data
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
@@ -32,19 +31,13 @@ class BreadcrumbTest {
         assertNotSame(breadcrumb.data, clone.data)
 
         assertNotSame(breadcrumb.unknown, clone.unknown)
-
-//        assertNotSame(breadcrumb.level, clone.level) why still the same?
-        assertSame(breadcrumb.level, clone.level)
-
-        breadcrumb.level = SentryLevel.FATAL
-        assertNotSame(breadcrumb.level, clone.level)
     }
 
     @Test
     fun `cloning breadcrumb will have the same values`() {
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        val data = mapOf(Pair("data", "data"))
+        val data = mutableMapOf(Pair("data", "data"))
         breadcrumb.data = data
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
@@ -61,6 +54,47 @@ class BreadcrumbTest {
         assertEquals("message", clone.message)
         assertEquals("data", clone.data["data"])
         assertEquals("unknown", clone.unknown["unknown"])
+        assertEquals("type", clone.type)
+        assertEquals(SentryLevel.DEBUG, clone.level)
+        assertEquals("category", clone.category)
+        assertEquals(dateIso, DateUtils.getTimestamp(clone.timestamp))
+    }
+
+    @Test
+    fun `cloning breadcrumb and changing the original values wont change the clone values`() {
+        val breadcrumb = Breadcrumb()
+        breadcrumb.message = "message"
+        val data = mutableMapOf(Pair("data", "data"))
+        breadcrumb.data = data
+        val unknown = mapOf(Pair("unknown", "unknown"))
+        breadcrumb.acceptUnknownProperties(unknown)
+        val date = Date()
+        val dateIso = DateUtils.getTimestamp(date)
+        breadcrumb.timestamp = date
+        breadcrumb.type = "type"
+        val level = SentryLevel.DEBUG
+        breadcrumb.level = level
+        breadcrumb.category = "category"
+
+        val clone = breadcrumb.clone()
+
+        breadcrumb.message = "newMessage"
+        breadcrumb.data["data"] = "newData"
+        breadcrumb.data["otherData"] = "otherData"
+        val newUnknown = mapOf(Pair("unknown", "newUnknown"), Pair("otherUnknown", "otherUnknown"))
+        breadcrumb.acceptUnknownProperties(newUnknown)
+        val newDate = Date()
+        breadcrumb.timestamp = newDate
+        breadcrumb.type = "newType"
+        val newLevel = SentryLevel.FATAL
+        breadcrumb.level = newLevel
+        breadcrumb.category = "newCategory"
+
+        assertEquals("message", clone.message)
+        assertEquals("data", clone.data["data"])
+        assertEquals(1, clone.data.size)
+        assertEquals("unknown", clone.unknown["unknown"])
+        assertEquals(1, clone.unknown.size)
         assertEquals("type", clone.type)
         assertEquals(SentryLevel.DEBUG, clone.level)
         assertEquals("category", clone.category)

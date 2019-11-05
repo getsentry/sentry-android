@@ -9,7 +9,7 @@ import kotlin.test.assertNotSame
 
 class ScopeTest {
     @Test
-    fun `cloning breadcrumb wont have the same references`() {
+    fun `cloning scope wont have the same references`() {
         val scope = Scope(1)
         val level = SentryLevel.DEBUG
         scope.level = level
@@ -19,25 +19,23 @@ class ScopeTest {
         user.id = "123"
         user.ipAddress = "123.x"
         user.username = "userName"
-        val others = mapOf(Pair("others", "others"))
+        val others = mutableMapOf(Pair("others", "others"))
         user.others = others
 
         scope.user = user
         scope.transaction = "transaction"
 
-        val fingerprints = listOf("abc", "def")
+        val fingerprints = mutableListOf("abc", "def")
         scope.fingerprint = fingerprints
 
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        val data = mapOf(Pair("data", "data"))
+        val data = mutableMapOf(Pair("data", "data"))
         breadcrumb.data = data
-//        val unknown = mapOf(Pair("unknown", "unknown"))
-//        breadcrumb.acceptUnknownProperties(unknown)
+
         val date = Date()
         breadcrumb.timestamp = date
         breadcrumb.type = "type"
-//        val level = SentryLevel.DEBUG
         breadcrumb.level = SentryLevel.DEBUG
         breadcrumb.category = "category"
 
@@ -49,7 +47,6 @@ class ScopeTest {
 
         assertNotNull(clone)
         assertNotSame(scope, clone)
-//        assertNotSame(scope.level, clone.level)
         assertNotSame(scope.user, clone.user)
         assertNotSame(scope.fingerprint, clone.fingerprint)
         assertNotSame(scope.breadcrumbs, clone.breadcrumbs)
@@ -58,7 +55,7 @@ class ScopeTest {
     }
 
     @Test
-    fun `cloning breadcrumb will have the same values`() {
+    fun `cloning scope will have the same values`() {
         val scope = Scope(1)
         val level = SentryLevel.DEBUG
         scope.level = level
@@ -69,7 +66,7 @@ class ScopeTest {
         scope.user = user
         scope.transaction = "transaction"
 
-        val fingerprints = listOf("abc")
+        val fingerprints = mutableListOf("abc")
         scope.fingerprint = fingerprints
 
         val breadcrumb = Breadcrumb()
@@ -94,5 +91,65 @@ class ScopeTest {
 
         assertEquals("tag", clone.tags["tag"])
         assertEquals("extra", clone.extras["extra"])
+    }
+
+    @Test
+    fun `cloning scope and changing the original values wont change the clone values`() {
+        val scope = Scope(1)
+        val level = SentryLevel.DEBUG
+        scope.level = level
+
+        val user = User()
+        user.id = "123"
+
+        scope.user = user
+        scope.transaction = "transaction"
+
+        val fingerprints = mutableListOf("abc")
+        scope.fingerprint = fingerprints
+
+        val breadcrumb = Breadcrumb()
+        breadcrumb.message = "message"
+
+        scope.addBreadcrumb(breadcrumb)
+        scope.setTag("tag", "tag")
+        scope.setExtra("extra", "extra")
+
+        val clone = scope.clone()
+
+        val newLevel = SentryLevel.FATAL
+        scope.level = newLevel
+        user.id = "456"
+
+        scope.transaction = "newTransaction"
+
+        // because you can only set a new list to scope
+        val newFingerprints = mutableListOf("def", "ghf")
+        scope.fingerprint = newFingerprints
+
+        breadcrumb.message = "newMessage"
+        scope.addBreadcrumb(Breadcrumb())
+        scope.setTag("tag", "newTag")
+        scope.setTag("otherTag", "otherTag")
+        scope.setExtra("extra", "newExtra")
+        scope.setExtra("otherExtra", "otherExtra")
+
+        assertNotNull(clone)
+
+        assertEquals(SentryLevel.DEBUG, clone.level)
+        assertEquals("transaction", clone.transaction)
+
+        assertEquals("123", clone.user.id)
+
+        assertEquals("abc", clone.fingerprint.first())
+        assertEquals(1, clone.fingerprint.size)
+
+        assertEquals(1, clone.breadcrumbs.size)
+        assertEquals("message", clone.breadcrumbs.first().message)
+
+        assertEquals("tag", clone.tags["tag"])
+        assertEquals(1, clone.tags.size)
+        assertEquals("extra", clone.extras["extra"])
+        assertEquals(1, clone.extras.size)
     }
 }
