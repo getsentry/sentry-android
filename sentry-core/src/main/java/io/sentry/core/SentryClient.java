@@ -81,7 +81,7 @@ public final class SentryClient implements ISentryClient {
       if (event.getExtras() == null) {
         event.setExtras(new HashMap<>(scope.getExtras()));
       } else {
-        for (Map.Entry<String, Object> item : scope.getExtras().entrySet()) {
+        for (Map.Entry<String, java.lang.Object> item : scope.getExtras().entrySet()) {
           if (!event.getExtras().containsKey(item.getKey())) {
             event.getExtras().put(item.getKey(), item.getValue());
           }
@@ -118,7 +118,7 @@ public final class SentryClient implements ISentryClient {
     return event.getEventId();
   }
 
-  private SentryEvent executeBeforeSend(SentryEvent event, Hint hint) {
+  private SentryEvent executeBeforeSend(SentryEvent event, @Nullable Object hint) {
     SentryOptions.BeforeSendCallback beforeSend = options.getBeforeSend();
     if (beforeSend != null) {
       try {

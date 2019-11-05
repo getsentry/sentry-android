@@ -72,7 +72,7 @@ public final class Sentry {
     return getCurrentHub().captureException(throwable);
   }
 
-  public static void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Hint hint) {
+  public static void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {
     getCurrentHub().addBreadcrumb(breadcrumb, hint);
   }
 

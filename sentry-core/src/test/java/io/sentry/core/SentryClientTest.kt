@@ -82,7 +82,7 @@ class SentryClientTest {
 
     @Test
     fun `when beforeSend is returns null, event is dropped`() {
-        fixture.sentryOptions.setBeforeSend { _: SentryEvent, _: Hint? -> null }
+        fixture.sentryOptions.setBeforeSend { _: SentryEvent, _: Any? -> null }
         val sut = fixture.getSut()
         val event = SentryEvent()
         sut.captureEvent(event)

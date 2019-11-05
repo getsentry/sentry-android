@@ -180,7 +180,7 @@ public final class Hub implements IHub, Cloneable {
   }
 
   @Override
-  public void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Hint hint) {
+  public void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -207,7 +207,9 @@ public final class Hub implements IHub, Cloneable {
   }
 
   private Breadcrumb executeBeforeBreadcrumb(
-      SentryOptions.BeforeBreadcrumbCallback callback, Breadcrumb breadcrumb, Hint hint) {
+      SentryOptions.BeforeBreadcrumbCallback callback,
+      Breadcrumb breadcrumb,
+      @Nullable Object hint) {
     try {
       breadcrumb = callback.execute(breadcrumb, hint);
     } catch (Exception e) {

@@ -15,7 +15,7 @@ public interface IHub {
 
   void close();
 
-  void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Hint hint);
+  void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint);
 
   default void addBreadcrumb(Breadcrumb breadcrumb) {
     addBreadcrumb(breadcrumb, null);

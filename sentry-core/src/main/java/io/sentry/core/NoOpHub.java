@@ -37,7 +37,7 @@ final class NoOpHub implements IHub {
   public void close() {}
 
   @Override
-  public void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Hint hint) {}
+  public void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {}
 
   @Override
   public SentryId getLastEventId() {
