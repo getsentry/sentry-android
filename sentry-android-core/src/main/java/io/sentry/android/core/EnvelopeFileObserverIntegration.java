@@ -38,18 +38,18 @@ abstract class EnvelopeFileObserverIntegration implements Integration {
   @TestOnly
   abstract String getPath(SentryOptions options);
 
-  private static class OutboxEnvelopeFileObserverIntegration
+  private final static class OutboxEnvelopeFileObserverIntegration
       extends EnvelopeFileObserverIntegration {
     @Override
-    protected String getPath(SentryOptions options) {
+    protected String getPath(final SentryOptions options) {
       return options.getOutboxPath();
     }
   }
 
-  private static class JavaCachedEnvelopeFileObserverIntegration
+  private final static class JavaCachedEnvelopeFileObserverIntegration
       extends EnvelopeFileObserverIntegration {
     @Override
-    protected String getPath(SentryOptions options) {
+    protected String getPath(final SentryOptions options) {
       // TODO: Wherever we're caching events from the Java layer
       return options.getCacheDirPath() + "/cached";
     }
