@@ -122,7 +122,6 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
   }
 
   public List<SentryException> getExceptions() {
-    // We dream of exception?.getValues() like any other language in 2019
     return exception == null ? null : exception.getValues();
   }
 
