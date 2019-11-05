@@ -2,7 +2,9 @@ package io.sentry.core;
 
 import io.sentry.core.protocol.User;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,8 +18,10 @@ public final class Scope implements Cloneable {
   private Queue<Breadcrumb> breadcrumbs;
   private Map<String, String> tags = new ConcurrentHashMap<>();
   private Map<String, Object> extra = new ConcurrentHashMap<>();
+  private transient int maxBreadcrumb;
 
   public Scope(int maxBreadcrumb) {
+    this.maxBreadcrumb = maxBreadcrumb;
     this.breadcrumbs = SynchronizedQueue.synchronizedQueue(new CircularFifoQueue<>(maxBreadcrumb));
   }
 
@@ -82,7 +86,54 @@ public final class Scope implements Cloneable {
   }
 
   @Override
-  protected Scope clone() throws CloneNotSupportedException {
-    return (Scope) super.clone();
+  public Scope clone() throws CloneNotSupportedException {
+    Scope clone = (Scope) super.clone();
+    clone.level = level != null ? SentryLevel.valueOf(level.name().toUpperCase(Locale.ROOT)) : null;
+    clone.user = user != null ? user.clone() : null;
+    clone.fingerprint = fingerprint != null ? new ArrayList<>(fingerprint) : null;
+
+    if (breadcrumbs != null) {
+      Queue<Breadcrumb> breadcrumbsClone =
+          SynchronizedQueue.synchronizedQueue(new CircularFifoQueue<>(maxBreadcrumb));
+      for (Breadcrumb item : breadcrumbs) {
+        Breadcrumb breadcrumbClone = item.clone();
+        breadcrumbsClone.add(breadcrumbClone);
+      }
+      clone.breadcrumbs = breadcrumbsClone;
+    } else {
+      clone.breadcrumbs = null;
+    }
+
+    if (tags != null) {
+      Map<String, String> tagsClone = new ConcurrentHashMap<>();
+
+      for (Map.Entry<String, String> item : tags.entrySet()) {
+        if (item != null) {
+          tagsClone.put(item.getKey(), item.getValue());
+        }
+      }
+
+      clone.tags = tagsClone;
+    } else {
+      clone.tags = null;
+    }
+
+    if (extra != null) {
+      Map<String, Object> extraClone = new HashMap<>();
+
+      for (Map.Entry<String, Object> item : extra.entrySet()) {
+        if (item != null) {
+          extraClone.put(
+              item.getKey(),
+              item.getValue()); // TODO: how do we clone an object that we dont know the shape of it
+        }
+      }
+
+      clone.extra = extraClone;
+    } else {
+      clone.extra = null;
+    }
+
+    return clone;
   }
 }
