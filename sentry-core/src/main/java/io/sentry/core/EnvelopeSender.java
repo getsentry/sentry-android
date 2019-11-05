@@ -69,9 +69,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
         continue;
       }
       if ("event".equals(item.getHeader().getType())) {
-        Reader eventReader = null;
-        try {
-          eventReader = new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8);
+        try (Reader eventReader = new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8)) {
           SentryEvent event = serializer.deserializeEvent(eventReader);
           if (event == null) {
             logger.log(
@@ -94,8 +92,6 @@ public final class EnvelopeSender implements IEnvelopeSender {
             hub.captureEvent(event);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
           }
-        } finally {
-          eventReader.close();
         }
       } else {
         // TODO: Handle attachments and other types
