@@ -73,7 +73,6 @@ dependencies {
 
     // libs
     implementation(Config.Libs.gson)
-    implementation("com.android.support:support-annotations:28.0.0")
 
     compileOnly(Config.CompileOnly.noopen)
     errorprone(Config.CompileOnly.noopenProne)

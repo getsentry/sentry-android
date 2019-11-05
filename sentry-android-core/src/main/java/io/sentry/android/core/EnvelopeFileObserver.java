@@ -3,6 +3,7 @@ package io.sentry.android.core;
 import android.os.FileObserver;
 import io.sentry.core.*;
 import io.sentry.core.util.Objects;
+import org.jetbrains.annotations.Nullable;
 
 final class EnvelopeFileObserver extends FileObserver {
 
@@ -20,7 +21,7 @@ final class EnvelopeFileObserver extends FileObserver {
   }
 
   @Override
-  public void onEvent(int eventType, @android.support.annotation.Nullable String relativePath) {
+  public void onEvent(int eventType, @Nullable String relativePath) {
     if (relativePath == null) {
       return;
     }
