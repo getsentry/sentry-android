@@ -42,7 +42,6 @@ class UserTest {
 
         val clone = user.clone()
 
-        assertNotNull(clone)
         assertEquals("a@a.com", clone.email)
         assertEquals("123", clone.id)
         assertEquals("123.x", clone.ipAddress)
@@ -64,8 +63,6 @@ class UserTest {
         user.acceptUnknownProperties(unknown)
 
         val clone = user.clone()
-
-        assertNotNull(clone)
 
         user.email = "b@b.com"
         user.id = "456"

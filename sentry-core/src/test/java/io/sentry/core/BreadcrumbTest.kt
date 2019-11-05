@@ -83,11 +83,9 @@ class BreadcrumbTest {
         breadcrumb.data["otherData"] = "otherData"
         val newUnknown = mapOf(Pair("unknown", "newUnknown"), Pair("otherUnknown", "otherUnknown"))
         breadcrumb.acceptUnknownProperties(newUnknown)
-        val newDate = Date()
-        breadcrumb.timestamp = newDate
+        breadcrumb.timestamp = Date()
         breadcrumb.type = "newType"
-        val newLevel = SentryLevel.FATAL
-        breadcrumb.level = newLevel
+        breadcrumb.level = SentryLevel.FATAL
         breadcrumb.category = "newCategory"
 
         assertEquals("message", clone.message)

@@ -78,8 +78,6 @@ class ScopeTest {
 
         val clone = scope.clone()
 
-        assertNotNull(clone)
-
         assertEquals(SentryLevel.DEBUG, clone.level)
         assertEquals("transaction", clone.transaction)
 
@@ -117,8 +115,7 @@ class ScopeTest {
 
         val clone = scope.clone()
 
-        val newLevel = SentryLevel.FATAL
-        scope.level = newLevel
+        scope.level = SentryLevel.FATAL
         user.id = "456"
 
         scope.transaction = "newTransaction"
@@ -133,8 +130,6 @@ class ScopeTest {
         scope.setTag("otherTag", "otherTag")
         scope.setExtra("extra", "newExtra")
         scope.setExtra("otherExtra", "otherExtra")
-
-        assertNotNull(clone)
 
         assertEquals(SentryLevel.DEBUG, clone.level)
         assertEquals("transaction", clone.transaction)
