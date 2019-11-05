@@ -16,7 +16,6 @@ final class NdkIntegration implements Integration {
   public void register(IHub hub, SentryOptions options) {
     if (options.isEnableNdk() && isNdkAvailable()) {
       try {
-        // TODO: Create Integrations interface and use that to initialize NDK
         Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
 
         Method method = cls.getMethod("init", SentryOptions.class);
