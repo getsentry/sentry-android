@@ -17,6 +17,10 @@ public interface IHub {
 
   void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Hint hint);
 
+  default void addBreadcrumb(Breadcrumb breadcrumb) {
+    addBreadcrumb(breadcrumb, null);
+  }
+
   SentryId getLastEventId();
 
   void pushScope();

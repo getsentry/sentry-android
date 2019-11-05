@@ -103,10 +103,11 @@ class HubTest {
     @Test
     fun `when beforeBreadcrumb returns null, crumb is dropped`() {
         val options = SentryOptions()
-        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { null }
+        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback {
+            _: Breadcrumb, _: Hint? -> null }
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
-        sut.addBreadcrumb(Breadcrumb())
+        sut.addBreadcrumb(Breadcrumb(), null)
         var breadcrumbs: Queue<Breadcrumb>? = null
         sut.configureScope { breadcrumbs = it.breadcrumbs }
         assertEquals(0, breadcrumbs!!.size)
@@ -116,7 +117,7 @@ class HubTest {
     fun `when beforeBreadcrumb modifies crumb, crumb is stored modified`() {
         val options = SentryOptions()
         val expected = "expected"
-        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { it.message = expected; it }
+        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { breadcrumb: Breadcrumb, _: Hint? -> breadcrumb.message = expected; breadcrumb; }
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val crumb = Breadcrumb()
@@ -148,7 +149,7 @@ class HubTest {
         val stacktrace = sw.toString()
 
         val options = SentryOptions()
-        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { throw exception }
+        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { _: Breadcrumb, _: Hint? -> throw exception }
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
 
