@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
  * A throwable decorator that holds an {@link io.sentry.core.protocol.Mechanism} related to the
  * decorated {@link Throwable}.
  */
-@SuppressWarnings("serial")
 public final class ExceptionMechanismThrowable extends Throwable {
   private static final long serialVersionUID = 142345454265713915L;
 
