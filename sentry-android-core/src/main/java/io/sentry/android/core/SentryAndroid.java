@@ -1,7 +1,9 @@
 package io.sentry.android.core;
 
 import android.content.Context;
+import io.sentry.core.ILogger;
 import io.sentry.core.Sentry;
+import java.lang.reflect.InvocationTargetException;
 import org.jetbrains.annotations.NotNull;
 
 /** Sentry initialization class */
@@ -15,6 +17,24 @@ public final class SentryAndroid {
    * @param context Application. context
    */
   public static void init(@NotNull final Context context) {
-    Sentry.init(options -> AndroidOptionsInitializer.init(options, context));
+    init(context, new AndroidLogger());
+  }
+
+  static void init(@NotNull final Context context, @NotNull ILogger logger) {
+    try {
+      Sentry.init(
+          SentryAndroidOptions.class,
+          options -> AndroidOptionsInitializer.init(options, context, logger));
+    } catch (IllegalAccessException e) {
+      // This is awful. Should we have this all on the interface and let the caller deal with these?
+      // They mean bug in the SDK.
+      throw new RuntimeException("Failed to initialize Sentry's SDK", e);
+    } catch (InstantiationException e) {
+      throw new RuntimeException("Failed to initialize Sentry's SDK", e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException("Failed to initialize Sentry's SDK", e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException("Failed to initialize Sentry's SDK", e);
+    }
   }
 }

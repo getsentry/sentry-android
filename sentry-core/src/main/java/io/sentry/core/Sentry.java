@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import java.lang.reflect.InvocationTargetException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,13 +30,24 @@ public final class Sentry {
     init(new SentryOptions());
   }
 
-  public static void init(@NotNull OptionsConfiguration optionsConfiguration) {
+  // Used by integrations that define their own SentryOptions
+  public static <TOptions extends SentryOptions> void init(
+      @NotNull Class<TOptions> clazz, @NotNull OptionsConfiguration<TOptions> optionsConfiguration)
+      throws IllegalAccessException, InstantiationException, NoSuchMethodException,
+          InvocationTargetException {
+    TOptions options = clazz.getDeclaredConstructor().newInstance();
+    optionsConfiguration.configure(options);
+    init(options);
+  }
+
+  public static void init(@NotNull OptionsConfiguration<SentryOptions> optionsConfiguration) {
     SentryOptions options = new SentryOptions();
     optionsConfiguration.configure(options);
     init(options);
   }
 
-  private static synchronized void init(@NotNull SentryOptions options) {
+  private static synchronized <TOptions extends SentryOptions> void init(
+      @NotNull TOptions options) {
     String dsn = options.getDsn();
     if (dsn == null || dsn.isEmpty()) {
       close();
@@ -104,7 +116,7 @@ public final class Sentry {
     getCurrentHub().flush(timeoutMills);
   }
 
-  public interface OptionsConfiguration {
-    void configure(SentryOptions options);
+  public interface OptionsConfiguration<T extends SentryOptions> {
+    void configure(T options);
   }
 }

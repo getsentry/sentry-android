@@ -11,11 +11,11 @@ import java.lang.reflect.Method;
 final class AndroidOptionsInitializer {
   private AndroidOptionsInitializer() {}
 
-  static void init(SentryOptions options, Context context) {
+  static void init(SentryAndroidOptions options, Context context) {
     init(options, context, new AndroidLogger());
   }
 
-  static void init(SentryOptions options, Context context, ILogger logger) {
+  static void init(SentryAndroidOptions options, Context context, ILogger logger) {
     // Firstly set the logger, if `debug=true` configured, logging can start asap.
     options.setLogger(logger);
 
@@ -27,6 +27,7 @@ final class AndroidOptionsInitializer {
 
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
+    options.addIntegration(new AnrIntegration());
 
     if (options.isEnableNdk() && isNdkAvailable()) {
       try {
