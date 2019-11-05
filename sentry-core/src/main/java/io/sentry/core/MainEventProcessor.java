@@ -48,7 +48,7 @@ public final class MainEventProcessor implements EventProcessor {
     if (event.getThreads() == null) {
       Long crashedThreadId = null;
       List<SentryException> exceptions = event.getExceptions();
-      if (event.getExceptions() != null && exceptions.size() > 0) {
+      if (event.getExceptions() != null && !exceptions.isEmpty()) {
         for (SentryException exception : exceptions) {
           if (exception != null
               && exception.getMechanism() != null
