@@ -69,7 +69,8 @@ public final class EnvelopeSender implements IEnvelopeSender {
         continue;
       }
       if ("event".equals(item.getHeader().getType())) {
-        try (Reader eventReader = new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8)) {
+        try (Reader eventReader =
+            new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8)) {
           SentryEvent event = serializer.deserializeEvent(eventReader);
           if (event == null) {
             logger.log(

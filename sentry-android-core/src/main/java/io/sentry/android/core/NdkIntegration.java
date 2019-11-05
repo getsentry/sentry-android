@@ -14,7 +14,8 @@ final class NdkIntegration implements Integration {
 
   @Override
   public void register(IHub hub, SentryOptions options) {
-    // Note: `hub` isn't used here because the NDK integration writes files to disk which are picked up by another
+    // Note: `hub` isn't used here because the NDK integration writes files to disk which are picked
+    // up by another
     // integration. The NDK directory watching must happen before this integration runs.
     if (options.isEnableNdk() && isNdkAvailable()) {
       try {
