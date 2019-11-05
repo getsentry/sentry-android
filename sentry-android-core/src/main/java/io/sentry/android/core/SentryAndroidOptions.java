@@ -3,7 +3,7 @@ package io.sentry.android.core;
 import io.sentry.core.SentryOptions;
 
 public final class SentryAndroidOptions extends SentryOptions {
-  private boolean anrEnabled = false;
+  private boolean anrEnabled = true; // TODO: Do we have ANR detection opt-out?
   private int anrTimeoutIntervalMills = 5000;
 
   public boolean isAnrEnabled() {
