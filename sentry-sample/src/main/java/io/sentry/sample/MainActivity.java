@@ -57,20 +57,20 @@ public class MainActivity extends AppCompatActivity {
             });
 
     findViewById(R.id.native_crash)
-      .setOnClickListener(
-        view -> {
-          NativeSample.crash();
-        });
+        .setOnClickListener(
+            view -> {
+              NativeSample.crash();
+            });
 
     findViewById(R.id.anr)
-      .setOnClickListener(
-        view -> {
-          // Try cause ANR (triggers after 1 second as configured via meta-data)
-          try {
-            Thread.sleep(2000);
-          } catch (InterruptedException e) {
-            return;
-          }
-        });
+        .setOnClickListener(
+            view -> {
+              // Try cause ANR (triggers after 1 second as configured via meta-data)
+              try {
+                Thread.sleep(2000);
+              } catch (InterruptedException e) {
+                return;
+              }
+            });
   }
 }

@@ -45,7 +45,11 @@ final class ANRWatchDog extends Thread {
    *     It is therefore the maximum time the UI may freeze before being reported as ANR.
    * @param listener The new listener or null
    */
-  ANRWatchDog(int timeoutIntervalMills, boolean reportInDebug, @NotNull ANRListener listener, @NotNull ILogger logger) {
+  ANRWatchDog(
+      int timeoutIntervalMills,
+      boolean reportInDebug,
+      @NotNull ANRListener listener,
+      @NotNull ILogger logger) {
     super();
     this.reportInDebug = reportInDebug;
     this.anrListener = listener;

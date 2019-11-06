@@ -36,8 +36,13 @@ final class ManifestMetadataReader {
         logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "isAnrEnabled read: %s", isAnrEnabled);
         options.setAnrEnabled(isAnrEnabled);
 
-        boolean isAnrReportInDebug = metadata.getBoolean(ANR_REPORT_DEBUG, options.isAnrReportInDebug());
-        logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "isAnrReportInDebug read: %s", isAnrReportInDebug);
+        boolean isAnrReportInDebug =
+            metadata.getBoolean(ANR_REPORT_DEBUG, options.isAnrReportInDebug());
+        logIfNotNull(
+            options.getLogger(),
+            SentryLevel.DEBUG,
+            "isAnrReportInDebug read: %s",
+            isAnrReportInDebug);
         options.setAnrReportInDebug(isAnrReportInDebug);
 
         int anrTimeoutIntervalMills =
