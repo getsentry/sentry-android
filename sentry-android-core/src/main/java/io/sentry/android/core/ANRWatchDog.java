@@ -24,18 +24,18 @@ final class ANRWatchDog extends Thread {
   }
 
   private boolean reportInDebug;
-  private ANRListener anrListener = null;
-  private final Handler _uiHandler = new Handler(Looper.getMainLooper());
+  private ANRListener anrListener;
+  private final Handler uiHandler = new Handler(Looper.getMainLooper());
   private final int timeoutIntervalMills;
   private ILogger logger;
 
-  private AtomicLong _tick = new AtomicLong(0);
-  private volatile boolean _reported = false;
+  private AtomicLong tick = new AtomicLong(0);
+  private volatile boolean reported = false;
 
-  private final Runnable _ticker =
+  private final Runnable ticker =
       () -> {
-        _tick = new AtomicLong(0);
-        _reported = false;
+        tick = new AtomicLong(0);
+        reported = false;
       };
 
   /**
@@ -64,10 +64,10 @@ final class ANRWatchDog extends Thread {
 
     long interval = timeoutIntervalMills;
     while (!isInterrupted()) {
-      boolean needPost = _tick.get() == 0;
-      _tick.addAndGet(interval);
+      boolean needPost = tick.get() == 0;
+      tick.addAndGet(interval);
       if (needPost) {
-        _uiHandler.post(_ticker);
+        uiHandler.post(ticker);
       }
 
       try {
@@ -77,14 +77,14 @@ final class ANRWatchDog extends Thread {
         return;
       }
 
-      // If the main thread has not handled _ticker, it is blocked. ANR.
-      if (_tick.get() != 0 && !_reported) {
+      // If the main thread has not handled ticker, it is blocked. ANR.
+      if (tick.get() != 0 && !reported) {
         //noinspection ConstantConditions
         if (!reportInDebug && (Debug.isDebuggerConnected() || Debug.waitingForDebugger())) {
           logger.log(
               SentryLevel.DEBUG,
               "An ANR was detected but ignored because the debugger is connected.");
-          _reported = true;
+          reported = true;
           continue;
         }
 
@@ -95,7 +95,7 @@ final class ANRWatchDog extends Thread {
         final ApplicationNotResponding error = new ApplicationNotResponding(message);
         anrListener.onAppNotResponding(error);
         interval = timeoutIntervalMills;
-        _reported = true;
+        reported = true;
       }
     }
   }
