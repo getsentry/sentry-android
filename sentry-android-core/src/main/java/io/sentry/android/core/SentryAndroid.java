@@ -4,9 +4,8 @@ import android.content.Context;
 import io.sentry.core.ILogger;
 import io.sentry.core.OptionsContainer;
 import io.sentry.core.Sentry;
-import java.lang.reflect.InvocationTargetException;
-
 import io.sentry.core.SentryLevel;
+import java.lang.reflect.InvocationTargetException;
 import org.jetbrains.annotations.NotNull;
 
 /** Sentry initialization class */
@@ -25,6 +24,7 @@ public final class SentryAndroid {
 
   /**
    * Sentry initialization with a custom logger
+   *
    * @param context Application. context
    * @param logger your custom logger that implements ILogger
    */
@@ -34,6 +34,7 @@ public final class SentryAndroid {
 
   /**
    * Sentry initialization with a configuration handler that may override the default options
+   *
    * @param context Application. context
    * @param configuration Sentry.OptionsConfiguration configuration handler
    */
@@ -45,6 +46,7 @@ public final class SentryAndroid {
 
   /**
    * Sentry initialization with a configuration handler and custom logger
+   *
    * @param context Application. context
    * @param logger your custom logger that implements ILogger
    * @param configuration Sentry.OptionsConfiguration configuration handler
