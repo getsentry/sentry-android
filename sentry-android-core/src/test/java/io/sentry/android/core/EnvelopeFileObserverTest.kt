@@ -8,6 +8,7 @@ import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.IEnvelopeSender
 import io.sentry.core.ILogger
 import io.sentry.core.SentryOptions
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -39,7 +40,7 @@ class EnvelopeFileObserverTest {
         val sut = fixture.getSut()
         val param = "file-name.txt"
         sut.onEvent(0, param)
-        verify(fixture.envelopeSender).processEnvelopeFile(fixture.path + "/" + param)
+        verify(fixture.envelopeSender).processEnvelopeFile(fixture.path + File.separator + param)
     }
 
     @Test
