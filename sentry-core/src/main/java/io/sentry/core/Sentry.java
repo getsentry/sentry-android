@@ -31,11 +31,11 @@ public final class Sentry {
   }
 
   // Used by integrations that define their own SentryOptions
-  public static <TOptions extends SentryOptions> void init(
-      @NotNull Class<TOptions> clazz, @NotNull OptionsConfiguration<TOptions> optionsConfiguration)
+  public static <T extends SentryOptions> void init(
+      @NotNull OptionsContainer<T> clazz, @NotNull OptionsConfiguration<T> optionsConfiguration)
       throws IllegalAccessException, InstantiationException, NoSuchMethodException,
           InvocationTargetException {
-    TOptions options = clazz.getDeclaredConstructor().newInstance();
+    T options = clazz.createInstance();
     optionsConfiguration.configure(options);
     init(options);
   }
