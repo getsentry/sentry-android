@@ -64,7 +64,7 @@ public final class Hub implements IHub {
 
   @NotNull
   @Override
-  public SentryId captureEvent(SentryEvent event) {
+  public SentryId captureEvent(SentryEvent event, @Nullable Object hint) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -78,7 +78,7 @@ public final class Hub implements IHub {
       try {
         StackItem item = stack.peek();
         if (item != null) {
-          sentryId = item.client.captureEvent(event, item.scope);
+          sentryId = item.client.captureEvent(event, item.scope, hint);
         } else {
           logIfNotNull(
               options.getLogger(), SentryLevel.FATAL, "Stack peek was null when captureEvent");
@@ -127,7 +127,7 @@ public final class Hub implements IHub {
 
   @NotNull
   @Override
-  public SentryId captureException(Throwable throwable) {
+  public SentryId captureException(Throwable throwable, @Nullable Object hint) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -183,7 +183,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void addBreadcrumb(Breadcrumb breadcrumb) {
+  public void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -197,7 +197,7 @@ public final class Hub implements IHub {
       if (item != null) {
         SentryOptions.BeforeBreadcrumbCallback callback = options.getBeforeBreadcrumb();
         if (callback != null) {
-          breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb);
+          breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb, hint);
         }
         if (breadcrumb != null) {
           item.scope.addBreadcrumb(breadcrumb);
@@ -210,9 +210,11 @@ public final class Hub implements IHub {
   }
 
   private Breadcrumb executeBeforeBreadcrumb(
-      SentryOptions.BeforeBreadcrumbCallback callback, Breadcrumb breadcrumb) {
+      SentryOptions.BeforeBreadcrumbCallback callback,
+      Breadcrumb breadcrumb,
+      @Nullable Object hint) {
     try {
-      breadcrumb = callback.execute(breadcrumb);
+      breadcrumb = callback.execute(breadcrumb, hint);
     } catch (Exception e) {
       logIfNotNull(
           options.getLogger(),

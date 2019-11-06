@@ -3,7 +3,9 @@ package io.sentry.core;
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.transport.AsyncConnection;
+import io.sentry.core.transport.Connection;
+import io.sentry.core.transport.CrashedEventStore;
+import io.sentry.core.transport.IEventCache;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -19,7 +21,7 @@ public final class SentryClient implements ISentryClient {
   private boolean isEnabled;
 
   private final SentryOptions options;
-  private final AsyncConnection connection;
+  private final Connection connection;
   private final Random random;
 
   @Override
@@ -31,18 +33,30 @@ public final class SentryClient implements ISentryClient {
     this(options, null);
   }
 
-  public SentryClient(SentryOptions options, @Nullable AsyncConnection connection) {
+  public SentryClient(SentryOptions options, @Nullable Connection connection) {
     this.options = options;
     this.isEnabled = true;
     if (connection == null) {
-      connection = AsyncConnectionFactory.create(options);
+
+      // TODO this is obviously provisional and should be constructed based on the config in options
+      IEventCache blackHole =
+          new IEventCache() {
+            @Override
+            public void store(SentryEvent event) {}
+
+            @Override
+            public void discard(SentryEvent event) {}
+          };
+
+      connection =
+          new CrashedEventStore(AsyncConnectionFactory.create(options, blackHole), blackHole);
     }
     this.connection = connection;
     random = options.getSampling() == null ? null : new Random();
   }
 
   @Override
-  public SentryId captureEvent(SentryEvent event, @Nullable Scope scope) {
+  public SentryId captureEvent(SentryEvent event, @Nullable Scope scope, @Nullable Object hint) {
     if (!sample()) {
       logIfNotNull(
           options.getLogger(),
@@ -81,7 +95,7 @@ public final class SentryClient implements ISentryClient {
       if (event.getExtras() == null) {
         event.setExtras(new HashMap<>(scope.getExtras()));
       } else {
-        for (Map.Entry<String, Object> item : scope.getExtras().entrySet()) {
+        for (Map.Entry<String, java.lang.Object> item : scope.getExtras().entrySet()) {
           if (!event.getExtras().containsKey(item.getKey())) {
             event.getExtras().put(item.getKey(), item.getValue());
           }
@@ -94,10 +108,10 @@ public final class SentryClient implements ISentryClient {
     }
 
     for (EventProcessor processor : options.getEventProcessors()) {
-      processor.process(event);
+      processor.process(event, hint);
     }
 
-    event = executeBeforeSend(event);
+    event = executeBeforeSend(event, hint);
 
     if (event == null) {
       // Event dropped by the beforeSend callback
@@ -117,11 +131,11 @@ public final class SentryClient implements ISentryClient {
     return event.getEventId();
   }
 
-  private SentryEvent executeBeforeSend(SentryEvent event) {
+  private SentryEvent executeBeforeSend(SentryEvent event, @Nullable Object hint) {
     SentryOptions.BeforeSendCallback beforeSend = options.getBeforeSend();
     if (beforeSend != null) {
       try {
-        event = beforeSend.execute(event);
+        event = beforeSend.execute(event, hint);
       } catch (Exception e) {
         logIfNotNull(
             options.getLogger(),
@@ -143,11 +157,6 @@ public final class SentryClient implements ISentryClient {
       }
     }
     return event;
-  }
-
-  @Override
-  public SentryId captureEvent(SentryEvent event) {
-    return captureEvent(event, null);
   }
 
   @Override

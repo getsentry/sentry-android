@@ -1,20 +1,33 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import org.jetbrains.annotations.Nullable;
 
 public interface IHub {
 
   boolean isEnabled();
 
-  SentryId captureEvent(SentryEvent event);
+  SentryId captureEvent(SentryEvent event, @Nullable Object hint);
+
+  default SentryId captureEvent(SentryEvent event) {
+    return captureEvent(event, null);
+  }
 
   SentryId captureMessage(String message);
 
-  SentryId captureException(Throwable throwable);
+  SentryId captureException(Throwable throwable, @Nullable Object hint);
+
+  default SentryId captureException(Throwable throwable) {
+    return captureException(throwable, null);
+  }
 
   void close();
 
-  void addBreadcrumb(Breadcrumb breadcrumb);
+  void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint);
+
+  default void addBreadcrumb(Breadcrumb breadcrumb) {
+    addBreadcrumb(breadcrumb, null);
+  }
 
   SentryId getLastEventId();
 
