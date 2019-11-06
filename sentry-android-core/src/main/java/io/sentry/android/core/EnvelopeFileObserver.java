@@ -3,6 +3,7 @@ package io.sentry.android.core;
 import android.os.FileObserver;
 import io.sentry.core.*;
 import io.sentry.core.util.Objects;
+import java.io.File;
 import org.jetbrains.annotations.Nullable;
 
 final class EnvelopeFileObserver extends FileObserver {
@@ -35,6 +36,6 @@ final class EnvelopeFileObserver extends FileObserver {
 
     // TODO: Only some event types should be pass through?
 
-    envelopeSender.processEnvelopeFile(this.rootPath + "/" + relativePath);
+    envelopeSender.processEnvelopeFile(this.rootPath + File.separator + relativePath);
   }
 }

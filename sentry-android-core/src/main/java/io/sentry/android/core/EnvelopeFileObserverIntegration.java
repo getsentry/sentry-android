@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import io.sentry.core.*;
+import java.io.File;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
@@ -51,7 +52,7 @@ abstract class EnvelopeFileObserverIntegration implements Integration {
     @Override
     protected String getPath(final SentryOptions options) {
       // TODO: Wherever we're caching events from the Java layer
-      return options.getCacheDirPath() + "/cached";
+      return options.getCacheDirPath() + File.separator + "cached";
     }
   }
 }

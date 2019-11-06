@@ -61,6 +61,7 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     return throwable;
   }
 
+  // TODO: remove comment when we define data structure for message
   //  public Message getMessage() {
   //    return message;
   //  }
