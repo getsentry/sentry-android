@@ -1,10 +1,9 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import java.lang.reflect.InvocationTargetException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.InvocationTargetException;
 
 /** Sentry SDK main API entry point */
 public final class Sentry {
@@ -34,7 +33,8 @@ public final class Sentry {
   // Used by integrations that define their own SentryOptions
   public static <T extends SentryOptions> void init(
       @NotNull OptionsContainer<T> clazz, @NotNull OptionsConfiguration<T> optionsConfiguration)
-    throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+      throws IllegalAccessException, InstantiationException, NoSuchMethodException,
+          InvocationTargetException {
     T options = clazz.createInstance();
     optionsConfiguration.configure(options);
     init(options);

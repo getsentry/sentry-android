@@ -4,9 +4,8 @@ import android.content.Context;
 import io.sentry.core.ILogger;
 import io.sentry.core.OptionsContainer;
 import io.sentry.core.Sentry;
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.InvocationTargetException;
+import org.jetbrains.annotations.NotNull;
 
 /** Sentry initialization class */
 public final class SentryAndroid {

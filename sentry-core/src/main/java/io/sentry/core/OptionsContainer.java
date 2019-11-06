@@ -15,7 +15,9 @@ public final class OptionsContainer<T> {
     this.clazz = clazz;
   }
 
-  public T createInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+  public T createInstance()
+      throws InstantiationException, IllegalAccessException, NoSuchMethodException,
+          InvocationTargetException {
     return clazz.getDeclaredConstructor().newInstance();
   }
 }
