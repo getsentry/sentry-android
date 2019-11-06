@@ -33,7 +33,10 @@ class ANRWatchDogTest {
             es.submit { sut.run() }
 
             assertTrue(latch.await(10L, TimeUnit.SECONDS)) // Wait until worker posts the job for the "UI thread"
-            Thread.sleep(500) // Let worker realize this is ANR
+            var waitCount = 0
+            do {
+                Thread.sleep(100) // Let worker realize this is ANR
+            } while (anr == null && waitCount++ < 100)
 
             assertNotNull(anr)
             assertEquals(expectedState, anr!!.state)
@@ -49,7 +52,12 @@ class ANRWatchDogTest {
         var anr: ApplicationNotResponding? = null
         val handler = mock<IHandler>()
         val thread = mock<Thread>()
-        whenever(handler.post(any())).then { i -> (i.getArgument(0) as Runnable).run() }
+        var invoked: Boolean = false
+        whenever(handler.post(any())).then {
+            i ->
+                invoked = true
+                (i.getArgument(0) as Runnable).run()
+        }
         whenever(handler.thread).thenReturn(thread)
         val interval = 1L
         val sut = ANRWatchDog(interval, true, ANRListener { a -> anr = a }, mock(), handler)
@@ -57,8 +65,12 @@ class ANRWatchDogTest {
         try {
             es.submit { sut.run() }
 
-            Thread.sleep(100) // Let worker realize he's runner always runs
+            var waitCount = 0
+            do {
+                Thread.sleep(100) // Let worker realize his runner always runs
+            } while (!invoked && waitCount++ < 100)
 
+            assertTrue(invoked)
             assertNull(anr) // callback never ran
         } finally {
             sut.interrupt()
