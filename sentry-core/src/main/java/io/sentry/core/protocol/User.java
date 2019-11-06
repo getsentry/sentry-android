@@ -138,9 +138,7 @@ public final class User implements Cloneable, IUnknownPropertiesConsumer {
 
       for (Map.Entry<String, Object> item : unknown.entrySet()) {
         if (item != null) {
-          unknownClone.put(
-              item.getKey(),
-              item.getValue());
+          unknownClone.put(item.getKey(), item.getValue());
         }
       }
 
