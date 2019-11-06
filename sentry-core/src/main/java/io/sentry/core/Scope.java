@@ -22,7 +22,7 @@ public final class Scope implements Cloneable {
 
   public Scope(int maxBreadcrumb) {
     this.maxBreadcrumb = maxBreadcrumb;
-    this.breadcrumbs = SynchronizedQueue.synchronizedQueue(new CircularFifoQueue<>(maxBreadcrumb));
+    this.breadcrumbs = createBreadcrumbsList(this.maxBreadcrumb);
   }
 
   public SentryLevel getLevel() {
@@ -85,6 +85,10 @@ public final class Scope implements Cloneable {
     this.extra.put(key, value);
   }
 
+  private Queue<Breadcrumb> createBreadcrumbsList(final int maxBreadcrumb) {
+    return SynchronizedQueue.synchronizedQueue(new CircularFifoQueue<>(maxBreadcrumb));
+  }
+
   @Override
   public Scope clone() throws CloneNotSupportedException {
     Scope clone = (Scope) super.clone();
@@ -93,8 +97,8 @@ public final class Scope implements Cloneable {
     clone.fingerprint = fingerprint != null ? new ArrayList<>(fingerprint) : null;
 
     if (breadcrumbs != null) {
-      Queue<Breadcrumb> breadcrumbsClone =
-          SynchronizedQueue.synchronizedQueue(new CircularFifoQueue<>(maxBreadcrumb));
+      Queue<Breadcrumb> breadcrumbsClone = createBreadcrumbsList(maxBreadcrumb);
+
       for (Breadcrumb item : breadcrumbs) {
         Breadcrumb breadcrumbClone = item.clone();
         breadcrumbsClone.add(breadcrumbClone);
@@ -123,9 +127,7 @@ public final class Scope implements Cloneable {
 
       for (Map.Entry<String, Object> item : extra.entrySet()) {
         if (item != null) {
-          extraClone.put(
-              item.getKey(),
-              item.getValue()); // TODO: how do we clone an object that we dont know the shape of it
+          extraClone.put(item.getKey(), item.getValue());
         }
       }
 

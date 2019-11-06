@@ -140,7 +140,7 @@ public final class User implements Cloneable, IUnknownPropertiesConsumer {
         if (item != null) {
           unknownClone.put(
               item.getKey(),
-              item.getValue()); // TODO: how do we clone an object that we dont know the shape of it
+              item.getValue());
         }
       }
 
