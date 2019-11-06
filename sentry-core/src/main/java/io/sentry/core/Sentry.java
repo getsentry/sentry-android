@@ -46,8 +46,7 @@ public final class Sentry {
     init(options);
   }
 
-  private static synchronized <TOptions extends SentryOptions> void init(
-      @NotNull TOptions options) {
+  private static synchronized <T extends SentryOptions> void init(@NotNull T options) {
     String dsn = options.getDsn();
     if (dsn == null || dsn.isEmpty()) {
       close();
