@@ -26,14 +26,14 @@ class ANRWatchDogTest {
         val latch = CountDownLatch(1)
         whenever(handler.post(any())).then { latch.countDown() }
         whenever(handler.thread).thenReturn(thread)
-        val interval = 10L // block for only 10 milliseconds
+        val interval = 1L
         val sut = ANRWatchDog(interval, true, ANRListener { a -> anr = a }, mock(), handler)
         val es = Executors.newSingleThreadExecutor()
         try {
             es.submit { sut.run() }
 
             assertTrue(latch.await(10L, TimeUnit.SECONDS)) // Wait until worker posts the job for the "UI thread"
-            Thread.sleep(interval * 2) // Let worker realize this is ANR
+            Thread.sleep(500) // Let worker realize this is ANR
 
             assertNotNull(anr)
             assertEquals(expectedState, anr!!.state)
@@ -51,13 +51,13 @@ class ANRWatchDogTest {
         val thread = mock<Thread>()
         whenever(handler.post(any())).then { i -> (i.getArgument(0) as Runnable).run() }
         whenever(handler.thread).thenReturn(thread)
-        val interval = 1L // block for only 1 milliseconds
+        val interval = 1L
         val sut = ANRWatchDog(interval, true, ANRListener { a -> anr = a }, mock(), handler)
         val es = Executors.newSingleThreadExecutor()
         try {
             es.submit { sut.run() }
 
-            Thread.sleep(interval * 10) // Let worker realize he's runner always runs
+            Thread.sleep(100) // Let worker realize he's runner always runs
 
             assertNull(anr) // callback never ran
         } finally {
