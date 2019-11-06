@@ -2,7 +2,8 @@
 // Based on the class above. The API unnecessary here was removed.
 package io.sentry.android.core;
 
-import android.os.Looper;
+import io.sentry.core.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Error thrown by ANRWatchDog when an ANR is detected. Contains the stack trace of the frozen UI
@@ -17,19 +18,14 @@ final class ApplicationNotResponding extends Throwable {
 
   private Thread.State state;
 
-  public ApplicationNotResponding(String message) {
+  public ApplicationNotResponding(@NotNull String message, @NotNull Thread thread) {
     super(message);
+    thread = Objects.requireNonNull(thread, "Thread must be provided.");
+    setStackTrace(thread.getStackTrace());
+    state = thread.getState();
   }
 
   public Thread.State getState() {
     return state;
-  }
-
-  @Override
-  public synchronized Throwable fillInStackTrace() {
-    final Thread mainThread = Looper.getMainLooper().getThread();
-    state = mainThread.getState();
-    setStackTrace(mainThread.getStackTrace());
-    return this;
   }
 }

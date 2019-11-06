@@ -3,12 +3,11 @@
 package io.sentry.android.core;
 
 import android.os.Debug;
-import android.os.Handler;
-import android.os.Looper;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import java.util.concurrent.atomic.AtomicLong;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 /** A watchdog timer thread that detects when the UI thread has frozen. */
 @SuppressWarnings("UnusedReturnValue")
@@ -25,8 +24,8 @@ final class ANRWatchDog extends Thread {
 
   private boolean reportInDebug;
   private ANRListener anrListener;
-  private final Handler uiHandler = new Handler(Looper.getMainLooper());
-  private final int timeoutIntervalMills;
+  private final IHandler uiHandler;
+  private final long timeoutIntervalMills;
   private ILogger logger;
 
   private AtomicLong tick = new AtomicLong(0);
@@ -38,23 +37,27 @@ final class ANRWatchDog extends Thread {
         reported = false;
       };
 
-  /**
-   * Constructs a watchdog that checks the ui thread every given interval
-   *
-   * @param timeoutIntervalMills The interval, in milliseconds, between to checks of the UI thread.
-   *     It is therefore the maximum time the UI may freeze before being reported as ANR.
-   * @param listener The new listener or null
-   */
   ANRWatchDog(
-      int timeoutIntervalMills,
+      long timeoutIntervalMills,
       boolean reportInDebug,
       @NotNull ANRListener listener,
       @NotNull ILogger logger) {
+    this(timeoutIntervalMills, reportInDebug, listener, logger, new MainLooperHandler());
+  }
+
+  @TestOnly
+  ANRWatchDog(
+      long timeoutIntervalMills,
+      boolean reportInDebug,
+      @NotNull ANRListener listener,
+      @NotNull ILogger logger,
+      @NotNull IHandler uiHandler) {
     super();
     this.reportInDebug = reportInDebug;
     this.anrListener = listener;
     this.timeoutIntervalMills = timeoutIntervalMills;
     this.logger = logger;
+    this.uiHandler = uiHandler;
   }
 
   @SuppressWarnings("NonAtomicOperationOnVolatileField")
@@ -92,7 +95,8 @@ final class ANRWatchDog extends Thread {
         final String message =
             "Application Not Responding for at least " + timeoutIntervalMills + " ms.";
 
-        final ApplicationNotResponding error = new ApplicationNotResponding(message);
+        final ApplicationNotResponding error =
+            new ApplicationNotResponding(message, uiHandler.getThread());
         anrListener.onAppNotResponding(error);
         interval = timeoutIntervalMills;
         reported = true;
