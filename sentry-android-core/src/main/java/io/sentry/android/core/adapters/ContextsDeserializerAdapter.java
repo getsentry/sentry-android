@@ -30,12 +30,12 @@ public final class ContextsDeserializerAdapter implements JsonDeserializer<Conte
   public Contexts deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
       throws JsonParseException {
     try {
-      if (!json.isJsonNull()) {
+      if (json != null && !json.isJsonNull()) {
         Contexts contexts = new Contexts();
 
         JsonObject jsonObject = json.getAsJsonObject();
 
-        if (!jsonObject.isJsonNull()) {
+        if (jsonObject != null && !jsonObject.isJsonNull()) {
           JsonObject appOjbect = jsonObject.getAsJsonObject(App.TYPE);
           if (appOjbect != null && !appOjbect.isJsonNull()) {
             App app = context.deserialize(appOjbect, App.class);
