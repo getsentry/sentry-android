@@ -5,9 +5,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 public interface ISerializer {
-  SentryEvent deserializeEvent(Reader eventReader);
-
-  SentryEvent deserializeEvent(Reader envelope);
+  SentryEvent deserializeEvent(Reader reader);
 
   void serialize(SentryEvent event, Writer writer) throws IOException;
 }

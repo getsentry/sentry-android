@@ -52,12 +52,6 @@ public final class AndroidSerializer implements ISerializer {
   }
 
   @Override
-  public SentryEvent deserializeEvent(Reader envelope) {
-    // TODO: defined in the watcher PR
-    return null;
-  }
-
-  @Override
   public void serialize(SentryEvent event, Writer writer) throws IOException {
     gson.toJson(event, SentryEvent.class, writer);
     writer.flush();
