@@ -2,6 +2,7 @@ package io.sentry.core;
 
 import static io.sentry.core.ILogger.logIfNotNull;
 
+import io.sentry.core.cache.DiskCache;
 import io.sentry.core.util.Objects;
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,11 +14,9 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.TestOnly;
 
 final class SendCachedEvent {
   private static final Charset UTF_8 = Charset.forName("UTF-8");
-  @TestOnly static final String CACHED_EVENT_SUFFIX = ".sentry-event";
   private final ISerializer serializer;
   private final IHub hub;
   private final ILogger logger;
@@ -54,8 +53,7 @@ final class SendCachedEvent {
         directory.getAbsolutePath());
 
     for (File file : directory.listFiles()) {
-      // TODO: postfix should ve a const, shared with the caching code (still to be merged)
-      if (!file.getName().endsWith(CACHED_EVENT_SUFFIX)) {
+      if (!file.getName().endsWith(DiskCache.FILE_SUFFIX)) {
         logIfNotNull(
             logger,
             SentryLevel.DEBUG,

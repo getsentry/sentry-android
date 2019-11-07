@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.whenever
 import com.nhaarman.mockitokotlin2.doThrow
+import io.sentry.core.cache.DiskCache
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.Test
@@ -65,7 +66,7 @@ class SendCachedEventTest {
         val expected = SentryEvent()
         whenever(fixture.serializer!!.deserializeEvent(any())).thenReturn(expected)
         val sut = fixture.getSut()
-        val testFile = File(Files.createTempFile(tempDirectory,"send-cached-event-test", SendCachedEvent.CACHED_EVENT_SUFFIX).toUri())
+        val testFile = File(Files.createTempFile(tempDirectory,"send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
         testFile.deleteOnExit()
         sut.sendCachedFiles(File(tempDirectory.toUri()))
         verify(fixture.hub)!!.captureEvent(eq(expected), any())
@@ -76,7 +77,7 @@ class SendCachedEventTest {
         val expected = RuntimeException()
         whenever(fixture.serializer!!.deserializeEvent(any())).doThrow(expected)
         val sut = fixture.getSut()
-        val testFile = File(Files.createTempFile(tempDirectory,"send-cached-event-test", SendCachedEvent.CACHED_EVENT_SUFFIX).toUri())
+        val testFile = File(Files.createTempFile(tempDirectory,"send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
         testFile.deleteOnExit()
         sut.sendCachedFiles(File(tempDirectory.toUri()))
         verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq("Failed to capture cached event."), any<Any>())
@@ -90,7 +91,7 @@ class SendCachedEventTest {
         val expected = RuntimeException()
         whenever(fixture.serializer!!.deserializeEvent(any())).doThrow(expected)
         val sut = fixture.getSut()
-        val testFile = File(Files.createTempFile(tempDirectory,"send-cached-event-test", SendCachedEvent.CACHED_EVENT_SUFFIX).toUri())
+        val testFile = File(Files.createTempFile(tempDirectory,"send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
         testFile.deleteOnExit()
         sut.sendCachedFiles(File(tempDirectory.toUri()))
         verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq("Failed to capture cached event."), any<Any>())
