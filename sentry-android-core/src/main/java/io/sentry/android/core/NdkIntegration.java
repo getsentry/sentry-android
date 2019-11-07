@@ -17,25 +17,23 @@ final class NdkIntegration implements Integration {
     // Note: `hub` isn't used here because the NDK integration writes files to disk which are picked
     // up by another
     // integration. The NDK directory watching must happen before this integration runs.
-    if (options.isEnableNdk()) {
-      if (isNdkAvailable()) {
-        try {
-          Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
+    if (options.isEnableNdk() && isNdkAvailable()) {
+      try {
+        Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
 
-          Method method = cls.getMethod("init", SentryOptions.class);
-          Object[] args = new Object[1];
-          args[0] = options;
-          method.invoke(null, args);
-        } catch (ClassNotFoundException e) {
-          options.setEnableNdk(false);
-          options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.", e);
-        } catch (Exception e) {
-          options.setEnableNdk(false);
-          options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
-        }
-      } else {
+        Method method = cls.getMethod("init", SentryOptions.class);
+        Object[] args = new Object[1];
+        args[0] = options;
+        method.invoke(null, args);
+      } catch (ClassNotFoundException e) {
         options.setEnableNdk(false);
+        options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.", e);
+      } catch (Exception e) {
+        options.setEnableNdk(false);
+        options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
       }
+    } else {
+      options.setEnableNdk(false);
     }
   }
 }
