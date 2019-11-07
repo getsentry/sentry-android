@@ -24,6 +24,7 @@ public final class SentryOptions {
   private BeforeSendCallback beforeSend;
   private BeforeBreadcrumbCallback beforeBreadcrumb;
   private String cacheDirPath;
+  private int cacheDirSize;
   private int maxBreadcrumbs = 100;
   private String release;
   private String environment;
@@ -141,6 +142,14 @@ public final class SentryOptions {
 
   public void setCacheDirPath(String cacheDirPath) {
     this.cacheDirPath = cacheDirPath;
+  }
+
+  public int getCacheDirSize() {
+    return cacheDirSize;
+  }
+
+  public void setCacheDirSize(int cacheDirSize) {
+    this.cacheDirSize = cacheDirSize;
   }
 
   public int getMaxBreadcrumbs() {
