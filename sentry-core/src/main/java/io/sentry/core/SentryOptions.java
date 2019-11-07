@@ -14,7 +14,7 @@ public final class SentryOptions {
   private List<Integration> integrations = new ArrayList<>();
 
   private String dsn;
-  private long shutdownTimeoutMills;
+  private long shutdownTimeoutMills = 5000;
   private boolean debug;
   private boolean enableNdk = true;
   private @NotNull ILogger logger = NoOpLogger.getInstance();
@@ -24,7 +24,7 @@ public final class SentryOptions {
   private BeforeSendCallback beforeSend;
   private BeforeBreadcrumbCallback beforeBreadcrumb;
   private String cacheDirPath;
-  private int cacheDirSize;
+  private int cacheDirSize = 10;
   private int maxBreadcrumbs = 100;
   private String release;
   private String environment;

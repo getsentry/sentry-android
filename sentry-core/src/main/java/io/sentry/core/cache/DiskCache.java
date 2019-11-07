@@ -5,7 +5,6 @@ import static io.sentry.core.SentryLevel.DEBUG;
 import static io.sentry.core.SentryLevel.ERROR;
 import static io.sentry.core.SentryLevel.WARNING;
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
@@ -47,24 +46,16 @@ public final class DiskCache implements IEventCache {
     this.maxSize = options.getCacheDirSize();
     this.serializer = options.getSerializer();
     this.options = options;
-
-    try {
-      //noinspection ResultOfMethodCallIgnored
-      directory.mkdirs();
-      checkDirectoryValid();
-    } catch (IllegalStateException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new IllegalStateException(
-          "Failed to initialize the directory for caching Sentry events.", e);
-    }
   }
 
   @Override
   public void store(SentryEvent event) {
     if (getNumberOfStoredEvents() >= maxSize) {
       logIfNotNull(
-          options.getLogger(), SentryLevel.WARNING, "Disk cache full. Not storing event {}", event);
+          options.getLogger(),
+          SentryLevel.WARNING,
+          "Disk cache full (respecting maxSize). Not storing event {}",
+          event);
       return;
     }
 
@@ -72,7 +63,7 @@ public final class DiskCache implements IEventCache {
     if (eventFile.exists()) {
       logIfNotNull(
           options.getLogger(),
-          DEBUG,
+          WARNING,
           "Not adding Event to offline storage because it already exists: %s",
           eventFile.getAbsolutePath());
       return;
@@ -108,10 +99,7 @@ public final class DiskCache implements IEventCache {
 
       if (!eventFile.delete()) {
         logIfNotNull(
-            options.getLogger(),
-            WARNING,
-            "Failed to delete Event: %s",
-            eventFile.getAbsolutePath());
+            options.getLogger(), ERROR, "Failed to delete Event: %s", eventFile.getAbsolutePath());
       }
     } else {
       logIfNotNull(
@@ -123,10 +111,16 @@ public final class DiskCache implements IEventCache {
     return allEventFiles().length;
   }
 
-  private void checkDirectoryValid() {
+  private boolean isDirectoryValid() {
     if (!directory.isDirectory() || !directory.canWrite() || !directory.canRead()) {
-      throw new IllegalStateException("The directory for caching Sentry events is inaccessible.");
+      logIfNotNull(
+          options.getLogger(),
+          ERROR,
+          "The directory for caching Sentry events is inaccessible.: %s",
+          directory.getAbsolutePath());
+      return false;
     }
+    return true;
   }
 
   private File getEventFile(SentryEvent event) {
@@ -164,7 +158,10 @@ public final class DiskCache implements IEventCache {
   }
 
   private File[] allEventFiles() {
-    checkDirectoryValid();
-    return requireNonNull(directory.listFiles((__, fileName) -> fileName.endsWith(FILE_SUFFIX)));
+    if (isDirectoryValid()) {
+      // TODO: we need to order by oldest to the newest here
+      return directory.listFiles((__, fileName) -> fileName.endsWith(FILE_SUFFIX));
+    }
+    return new File[0];
   }
 }
