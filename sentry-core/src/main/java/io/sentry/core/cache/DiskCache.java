@@ -162,6 +162,6 @@ public final class DiskCache implements IEventCache {
       // TODO: we need to order by oldest to the newest here
       return directory.listFiles((__, fileName) -> fileName.endsWith(FILE_SUFFIX));
     }
-    return new File[0];
+    return new File[] {};
   }
 }
