@@ -5,6 +5,7 @@ import static io.sentry.core.ILogger.logIfNotNull;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.cache.IEventCache;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -15,12 +16,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
 /** A connection to Sentry that sends the events asynchronously. */
-public final class AsyncConnection implements Closeable {
+public final class AsyncConnection implements Closeable, Connection {
   private final ITransport transport;
   private final ITransportGate transportGate;
   private final ExecutorService executor;
   private final IEventCache eventCache;
   private final SentryOptions options;
+  private final boolean storeBeforeSend;
 
   public AsyncConnection(
       ITransport transport,
@@ -29,12 +31,14 @@ public final class AsyncConnection implements Closeable {
       IEventCache eventCache,
       int maxRetries,
       int maxQueueSize,
+      boolean storeBeforeSend,
       SentryOptions options) {
     this(
         transport,
         transportGate,
         eventCache,
         initExecutor(maxRetries, maxQueueSize, backOffIntervalStrategy, eventCache),
+        storeBeforeSend,
         options);
   }
 
@@ -44,12 +48,14 @@ public final class AsyncConnection implements Closeable {
       ITransportGate transportGate,
       IEventCache eventCache,
       ExecutorService executorService,
+      boolean storeBeforeSend,
       SentryOptions options) {
     this.transport = transport;
     this.transportGate = transportGate;
     this.eventCache = eventCache;
     this.options = options;
     this.executor = executorService;
+    this.storeBeforeSend = storeBeforeSend;
   }
 
   private static RetryingThreadPoolExecutor initExecutor(
@@ -82,6 +88,7 @@ public final class AsyncConnection implements Closeable {
    */
   @SuppressWarnings("FutureReturnValueIgnored") // TODO:
   // https://errorprone.info/bugpattern/FutureReturnValueIgnored
+  @Override
   public void send(SentryEvent event) throws IOException {
     executor.submit(new EventSender(event));
   }
@@ -119,7 +126,7 @@ public final class AsyncConnection implements Closeable {
     }
   }
 
-  private final class EventSender implements io.sentry.core.transport.Retryable {
+  private final class EventSender implements Retryable {
     final SentryEvent event;
     long suggestedRetryDelay;
 
@@ -131,11 +138,17 @@ public final class AsyncConnection implements Closeable {
     public void run() {
       if (transportGate.isSendingAllowed()) {
         try {
+          if (storeBeforeSend) {
+            eventCache.store(event);
+          }
+
           TransportResult result = transport.send(event);
           if (result.isSuccess()) {
             eventCache.discard(event);
           } else {
-            eventCache.store(event);
+            if (!storeBeforeSend) {
+              eventCache.store(event);
+            }
             suggestedRetryDelay = result.getRetryMillis();
 
             String message =

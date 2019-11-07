@@ -4,6 +4,7 @@ import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.util.Objects;
+import java.io.Closeable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Deque;
@@ -64,7 +65,7 @@ public final class Hub implements IHub {
 
   @NotNull
   @Override
-  public SentryId captureEvent(SentryEvent event) {
+  public SentryId captureEvent(SentryEvent event, @Nullable Object hint) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -78,7 +79,7 @@ public final class Hub implements IHub {
       try {
         StackItem item = stack.peek();
         if (item != null) {
-          sentryId = item.client.captureEvent(event, item.scope);
+          sentryId = item.client.captureEvent(event, item.scope, hint);
         } else {
           logIfNotNull(
               options.getLogger(), SentryLevel.FATAL, "Stack peek was null when captureEvent");
@@ -127,7 +128,7 @@ public final class Hub implements IHub {
 
   @NotNull
   @Override
-  public SentryId captureException(Throwable throwable) {
+  public SentryId captureException(Throwable throwable, @Nullable Object hint) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -167,6 +168,12 @@ public final class Hub implements IHub {
           "Instance is disabled and this 'close' call is a no-op.");
     } else {
       try {
+        for (Integration integration : options.getIntegrations()) {
+          if (integration instanceof Closeable) {
+            ((Closeable) integration).close();
+          }
+        }
+
         // Close the top-most client
         StackItem item = stack.peek();
         if (item != null) {

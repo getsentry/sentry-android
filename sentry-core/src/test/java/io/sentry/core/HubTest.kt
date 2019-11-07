@@ -9,80 +9,36 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.protocol.SentryId
-import io.sentry.core.protocol.User
+import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.nio.file.Files
 import java.util.Queue
-import kotlin.test.Ignore
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 class HubTest {
 
-    //region clone tests
-    @Test
-    fun `when cloning Scope it returns the same values`() {
-        val scope = Scope(10)
-        scope.setExtra("extra", "extra")
-        val breadcrumb = Breadcrumb()
-        breadcrumb.message = "message"
-        scope.addBreadcrumb(breadcrumb)
-        scope.level = SentryLevel.DEBUG
-        scope.transaction = "transaction"
-        scope.fingerprint.add("fingerprint")
-        scope.tags["tags"] = "tags"
-        val user = User()
-        user.email = "a@a.com"
-        scope.user = user
+    private lateinit var file: File
 
-        val clone = scope.clone()
-        assertNotNull(clone)
-        assertNotSame(scope, clone)
-        assertEquals("extra", clone.extras["extra"])
-        assertEquals("message", clone.breadcrumbs.first().message)
-        assertEquals("transaction", clone.transaction)
-        assertEquals("fingerprint", clone.fingerprint.first())
-        assertEquals("tags", clone.tags["tags"])
-        assertEquals("a@a.com", clone.user.email)
+    @BeforeTest
+    fun `set up`() {
+        file = Files.createTempDirectory("sentry-disk-cache-test").toAbsolutePath().toFile()
     }
 
-    @Test
-    @Ignore("it's a shallow copy and we need a deep-copy") // TODO: https://www.baeldung.com/java-deep-copy
-    fun `when cloning Scope it returns different instances`() {
-        val scope = Scope(10)
-        scope.setExtra("extra", "extra")
-        val breadcrumb = Breadcrumb()
-        breadcrumb.message = "message"
-        scope.addBreadcrumb(breadcrumb)
-        scope.level = SentryLevel.DEBUG
-        scope.transaction = "transaction"
-        scope.fingerprint.add("fingerprint")
-        scope.tags["tags"] = "tags"
-        val user = User()
-        user.email = "a@a.com"
-        scope.user = user
-
-        val clone = scope.clone()
-        assertNotNull(clone)
-        assertNotSame(scope, clone)
-        assertNotSame(scope.extras, clone.extras)
-        assertNotSame(scope.breadcrumbs, clone.breadcrumbs)
-        assertNotSame(scope.breadcrumbs.first(), clone.breadcrumbs.first())
-        assertNotSame(scope.transaction, clone.transaction)
-        assertNotSame(scope.fingerprint, clone.fingerprint)
-        assertNotSame(scope.fingerprint.first(), clone.fingerprint.first())
-        assertNotSame(scope.tags, clone.tags)
-        assertNotSame(scope.user, clone.user)
+    @AfterTest
+    fun shutdown() {
+        Files.delete(file.toPath())
     }
-    //endregion
 
     @Test
     fun `when hub is initialized, integrations are registered`() {
         val integrationMock = mock<Integration>()
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         options.addIntegration(integrationMock)
         val expected = Hub(options)
@@ -92,6 +48,7 @@ class HubTest {
     @Test
     fun `when hub is initialized, breadcrumbs are capped as per options`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.maxBreadcrumbs = 5
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
@@ -106,6 +63,7 @@ class HubTest {
     @Test
     fun `when beforeBreadcrumb returns null, crumb is dropped`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback {
             _: Breadcrumb, _: Any? -> null }
         options.dsn = "https://key@sentry.io/proj"
@@ -119,6 +77,7 @@ class HubTest {
     @Test
     fun `when beforeBreadcrumb modifies crumb, crumb is stored modified`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         val expected = "expected"
         options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { breadcrumb: Breadcrumb, _: Any? -> breadcrumb.message = expected; breadcrumb; }
         options.dsn = "https://key@sentry.io/proj"
@@ -134,6 +93,7 @@ class HubTest {
     @Test
     fun `when beforeBreadcrumb is null, crumb is stored`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.beforeBreadcrumb = null
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
@@ -152,6 +112,7 @@ class HubTest {
         val stacktrace = sw.toString()
 
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { _: Breadcrumb, _: Any? -> throw exception }
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
@@ -166,6 +127,7 @@ class HubTest {
     @Test
     fun `when initialized, lastEventId is empty`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         assertEquals(SentryId.EMPTY_ID, sut.lastEventId)
@@ -174,6 +136,7 @@ class HubTest {
     @Test
     fun `when addBreadcrumb is called on disabled client, no-op`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         var breadcrumbs: Queue<Breadcrumb>? = null
@@ -186,6 +149,7 @@ class HubTest {
     @Test
     fun `when flush is called on disabled client, no-op`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -199,6 +163,7 @@ class HubTest {
     @Test
     fun `when flush is called, client flush gets called`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -212,6 +177,7 @@ class HubTest {
     @Test
     fun `when captureEvent is called and event is null, lastEventId is empty`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         sut.captureEvent(null)
@@ -221,6 +187,7 @@ class HubTest {
     @Test
     fun `when captureEvent is called on disabled client, do nothing`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -234,13 +201,16 @@ class HubTest {
     @Test
     fun `when captureEvent is called with a valid argument, captureEvent on the client should be called`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
         sut.bindClient(mockClient)
 
-        sut.captureEvent(SentryEvent())
-        verify(mockClient, times(1)).captureEvent(any(), any())
+        val event = SentryEvent()
+        val hint = { }
+        sut.captureEvent(event, hint)
+        verify(mockClient, times(1)).captureEvent(eq(event), any(), eq(hint))
     }
     //endregion
 
@@ -248,6 +218,7 @@ class HubTest {
     @Test
     fun `when captureMessage is called and event is null, lastEventId is empty`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         sut.captureMessage(null)
@@ -257,6 +228,7 @@ class HubTest {
     @Test
     fun `when captureMessage is called on disabled client, do nothing`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -270,6 +242,7 @@ class HubTest {
     @Test
     fun `when captureMessage is called with a valid message, captureMessage on the client should be called`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -284,6 +257,7 @@ class HubTest {
     @Test
     fun `when captureException is called and exception is null, lastEventId is empty`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         sut.captureException(null)
@@ -293,6 +267,7 @@ class HubTest {
     @Test
     fun `when captureException is called on disabled client, do nothing`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -306,6 +281,7 @@ class HubTest {
     @Test
     fun `when captureException is called with a valid argument, captureException on the client should be called`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -320,6 +296,7 @@ class HubTest {
     @Test
     fun `when close is called on disabled client, do nothing`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -333,6 +310,7 @@ class HubTest {
     @Test
     fun `when close is called and client is alive, close on the client should be called`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -347,6 +325,7 @@ class HubTest {
     @Test
     fun `when withScope is called on disabled client, do nothing`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -362,6 +341,7 @@ class HubTest {
     @Test
     fun `when withScope is called with alive client, run should be called`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -378,6 +358,7 @@ class HubTest {
     @Test
     fun `when configureScope is called on disabled client, do nothing`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -393,6 +374,7 @@ class HubTest {
     @Test
     fun `when configureScope is called with alive client, run should be called`() {
         val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         val sut = Hub(options)
         val mockClient = mock<ISentryClient>()
@@ -411,6 +393,7 @@ class HubTest {
         val options = SentryOptions().apply {
             addIntegration(mock)
             dsn = "https://key@sentry.io/proj"
+            cacheDirPath = file.absolutePath
         }
         doAnswer {
             val hub = it.arguments[0] as IHub

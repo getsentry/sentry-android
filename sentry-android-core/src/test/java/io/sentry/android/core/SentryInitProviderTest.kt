@@ -13,7 +13,6 @@ import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.ILogger
 import io.sentry.core.InvalidDsnException
 import io.sentry.core.Sentry
-import io.sentry.core.SentryOptions
 import java.io.File
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -27,10 +26,12 @@ class SentryInitProviderTest {
     private var sentryInitProvider = SentryInitProvider()
 
     private lateinit var context: Context
+    private lateinit var file: File
 
     @BeforeTest
     fun `set up`() {
         context = ApplicationProvider.getApplicationContext()
+        file = context.cacheDir
         Sentry.close()
     }
 
@@ -132,7 +133,7 @@ class SentryInitProviderTest {
 
     @Test
     fun `when applicationId is defined, ndk in meta-data is set to false, NDK doesnt initialize`() {
-        val sentryOptions = SentryOptions()
+        val sentryOptions = SentryAndroidOptions()
         val mockLogger = mock<ILogger>()
 
         val mockContext = createMockContext()
@@ -161,7 +162,8 @@ class SentryInitProviderTest {
         val mockContext = mock<Context> {
             on { applicationContext } doReturn context
         }
-        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
+
+        whenever(mockContext.cacheDir).thenReturn(file)
         return mockContext
     }
 

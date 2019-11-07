@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import com.jakewharton.nopen.annotation.Open;
 import java.io.File;
 import java.net.Proxy;
 import java.util.ArrayList;
@@ -7,14 +8,15 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class SentryOptions {
+@Open
+public class SentryOptions {
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
 
   private List<EventProcessor> eventProcessors = new ArrayList<>();
   private List<Integration> integrations = new ArrayList<>();
 
   private String dsn;
-  private long shutdownTimeoutMills;
+  private long shutdownTimeoutMills = 5000;
   private boolean debug;
   private boolean enableNdk = true;
   private @NotNull ILogger logger = NoOpLogger.getInstance();
@@ -24,6 +26,7 @@ public final class SentryOptions {
   private BeforeSendCallback beforeSend;
   private BeforeBreadcrumbCallback beforeBreadcrumb;
   private String cacheDirPath;
+  private int cacheDirSize = 10;
   private int maxBreadcrumbs = 100;
   private String release;
   private String environment;
@@ -141,6 +144,14 @@ public final class SentryOptions {
 
   public void setCacheDirPath(String cacheDirPath) {
     this.cacheDirPath = cacheDirPath;
+  }
+
+  public int getCacheDirSize() {
+    return cacheDirSize;
+  }
+
+  public void setCacheDirSize(int cacheDirSize) {
+    this.cacheDirSize = cacheDirSize;
   }
 
   public int getMaxBreadcrumbs() {
