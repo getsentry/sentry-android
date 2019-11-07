@@ -244,7 +244,7 @@ public class SentryOptions {
     eventProcessors.add(new MainEventProcessor(this));
 
     // Start off sending any cached event.
-    integrations.add(new EventCachedEventFireAndForgetIntegration());
+    integrations.add(new SendCachedEventFireAndForgetIntegration());
     integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }
