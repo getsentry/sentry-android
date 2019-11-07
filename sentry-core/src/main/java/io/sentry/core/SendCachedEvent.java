@@ -91,13 +91,13 @@ final class SendCachedEvent {
       } finally {
         // Unless the transport marked this to be retried, it'll be deleted.
         if (!hint.isResend()) {
-          safeDelete(file, "after trying to capture it", logger);
+          safeDelete(file, "after trying to capture it");
         }
       }
     }
   }
 
-  private static void safeDelete(File file, String errorMessageSuffix, ILogger logger) {
+  private void safeDelete(File file, String errorMessageSuffix) {
     try {
       file.delete();
     } catch (Exception e) {

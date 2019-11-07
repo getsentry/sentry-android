@@ -28,7 +28,7 @@ class SendCachedEventFireAndForgetIntegrationTest {
     fun `when cacheDirPath returns null, register logs and exists`() {
         fixture.options.cacheDirPath = null
         val sut = fixture.getSut()
-        sut.register(fixture.hub, fixture.options)
+        sut.register(fixture.hub!!, fixture.options)
         verify(fixture.logger)!!.log(eq(SentryLevel.WARNING), eq("No cache dir path is defined in options."))
         verifyNoMoreInteractions(fixture.hub)
     }

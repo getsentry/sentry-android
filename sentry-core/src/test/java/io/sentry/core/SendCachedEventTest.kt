@@ -29,7 +29,7 @@ class SendCachedEventTest {
         }
 
         fun getSut(): SendCachedEvent {
-            return SendCachedEvent(serializer, hub, logger)
+            return SendCachedEvent(serializer!!, hub!!, logger!!)
         }
     }
 

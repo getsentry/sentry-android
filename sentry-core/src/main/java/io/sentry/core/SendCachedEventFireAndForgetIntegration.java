@@ -1,11 +1,10 @@
 package io.sentry.core;
 
-import org.jetbrains.annotations.NotNull;
-
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import java.io.File;
 import java.util.concurrent.Executors;
+import org.jetbrains.annotations.NotNull;
 
 final class SendCachedEventFireAndForgetIntegration implements Integration {
   @Override
