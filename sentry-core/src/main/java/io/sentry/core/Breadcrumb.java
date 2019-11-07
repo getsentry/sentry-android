@@ -17,12 +17,12 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
   private SentryLevel level;
   private Map<String, Object> unknown;
 
-  public Breadcrumb(Date timestamp) {
+  Breadcrumb(Date timestamp) {
     this.timestamp = timestamp;
   }
 
   public Breadcrumb() {
-    timestamp = DateUtils.getCurrentDateTime();
+    this(DateUtils.getCurrentDateTime());
   }
 
   public Date getTimestamp() {
