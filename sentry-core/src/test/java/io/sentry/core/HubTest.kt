@@ -14,6 +14,7 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.nio.file.Files
 import java.util.Queue
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,11 +22,16 @@ import kotlin.test.assertTrue
 
 class HubTest {
 
-    lateinit var file: File
+    private lateinit var file: File
 
     @BeforeTest
     fun `set up`() {
-        file = Files.createTempDirectory("sentry-disk-cache-test").toFile()
+        file = Files.createTempDirectory("sentry-disk-cache-test").toAbsolutePath().toFile()
+    }
+
+    @AfterTest
+    fun shutdown() {
+        Files.delete(file.toPath())
     }
 
     @Test
