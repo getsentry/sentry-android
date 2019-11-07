@@ -20,7 +20,7 @@ final class SendCachedEvent {
   private final IHub hub;
   private final ILogger logger;
 
-  SendCachedEvent(ISerializer serializer, IHub hub, ILogger logger) {
+  SendCachedEvent(@NotNull ISerializer serializer, @NotNull IHub hub, @NotNull ILogger logger) {
     this.serializer = Objects.requireNonNull(serializer, "Serializer is required.");
     this.hub = Objects.requireNonNull(hub, "Hub is required.");
     this.logger = Objects.requireNonNull(logger, "Logger is required.");

@@ -11,6 +11,8 @@ import io.sentry.core.cache.DiskCache
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
@@ -31,8 +33,18 @@ class SendCachedEventTest {
         }
     }
 
-    private val tempDirectory: Path = Files.createTempDirectory("send-cached-event-test")
+    private lateinit var tempDirectory: Path
     private val fixture = Fixture()
+
+    @BeforeTest
+    fun `before send`() {
+        tempDirectory = Files.createTempDirectory("send-cached-event-test")
+    }
+
+    @AfterTest
+    fun `after send`() {
+        File(tempDirectory.toUri()).delete()
+    }
 
     @Test
     fun `when directory doesn't exist, sendCachedFiles logs and returns`() {

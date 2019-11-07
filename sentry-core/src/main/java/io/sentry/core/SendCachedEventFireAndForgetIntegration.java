@@ -1,5 +1,7 @@
 package io.sentry.core;
 
+import org.jetbrains.annotations.NotNull;
+
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import java.io.File;
@@ -7,7 +9,7 @@ import java.util.concurrent.Executors;
 
 final class SendCachedEventFireAndForgetIntegration implements Integration {
   @Override
-  public void register(IHub hub, SentryOptions options) {
+  public void register(@NotNull IHub hub, @NotNull SentryOptions options) {
     String cachedDir = options.getCacheDirPath();
     if (cachedDir == null) {
       logIfNotNull(
