@@ -11,4 +11,4 @@ To run the build and tests:
 ```
 
 Build and tests are automatically run against branches and pull requests
-via TravisCI.
+via TravisCI and AppVeyor.
