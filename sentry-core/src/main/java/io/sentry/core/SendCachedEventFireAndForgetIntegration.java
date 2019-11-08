@@ -20,6 +20,7 @@ final class SendCachedEventFireAndForgetIntegration implements Integration {
     File outbox = new File(cachedDir);
 
     try {
+      // TODO: Not running on a background thread?!
       Executors.callable(
               () -> {
                 try {

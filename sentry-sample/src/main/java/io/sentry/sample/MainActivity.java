@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             view -> {
               // Try cause ANR (triggers after 1 second as configured via meta-data)
               try {
-                Thread.sleep(2000);
+                Thread.sleep(5000);
               } catch (InterruptedException e) {
                 return;
               }

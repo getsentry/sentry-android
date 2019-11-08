@@ -33,6 +33,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
   public void processEnvelopeFile(@NotNull String path) {
     InputStream stream = null;
     File file = null;
+    CachedEvent cachedEvent = new CachedEvent();
     try {
       file = new File(path);
       stream = new FileInputStream(file);
@@ -40,7 +41,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
       if (envelope == null) {
         logger.log(SentryLevel.ERROR, "Stream from path %s resulted in a null envelope.", path);
       } else {
-        processEnvelope(envelope);
+        processEnvelope(envelope, cachedEvent);
       }
     } catch (Exception e) {
       logger.log(SentryLevel.ERROR, "Error processing envelope.", e);
@@ -50,10 +51,9 @@ public final class EnvelopeSender implements IEnvelopeSender {
       } catch (IOException ex) {
         logger.log(SentryLevel.ERROR, "Error closing envelope.", ex);
       }
-      if (file != null) {
-        // TODO: Handle error, at least ignore in memory
+      if (file != null && !cachedEvent.isResend()) {
         try {
-          file.delete();
+            file.delete();
         } catch (Exception e) {
           logger.log(SentryLevel.ERROR, "Failed to delete.", e);
         }
@@ -61,7 +61,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
     }
   }
 
-  private void processEnvelope(SentryEnvelope envelope) throws IOException {
+  private void processEnvelope(SentryEnvelope envelope, CachedEvent cachedEvent) throws IOException {
     logger.log(SentryLevel.DEBUG, "Envelope for event Id: %s", envelope.getHeader().getEventId());
     int items = 0;
     for (SentryEnvelopeItem item : envelope.getItems()) {
@@ -92,7 +92,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
             //                  event.getEventId());
             //              continue;
             //            }
-            hub.captureEvent(event);
+            hub.captureEvent(event, cachedEvent);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
           }
         }

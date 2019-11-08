@@ -38,6 +38,13 @@ public final class AnrIntegration implements Integration {
                     "ANR triggered with message: %s",
                     error.getMessage());
 
+                // TODO: because it's 'handled=false' it's being assumed to be
+                // crashed=true (set further down) which is incorrect
+                // ANR detected from NDK is crashed=true but not here
+                // since the user can "keep waiting".
+                // The side effect of being 'crashed=true' is that
+                // the SDK will store it on disk on the calling thread and
+                // not attempt to send it at all (crash=true means it will crash)
                 Mechanism mechanism = new Mechanism();
                 mechanism.setType("ANR");
                 mechanism.setHandled(false);

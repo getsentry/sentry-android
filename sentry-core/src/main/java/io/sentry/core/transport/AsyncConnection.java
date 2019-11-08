@@ -2,9 +2,7 @@ package io.sentry.core.transport;
 
 import static io.sentry.core.ILogger.logIfNotNull;
 
-import io.sentry.core.SentryEvent;
-import io.sentry.core.SentryLevel;
-import io.sentry.core.SentryOptions;
+import io.sentry.core.*;
 import io.sentry.core.cache.IEventCache;
 import java.io.Closeable;
 import java.io.IOException;
@@ -12,8 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.TestOnly;
+
+import org.jetbrains.annotations.*;
 
 /** A connection to Sentry that sends the events asynchronously. */
 public final class AsyncConnection implements Closeable, Connection {
@@ -89,8 +87,24 @@ public final class AsyncConnection implements Closeable, Connection {
   @SuppressWarnings("FutureReturnValueIgnored") // TODO:
   // https://errorprone.info/bugpattern/FutureReturnValueIgnored
   @Override
-  public void send(SentryEvent event) throws IOException {
-    executor.submit(new EventSender(event));
+  public void send(SentryEvent event, Object hint) throws IOException {
+    CachedEvent cachedEvent = null;
+    if (hint instanceof CachedEvent) {
+      cachedEvent = (CachedEvent)hint;
+    }
+    EventSender sender = new EventSender(event, cachedEvent);
+
+    // TODO: A temp hack to get the event sending sync with the calling thread
+    // Calling thread here is something we've spawn to read files on app start
+    // or a FileObserver thread that detected a file written by sentry-native
+    // We might need a sychronization mechanism within the `CachedEvent` instead
+    // which the caller will wait on and the transport will set once event submission
+    // is completed
+    if (cachedEvent != null) {
+      sender.run();
+    } else {
+      executor.submit(sender);
+    }
   }
 
   @Override
@@ -128,17 +142,19 @@ public final class AsyncConnection implements Closeable, Connection {
 
   private final class EventSender implements Retryable {
     final SentryEvent event;
+    private CachedEvent cachedEvent;
     long suggestedRetryDelay;
 
-    EventSender(SentryEvent event) {
+    EventSender(SentryEvent event, @Nullable CachedEvent cachedEvent) {
       this.event = event;
+      this.cachedEvent = cachedEvent;
     }
 
     @Override
     public void run() {
       if (transportGate.isSendingAllowed()) {
         try {
-          if (storeBeforeSend) {
+          if (cachedEvent == null && storeBeforeSend) {
             eventCache.store(event);
           }
 
@@ -146,9 +162,10 @@ public final class AsyncConnection implements Closeable, Connection {
           if (result.isSuccess()) {
             eventCache.discard(event);
           } else {
-            if (!storeBeforeSend) {
+            if (cachedEvent == null && !storeBeforeSend) {
               eventCache.store(event);
             }
+            // TODO: Here we could inspect result and decide whether to mark eventCache.setResend(true)
             suggestedRetryDelay = result.getRetryMillis();
 
             String message =
@@ -165,11 +182,21 @@ public final class AsyncConnection implements Closeable, Connection {
             throw new IllegalStateException(message);
           }
         } catch (IOException e) {
-          eventCache.store(event);
+          if (cachedEvent == null) {
+            eventCache.store(event);
+          } else {
+            // This is a cached event and the error was I/O related, we can retry later.
+            cachedEvent.setResend(true);
+          }
           throw new IllegalStateException("Sending the event failed.", e);
         }
       } else {
-        eventCache.store(event);
+        if (cachedEvent == null) {
+          eventCache.store(event);
+        } else {
+          // Device is offline, keep event to retry later
+          cachedEvent.setResend(true);
+        }
       }
     }
 

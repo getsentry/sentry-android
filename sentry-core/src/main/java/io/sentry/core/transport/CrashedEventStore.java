@@ -1,6 +1,6 @@
 package io.sentry.core.transport;
 
-import io.sentry.core.SentryEvent;
+import io.sentry.core.*;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.protocol.SentryThread;
 import io.sentry.core.util.Objects;
@@ -20,18 +20,20 @@ public final class CrashedEventStore implements Connection {
   }
 
   @Override
-  public void send(@NotNull SentryEvent event) throws IOException {
-    List<SentryThread> threads = event.getThreads();
-    if (threads != null) {
-      for (SentryThread thread : threads) {
-        if (Boolean.TRUE.equals(thread.getCrashed())) {
-          eventCache.store(event);
-          return;
+  public void send(@NotNull SentryEvent event, Object hint) throws IOException {
+    if (!(hint instanceof CachedEvent)) {
+      List<SentryThread> threads = event.getThreads();
+      if (threads != null) {
+        for (SentryThread thread : threads) {
+          if (Boolean.TRUE.equals(thread.getCrashed())) {
+            eventCache.store(event);
+            return;
+          }
         }
       }
     }
 
-    inner.send(event);
+    inner.send(event, hint);
   }
 
   @Override

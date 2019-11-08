@@ -1,7 +1,12 @@
 package io.sentry.core;
 
 import io.sentry.core.cache.IEventCache;
-import io.sentry.core.transport.*;
+import io.sentry.core.transport.AsyncConnection;
+import io.sentry.core.transport.HttpTransport;
+import io.sentry.core.transport.IBackOffIntervalStrategy;
+import io.sentry.core.transport.IConnectionConfigurator;
+import io.sentry.core.transport.ITransportGate;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 

@@ -113,7 +113,7 @@ public final class SentryClient implements ISentryClient {
     }
 
     try {
-      connection.send(event);
+      connection.send(event, hint);
     } catch (IOException e) {
       logIfNotNull(
           options.getLogger(),
