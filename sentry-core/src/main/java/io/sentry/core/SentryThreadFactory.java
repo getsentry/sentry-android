@@ -32,9 +32,9 @@ final class SentryThreadFactory {
     Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
     List<SentryThread> result = new ArrayList<>();
 
+    Thread currentThread = Thread.currentThread();
     for (Map.Entry<Thread, StackTraceElement[]> item : threads.entrySet()) {
-      result.add(
-          getSentryThread(crashedThreadId, Thread.currentThread(), item.getValue(), item.getKey()));
+      result.add(getSentryThread(crashedThreadId, currentThread, item.getValue(), item.getKey()));
     }
 
     return result;
@@ -53,11 +53,11 @@ final class SentryThreadFactory {
     sentryThread.setDaemon(thread.isDaemon());
     sentryThread.setState(thread.getState().name());
     if (crashedThreadId != null) {
-      // TODO: do we still need crashed?
       sentryThread.setCrashed(crashedThreadId == thread.getId());
-      sentryThread.setErrored(sentryThread.isCrashed());
     }
-    sentryThread.setCurrent(thread == currentThread);
+    sentryThread.setErrored(thread == currentThread);
+    //    sentryThread.setCurrent(thread == currentThread); TODO: do we need that? this should be if
+    // its the UI thread or not
 
     List<SentryStackFrame> frames = sentryStackTraceFactory.getStackFrames(stackFramesElements);
 
