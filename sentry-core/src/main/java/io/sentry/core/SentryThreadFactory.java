@@ -53,7 +53,9 @@ final class SentryThreadFactory {
     sentryThread.setDaemon(thread.isDaemon());
     sentryThread.setState(thread.getState().name());
     if (crashedThreadId != null) {
+      // TODO: do we still need crashed?
       sentryThread.setCrashed(crashedThreadId == thread.getId());
+      sentryThread.setErrored(sentryThread.isCrashed());
     }
     sentryThread.setCurrent(thread == currentThread);
 

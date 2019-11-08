@@ -118,7 +118,7 @@ public final class SentryStackFrame implements IUnknownPropertiesConsumer {
     this.contextLine = contextLine;
   }
 
-  public Boolean getInApp() {
+  public Boolean isInApp() {
     return inApp;
   }
 
