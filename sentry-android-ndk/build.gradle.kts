@@ -20,9 +20,6 @@ android {
             }
         }
 
-        // Required when setting minSdkVersion to 20 or lower
-        multiDexEnabled = true
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = "$version"

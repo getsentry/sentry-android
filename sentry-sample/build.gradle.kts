@@ -37,6 +37,9 @@ android {
                 abiFilters(platform)
             }
         }
+
+        // Required when setting minSdkVersion to 20 or lower
+        multiDexEnabled = true
     }
 
     externalNativeBuild {
