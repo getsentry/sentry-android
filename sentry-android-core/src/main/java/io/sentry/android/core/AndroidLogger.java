@@ -4,7 +4,7 @@ import android.util.Log;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 
-class AndroidLogger implements ILogger {
+final class AndroidLogger implements ILogger {
 
   private static final String tag = "Sentry";
 
@@ -52,7 +52,7 @@ class AndroidLogger implements ILogger {
     }
   }
 
-  int toLogcatLevel(SentryLevel sentryLevel) {
+  private int toLogcatLevel(SentryLevel sentryLevel) {
     switch (sentryLevel) {
       case DEBUG:
         return Log.DEBUG;

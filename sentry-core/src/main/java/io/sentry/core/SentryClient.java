@@ -1,42 +1,66 @@
 package io.sentry.core;
 
-import static io.sentry.core.ILogger.log;
+import static io.sentry.core.ILogger.logIfNotNull;
 
+import io.sentry.core.cache.DiskCache;
+import io.sentry.core.cache.IEventCache;
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.transport.AsyncConnection;
-import io.sentry.core.util.Nullable;
+import io.sentry.core.transport.Connection;
+import io.sentry.core.transport.CrashedEventStore;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import org.jetbrains.annotations.Nullable;
 
-public class SentryClient implements ISentryClient {
+public final class SentryClient implements ISentryClient {
   static final String SENTRY_PROTOCOL_VERSION = "7";
 
   private boolean isEnabled;
 
   private final SentryOptions options;
-  private final AsyncConnection connection;
+  private final Connection connection;
+  private final Random random;
 
+  @Override
   public boolean isEnabled() {
     return isEnabled;
   }
 
-  public SentryClient(SentryOptions options) {
+  SentryClient(SentryOptions options) {
     this(options, null);
   }
 
-  public SentryClient(SentryOptions options, @Nullable AsyncConnection connection) {
+  public SentryClient(SentryOptions options, @Nullable Connection connection) {
     this.options = options;
     this.isEnabled = true;
     if (connection == null) {
-      connection = AsyncConnectionFactory.create(options);
+
+      // TODO this is obviously provisional and should be constructed based on the config in options
+      IEventCache blackHole = new DiskCache(options);
+
+      connection =
+          new CrashedEventStore(AsyncConnectionFactory.create(options, blackHole), blackHole);
     }
     this.connection = connection;
+    random = options.getSampling() == null ? null : new Random();
   }
 
-  public SentryId captureEvent(SentryEvent event, @Nullable Scope scope) {
-    log(options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
+  @Override
+  public SentryId captureEvent(SentryEvent event, @Nullable Scope scope, @Nullable Object hint) {
+    if (!sample()) {
+      logIfNotNull(
+          options.getLogger(),
+          SentryLevel.DEBUG,
+          "Event %s was dropped due to sampling decision.",
+          event.getEventId());
+      return SentryId.EMPTY_ID;
+    }
+
+    logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
     if (scope != null) {
       if (event.getTransaction() == null) {
@@ -45,8 +69,8 @@ public class SentryClient implements ISentryClient {
       if (event.getUser() == null) {
         event.setUser(scope.getUser());
       }
-      if (event.getFingerprint() == null) {
-        event.setFingerprint(scope.getFingerprint());
+      if (event.getFingerprints() == null) {
+        event.setFingerprints(scope.getFingerprint());
       }
       if (event.getBreadcrumbs() == null) {
         event.setBreadcrumbs(new ArrayList<>(scope.getBreadcrumbs()));
@@ -62,12 +86,12 @@ public class SentryClient implements ISentryClient {
           }
         }
       }
-      if (event.getExtra() == null) {
-        event.setExtra(new HashMap<>(scope.getExtra()));
+      if (event.getExtras() == null) {
+        event.setExtras(new HashMap<>(scope.getExtras()));
       } else {
-        for (Map.Entry<String, Object> item : scope.getExtra().entrySet()) {
-          if (!event.getExtra().containsKey(item.getKey())) {
-            event.getExtra().put(item.getKey(), item.getValue());
+        for (Map.Entry<String, java.lang.Object> item : scope.getExtras().entrySet()) {
+          if (!event.getExtras().containsKey(item.getKey())) {
+            event.getExtras().put(item.getKey(), item.getValue());
           }
         }
       }
@@ -78,22 +102,20 @@ public class SentryClient implements ISentryClient {
     }
 
     for (EventProcessor processor : options.getEventProcessors()) {
-      processor.process(event);
+      processor.process(event, hint);
     }
 
-    SentryOptions.BeforeSendCallback beforeSend = options.getBeforeSend();
-    if (beforeSend != null) {
-      event = beforeSend.execute(event);
-      if (event == null) {
-        // Event dropped by the beforeSend callback
-        return SentryId.EMPTY_ID;
-      }
+    event = executeBeforeSend(event, hint);
+
+    if (event == null) {
+      // Event dropped by the beforeSend callback
+      return SentryId.EMPTY_ID;
     }
 
     try {
       connection.send(event);
     } catch (IOException e) {
-      log(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.WARNING,
           "Capturing event " + event.getEventId() + " failed.",
@@ -103,19 +125,43 @@ public class SentryClient implements ISentryClient {
     return event.getEventId();
   }
 
-  @Override
-  public SentryId captureEvent(SentryEvent event) {
-    return captureEvent(event, null);
+  private SentryEvent executeBeforeSend(SentryEvent event, @Nullable Object hint) {
+    SentryOptions.BeforeSendCallback beforeSend = options.getBeforeSend();
+    if (beforeSend != null) {
+      try {
+        event = beforeSend.execute(event, hint);
+      } catch (Exception e) {
+        logIfNotNull(
+            options.getLogger(),
+            SentryLevel.ERROR,
+            "The BeforeSend callback threw an exception. It will be added as breadcrumb and continue.",
+            e);
+
+        Breadcrumb breadcrumb = new Breadcrumb();
+        breadcrumb.setMessage("BeforeSend callback failed.");
+        breadcrumb.setCategory("SentryClient");
+        Map<String, String> data = new HashMap<>();
+        data.put("sentry:message", e.getMessage());
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        data.put("sentry:stacktrace", sw.toString()); // might be obfuscated
+        breadcrumb.setLevel(SentryLevel.ERROR);
+        breadcrumb.setData(data);
+        event.addBreadcrumb(breadcrumb);
+      }
+    }
+    return event;
   }
 
+  @Override
   public void close() {
-    log(options.getLogger(), SentryLevel.INFO, "Closing SDK.");
+    logIfNotNull(options.getLogger(), SentryLevel.INFO, "Closing SDK.");
 
     try {
       flush(options.getShutdownTimeout());
       connection.close();
     } catch (IOException e) {
-      log(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.WARNING,
           "Failed to close the connection to the Sentry Server.",
@@ -127,5 +173,16 @@ public class SentryClient implements ISentryClient {
   @Override
   public void flush(long timeoutMills) {
     // TODO: Flush transport
+  }
+
+  private boolean sample() {
+    // https://docs.sentry.io/development/sdk-dev/features/#event-sampling
+    if (options.getSampling() != null && random != null) {
+      double sampling = options.getSampling();
+      if (sampling < random.nextDouble()) {
+        return false; // bad luck
+      }
+    }
+    return true;
   }
 }

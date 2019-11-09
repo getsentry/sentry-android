@@ -3,7 +3,7 @@ object Config {
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
-        val androidGradle = "com.android.tools.build:gradle:3.6.0-beta01"
+        val androidGradle = "com.android.tools.build:gradle:3.6.0-beta02"
         val kotlinGradlePlugin = "gradle-plugin"
     }
 
@@ -13,16 +13,15 @@ object Config {
         val buildToolsVersion = "29.0.2"
         val minSdkVersion = 14
         val minSdkVersionNdk = 21
-        val minSdkVersionDebug = 21
         val targetSdkVersion = sdkVersion
         val compileSdkVersion = sdkVersion
     }
 
     object Libs {
         val appCompat = "androidx.appcompat:appcompat:1.1.0"
-        val constraintLayout = "androidx.constraintlayout:constraintlayout:1.1.3"
         val timber = "com.jakewharton.timber:timber:4.7.1"
         val gson = "com.google.code.gson:gson:2.8.6"
+        val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-3"
     }
 
     object TestLibs {
@@ -37,17 +36,25 @@ object Config {
         val espressoCore = "androidx.test.espresso:espresso-core:3.2.0"
         val androidxOrchestrator = "androidx.test:orchestrator:$androidxTestVersion"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
-        val apacheCommonsIo = "commons-io:commons-io:2.6"
     }
 
     object QualityPlugins {
         val jacocoVersion = "0.8.4"
         val spotlessVersion = "3.25.0"
+        val errorpronePlugin = "net.ltgt.gradle:gradle-errorprone-plugin:1.1.1"
     }
 
-    object Flavors {
-        val dimension = "version"
-        val staging = "staging"
-        val production = "production"
+    object Sentry {
+        val SENTRY_CLIENT_NAME = "sentry.java.android"
+    }
+
+    object CompileOnly {
+        private val nopenVersion = "1.0.1"
+
+        val annotations = "org.jetbrains:annotations:17.0.0"
+        val noopen = "com.jakewharton.nopen:nopen-annotations:$nopenVersion"
+        val noopenProne = "com.jakewharton.nopen:nopen-checker:$nopenVersion"
+        val errorprone = "com.google.errorprone:error_prone_core:2.3.3"
+        val errorProneJavac = "com.google.errorprone:javac:9+181-r4173-1"
     }
 }

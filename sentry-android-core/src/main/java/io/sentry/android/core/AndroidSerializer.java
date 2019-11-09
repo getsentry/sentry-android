@@ -7,14 +7,17 @@ import io.sentry.android.core.adapters.*;
 import io.sentry.core.ILogger;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryLevel;
+import io.sentry.core.protocol.Contexts;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class AndroidSerializer implements ISerializer {
+public final class AndroidSerializer implements ISerializer {
 
   private final ILogger logger;
   private final Gson gson;
@@ -38,13 +41,16 @@ public class AndroidSerializer implements ISerializer {
             Device.DeviceOrientation.class, new OrientationSerializerAdapter(logger))
         .registerTypeAdapter(
             Device.DeviceOrientation.class, new OrientationDeserializerAdapter(logger))
+        .registerTypeAdapter(SentryLevel.class, new SentryLevelSerializerAdapter(logger))
+        .registerTypeAdapter(SentryLevel.class, new SentryLevelDeserializerAdapter(logger))
+        .registerTypeAdapter(Contexts.class, new ContextsDeserializerAdapter(logger))
         .registerTypeAdapterFactory(UnknownPropertiesTypeAdapterFactory.get())
         .create();
   }
 
   @Override
-  public SentryEvent deserializeEvent(String envelope) {
-    return gson.fromJson(envelope, SentryEvent.class);
+  public SentryEvent deserializeEvent(Reader eventReader) {
+    return gson.fromJson(eventReader, SentryEvent.class);
   }
 
   @Override

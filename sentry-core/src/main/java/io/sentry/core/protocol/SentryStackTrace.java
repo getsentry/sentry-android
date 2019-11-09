@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 /** The Sentry stacktrace. */
-public class SentryStackTrace implements IUnknownPropertiesConsumer {
+public final class SentryStackTrace implements IUnknownPropertiesConsumer {
   private List<SentryStackFrame> frames;
-  // TODO registers is missing?
+  private Map<String, String> registers;
+
+  @SuppressWarnings("unused")
   private Map<String, Object> unknown;
 
   public SentryStackTrace() {}
@@ -36,5 +38,13 @@ public class SentryStackTrace implements IUnknownPropertiesConsumer {
   @Override
   public void acceptUnknownProperties(Map<String, Object> unknown) {
     this.unknown = unknown;
+  }
+
+  public Map<String, String> getRegisters() {
+    return registers;
+  }
+
+  public void setRegisters(Map<String, String> registers) {
+    this.registers = registers;
   }
 }

@@ -1,9 +1,9 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.util.Nullable;
+import org.jetbrains.annotations.Nullable;
 
-class NoOpSentryClient implements ISentryClient {
+final class NoOpSentryClient implements ISentryClient {
 
   private static final NoOpSentryClient instance = new NoOpSentryClient();
 
@@ -19,32 +19,7 @@ class NoOpSentryClient implements ISentryClient {
   }
 
   @Override
-  public SentryId captureEvent(SentryEvent event) {
-    return SentryId.EMPTY_ID;
-  }
-
-  @Override
-  public SentryId captureEvent(SentryEvent event, Scope scope) {
-    return SentryId.EMPTY_ID;
-  }
-
-  @Override
-  public SentryId captureMessage(String message) {
-    return SentryId.EMPTY_ID;
-  }
-
-  @Override
-  public SentryId captureMessage(String message, @Nullable Scope scope) {
-    return SentryId.EMPTY_ID;
-  }
-
-  @Override
-  public SentryId captureException(Throwable throwable, @Nullable Scope scope) {
-    return SentryId.EMPTY_ID;
-  }
-
-  @Override
-  public SentryId captureException(Throwable throwable) {
+  public SentryId captureEvent(SentryEvent event, @Nullable Scope scope, @Nullable Object hint) {
     return SentryId.EMPTY_ID;
   }
 

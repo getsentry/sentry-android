@@ -1,26 +1,28 @@
 package io.sentry.core.transport;
 
-import static io.sentry.core.ILogger.log;
+import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-import io.sentry.core.util.NonNull;
-import io.sentry.core.util.VisibleForTesting;
+import io.sentry.core.cache.IEventCache;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 /** A connection to Sentry that sends the events asynchronously. */
-public class AsyncConnection implements Closeable {
+public final class AsyncConnection implements Closeable, Connection {
   private final ITransport transport;
   private final ITransportGate transportGate;
   private final ExecutorService executor;
   private final IEventCache eventCache;
   private final SentryOptions options;
+  private final boolean storeBeforeSend;
 
   public AsyncConnection(
       ITransport transport,
@@ -29,27 +31,31 @@ public class AsyncConnection implements Closeable {
       IEventCache eventCache,
       int maxRetries,
       int maxQueueSize,
+      boolean storeBeforeSend,
       SentryOptions options) {
     this(
         transport,
         transportGate,
         eventCache,
         initExecutor(maxRetries, maxQueueSize, backOffIntervalStrategy, eventCache),
+        storeBeforeSend,
         options);
   }
 
-  @VisibleForTesting
+  @TestOnly
   AsyncConnection(
       ITransport transport,
       ITransportGate transportGate,
       IEventCache eventCache,
       ExecutorService executorService,
+      boolean storeBeforeSend,
       SentryOptions options) {
     this.transport = transport;
     this.transportGate = transportGate;
     this.eventCache = eventCache;
     this.options = options;
     this.executor = executorService;
+    this.storeBeforeSend = storeBeforeSend;
   }
 
   private static RetryingThreadPoolExecutor initExecutor(
@@ -80,6 +86,9 @@ public class AsyncConnection implements Closeable {
    * @param event the event to send
    * @throws IOException on error
    */
+  @SuppressWarnings("FutureReturnValueIgnored") // TODO:
+  // https://errorprone.info/bugpattern/FutureReturnValueIgnored
+  @Override
   public void send(SentryEvent event) throws IOException {
     executor.submit(new EventSender(event));
   }
@@ -89,7 +98,7 @@ public class AsyncConnection implements Closeable {
     executor.shutdown();
     try {
       if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
-        log(
+        logIfNotNull(
             options.getLogger(),
             SentryLevel.WARNING,
             "Failed to shutdown the async connection async sender within 1 minute. Trying to force it now.");
@@ -98,7 +107,7 @@ public class AsyncConnection implements Closeable {
       transport.close();
     } catch (InterruptedException e) {
       // ok, just give up then...
-      log(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.DEBUG,
           "Thread interrupted while closing the connection.");
@@ -110,14 +119,14 @@ public class AsyncConnection implements Closeable {
     private int cnt;
 
     @Override
-    public Thread newThread(@NonNull Runnable r) {
+    public Thread newThread(@NotNull Runnable r) {
       Thread ret = new Thread(r, "SentryAsyncConnection-" + cnt++);
       ret.setDaemon(true);
       return ret;
     }
   }
 
-  private final class EventSender implements io.sentry.core.transport.Retryable {
+  private final class EventSender implements Retryable {
     final SentryEvent event;
     long suggestedRetryDelay;
 
@@ -129,11 +138,17 @@ public class AsyncConnection implements Closeable {
     public void run() {
       if (transportGate.isSendingAllowed()) {
         try {
+          if (storeBeforeSend) {
+            eventCache.store(event);
+          }
+
           TransportResult result = transport.send(event);
           if (result.isSuccess()) {
             eventCache.discard(event);
           } else {
-            eventCache.store(event);
+            if (!storeBeforeSend) {
+              eventCache.store(event);
+            }
             suggestedRetryDelay = result.getRetryMillis();
 
             String message =

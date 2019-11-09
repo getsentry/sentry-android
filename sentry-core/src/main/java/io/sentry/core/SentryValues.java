@@ -3,10 +3,10 @@ package io.sentry.core;
 import java.util.ArrayList;
 import java.util.List;
 
-class SentryValues<T> {
+final class SentryValues<T> {
   private List<T> values;
 
-  public SentryValues(List<T> values) {
+  SentryValues(List<T> values) {
     if (values == null) {
       values = new ArrayList<>(0);
     }

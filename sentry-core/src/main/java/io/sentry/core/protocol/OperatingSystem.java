@@ -3,8 +3,8 @@ package io.sentry.core.protocol;
 import io.sentry.core.IUnknownPropertiesConsumer;
 import java.util.Map;
 
-public class OperatingSystem implements IUnknownPropertiesConsumer {
-  static final String TYPE = "os";
+public final class OperatingSystem implements IUnknownPropertiesConsumer {
+  public static final String TYPE = "os";
 
   private String name;
   private String version;
@@ -12,6 +12,8 @@ public class OperatingSystem implements IUnknownPropertiesConsumer {
   private String build;
   private String kernelVersion;
   private Boolean rooted;
+
+  @SuppressWarnings("unused")
   private Map<String, Object> unknown;
 
   public String getName() {

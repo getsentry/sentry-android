@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.config.KotlinCompilerVersion
 plugins {
     id("com.android.application")
     kotlin("android")
+//    id("io.sentry.android.gradle") how to add sentry gradle plugin
 }
 
 android {
@@ -11,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "io.sentry.sample"
-        minSdkVersion(Config.Android.minSdkVersionNdk) // NDK requires a higher API level than core.
+        minSdkVersion(Config.Android.minSdkVersion)
         targetSdkVersion(Config.Android.targetSdkVersion)
         versionCode = 1
         versionName = "1.0"
@@ -20,6 +21,37 @@ android {
         testInstrumentationRunnerArguments = mapOf(
             "clearPackageData" to "true"
         )
+
+        externalNativeBuild {
+            cmake {
+                arguments.add(0, "-DANDROID_STL=c++_static")
+                arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
+            }
+        }
+
+        ndk {
+            val platform = System.getenv("ABI")
+            if (platform == null || platform.toLowerCase() == "all") {
+                abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
+            } else {
+                abiFilters(platform)
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            setPath("CMakeLists.txt")
+        }
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
@@ -27,6 +59,7 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug") // to be able to run release mode
         }
     }
 
@@ -35,14 +68,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    // due https://github.com/gradle/gradle/issues/11083
-//    kotlinOptions {
-//        jvmTarget = JavaVersion.VERSION_1_8.toString()
-//    }
-    withGroovyBuilder {
-        "kotlinOptions" {
-            setProperty("jvmTarget", JavaVersion.VERSION_1_8.toString())
-        }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     // if travis ci hangs again on this task, remove comments
@@ -62,8 +89,11 @@ dependencies {
 //    implementation("io.sentry:sentry-android:2.0.0-SNAPSHOT")
 
     implementation(Config.Libs.appCompat)
-    implementation(Config.Libs.constraintLayout)
+
+    // debugging purpose
     implementation(Config.Libs.timber)
+    debugImplementation(Config.Libs.leakCanary)
+
 
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
     testImplementation(Config.TestLibs.junit)

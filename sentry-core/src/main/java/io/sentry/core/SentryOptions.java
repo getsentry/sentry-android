@@ -1,11 +1,14 @@
 package io.sentry.core;
 
-import io.sentry.core.util.NonNull;
+import com.jakewharton.nopen.annotation.Open;
 import java.io.File;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+@Open
 public class SentryOptions {
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
 
@@ -13,19 +16,24 @@ public class SentryOptions {
   private List<Integration> integrations = new ArrayList<>();
 
   private String dsn;
-  private long shutdownTimeoutMills;
+  private long shutdownTimeoutMills = 5000;
   private boolean debug;
   private boolean enableNdk = true;
-  private @NonNull ILogger logger = NoOpLogger.getInstance();
+  private @NotNull ILogger logger = NoOpLogger.getInstance();
   private SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
   private ISerializer serializer;
   private String sentryClientName;
   private BeforeSendCallback beforeSend;
   private BeforeBreadcrumbCallback beforeBreadcrumb;
   private String cacheDirPath;
+  private int cacheDirSize = 10;
+  private int maxBreadcrumbs = 100;
   private String release;
   private String environment;
   private Proxy proxy;
+  private Double sampling;
+  private List<String> inAppExcludes;
+  private List<String> inAppIncludes;
 
   public void addEventProcessor(EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -59,11 +67,11 @@ public class SentryOptions {
     this.debug = debug;
   }
 
-  public @NonNull ILogger getLogger() {
+  public @NotNull ILogger getLogger() {
     return logger;
   }
 
-  public void setLogger(ILogger logger) {
+  public void setLogger(@Nullable ILogger logger) {
     this.logger = logger == null ? NoOpLogger.getInstance() : new DiagnosticLogger(this, logger);
   }
 
@@ -138,6 +146,22 @@ public class SentryOptions {
     this.cacheDirPath = cacheDirPath;
   }
 
+  public int getCacheDirSize() {
+    return cacheDirSize;
+  }
+
+  public void setCacheDirSize(int cacheDirSize) {
+    this.cacheDirSize = cacheDirSize;
+  }
+
+  public int getMaxBreadcrumbs() {
+    return maxBreadcrumbs;
+  }
+
+  public void setMaxBreadcrumbs(int maxBreadcrumbs) {
+    this.maxBreadcrumbs = maxBreadcrumbs;
+  }
+
   public String getRelease() {
     return release;
   }
@@ -162,16 +186,65 @@ public class SentryOptions {
     this.proxy = proxy;
   }
 
+  public Double getSampling() {
+    return sampling;
+  }
+
+  // Can be anything between 0.01 (1%) and 1.0 (99.9%) or null (default), to disable it.
+  public void setSampling(Double sampling) {
+    if (sampling != null && (sampling > 1.0 || sampling <= 0.0)) {
+      throw new IllegalArgumentException(
+          "The value "
+              + sampling
+              + " is not valid. Use null to disable or values between 0.01 (inclusive) and 1.0 (exclusive).");
+    }
+    this.sampling = sampling;
+  }
+
+  public List<String> getInAppExcludes() {
+    return inAppExcludes;
+  }
+
+  public void addInAppExclude(String exclude) {
+    if (inAppExcludes == null) {
+      inAppExcludes = new ArrayList<>();
+    }
+    inAppExcludes.add(exclude);
+  }
+
+  public List<String> getInAppIncludes() {
+    return inAppIncludes;
+  }
+
+  public void addInAppInclude(String include) {
+    if (inAppIncludes == null) {
+      inAppIncludes = new ArrayList<>();
+    }
+    inAppIncludes.add(include);
+  }
+
   public interface BeforeSendCallback {
-    SentryEvent execute(SentryEvent event);
+    SentryEvent execute(SentryEvent event, @Nullable Object hint);
   }
 
   public interface BeforeBreadcrumbCallback {
-    Breadcrumb execute(Breadcrumb breadcrumb);
+    Breadcrumb execute(Breadcrumb breadcrumb, @Nullable Object hint);
   }
 
   public SentryOptions() {
+    inAppExcludes = new ArrayList<>();
+    inAppExcludes.add("io.sentry.");
+    inAppExcludes.add("java.");
+    inAppExcludes.add("javax.");
+    inAppExcludes.add("sun.");
+    inAppExcludes.add("com.oracle.");
+    inAppExcludes.add("oracle.");
+    inAppExcludes.add("org.jetbrains.");
+
     eventProcessors.add(new MainEventProcessor(this));
+
+    // Start off sending any cached event.
+    integrations.add(new SendCachedEventFireAndForgetIntegration());
     integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }

@@ -5,6 +5,7 @@ plugins {
     kotlin("android")
     jacoco
     `maven-publish`
+    id("net.ltgt.errorprone")
 }
 
 android {
@@ -27,6 +28,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = "$version"
+
+        buildConfigField("String", "SENTRY_CLIENT_NAME", "\"${Config.Sentry.SENTRY_CLIENT_NAME}\"")
     }
 
     buildTypes {
@@ -41,14 +44,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    // due https://github.com/gradle/gradle/issues/11083
-//    kotlinOptions {
-//        jvmTarget = JavaVersion.VERSION_1_8.toString()
-//    }
-    withGroovyBuilder {
-        "kotlinOptions" {
-            setProperty("jvmTarget", JavaVersion.VERSION_1_8.toString())
-        }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     testOptions {
@@ -65,6 +62,7 @@ android {
             }, this))
         }
     }
+
     lintOptions {
         isWarningsAsErrors = true
         isCheckDependencies = true
@@ -79,6 +77,12 @@ dependencies {
 
     // libs
     implementation(Config.Libs.gson)
+
+    compileOnly(Config.CompileOnly.noopen)
+    errorprone(Config.CompileOnly.noopenProne)
+    errorprone(Config.CompileOnly.errorprone)
+    errorproneJavac(Config.CompileOnly.errorProneJavac)
+    compileOnly(Config.CompileOnly.annotations)
 
     // tests
     testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))

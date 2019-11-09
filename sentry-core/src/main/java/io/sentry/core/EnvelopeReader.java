@@ -6,7 +6,6 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.util.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,10 +13,14 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class EnvelopeReader {
+public final class EnvelopeReader implements IEnvelopeReader {
 
+  @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");
+
   private final Gson gson =
       new GsonBuilder()
           .registerTypeAdapter(SentryEnvelopeHeader.class, new SentryEnvelopeHeaderAdapter())
@@ -25,7 +28,7 @@ public class EnvelopeReader {
               SentryEnvelopeItemHeader.class, new SentryEnvelopeItemHeaderAdapter())
           .create();
 
-  public @Nullable SentryEnvelope read(InputStream stream) throws IOException {
+  public @Override @Nullable SentryEnvelope read(@NotNull InputStream stream) throws IOException {
     byte[] buffer = new byte[1024];
     int currentLength;
     int streamOffset = 0;
@@ -54,13 +57,15 @@ public class EnvelopeReader {
 
     SentryEnvelopeHeader header =
         deserializeEnvelopeHeader(envelopeBytes, 0, envelopeEndHeaderOffset);
-    if (header.getEventId() == null || header.getEventId() == SentryId.EMPTY_ID) {
-      throw new IllegalArgumentException("Envelope header is missing required 'event_id'.");
-    }
+    // TODO: until sentry-native writes envelopes header containing event_id
+    // TODO: Remove @Ignore of unit test
+    // if (header.getEventId() == null || header.getEventId() == SentryId.EMPTY_ID) {
+    //   throw new IllegalArgumentException("Envelope header is missing required 'event_id'.");
+    // }
 
     int itemHeaderStartOffset = envelopeEndHeaderOffset + 1;
 
-    int payloadEndOffset;
+    int payloadEndOffsetExclusive;
     List<SentryEnvelopeItem> items = new ArrayList<>();
     do {
       int lineBreakIndex = -1;
@@ -93,14 +98,14 @@ public class EnvelopeReader {
                 + "'.");
       }
 
-      payloadEndOffset = lineBreakIndex + itemHeader.getLength() + 1;
-      if (payloadEndOffset > envelopeBytes.length) {
+      payloadEndOffsetExclusive = lineBreakIndex + itemHeader.getLength() + 1;
+      if (payloadEndOffsetExclusive > envelopeBytes.length) {
         throw new IllegalArgumentException(
             "Invalid length for item at index '"
                 + items.size()
                 + "'. "
                 + "Item is '"
-                + payloadEndOffset
+                + payloadEndOffsetExclusive
                 + "' bytes. There are '"
                 + envelopeBytes.length
                 + "' in the buffer.");
@@ -110,42 +115,46 @@ public class EnvelopeReader {
       // checking.
       byte[] envelopeItemBytes =
           Arrays.copyOfRange(
-              envelopeBytes, lineBreakIndex + 1, payloadEndOffset /* to is exclusive */);
+              envelopeBytes, lineBreakIndex + 1, payloadEndOffsetExclusive /* to is exclusive */);
 
       SentryEnvelopeItem item = new SentryEnvelopeItem(itemHeader, envelopeItemBytes);
       items.add(item);
 
-      if (payloadEndOffset == envelopeBytes.length) {
+      if (payloadEndOffsetExclusive == envelopeBytes.length) {
         // End of envelope
         break;
-      } else if (payloadEndOffset + 1 == envelopeBytes.length) {
+      } else if (payloadEndOffsetExclusive + 1 == envelopeBytes.length) {
         // Envelope items can be closed with a final line break
-        if (envelopeBytes[payloadEndOffset + 1] == '\n') {
+        if (envelopeBytes[payloadEndOffsetExclusive] == '\n') {
           break;
         } else {
           throw new IllegalArgumentException("Envelope has invalid data following an item.");
         }
       }
 
-      itemHeaderStartOffset = payloadEndOffset + 1; // Skip over delimiter
+      itemHeaderStartOffset = payloadEndOffsetExclusive + 1; // Skip over delimiter
     } while (true);
 
     return new SentryEnvelope(header, items);
   }
 
-  SentryEnvelopeHeader deserializeEnvelopeHeader(byte[] buffer, int offset, int length) {
+  private SentryEnvelopeHeader deserializeEnvelopeHeader(byte[] buffer, int offset, int length) {
     String json = new String(buffer, offset, length, UTF_8);
     return gson.fromJson(json, SentryEnvelopeHeader.class);
   }
 
-  SentryEnvelopeItemHeader deserializeEnvelopeItemHeader(byte[] buffer, int offset, int length) {
+  private SentryEnvelopeItemHeader deserializeEnvelopeItemHeader(
+      byte[] buffer, int offset, int length) {
     String json = new String(buffer, offset, length, UTF_8);
     return gson.fromJson(json, SentryEnvelopeItemHeader.class);
   }
 
   private static final class SentryEnvelopeHeaderAdapter extends TypeAdapter<SentryEnvelopeHeader> {
+
+    @Override
     public void write(JsonWriter out, SentryEnvelopeHeader value) {}
 
+    @Override
     public SentryEnvelopeHeader read(JsonReader reader) throws IOException {
       SentryId sentryId = SentryId.EMPTY_ID;
       String auth = null;

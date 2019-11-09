@@ -19,19 +19,21 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AndroidOptionsInitializerTest {
     private lateinit var context: Context
+    private lateinit var file: File
 
     @BeforeTest
     fun `set up`() {
         context = ApplicationProvider.getApplicationContext()
+        file = context.cacheDir
     }
 
     @Test
     fun `logger set to AndroidLogger`() {
-        val sentryOptions = SentryOptions()
+        val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
-        val logger = sentryOptions.javaClass.declaredFields.first { it.name == "logger" }
+        val logger = SentryOptions::class.java.declaredFields.first { it.name == "logger" }
         logger.isAccessible = true
         val loggerField = logger.get(sentryOptions)
         val innerLogger = loggerField.javaClass.declaredFields.first { it.name == "logger" }
@@ -41,7 +43,7 @@ class AndroidOptionsInitializerTest {
 
     @Test
     fun `AndroidEventProcessor added to processors list`() {
-        val sentryOptions = SentryOptions()
+        val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
         val mockLogger = mock<ILogger>()
 
@@ -52,7 +54,7 @@ class AndroidOptionsInitializerTest {
 
     @Test
     fun `MainEventProcessor added to processors list and its the 1st`() {
-        val sentryOptions = SentryOptions()
+        val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
         val mockLogger = mock<ILogger>()
 
@@ -63,7 +65,7 @@ class AndroidOptionsInitializerTest {
 
     @Test
     fun `envelopesDir should be created at initialization`() {
-        val sentryOptions = SentryOptions()
+        val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
         val mockLogger = mock<ILogger>()
 
@@ -72,11 +74,37 @@ class AndroidOptionsInitializerTest {
         assertTrue(sentryOptions.cacheDirPath.endsWith("${File.separator}cache${File.separator}sentry"))
     }
 
+    @Test
+    fun `init should set context package name as appInclude`() {
+        val sentryOptions = SentryAndroidOptions()
+        val mockContext = mock<ApplicationStub> {
+            on { applicationContext } doReturn context
+        }
+        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
+        whenever(mockContext.packageName).thenReturn("io.sentry.app")
+        val mockLogger = mock<ILogger>()
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
+
+        assertTrue(sentryOptions.inAppIncludes.contains("io.sentry.app"))
+    }
+
+    @Test
+    fun `init should set android as inAppExclude`() {
+        val sentryOptions = SentryAndroidOptions()
+        val mockContext = createMockContext()
+        val mockLogger = mock<ILogger>()
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, mockLogger)
+
+        assertTrue(sentryOptions.inAppExcludes.contains("android."))
+    }
+
     private fun createMockContext(): Context {
         val mockContext = mock<Context> {
             on { applicationContext } doReturn context
         }
-        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
+        whenever(mockContext.cacheDir).thenReturn(file)
         return mockContext
     }
 }

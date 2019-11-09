@@ -1,7 +1,9 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.util.NonNull;
+import java.lang.reflect.InvocationTargetException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /** Sentry SDK main API entry point */
 public final class Sentry {
@@ -12,7 +14,7 @@ public final class Sentry {
 
   private static volatile IHub mainHub = NoOpHub.getInstance();
 
-  static IHub getCurrentHub() {
+  private static IHub getCurrentHub() {
     IHub hub = currentHub.get();
     if (hub == null) {
       currentHub.set(mainHub.clone());
@@ -28,27 +30,34 @@ public final class Sentry {
     init(new SentryOptions());
   }
 
-  public static void init(@NonNull OptionsConfiguration optionsConfiguration) {
-    SentryOptions options = new SentryOptions();
-    if (optionsConfiguration != null) {
-      optionsConfiguration.configure(options);
-    }
+  // Used by integrations that define their own SentryOptions
+  public static <T extends SentryOptions> void init(
+      @NotNull OptionsContainer<T> clazz, @NotNull OptionsConfiguration<T> optionsConfiguration)
+      throws IllegalAccessException, InstantiationException, NoSuchMethodException,
+          InvocationTargetException {
+    T options = clazz.createInstance();
+    optionsConfiguration.configure(options);
     init(options);
   }
 
-  static synchronized void init(@NonNull SentryOptions options) {
+  public static void init(@NotNull OptionsConfiguration<SentryOptions> optionsConfiguration) {
+    SentryOptions options = new SentryOptions();
+    optionsConfiguration.configure(options);
+    init(options);
+  }
+
+  private static synchronized <T extends SentryOptions> void init(@NotNull T options) {
     String dsn = options.getDsn();
     if (dsn == null || dsn.isEmpty()) {
       close();
       return;
     }
 
+    @SuppressWarnings("unused")
     Dsn parsedDsn = new Dsn(dsn);
 
     ILogger logger = options.getLogger();
-    if (logger != null) {
-      logger.log(SentryLevel.INFO, "Initializing SDK with DSN: '%s'", options.getDsn());
-    }
+    logger.log(SentryLevel.INFO, "Initializing SDK with DSN: '%s'", options.getDsn());
 
     IHub hub = getCurrentHub();
     mainHub = new Hub(options);
@@ -66,6 +75,10 @@ public final class Sentry {
     return getCurrentHub().captureEvent(event);
   }
 
+  public static SentryId captureEvent(SentryEvent event, @Nullable Object hint) {
+    return getCurrentHub().captureEvent(event, hint);
+  }
+
   public static SentryId captureMessage(String message) {
     return getCurrentHub().captureMessage(message);
   }
@@ -74,39 +87,43 @@ public final class Sentry {
     return getCurrentHub().captureException(throwable);
   }
 
-  public void addBreadcrumb(Breadcrumb breadcrumb) {
-    getCurrentHub().addBreadcrumb(breadcrumb);
+  public static SentryId captureException(Throwable throwable, @Nullable Object hint) {
+    return getCurrentHub().captureException(throwable, hint);
   }
 
-  public SentryId getLastEventId() {
+  public static void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {
+    getCurrentHub().addBreadcrumb(breadcrumb, hint);
+  }
+
+  public static SentryId getLastEventId() {
     return getCurrentHub().getLastEventId();
   }
 
-  public void pushScope() {
+  public static void pushScope() {
     getCurrentHub().pushScope();
   }
 
-  public void popScope() {
+  public static void popScope() {
     getCurrentHub().popScope();
   }
 
-  public void withScope(ScopeCallback callback) {
+  public static void withScope(ScopeCallback callback) {
     getCurrentHub().withScope(callback);
   }
 
-  public void configureScope(ScopeCallback callback) {
+  public static void configureScope(ScopeCallback callback) {
     getCurrentHub().configureScope(callback);
   }
 
-  public void bindClient(SentryClient client) {
+  public static void bindClient(ISentryClient client) {
     getCurrentHub().bindClient(client);
   }
 
-  public void flush(int timeoutMills) {
+  public static void flush(int timeoutMills) {
     getCurrentHub().flush(timeoutMills);
   }
 
-  public interface OptionsConfiguration {
-    void configure(SentryOptions options);
+  public interface OptionsConfiguration<T extends SentryOptions> {
+    void configure(T options);
   }
 }

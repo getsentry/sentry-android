@@ -1,11 +1,14 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.mockingDetails
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.protocol.User
 import io.sentry.core.transport.AsyncConnection
+import java.io.PrintWriter
+import java.io.StringWriter
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -71,10 +74,7 @@ class SentryClientTest {
     @Test
     fun `when beforeSend is set, callback is invoked`() {
         var invoked = false
-        fixture.sentryOptions.setBeforeSend { e ->
-            invoked = true
-            e
-        }
+        fixture.sentryOptions.setBeforeSend { e, _ -> invoked = true; e }
         val sut = fixture.getSut()
         sut.captureEvent(SentryEvent())
         assertTrue(invoked)
@@ -82,7 +82,7 @@ class SentryClientTest {
 
     @Test
     fun `when beforeSend is returns null, event is dropped`() {
-        fixture.sentryOptions.setBeforeSend { null }
+        fixture.sentryOptions.setBeforeSend { _: SentryEvent, _: Any? -> null }
         val sut = fixture.getSut()
         val event = SentryEvent()
         sut.captureEvent(event)
@@ -92,7 +92,7 @@ class SentryClientTest {
     @Test
     fun `when beforeSend is returns new instance, new instance is sent`() {
         val expected = SentryEvent()
-        fixture.sentryOptions.setBeforeSend { expected }
+        fixture.sentryOptions.setBeforeSend { _, _ -> expected }
         val sut = fixture.getSut()
         val actual = SentryEvent()
         sut.captureEvent(actual)
@@ -101,17 +101,37 @@ class SentryClientTest {
     }
 
     @Test
-    fun `when captureMessage is called, sentry event contains formatted message`() {
-        var sentEvent: SentryEvent? = null
-        fixture.sentryOptions.setBeforeSend { e ->
-            sentEvent = e
-            e
-        }
+    fun `when beforeSend throws an exception, breadcrumb is added and event is sent`() {
+        val exception = Exception("test")
+        val sw = StringWriter()
+        exception.printStackTrace(PrintWriter(sw))
+        val stacktrace = sw.toString()
+
+        exception.stackTrace.toString()
+        fixture.sentryOptions.setBeforeSend { _, _ -> throw exception }
         val sut = fixture.getSut()
-        val actual = "actual message"
-        sut.captureMessage(actual)
-        assertEquals(actual, sentEvent!!.message.formatted)
+        val actual = SentryEvent()
+        sut.captureEvent(actual)
+
+        assertEquals("test", actual.breadcrumbs.first().data["sentry:message"])
+        assertEquals(stacktrace, actual.breadcrumbs.first().data["sentry:stacktrace"])
+        assertEquals("SentryClient", actual.breadcrumbs.first().category)
+        assertEquals(SentryLevel.ERROR, actual.breadcrumbs.first().level)
+        assertEquals("BeforeSend callback failed.", actual.breadcrumbs.first().message)
+
+        verify(fixture.connection, times(1)).send(actual)
     }
+
+    // TODO: Sentry-native write message
+//    @Test
+//    fun `when captureMessage is called, sentry event contains formatted message`() {
+//        var sentEvent: SentryEvent? = null
+//        fixture.sentryOptions.setBeforeSend { e, _ -> sentEvent = e; e }
+//        val sut = fixture.getSut()
+//        val actual = "actual message"
+//        sut.captureMessage(actual)
+//        assertEquals(actual, sentEvent!!.message.formatted)
+//    }
 
     @Test
     fun `when event has release, value from options not applied`() {
@@ -167,9 +187,9 @@ class SentryClientTest {
 
         sut.captureEvent(event, scope)
         assertEquals("message", event.breadcrumbs[0].message)
-        assertEquals("extra", event.extra["extra"])
+        assertEquals("extra", event.extras["extra"])
         assertEquals("tags", event.tags["tags"])
-        assertEquals("fp", event.fingerprint[0])
+        assertEquals("fp", event.fingerprints[0])
         assertEquals("transaction", event.transaction)
         assertEquals("id", event.user.id)
         assertEquals(SentryLevel.FATAL, event.level)
@@ -190,16 +210,16 @@ class SentryClientTest {
         assertEquals("message", event.breadcrumbs[1].message)
 
         // extras are appending
-        assertEquals("eventExtra", event.extra["eventExtra"])
-        assertEquals("extra", event.extra["extra"])
+        assertEquals("eventExtra", event.extras["eventExtra"])
+        assertEquals("extra", event.extras["extra"])
 
         // tags are appending
         assertEquals("eventTag", event.tags["eventTag"])
         assertEquals("tags", event.tags["tags"])
 
         // fingerprint is replaced
-        assertEquals("eventFp", event.fingerprint[0])
-        assertEquals(1, event.fingerprint.size)
+        assertEquals("eventFp", event.fingerprints[0])
+        assertEquals(1, event.fingerprints.size)
 
         assertEquals("eventTransaction", event.transaction)
 
@@ -221,7 +241,7 @@ class SentryClientTest {
         sut.captureEvent(event, scope)
 
         // extras are appending
-        assertEquals("eventExtra", event.extra["eventExtra"])
+        assertEquals("eventExtra", event.extras["eventExtra"])
 
         // tags are appending
         assertEquals("eventTag", event.tags["eventTag"])
@@ -239,8 +259,28 @@ class SentryClientTest {
         assertEquals(SentryLevel.FATAL, event.level)
     }
 
+    @Test
+    fun `when captureEvent with sampling, some events not captured`() {
+        fixture.sentryOptions.sampling = 0.000000001
+        val sut = fixture.getSut()
+
+        val allEvents = 10
+        (0..allEvents).forEach { _ -> sut.captureEvent(SentryEvent()) }
+        assertTrue(allEvents > mockingDetails(fixture.connection).invocations.size)
+    }
+
+    @Test
+    fun `when captureEvent without sampling, all events are captured`() {
+        fixture.sentryOptions.sampling = null
+        val sut = fixture.getSut()
+
+        val allEvents = 10
+        (0..allEvents).forEach { _ -> sut.captureEvent(SentryEvent()) }
+        assertEquals(allEvents, mockingDetails(fixture.connection).invocations.size - 1) // 1 extra invocation outside .send()
+    }
+
     private fun createScope(): Scope {
-        return Scope().apply {
+        return Scope(fixture.sentryOptions.maxBreadcrumbs).apply {
             addBreadcrumb(Breadcrumb().apply {
                 message = "message"
             })
@@ -262,7 +302,7 @@ class SentryClientTest {
             })
             setExtra("eventExtra", "eventExtra")
             setTag("eventTag", "eventTag")
-            fingerprint = listOf("eventFp")
+            fingerprints = listOf("eventFp")
             transaction = "eventTransaction"
             level = SentryLevel.DEBUG
             user = User().apply {

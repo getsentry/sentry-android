@@ -4,13 +4,15 @@ import io.sentry.core.IUnknownPropertiesConsumer;
 import java.util.Map;
 
 /** The Sentry Exception interface. */
-public class SentryException implements IUnknownPropertiesConsumer {
+public final class SentryException implements IUnknownPropertiesConsumer {
   private String type;
   private String value;
   private String module;
-  private Integer threadId;
+  private Long threadId;
   private SentryStackTrace stacktrace;
   private Mechanism mechanism;
+
+  @SuppressWarnings("unused")
   private Map<String, Object> unknown;
 
   /**
@@ -68,7 +70,7 @@ public class SentryException implements IUnknownPropertiesConsumer {
    *
    * @return the thread id.
    */
-  public Integer getThreadId() {
+  public Long getThreadId() {
     return threadId;
   }
 
@@ -77,7 +79,7 @@ public class SentryException implements IUnknownPropertiesConsumer {
    *
    * @param threadId the thread id.
    */
-  public void setThreadId(Integer threadId) {
+  public void setThreadId(Long threadId) {
     this.threadId = threadId;
   }
 

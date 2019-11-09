@@ -8,13 +8,13 @@ import android.database.Cursor;
 import android.net.Uri;
 import io.sentry.core.Sentry;
 
-public class SentryInitProvider extends ContentProvider {
+public final class SentryInitProvider extends ContentProvider {
 
   @Override
   public boolean onCreate() {
     AndroidLogger logger = new AndroidLogger();
     if (ManifestMetadataReader.isAutoInit(getContext(), logger)) {
-      Sentry.init(o -> AndroidOptionsInitializer.init(o, getContext(), logger));
+      SentryAndroid.init(getContext(), logger);
     }
     return true;
   }

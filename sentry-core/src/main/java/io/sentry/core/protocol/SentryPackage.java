@@ -3,9 +3,11 @@ package io.sentry.core.protocol;
 import io.sentry.core.IUnknownPropertiesConsumer;
 import java.util.Map;
 
-public class Package implements IUnknownPropertiesConsumer {
+public final class SentryPackage implements IUnknownPropertiesConsumer {
   private String name;
   private String version;
+
+  @SuppressWarnings("unused")
   private Map<String, Object> unknown;
 
   public String getName() {

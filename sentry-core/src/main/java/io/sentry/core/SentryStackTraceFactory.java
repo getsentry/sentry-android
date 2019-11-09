@@ -1,12 +1,21 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryStackFrame;
-import io.sentry.core.util.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 /** class responsible for converting Java StackTraceElements to SentryStackFrames */
-class SentryStackTraceFactory {
+final class SentryStackTraceFactory {
+
+  private final List<String> inAppExcludes;
+  private final List<String> inAppIncludes;
+
+  public SentryStackTraceFactory(
+      @Nullable final List<String> inAppExcludes, @Nullable List<String> inAppIncludes) {
+    this.inAppExcludes = inAppExcludes;
+    this.inAppIncludes = inAppIncludes;
+  }
 
   /**
    * convert an Array of Java StackTraceElements to a list of SentryStackFrames
@@ -19,17 +28,46 @@ class SentryStackTraceFactory {
 
     if (elements != null) {
       for (StackTraceElement item : elements) {
-        SentryStackFrame sentryStackFrame = new SentryStackFrame();
-        sentryStackFrame.setModule(item.getClassName());
-        sentryStackFrame.setFunction(item.getMethodName());
-        sentryStackFrame.setFilename(item.getFileName());
-        sentryStackFrame.setLineno(item.getLineNumber());
-        sentryStackFrame.setNative(item.isNativeMethod());
-
-        sentryStackFrames.add(sentryStackFrame);
+        if (item != null) {
+          SentryStackFrame sentryStackFrame = new SentryStackFrame();
+          // https://docs.sentry.io/development/sdk-dev/features/#in-app-frames
+          sentryStackFrame.setInApp(isInApp(item.getClassName()));
+          sentryStackFrame.setModule(item.getClassName());
+          sentryStackFrame.setFunction(item.getMethodName());
+          sentryStackFrame.setFilename(item.getFileName());
+          // Protocol doesn't accept negative line numbers.
+          // The runtime seem to use -2 as a way to signal a native method
+          if (item.getLineNumber() >= 0) {
+            sentryStackFrame.setLineno(item.getLineNumber());
+          }
+          sentryStackFrame.setNative(item.isNativeMethod());
+          sentryStackFrames.add(sentryStackFrame);
+        }
       }
     }
 
     return sentryStackFrames;
+  }
+
+  private boolean isInApp(String className) {
+    if (className == null || className.isEmpty()) {
+      return true;
+    }
+
+    if (inAppIncludes != null) {
+      for (String include : inAppIncludes) {
+        if (className.startsWith(include)) {
+          return true;
+        }
+      }
+    }
+    if (inAppExcludes != null) {
+      for (String exclude : inAppExcludes) {
+        if (className.startsWith(exclude)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

@@ -1,13 +1,13 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.util.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public final class SentryEnvelopeHeader {
   private final SentryId eventId;
   private final String auth;
 
-  public SentryEnvelopeHeader(SentryId sentryId, @Nullable String auth) {
+  SentryEnvelopeHeader(SentryId sentryId, @Nullable String auth) {
     this.eventId = sentryId;
     this.auth = auth;
   }

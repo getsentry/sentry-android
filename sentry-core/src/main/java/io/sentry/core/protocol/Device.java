@@ -5,8 +5,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class Device implements IUnknownPropertiesConsumer {
-  static final String TYPE = "device";
+public final class Device implements IUnknownPropertiesConsumer {
+  public static final String TYPE = "device";
 
   private String name;
   private String manufacturer;
@@ -41,6 +41,8 @@ public class Device implements IUnknownPropertiesConsumer {
   private Integer screenDpi;
   private Date bootTime;
   private TimeZone timezone;
+
+  @SuppressWarnings("unused")
   private Map<String, Object> unknown;
 
   public String getName() {
@@ -248,7 +250,7 @@ public class Device implements IUnknownPropertiesConsumer {
   }
 
   public Date getBootTime() {
-    return bootTime;
+    return bootTime != null ? (Date) bootTime.clone() : null;
   }
 
   public void setBootTime(Date bootTime) {
@@ -292,6 +294,7 @@ public class Device implements IUnknownPropertiesConsumer {
     LANDSCAPE
   }
 
+  @Override
   public void acceptUnknownProperties(Map<String, Object> unknown) {
     this.unknown = unknown;
   }

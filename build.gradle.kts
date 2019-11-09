@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    java
+    `java-library`
     id("com.diffplug.gradle.spotless") version Config.QualityPlugins.spotlessVersion apply true
     jacoco
 }
@@ -23,6 +23,8 @@ buildscript {
     dependencies {
         classpath(Config.BuildPlugins.androidGradle)
         classpath(kotlin(Config.BuildPlugins.kotlinGradlePlugin, version = Config.kotlinVersion))
+        classpath(Config.QualityPlugins.errorpronePlugin)
+//        classpath("io.sentry:sentry-android-gradle-plugin:$version") how to add sentry gradle plugin
     }
 }
 

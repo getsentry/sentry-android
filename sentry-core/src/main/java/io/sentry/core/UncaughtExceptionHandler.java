@@ -6,13 +6,13 @@ interface UncaughtExceptionHandler {
 
   void setDefaultUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler);
 
-  class Adapter implements UncaughtExceptionHandler {
+  final class Adapter implements UncaughtExceptionHandler {
 
-    UncaughtExceptionHandler getInstance() {
+    static UncaughtExceptionHandler getInstance() {
       return Adapter.INSTANCE;
     }
 
-    static final Adapter INSTANCE = new Adapter();
+    private static final Adapter INSTANCE = new Adapter();
 
     private Adapter() {}
 

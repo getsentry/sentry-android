@@ -1,18 +1,18 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.*;
-import io.sentry.core.util.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jetbrains.annotations.TestOnly;
 
-public class SentryEvent implements IUnknownPropertiesConsumer {
+public final class SentryEvent implements IUnknownPropertiesConsumer {
   private SentryId eventId;
   private Date timestamp;
   private transient Throwable throwable;
-  private Message message;
+  //  private Message message;
   private String serverName;
   private String platform;
   private String release;
@@ -32,6 +32,8 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
   private Map<String, String> tags;
   private Map<String, Object> extra;
   private Map<String, Object> unknown;
+  private Map<String, String> modules;
+  private DebugMeta debugMeta;
 
   SentryEvent(SentryId eventId, Date timestamp) {
     this.eventId = eventId;
@@ -59,13 +61,14 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     return throwable;
   }
 
-  public Message getMessage() {
-    return message;
-  }
-
-  public void setMessage(Message message) {
-    this.message = message;
-  }
+  // TODO: remove comment when we define data structure for message
+  //  public Message getMessage() {
+  //    return message;
+  //  }
+  //
+  //  public void setMessage(Message message) {
+  //    this.message = message;
+  //  }
 
   public String getServerName() {
     return serverName;
@@ -119,11 +122,11 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.threads = new SentryValues<>(threads);
   }
 
-  public List<SentryException> getException() {
-    return exception.getValues();
+  public List<SentryException> getExceptions() {
+    return exception == null ? null : exception.getValues();
   }
 
-  public void setException(List<SentryException> exception) {
+  public void setExceptions(List<SentryException> exception) {
     this.exception = new SentryValues<>(exception);
   }
 
@@ -187,11 +190,11 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.sdk = sdk;
   }
 
-  public List<String> getFingerprint() {
+  public List<String> getFingerprints() {
     return fingerprint;
   }
 
-  public void setFingerprint(List<String> fingerprint) {
+  public void setFingerprints(List<String> fingerprint) {
     this.fingerprint = fingerprint;
   }
 
@@ -225,11 +228,11 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     tags.put(key, value);
   }
 
-  public Map<String, Object> getExtra() {
+  public Map<String, Object> getExtras() {
     return extra;
   }
 
-  public void setExtra(Map<String, Object> extra) {
+  public void setExtras(Map<String, Object> extra) {
     this.extra = extra;
   }
 
@@ -253,8 +256,24 @@ public class SentryEvent implements IUnknownPropertiesConsumer {
     this.unknown = unknown;
   }
 
-  @VisibleForTesting
+  @TestOnly
   public Map<String, Object> getUnknown() {
     return unknown;
+  }
+
+  public Map<String, String> getModules() {
+    return modules;
+  }
+
+  public void setModules(Map<String, String> modules) {
+    this.modules = modules;
+  }
+
+  public DebugMeta getDebugMeta() {
+    return debugMeta;
+  }
+
+  public void setDebugMeta(DebugMeta debugMeta) {
+    this.debugMeta = debugMeta;
   }
 }

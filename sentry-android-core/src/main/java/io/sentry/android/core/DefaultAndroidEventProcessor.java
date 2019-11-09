@@ -20,11 +20,18 @@ import io.sentry.core.*;
 import io.sentry.core.protocol.*;
 import io.sentry.core.util.Objects;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.*;
+import org.jetbrains.annotations.Nullable;
 
-public class DefaultAndroidEventProcessor implements EventProcessor {
+public final class DefaultAndroidEventProcessor implements EventProcessor {
+
+  @SuppressWarnings("CharsetObjectCanBeUsed")
+  private static final Charset UTF_8 = Charset.forName("UTF-8");
+
   final Context context;
-  final SentryOptions options;
+  private final SentryOptions options;
 
   // it could also be a parameter and get from Sentry.init(...)
   private static final Date appStartTime = DateUtils.getCurrentDateTime();
@@ -38,7 +45,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @Override
-  public SentryEvent process(SentryEvent event) {
+  public SentryEvent process(SentryEvent event, @Nullable Object hint) {
     if (event.getSdk() == null) {
       event.setSdk(getSdkVersion());
     }
@@ -61,7 +68,9 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     }
     setAppExtras(event);
 
-    // TODO: proguard UUIDs and debug-meta
+    if (event.getDebugMeta() == null) {
+      event.setDebugMeta(getDebugMeta());
+    }
 
     if (event.getContexts().getDevice() == null) {
       event.getContexts().setDevice(getDevice());
@@ -71,6 +80,37 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     }
 
     return event;
+  }
+
+  private List<DebugImage> getDebugImages() {
+    String[] uuids = getProGuardUuids();
+
+    if (uuids == null || uuids.length == 0) {
+      return null;
+    }
+
+    List<DebugImage> images = new ArrayList<>();
+
+    for (String item : uuids) {
+      DebugImage debugImage = new DebugImage();
+      debugImage.setType("proguard");
+      debugImage.setUuid(item);
+      images.add(debugImage);
+    }
+
+    return images;
+  }
+
+  private DebugMeta getDebugMeta() {
+    List<DebugImage> debugImages = getDebugImages();
+
+    if (debugImages == null) {
+      return null;
+    }
+
+    DebugMeta debugMeta = new DebugMeta();
+    debugMeta.setImages(debugImages);
+    return debugMeta;
   }
 
   private void setAppExtras(SentryEvent event) {
@@ -90,7 +130,9 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     sdkVersion.setVersion(version);
     sdkVersion.addPackage("sentry-core", version);
     sdkVersion.addPackage("sentry-android-core", version);
-    // TODO: sentry-android-ndk, integrations...
+    if (options.isEnableNdk()) {
+      sdkVersion.addPackage("sentry-android-ndk", version);
+    }
 
     return sdkVersion;
   }
@@ -157,7 +199,10 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
   // we can get some inspiration here
   // https://github.com/flutter/plugins/blob/master/packages/device_info/android/src/main/java/io/flutter/plugins/deviceinfo/DeviceInfoPlugin.java
   private Device getDevice() {
+    // TODO: missing usable memory
+
     Device device = new Device();
+    device.setName(getDeviceName());
     device.setManufacturer(Build.MANUFACTURER);
     device.setBrand(Build.BRAND);
     device.setFamily(getFamily());
@@ -209,6 +254,15 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
     device.setTimezone(getTimeZone());
 
     return device;
+  }
+
+  @SuppressWarnings("ObsoleteSdkInt")
+  private String getDeviceName() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      return Settings.Global.getString(context.getContentResolver(), "device_name");
+    } else {
+      return null;
+    }
   }
 
   @SuppressWarnings("deprecation")
@@ -271,7 +325,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
    */
   private String getFamily() {
     try {
-      return Build.MODEL.split(" ")[0];
+      return Build.MODEL.split(" ", -1)[0];
     } catch (Exception e) {
       log(SentryLevel.ERROR, "Error getting device family.", e);
       return null;
@@ -585,6 +639,7 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return the device's current kernel version, as a string
    */
+  @SuppressWarnings("DefaultCharset")
   private String getKernelVersion() {
     // its possible to try to execute 'uname' and parse it or also another unix commands or even
     // looking for well known root installed apps
@@ -598,7 +653,11 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
         return defaultVersion;
       }
 
-      br = new BufferedReader(new FileReader(file));
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        br = Files.newBufferedReader(file.toPath(), UTF_8);
+      } else {
+        br = new BufferedReader(new FileReader(file));
+      }
       return br.readLine();
     } catch (Exception e) {
       log(SentryLevel.ERROR, errorMsg, e);
@@ -735,14 +794,14 @@ public class DefaultAndroidEventProcessor implements EventProcessor {
 
   private void log(SentryLevel level, String message, Throwable throwable) {
     ILogger logger = options.getLogger();
-    if (logger != null && options.isDebug()) {
+    if (options.isDebug()) {
       logger.log(level, message, throwable);
     }
   }
 
   private void log(SentryLevel level, String message, Object... args) {
     ILogger logger = options.getLogger();
-    if (logger != null && options.isDebug()) {
+    if (options.isDebug()) {
       logger.log(level, message, args);
     }
   }

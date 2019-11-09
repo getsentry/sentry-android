@@ -1,58 +1,52 @@
 package io.sentry.android.core;
 
 import android.content.Context;
-import android.os.Build;
 import io.sentry.core.ILogger;
-import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import java.io.File;
-import java.lang.reflect.Method;
 
-class AndroidOptionsInitializer {
-  static void init(SentryOptions options, Context context) {
+final class AndroidOptionsInitializer {
+  private AndroidOptionsInitializer() {}
+
+  static void init(SentryAndroidOptions options, Context context) {
     init(options, context, new AndroidLogger());
   }
 
-  static void init(SentryOptions options, Context context, ILogger logger) {
+  static void init(SentryAndroidOptions options, Context context, ILogger logger) {
     // Firstly set the logger, if `debug=true` configured, logging can start asap.
     options.setLogger(logger);
 
-    // TODO this needs to fetch the data from somewhere - defined at build time?
-    options.setSentryClientName("sentry.java.android/0.0.1");
+    options.setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
 
     ManifestMetadataReader.applyMetadata(context, options);
     initializeCacheDirs(context, options);
+    setDefaultInApp(context, options);
+
+    // Integrations are registered in the same order. Watch outbox before adding NDK:
+    options.addIntegration(EnvelopeFileObserverIntegration.getCachedEnvelopeFileObserver());
+    options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
+    options.addIntegration(new NdkIntegration());
+    options.addIntegration(new AnrIntegration());
 
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
+  }
 
-    if (options.isEnableNdk() && isNdkAvailable()) {
-      try {
-        // TODO: Create Integrations interface and use that to initialize NDK
-        Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
-
-        Method method = cls.getMethod("init", SentryOptions.class);
-        Object[] args = new Object[1];
-        args[0] = options;
-        method.invoke(null, args);
-      } catch (ClassNotFoundException e) {
-        options.setEnableNdk(false);
-        options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.", e);
-      } catch (Exception e) {
-        options.setEnableNdk(false);
-        options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
-      }
+  private static void setDefaultInApp(Context context, SentryOptions options) {
+    String packageName = context.getPackageName();
+    if (packageName != null && !packageName.startsWith("android.")) {
+      options.addInAppInclude(packageName);
     }
+    options.addInAppExclude("android.");
+    options.addInAppExclude("com.android.");
+    options.addInAppExclude("androidx.");
+    options.addInAppExclude("kotlin.");
   }
 
   private static void initializeCacheDirs(Context context, SentryOptions options) {
     File cacheDir = new File(context.getCacheDir(), "sentry");
     cacheDir.mkdirs();
     options.setCacheDirPath(cacheDir.getAbsolutePath());
-    (new File(options.getOutboxPath())).mkdirs();
-  }
-
-  private static boolean isNdkAvailable() {
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    new File(options.getOutboxPath()).mkdirs();
   }
 }

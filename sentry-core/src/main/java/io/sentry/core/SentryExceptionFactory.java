@@ -5,20 +5,21 @@ import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.protocol.SentryException;
 import io.sentry.core.protocol.SentryStackTrace;
 import io.sentry.core.util.Objects;
-import io.sentry.core.util.VisibleForTesting;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 /** class responsible for converting Java Throwable to SentryExceptions */
-class SentryExceptionFactory {
+final class SentryExceptionFactory {
 
   private final SentryStackTraceFactory sentryStackTraceFactory;
 
-  public SentryExceptionFactory(SentryStackTraceFactory sentryStackTraceFactory) {
+  public SentryExceptionFactory(final SentryStackTraceFactory sentryStackTraceFactory) {
     this.sentryStackTraceFactory =
         Objects.requireNonNull(sentryStackTraceFactory, "The SentryStackTraceFactory is required.");
   }
@@ -50,9 +51,12 @@ class SentryExceptionFactory {
    * @param throwable Java exception to send to Sentry.
    * @param exceptionMechanism The optional {@link Mechanism} of the {@code throwable}. Or null if
    *     none exist.
+   * @param thread The optional {@link Thread} which the exception originated. Or null if not known.
    */
   private SentryException getSentryException(
-      final Throwable throwable, final Mechanism exceptionMechanism) {
+      final Throwable throwable,
+      @Nullable final Mechanism exceptionMechanism,
+      @Nullable final Thread thread) {
 
     Package exceptionPackage = throwable.getClass().getPackage();
     String fullClassName = throwable.getClass().getName();
@@ -71,6 +75,9 @@ class SentryExceptionFactory {
     SentryStackTrace sentryStackTrace = new SentryStackTrace();
     sentryStackTrace.setFrames(sentryStackTraceFactory.getStackFrames(throwable.getStackTrace()));
 
+    if (thread != null) {
+      exception.setThreadId(thread.getId());
+    }
     exception.setStacktrace(sentryStackTrace);
     exception.setType(exceptionClassName);
     exception.setMechanism(exceptionMechanism);
@@ -88,11 +95,12 @@ class SentryExceptionFactory {
    * @param throwable throwable to transform in a queue of exceptions.
    * @return a queue of exception with StackTrace.
    */
-  @VisibleForTesting
+  @TestOnly
   Deque<SentryException> extractExceptionQueue(final Throwable throwable) {
     Deque<SentryException> exceptions = new ArrayDeque<>();
     Set<Throwable> circularityDetector = new HashSet<>();
     Mechanism exceptionMechanism;
+    Thread thread;
 
     Throwable currentThrowable = throwable;
 
@@ -104,11 +112,13 @@ class SentryExceptionFactory {
             (ExceptionMechanismThrowable) currentThrowable;
         exceptionMechanism = exceptionMechanismThrowable.getExceptionMechanism();
         currentThrowable = exceptionMechanismThrowable.getThrowable();
+        thread = exceptionMechanismThrowable.getThread();
       } else {
         exceptionMechanism = null;
+        thread = null;
       }
 
-      SentryException exception = getSentryException(currentThrowable, exceptionMechanism);
+      SentryException exception = getSentryException(currentThrowable, exceptionMechanism, thread);
       exceptions.add(exception);
       currentThrowable = currentThrowable.getCause();
     }

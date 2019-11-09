@@ -4,8 +4,8 @@ import io.sentry.core.IUnknownPropertiesConsumer;
 import java.util.Date;
 import java.util.Map;
 
-public class App implements IUnknownPropertiesConsumer {
-  static final String TYPE = "app";
+public final class App implements IUnknownPropertiesConsumer {
+  public static final String TYPE = "app";
 
   private String appIdentifier;
   private Date appStartTime;
@@ -14,6 +14,8 @@ public class App implements IUnknownPropertiesConsumer {
   private String appName;
   private String appVersion;
   private String appBuild;
+
+  @SuppressWarnings("unused")
   private Map<String, Object> unknown;
 
   public String getAppIdentifier() {
@@ -25,7 +27,7 @@ public class App implements IUnknownPropertiesConsumer {
   }
 
   public Date getAppStartTime() {
-    return appStartTime;
+    return appStartTime != null ? (Date) appStartTime.clone() : null;
   }
 
   public void setAppStartTime(Date appStartTime) {

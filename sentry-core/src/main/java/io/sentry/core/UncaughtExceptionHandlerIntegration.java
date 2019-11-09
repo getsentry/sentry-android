@@ -1,15 +1,20 @@
 package io.sentry.core;
 
-import static io.sentry.core.ILogger.log;
+import static io.sentry.core.ILogger.logIfNotNull;
 
+import io.sentry.core.exception.ExceptionMechanismThrowable;
+import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.util.Objects;
+import java.io.Closeable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 /**
  * Sends any uncaught exception to Sentry, then passes the exception on to the pre-existing uncaught
  * exception handler.
  */
-public class UncaughtExceptionHandlerIntegration
-    implements Integration, Thread.UncaughtExceptionHandler {
+public final class UncaughtExceptionHandlerIntegration
+    implements Integration, Thread.UncaughtExceptionHandler, Closeable {
   /** Reference to the pre-existing uncaught exception handler. */
   private Thread.UncaughtExceptionHandler defaultExceptionHandler;
 
@@ -19,8 +24,8 @@ public class UncaughtExceptionHandlerIntegration
   private boolean isRegistered = false;
   private UncaughtExceptionHandler threadAdapter;
 
-  public UncaughtExceptionHandlerIntegration() {
-    this(UncaughtExceptionHandler.Adapter.INSTANCE);
+  UncaughtExceptionHandlerIntegration() {
+    this(UncaughtExceptionHandler.Adapter.getInstance());
   }
 
   UncaughtExceptionHandlerIntegration(UncaughtExceptionHandler threadAdapter) {
@@ -30,7 +35,7 @@ public class UncaughtExceptionHandlerIntegration
   @Override
   public void register(IHub hub, SentryOptions options) {
     if (isRegistered) {
-      log(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.ERROR,
           "Attempt to register a UncaughtExceptionHandlerIntegration twice. ");
@@ -43,7 +48,7 @@ public class UncaughtExceptionHandlerIntegration
     Thread.UncaughtExceptionHandler currentHandler =
         threadAdapter.getDefaultUncaughtExceptionHandler();
     if (currentHandler != null) {
-      log(
+      logIfNotNull(
           options.getLogger(),
           SentryLevel.DEBUG,
           "default UncaughtExceptionHandler class='" + currentHandler.getClass().getName() + "'");
@@ -55,17 +60,36 @@ public class UncaughtExceptionHandlerIntegration
 
   @Override
   public void uncaughtException(Thread thread, Throwable thrown) {
-    log(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
+    logIfNotNull(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
 
     try {
-      // TODO: Set Thread info to the scope?
-      this.hub.captureException(thrown);
+      Throwable throwable = getUnhandledThrowable(thread, thrown);
+      // SDK is expected to write to disk synchronously events that crash the process
+      this.hub.captureException(throwable);
     } catch (Exception e) {
-      log(options.getLogger(), SentryLevel.ERROR, "Error sending uncaught exception to Sentry.", e);
+      logIfNotNull(
+          options.getLogger(), SentryLevel.ERROR, "Error sending uncaught exception to Sentry.", e);
     }
 
     if (defaultExceptionHandler != null) {
       defaultExceptionHandler.uncaughtException(thread, thrown);
+    }
+  }
+
+  @NotNull
+  @TestOnly
+  static Throwable getUnhandledThrowable(Thread thread, Throwable thrown) {
+    Mechanism mechanism = new Mechanism();
+    mechanism.setHandled(false);
+    mechanism.setType("UncaughtExceptionHandler");
+    return new ExceptionMechanismThrowable(mechanism, thrown, thread);
+  }
+
+  @Override
+  public void close() {
+    if (defaultExceptionHandler != null
+        && this == threadAdapter.getDefaultUncaughtExceptionHandler()) {
+      threadAdapter.setDefaultUncaughtExceptionHandler(defaultExceptionHandler);
     }
   }
 }

@@ -2,27 +2,30 @@
 plugins {
     id("com.android.library")
     `maven-publish`
+    kotlin("android")
+    jacoco
 }
 
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
     buildToolsVersion(Config.Android.buildToolsVersion)
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
+
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
+        minSdkVersion(Config.Android.minSdkVersionNdk) // NDK requires a higher API level than core.
+
         javaCompileOptions {
             annotationProcessorOptions {
                 includeCompileClasspath = true
             }
         }
 
-        minSdkVersion(Config.Android.minSdkVersionNdk)
-
         // Required when setting minSdkVersion to 20 or lower
         multiDexEnabled = true
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        versionName = "$version"
 
         externalNativeBuild {
             val sentryNativeSrc = if (File("${project.projectDir}/sentry-native-local").exists()) {
@@ -33,9 +36,10 @@ android {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
-                arguments.add(0, "-DSENTRY_NATIVE_SRC=" + sentryNativeSrc)
+                arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
             }
         }
+
         ndk {
             val platform = System.getenv("ABI")
             if (platform == null || platform.toLowerCase() == "all") {
@@ -45,7 +49,12 @@ android {
             }
         }
 
-        missingDimensionStrategy(Config.Flavors.dimension, Config.Flavors.production)
+        // replace with https://issuetracker.google.com/issues/72050365 once released.
+        libraryVariants.all {
+            generateBuildConfigProvider?.configure {
+                enabled = false
+            }
+        }
     }
 
     externalNativeBuild {
@@ -53,11 +62,52 @@ android {
             setPath("CMakeLists.txt")
         }
     }
+
+    buildTypes {
+        getByName("debug")
+        getByName("release") {
+            consumerProguardFiles("proguard-rules.pro")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
+    testOptions {
+        animationsDisabled = true
+        unitTests.apply {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = true
+            all(KotlinClosure1<Any, Test>({
+                (this as Test).also { testTask ->
+                    testTask.extensions
+                        .getByType(JacocoTaskExtension::class.java)
+                        .isIncludeNoLocationClasses = true
+                }
+            }, this))
+        }
+    }
+
+    lintOptions {
+        isWarningsAsErrors = true
+        isCheckDependencies = true
+
+        // We run a full lint analysis as build part in CI, so skip vital checks for assemble tasks.
+        isCheckReleaseBuilds = false
+    }
 }
 
 dependencies {
     api(project(":sentry-core"))
     api(project(":sentry-android-core"))
+
+    compileOnly(Config.CompileOnly.annotations)
 }
 
 val initNative = tasks.register<Exec>("initNative") {

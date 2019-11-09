@@ -13,6 +13,9 @@ android {
 
         // Required when setting minSdkVersion to 20 or lower
         multiDexEnabled = true
+
+        versionName = "$version"
+
     }
 
     compileOptions {
