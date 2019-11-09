@@ -7,6 +7,11 @@ object Config {
         val kotlinGradlePlugin = "gradle-plugin"
     }
 
+    object PublishPlugins {
+        val bintrayPlugin = "com.jfrog.bintray"
+        val bintrayVersion = "1.8.4"
+    }
+
     object Android {
         private val sdkVersion = 29
 

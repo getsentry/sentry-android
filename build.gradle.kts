@@ -1,10 +1,13 @@
 import com.diffplug.spotless.LineEnding
+import com.jfrog.bintray.gradle.BintrayExtension
+import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     `java-library`
     id("com.diffplug.gradle.spotless") version Config.QualityPlugins.spotlessVersion apply true
+    id(Config.PublishPlugins.bintrayPlugin) version Config.PublishPlugins.bintrayVersion apply true
     jacoco
 }
 
@@ -34,6 +37,7 @@ allprojects {
     }
     group = "io.sentry"
     version = "2.0.0-SNAPSHOT"
+    description = "SDK for sentry.io"
     tasks {
         withType<Test> {
             testLogging.showStandardStreams = true
