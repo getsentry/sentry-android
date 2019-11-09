@@ -15,8 +15,10 @@ before_install:
   - touch $HOME/.android/repositories.cfg
   - yes | sdkmanager --update
 install:
-  - echo y | sdkmanager "ndk-bundle"
-  - echo y | sdkmanager "cmake;3.6.4111459"
+  - echo y | sdkmanager "ndk-bundle" >/dev/null
+  - echo y | sdkmanager "cmake;3.6.4111459" >/dev/null
+before_script:
+  - export ANDROID_NDK_HOME=$ANDROID_HOME/ndk-bundle
 android:
   components:
     - platform-tools
