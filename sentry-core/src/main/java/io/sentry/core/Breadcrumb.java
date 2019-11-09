@@ -108,9 +108,7 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
 
       for (Map.Entry<String, Object> item : unknown.entrySet()) {
         if (item != null) {
-          unknownClone.put(
-              item.getKey(),
-              item.getValue()); // shallow copy
+          unknownClone.put(item.getKey(), item.getValue()); // shallow copy
         }
       }
 
