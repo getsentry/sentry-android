@@ -52,7 +52,6 @@ class SentryExceptionFactoryTest {
 
         assertEquals("message", queue.first.value)
         assertEquals("cause", queue.last.value)
-        // TODO: is it right? or it should be the cause(1) and then the exception(2)?
     }
 
     @Test

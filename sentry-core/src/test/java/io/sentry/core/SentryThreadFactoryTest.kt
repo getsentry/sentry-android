@@ -20,7 +20,6 @@ class SentryThreadFactoryTest {
         val currentThread = Thread.currentThread()
         val currentSentryThread = threads.first { it.id == currentThread.id }
         assertTrue(currentSentryThread.isCrashed)
-//        assertTrue(currentSentryThread.isCurrent) // TODO do we need that?
         assertTrue(currentSentryThread.isErrored)
         assertTrue(threads.filter { it.id != currentThread.id }.all { !it.isCrashed && !it.isErrored })
     }

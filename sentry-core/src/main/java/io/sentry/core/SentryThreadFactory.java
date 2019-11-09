@@ -56,8 +56,6 @@ final class SentryThreadFactory {
       sentryThread.setCrashed(crashedThreadId == thread.getId());
     }
     sentryThread.setErrored(thread == currentThread);
-    //    sentryThread.setCurrent(thread == currentThread); TODO: do we need that? this should be if
-    // its the UI thread or not
 
     List<SentryStackFrame> frames = sentryStackTraceFactory.getStackFrames(stackFramesElements);
 
