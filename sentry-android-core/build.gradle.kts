@@ -16,9 +16,6 @@ android {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersion)
 
-        // Required when setting minSdkVersion to 20 or lower
-        multiDexEnabled = true
-
         javaCompileOptions {
             annotationProcessorOptions {
                 includeCompileClasspath = true
