@@ -6,7 +6,7 @@ import io.sentry.core.IHub;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-import io.sentry.core.exception.ExceptionMechanismThrowable;
+import io.sentry.core.exception.ExceptionMechanism;
 import io.sentry.core.protocol.Mechanism;
 
 public final class AnrIntegration implements Integration {
@@ -41,8 +41,8 @@ public final class AnrIntegration implements Integration {
                 Mechanism mechanism = new Mechanism();
                 mechanism.setType("ANR");
                 mechanism.setHandled(false);
-                ExceptionMechanismThrowable throwable =
-                    new ExceptionMechanismThrowable(mechanism, error, Thread.currentThread());
+                ExceptionMechanism throwable =
+                    new ExceptionMechanism(mechanism, error, Thread.currentThread());
 
                 hub.captureException(throwable);
               },
