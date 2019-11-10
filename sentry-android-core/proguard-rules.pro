@@ -26,7 +26,6 @@
 
 # Prevent proguard from minifying exception type names
 -keep class * extends java.lang.Exception
--keep class * extends java.lang.RuntimeException
 
 # Prevent R8 from leaving Data object members always null
 -keepclassmembers,allowobfuscation class * {
