@@ -25,7 +25,7 @@
 -keep class * implements com.google.gson.JsonDeserializer
 
 # Prevent proguard from minifying exception type names
--keep public class * extends java.lang.Exception
+-keep class * extends java.lang.Exception
 
 # Prevent R8 from leaving Data object members always null
 -keepclassmembers,allowobfuscation class * {
