@@ -24,7 +24,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        versionName = Config.Sentry.version
+        versionName = project.version.toString()
         versionCode = Config.Sentry.buildVersionCode
 
         externalNativeBuild {

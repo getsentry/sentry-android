@@ -14,7 +14,7 @@ android {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersionNdk)
 
-        versionName = Config.Sentry.version
+        versionName = project.version.toString()
         versionCode = Config.Sentry.buildVersionCode
     }
 
