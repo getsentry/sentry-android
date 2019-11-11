@@ -123,7 +123,7 @@ configure<PublishExtension> {
     userOrg = Config.Sentry.userOrg
     groupId = project.group.toString()
     publishVersion = project.version.toString()
-    desc = Config.Sentry.desc
+    desc = Config.Sentry.description
     website = Config.Sentry.website
     repoName = Config.Sentry.repoName
     setLicences(Config.Sentry.licence)
