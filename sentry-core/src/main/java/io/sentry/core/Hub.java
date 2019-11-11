@@ -36,6 +36,8 @@ public final class Hub implements IHub {
   }
 
   private Hub(@NotNull SentryOptions options, @Nullable StackItem rootStackItem) {
+    validateOptions(options);
+
     this.options = options;
     if (rootStackItem != null) {
       this.stack.push(rootStackItem);
@@ -51,8 +53,16 @@ public final class Hub implements IHub {
     }
   }
 
-  private static StackItem createRootStackItem(@NotNull SentryOptions options) {
+  private static void validateOptions(@NotNull SentryOptions options) {
     Objects.requireNonNull(options, "SentryOptions is required.");
+    if (options.getDsn() == null || options.getDsn().isEmpty()) {
+      throw new IllegalArgumentException(
+          "Hub requires a DSN to be instantiated. Considering using the NoOpHub is no DSN is available.");
+    }
+  }
+
+  private static StackItem createRootStackItem(@NotNull SentryOptions options) {
+    validateOptions(options);
     Scope scope = new Scope(options.getMaxBreadcrumbs());
     ISentryClient client = new SentryClient(options);
     return new StackItem(client, scope);
@@ -287,7 +297,7 @@ public final class Hub implements IHub {
           "Instance is disabled and this 'popScope' call is a no-op.");
     } else {
       // Don't drop the root scope
-      synchronized (stack) { // TODO: is it necessary? we should never sync a concurrent object
+      synchronized (stack) {
         if (stack.size() != 1) {
           stack.pop();
         } else {

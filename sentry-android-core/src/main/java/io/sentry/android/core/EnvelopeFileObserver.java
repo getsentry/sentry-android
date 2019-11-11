@@ -24,13 +24,12 @@ final class EnvelopeFileObserver extends FileObserver {
   @Override
   public void onEvent(int eventType, @Nullable String relativePath) {
     if (relativePath == null
-      // Protocol with sentry-native is a rename
-      // TODO: Check file extension matches once sentry-native starts renaming the file
-      // && eventType != FileObserver.
-      // event types: https://developer.android.com/reference/android/os/FileObserver.html
-      // TODO: Currently sentry-native simply writes so watch for close-write
-      || eventType != FileObserver.CLOSE_WRITE
-    ) {
+        // Protocol with sentry-native is a rename
+        // TODO: Check file extension matches once sentry-native starts renaming the file
+        // && eventType != FileObserver.
+        // event types: https://developer.android.com/reference/android/os/FileObserver.html
+        // TODO: Currently sentry-native simply writes so watch for close-write
+        || eventType != FileObserver.CLOSE_WRITE) {
       return;
     }
 
@@ -40,7 +39,6 @@ final class EnvelopeFileObserver extends FileObserver {
         eventType,
         this.rootPath,
         relativePath);
-
 
     envelopeSender.processEnvelopeFile(this.rootPath + File.separator + relativePath);
   }

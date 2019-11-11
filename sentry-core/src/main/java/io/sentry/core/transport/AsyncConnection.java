@@ -10,7 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
 import org.jetbrains.annotations.*;
 
 /** A connection to Sentry that sends the events asynchronously. */
@@ -90,7 +89,7 @@ public final class AsyncConnection implements Closeable, Connection {
   public void send(SentryEvent event, Object hint) throws IOException {
     CachedEvent cachedEvent = null;
     if (hint instanceof CachedEvent) {
-      cachedEvent = (CachedEvent)hint;
+      cachedEvent = (CachedEvent) hint;
     }
     EventSender sender = new EventSender(event, cachedEvent);
 
@@ -165,7 +164,8 @@ public final class AsyncConnection implements Closeable, Connection {
             if (cachedEvent == null && !storeBeforeSend) {
               eventCache.store(event);
             }
-            // TODO: Here we could inspect result and decide whether to mark eventCache.setResend(true)
+            // TODO: Here we could inspect result and decide whether to mark
+            // eventCache.setResend(true)
             suggestedRetryDelay = result.getRetryMillis();
 
             String message =

@@ -2,7 +2,7 @@ package io.sentry.core;
 
 import static io.sentry.core.ILogger.logIfNotNull;
 
-import io.sentry.core.exception.ExceptionMechanismThrowable;
+import io.sentry.core.exception.ExceptionMechanismException;
 import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
@@ -21,7 +21,7 @@ public final class UncaughtExceptionHandlerIntegration
   private IHub hub;
   private SentryOptions options;
 
-  private boolean isRegistered = false;
+  private boolean registered = false;
   private UncaughtExceptionHandler threadAdapter;
 
   UncaughtExceptionHandlerIntegration() {
@@ -34,14 +34,14 @@ public final class UncaughtExceptionHandlerIntegration
 
   @Override
   public void register(IHub hub, SentryOptions options) {
-    if (isRegistered) {
+    if (registered) {
       logIfNotNull(
           options.getLogger(),
           SentryLevel.ERROR,
           "Attempt to register a UncaughtExceptionHandlerIntegration twice. ");
       return;
     }
-    isRegistered = true;
+    registered = true;
 
     this.hub = hub;
     this.options = options;
@@ -82,7 +82,7 @@ public final class UncaughtExceptionHandlerIntegration
     Mechanism mechanism = new Mechanism();
     mechanism.setHandled(false);
     mechanism.setType("UncaughtExceptionHandler");
-    return new ExceptionMechanismThrowable(mechanism, thrown, thread);
+    return new ExceptionMechanismException(mechanism, thrown, thread);
   }
 
   @Override

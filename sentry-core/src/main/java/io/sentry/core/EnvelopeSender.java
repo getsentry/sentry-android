@@ -53,7 +53,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
       }
       if (file != null && !cachedEvent.isResend()) {
         try {
-            file.delete();
+          file.delete();
         } catch (Exception e) {
           logger.log(SentryLevel.ERROR, "Failed to delete.", e);
         }
@@ -61,7 +61,8 @@ public final class EnvelopeSender implements IEnvelopeSender {
     }
   }
 
-  private void processEnvelope(SentryEnvelope envelope, CachedEvent cachedEvent) throws IOException {
+  private void processEnvelope(SentryEnvelope envelope, CachedEvent cachedEvent)
+      throws IOException {
     logger.log(SentryLevel.DEBUG, "Envelope for event Id: %s", envelope.getHeader().getEventId());
     int items = 0;
     for (SentryEnvelopeItem item : envelope.getItems()) {
