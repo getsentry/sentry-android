@@ -6,7 +6,6 @@ import io.sentry.core.Breadcrumb;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.protocol.User;
-
 import java.util.Collections;
 import timber.log.Timber;
 
