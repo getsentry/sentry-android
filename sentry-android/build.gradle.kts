@@ -1,6 +1,10 @@
+import com.novoda.gradle.release.PublishExtension
+
 plugins {
     id("com.android.library")
 }
+
+apply(plugin = Config.Deploy.bintrayPlugin)
 
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
@@ -10,7 +14,8 @@ android {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersionNdk)
 
-        versionName = "$version"
+        versionName = Config.Sentry.version
+        versionCode = Config.Sentry.buildVersionCode
     }
 
     compileOptions {
@@ -29,4 +34,21 @@ android {
 dependencies {
     api(project(":sentry-android-core"))
     api(project(":sentry-android-ndk"))
+}
+
+configure<PublishExtension> {
+    userOrg = Config.Sentry.userOrg
+    groupId = project.group.toString()
+    publishVersion = project.version.toString()
+    desc = Config.Sentry.desc
+    website = Config.Sentry.website
+    repoName = Config.Sentry.repoName
+    setLicences(Config.Sentry.licence)
+    issueTracker = Config.Sentry.issueTracker
+    repository = Config.Sentry.repository
+    autoPublish = Config.Sentry.autoPublish
+    dryRun = Config.Sentry.dryRun
+    artifactId = "sentry-android"
+
+    // TODO: https://github.com/novoda/bintray-release/wiki/Add-support-for-syncing-to-maven-central
 }

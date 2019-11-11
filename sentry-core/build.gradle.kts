@@ -1,9 +1,13 @@
+import com.novoda.gradle.release.PublishExtension
+
 plugins {
     `java-library`
     kotlin("jvm")
     jacoco
     id("net.ltgt.errorprone")
 }
+
+apply(plugin = Config.Deploy.bintrayPlugin)
 
 dependencies {
     // Envelopes require JSON. Until a parse is done without GSON, we'll depend on it explicitly here
@@ -49,4 +53,19 @@ tasks {
         dependsOn(jacocoTestCoverageVerification)
         dependsOn(jacocoTestReport)
     }
+}
+
+configure<PublishExtension> {
+    userOrg = Config.Sentry.userOrg
+    groupId = project.group.toString()
+    publishVersion = project.version.toString()
+    desc = Config.Sentry.desc
+    website = Config.Sentry.website
+    repoName = Config.Sentry.repoName
+    setLicences(Config.Sentry.licence)
+    issueTracker = Config.Sentry.issueTracker
+    repository = Config.Sentry.repository
+    autoPublish = Config.Sentry.autoPublish
+    dryRun = Config.Sentry.dryRun
+    artifactId = "sentry-core"
 }

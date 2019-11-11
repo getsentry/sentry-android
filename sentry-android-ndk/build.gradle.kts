@@ -1,9 +1,12 @@
+import com.novoda.gradle.release.PublishExtension
 
 plugins {
     id("com.android.library")
     kotlin("android")
     jacoco
 }
+
+apply(plugin = Config.Deploy.bintrayPlugin)
 
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
@@ -21,7 +24,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        versionName = "$version"
+        versionName = Config.Sentry.version
+        versionCode = Config.Sentry.buildVersionCode
 
         externalNativeBuild {
             val sentryNativeSrc = if (File("${project.projectDir}/sentry-native-local").exists()) {
@@ -113,4 +117,19 @@ val initNative = tasks.register<Exec>("initNative") {
 
 tasks.named("preBuild") {
     dependsOn(initNative)
+}
+
+configure<PublishExtension> {
+    userOrg = Config.Sentry.userOrg
+    groupId = project.group.toString()
+    publishVersion = project.version.toString()
+    desc = Config.Sentry.desc
+    website = Config.Sentry.website
+    repoName = Config.Sentry.repoName
+    setLicences(Config.Sentry.licence)
+    issueTracker = Config.Sentry.issueTracker
+    repository = Config.Sentry.repository
+    autoPublish = Config.Sentry.autoPublish
+    dryRun = Config.Sentry.dryRun
+    artifactId = "sentry-android-ndk"
 }
