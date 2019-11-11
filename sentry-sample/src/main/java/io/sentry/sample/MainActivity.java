@@ -6,6 +6,7 @@ import io.sentry.core.Breadcrumb;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.protocol.User;
+
 import java.util.Collections;
 import timber.log.Timber;
 
@@ -57,11 +58,9 @@ public class MainActivity extends AppCompatActivity {
               Sentry.captureException(new Exception("Some exception with scope."));
             });
 
-    findViewById(R.id.native_crash)
-        .setOnClickListener(
-            view -> {
-              NativeSample.crash();
-            });
+    findViewById(R.id.native_crash).setOnClickListener(view -> NativeSample.crash());
+
+    findViewById(R.id.native_capture).setOnClickListener(view -> NativeSample.verificationEvent());
 
     findViewById(R.id.anr)
         .setOnClickListener(
