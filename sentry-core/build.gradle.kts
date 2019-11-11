@@ -65,7 +65,6 @@ configure<PublishExtension> {
     setLicences(Config.Sentry.licence)
     issueTracker = Config.Sentry.issueTracker
     repository = Config.Sentry.repository
-    autoPublish = Config.Sentry.autoPublish
     dryRun = Config.Sentry.dryRun
     artifactId = "sentry-core"
 }
