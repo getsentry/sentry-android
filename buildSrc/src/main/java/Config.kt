@@ -57,7 +57,6 @@ object Config {
         val licence = "MIT"
         val issueTracker = "https://github.com/getsentry/sentry-android/issues"
         val repository = "https://github.com/getsentry/sentry-android"
-        val autoPublish = false // This boolean defines if the package will be published when uploaded. If this is false, the package will still be uploaded to bintray but you'll have to publish it manually.
         val dryRun = true // If set to true this will run everything but it won't upload the package to bintray. If false then it will upload normally.
     }
 
