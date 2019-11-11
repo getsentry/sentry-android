@@ -18,6 +18,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class HubTest {
@@ -32,6 +33,12 @@ class HubTest {
     @AfterTest
     fun shutdown() {
         Files.delete(file.toPath())
+    }
+
+    @Test
+    fun `when no dsn available, ctor throws illegal arg`() {
+        val ex = assertFailsWith<IllegalArgumentException> { Hub(SentryOptions()) }
+        assertEquals("Hub requires a DSN to be instantiated. Considering using the NoOpHub is no DSN is available.", ex.message)
     }
 
     @Test
