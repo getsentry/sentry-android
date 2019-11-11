@@ -52,7 +52,7 @@ object Config {
         val description = "SDK for sentry.io"
         val buildVersionCode = 20001
         val website = "https://sentry.io"
-        val userOrg = "sentrytest" // TODO: replace it
+        val userOrg = "getsentry"
         val repoName = "sentry-android"
         val licence = "MIT"
         val issueTracker = "https://github.com/getsentry/sentry-android/issues"
