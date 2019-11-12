@@ -48,11 +48,11 @@ final class SendCachedEvent {
         logger,
         SentryLevel.DEBUG,
         "Processing %d items from cache dir %s",
-        directory.length(),
+        directory.listFiles((d, name) -> isRelevantFileName(name)).length,
         directory.getAbsolutePath());
 
     for (File file : directory.listFiles()) {
-      if (!file.getName().endsWith(DiskCache.FILE_SUFFIX)) {
+      if (!isRelevantFileName(file.getName())) {
         logIfNotNull(
             logger,
             SentryLevel.DEBUG,
@@ -95,6 +95,10 @@ final class SendCachedEvent {
         }
       }
     }
+  }
+
+  private boolean isRelevantFileName(String fileName) {
+    return fileName.endsWith(DiskCache.FILE_SUFFIX);
   }
 
   private void safeDelete(File file, String errorMessageSuffix) {

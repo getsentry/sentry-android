@@ -3,7 +3,7 @@ package io.sentry.core;
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import java.io.File;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import org.jetbrains.annotations.NotNull;
 
 final class SendCachedEventFireAndForgetIntegration implements Integration {
@@ -20,20 +20,21 @@ final class SendCachedEventFireAndForgetIntegration implements Integration {
     File outbox = new File(cachedDir);
 
     try {
-      Executors.callable(
-              () -> {
-                try {
-                  sender.sendCachedFiles(outbox);
-                } catch (Exception e) {
-                  logIfNotNull(
-                      options.getLogger(),
-                      SentryLevel.ERROR,
-                      "Failed trying to send cached events at %s",
-                      e,
-                      outbox);
-                }
-              })
-          .call();
+      ExecutorService es = Executors.newFixedThreadPool(1);
+      es.execute(
+          () -> {
+            try {
+              sender.sendCachedFiles(outbox);
+            } catch (Exception e) {
+              logIfNotNull(
+                  options.getLogger(),
+                  SentryLevel.ERROR,
+                  "Failed trying to send cached events at %s",
+                  e,
+                  outbox);
+            }
+          });
+      es.shutdown();
     } catch (Exception e) {
       logIfNotNull(
           options.getLogger(),
