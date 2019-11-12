@@ -15,6 +15,7 @@ configure<JavaPluginConvention> {
 
 buildscript {
     repositories {
+        mavenLocal()
         google()
         jcenter()
     }
@@ -28,6 +29,7 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         jcenter()
         mavenCentral()

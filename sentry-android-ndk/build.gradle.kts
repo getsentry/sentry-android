@@ -134,6 +134,7 @@ configure<PublishExtension> {
     repository = Config.Sentry.repository
     dryRun = Config.Sentry.dryRun
     override = Config.Sentry.override
+    sign = Config.Sentry.sign
     artifactId = "sentry-android-ndk"
 }
 

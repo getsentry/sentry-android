@@ -59,6 +59,7 @@ object Config {
         val repository = "https://github.com/getsentry/sentry-android"
         val dryRun = true // If set to true this will run everything but it won't upload the package to bintray. If false then it will upload normally.
         val override = true
+        val sign = true
     }
 
     object CompileOnly {
@@ -72,7 +73,7 @@ object Config {
     }
 
     object Deploy {
-        val bintray = "com.novoda:bintray-release:0.9.1"
+        val bintray = "com.novoda:bintray-release:0.9.2"
         val bintrayPlugin = "com.novoda.bintray-release"
     }
 }
