@@ -13,11 +13,13 @@ public class SentryNdk {
 
   private static native void initSentryNative(SentryOptions options);
 
-  public static void notifyNewSerializedEnvelope(String path) {
-    System.out.println("envelope written to " + path);
-  }
+  private static native void verificationEventNative();
 
   public static void init(SentryOptions options) {
     initSentryNative(options);
+  }
+
+  public static void verificationEvent() {
+    verificationEventNative();
   }
 }
