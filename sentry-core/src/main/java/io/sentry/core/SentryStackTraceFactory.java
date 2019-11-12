@@ -4,7 +4,8 @@ import io.sentry.core.protocol.SentryStackFrame;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 /** class responsible for converting Java StackTraceElements to SentryStackFrames */
 final class SentryStackTraceFactory {
