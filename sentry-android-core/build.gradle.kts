@@ -6,6 +6,7 @@ plugins {
     kotlin("android")
     jacoco
     id("net.ltgt.errorprone")
+    maven
 }
 
 apply(plugin = Config.Deploy.bintrayPlugin)
@@ -106,4 +107,56 @@ configure<PublishExtension> {
     repository = Config.Sentry.repository
     dryRun = Config.Sentry.dryRun
     artifactId = "sentry-android-core"
+}
+
+//TODO: move this block to parent gradle class, DRY
+val VERSION_NAME = project.version.toString()
+val DESCRIPTION = Config.Sentry.description
+val SITE_URL = Config.Sentry.website
+val GIT_URL = Config.Sentry.repository
+val LICENSE = Config.Sentry.licence
+val DEVELOPER_ID = "marandaneto"
+val DEVELOPER_NAME = "Manoel Aranda Neto"
+val DEVELOPER_EMAIL = "maranda@sentry.io"
+
+gradle.taskGraph.whenReady {
+    allTasks.find {
+        it.path.contains("sentry-android-core:generatePomFileForReleasePublication")
+    }?.doLast {
+        println("delete file: " + file("build/publications/release/pom-default.xml").delete())
+        println("Overriding pom-file to make sure we can sync to maven central!")
+
+        maven.pom {
+            withGroovyBuilder {
+                "project" {
+                    "name"("${project.name}")
+                    "artifactId"("sentry-android-core")
+                    "packaging"("aar")
+                    "description"("$DESCRIPTION")
+                    "url"("$SITE_URL")
+                    "version"("$VERSION_NAME")
+
+                    "scm" {
+                        "url"("$GIT_URL")
+                        "connection"("$GIT_URL")
+                        "developerConnection"("$GIT_URL")
+                    }
+
+                    "licenses" {
+                        "license" {
+                            "name"("$LICENSE")
+                        }
+                    }
+
+                    "developers" {
+                        "developer" {
+                            "id"("$DEVELOPER_ID")
+                            "name"("$DEVELOPER_NAME")
+                            "email"("$DEVELOPER_EMAIL")
+                        }
+                    }
+                }
+            }
+        }.writeTo("build/publications/release/pom-default.xml")
+    }
 }

@@ -48,9 +48,9 @@ object Config {
     object Sentry {
         val SENTRY_CLIENT_NAME = "sentry.java.android"
         val group = "io.sentry"
-        val version = "2.0.0-alpha01"
+        val version = "2.0.0-alpha04"
         val description = "SDK for sentry.io"
-        val buildVersionCode = 20001
+        val buildVersionCode = 20004
         val website = "https://sentry.io"
         val userOrg = "getsentry"
         val repoName = "sentry-android"
