@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import static io.sentry.core.ILogger.logIfNotNull;
+import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.exception.ExceptionMechanismException;
 import io.sentry.core.hints.Flushable;
@@ -10,6 +11,7 @@ import java.io.Closeable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 /**
@@ -66,7 +68,8 @@ public final class UncaughtExceptionHandlerIntegration
     logIfNotNull(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
 
     try {
-      UncaughtExceptionHint hint = new UncaughtExceptionHint(options.getShutdownTimeout());
+      UncaughtExceptionHint hint =
+          new UncaughtExceptionHint(options.getShutdownTimeout(), options.getLogger());
       Throwable throwable = getUnhandledThrowable(thread, thrown);
       SentryEvent event = new SentryEvent(throwable);
       event.setLevel(SentryLevel.FATAL);
@@ -102,18 +105,21 @@ public final class UncaughtExceptionHandlerIntegration
 
   private static class UncaughtExceptionHint implements Flushable {
 
-    private CountDownLatch latch;
-    private long timeoutMills;
+    private final CountDownLatch latch;
+    private final long timeoutMills;
+    private final @Nullable ILogger logger;
 
-    UncaughtExceptionHint(long timeoutMills) {
+    UncaughtExceptionHint(final long timeoutMills, final @Nullable ILogger logger) {
       this.timeoutMills = timeoutMills;
       this.latch = new CountDownLatch(1);
+      this.logger = logger;
     }
 
-    public void waitFlush() {
+    void waitFlush() {
       try {
         latch.await(timeoutMills, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
+        logIfNotNull(logger, ERROR, "Exception while flushing UncaughtExceptionHint", e);
       }
     }
 

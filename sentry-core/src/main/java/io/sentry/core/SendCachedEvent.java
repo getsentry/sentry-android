@@ -53,7 +53,13 @@ final class SendCachedEvent {
         directory.length(),
         directory.getAbsolutePath());
 
-    for (File file : directory.listFiles()) {
+    File[] listFiles = directory.listFiles();
+    if (listFiles == null) {
+      logIfNotNull(logger, SentryLevel.ERROR, "Cache dir %s is null.", directory.getAbsolutePath());
+      return;
+    }
+
+    for (File file : listFiles) {
       if (!file.getName().endsWith(DiskCache.FILE_SUFFIX)) {
         logIfNotNull(
             logger,
@@ -77,7 +83,7 @@ final class SendCachedEvent {
         continue;
       }
 
-      SendCachedEventHint hint = new SendCachedEventHint();
+      Retryable hint = new SendCachedEventHint();
       try (Reader reader =
           new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF_8))) {
         SentryEvent event = serializer.deserializeEvent(reader);
