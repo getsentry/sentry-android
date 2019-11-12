@@ -6,9 +6,8 @@ plugins {
     jacoco
     id("net.ltgt.errorprone")
     maven
+    id(Config.Deploy.bintrayPlugin)
 }
-
-apply(plugin = Config.Deploy.bintrayPlugin)
 
 dependencies {
     // Envelopes require JSON. Until a parse is done without GSON, we'll depend on it explicitly here
@@ -56,6 +55,7 @@ tasks {
     }
 }
 
+//TODO: move thse blocks to parent gradle file, DRY
 configure<PublishExtension> {
     userOrg = Config.Sentry.userOrg
     groupId = project.group.toString()
@@ -67,6 +67,7 @@ configure<PublishExtension> {
     issueTracker = Config.Sentry.issueTracker
     repository = Config.Sentry.repository
     dryRun = Config.Sentry.dryRun
+    override = Config.Sentry.override
     artifactId = "sentry-core"
 }
 

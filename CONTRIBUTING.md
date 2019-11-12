@@ -19,7 +19,7 @@ To run the build and tests:
 To publish it:
 ```shell
 ./gradlew clean build bintrayUpload -PbintrayUser={userid_bintray} -PbintrayKey={apikey_bintray} -PdryRun=false
-```shell
+```
 
 Build and tests are automatically run against branches and pull requests
 via TravisCI and AppVeyor.

@@ -5,9 +5,8 @@ plugins {
     kotlin("android")
     jacoco
     maven
+    id(Config.Deploy.bintrayPlugin)
 }
-
-apply(plugin = Config.Deploy.bintrayPlugin)
 
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
@@ -122,6 +121,7 @@ tasks.named("preBuild") {
     dependsOn(initNative)
 }
 
+//TODO: move thse blocks to parent gradle file, DRY
 configure<PublishExtension> {
     userOrg = Config.Sentry.userOrg
     groupId = project.group.toString()
@@ -133,6 +133,7 @@ configure<PublishExtension> {
     issueTracker = Config.Sentry.issueTracker
     repository = Config.Sentry.repository
     dryRun = Config.Sentry.dryRun
+    override = Config.Sentry.override
     artifactId = "sentry-android-ndk"
 }
 

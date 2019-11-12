@@ -58,6 +58,7 @@ object Config {
         val issueTracker = "https://github.com/getsentry/sentry-android/issues"
         val repository = "https://github.com/getsentry/sentry-android"
         val dryRun = true // If set to true this will run everything but it won't upload the package to bintray. If false then it will upload normally.
+        val override = true
     }
 
     object CompileOnly {
