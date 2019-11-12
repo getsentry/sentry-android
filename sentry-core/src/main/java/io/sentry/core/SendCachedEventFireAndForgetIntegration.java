@@ -7,6 +7,8 @@ import java.util.concurrent.*;
 import org.jetbrains.annotations.NotNull;
 
 final class SendCachedEventFireAndForgetIntegration implements Integration {
+
+  @SuppressWarnings("FutureReturnValueIgnored")
   @Override
   public void register(@NotNull IHub hub, @NotNull SentryOptions options) {
     String cachedDir = options.getCacheDirPath();
@@ -20,8 +22,8 @@ final class SendCachedEventFireAndForgetIntegration implements Integration {
     File outbox = new File(cachedDir);
 
     try {
-      ExecutorService es = Executors.newFixedThreadPool(1);
-      es.execute(
+      ExecutorService es = Executors.newSingleThreadExecutor();
+      es.submit(
           () -> {
             try {
               sender.sendCachedFiles(outbox);
