@@ -3,9 +3,12 @@ package io.sentry.core;
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.exception.ExceptionMechanismException;
+import io.sentry.core.hints.Flushable;
 import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
@@ -38,7 +41,7 @@ public final class UncaughtExceptionHandlerIntegration
       logIfNotNull(
           options.getLogger(),
           SentryLevel.ERROR,
-          "Attempt to register a UncaughtExceptionHandlerIntegration twice. ");
+          "Attempt to register a UncaughtExceptionHandlerIntegration twice.");
       return;
     }
     registered = true;
@@ -63,9 +66,13 @@ public final class UncaughtExceptionHandlerIntegration
     logIfNotNull(options.getLogger(), SentryLevel.INFO, "Uncaught exception received.");
 
     try {
+      UncaughtExceptionHint hint = new UncaughtExceptionHint(options.getShutdownTimeout());
       Throwable throwable = getUnhandledThrowable(thread, thrown);
-      // SDK is expected to write to disk synchronously events that crash the process
-      this.hub.captureException(throwable);
+      SentryEvent event = new SentryEvent(throwable);
+      event.setLevel(SentryLevel.FATAL);
+      this.hub.captureEvent(event, hint);
+      // Block until the event is flushed to disk
+      hint.waitFlush();
     } catch (Exception e) {
       logIfNotNull(
           options.getLogger(), SentryLevel.ERROR, "Error sending uncaught exception to Sentry.", e);
@@ -90,6 +97,29 @@ public final class UncaughtExceptionHandlerIntegration
     if (defaultExceptionHandler != null
         && this == threadAdapter.getDefaultUncaughtExceptionHandler()) {
       threadAdapter.setDefaultUncaughtExceptionHandler(defaultExceptionHandler);
+    }
+  }
+
+  private static class UncaughtExceptionHint implements Flushable {
+
+    private CountDownLatch latch;
+    private long timeoutMills;
+
+    UncaughtExceptionHint(long timeoutMills) {
+      this.timeoutMills = timeoutMills;
+      this.latch = new CountDownLatch(1);
+    }
+
+    public void waitFlush() {
+      try {
+        latch.await(timeoutMills, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+      }
+    }
+
+    @Override
+    public void flushed() {
+      latch.countDown();
     }
   }
 }

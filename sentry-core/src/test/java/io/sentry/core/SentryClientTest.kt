@@ -1,10 +1,14 @@
 package io.sentry.core
 
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.mockingDetails
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import io.sentry.core.hints.Cached
 import io.sentry.core.protocol.User
 import io.sentry.core.transport.AsyncConnection
 import java.io.PrintWriter
@@ -13,6 +17,7 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class SentryClientTest {
@@ -96,8 +101,8 @@ class SentryClientTest {
         val sut = fixture.getSut()
         val actual = SentryEvent()
         sut.captureEvent(actual)
-        verify(fixture.connection, never()).send(actual)
-        verify(fixture.connection, times(1)).send(expected)
+        verify(fixture.connection, times(1)).send(eq(expected), isNull())
+        verifyNoMoreInteractions(fixture.connection)
     }
 
     @Test
@@ -118,11 +123,18 @@ class SentryClientTest {
         assertEquals("SentryClient", actual.breadcrumbs.first().category)
         assertEquals(SentryLevel.ERROR, actual.breadcrumbs.first().level)
         assertEquals("BeforeSend callback failed.", actual.breadcrumbs.first().message)
-
-        verify(fixture.connection, times(1)).send(actual)
     }
 
-    // TODO: Sentry-native write message
+    @Test
+    fun `when event captured with hint, hint passed to connection`() {
+        val event = SentryEvent()
+        fixture.sentryOptions.environment = "not to be applied"
+        val sut = fixture.getSut()
+        val expectedHint = Object()
+        sut.captureEvent(event, expectedHint)
+        verify(fixture.connection).send(event, expectedHint)
+    }
+
 //    @Test
 //    fun `when captureMessage is called, sentry event contains formatted message`() {
 //        var sentEvent: SentryEvent? = null
@@ -141,7 +153,6 @@ class SentryClientTest {
         event.release = expected
         val sut = fixture.getSut()
         sut.captureEvent(event)
-        verify(fixture.connection).send(event)
         assertEquals(expected, event.release)
     }
 
@@ -152,7 +163,6 @@ class SentryClientTest {
         fixture.sentryOptions.release = expected
         val sut = fixture.getSut()
         sut.captureEvent(event)
-        verify(fixture.connection).send(event)
         assertEquals(expected, event.release)
     }
 
@@ -164,7 +174,6 @@ class SentryClientTest {
         event.environment = expected
         val sut = fixture.getSut()
         sut.captureEvent(event)
-        verify(fixture.connection).send(event)
         assertEquals(expected, event.environment)
     }
 
@@ -277,6 +286,30 @@ class SentryClientTest {
         val allEvents = 10
         (0..allEvents).forEach { _ -> sut.captureEvent(SentryEvent()) }
         assertEquals(allEvents, mockingDetails(fixture.connection).invocations.size - 1) // 1 extra invocation outside .send()
+    }
+
+    @Test
+    fun `when hint is Cached, scope is not applied`() {
+        val sut = fixture.getSut()
+
+        val event = SentryEvent()
+        val scope = Scope(10)
+        scope.level = SentryLevel.FATAL
+        sut.captureEvent(event, scope, mock<Cached>())
+
+        assertNotEquals(scope.level, event.level)
+    }
+
+    @Test
+    fun `when hint is not Cached, scope is not applied`() {
+        val sut = fixture.getSut()
+
+        val event = SentryEvent()
+        val scope = Scope(10)
+        scope.level = SentryLevel.FATAL
+        sut.captureEvent(event, scope, Object())
+
+        assertEquals(scope.level, event.level)
     }
 
     private fun createScope(): Scope {
