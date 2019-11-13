@@ -1,9 +1,10 @@
 package io.sentry.core.protocol;
 
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
 
 public final class SentryId {
-  private final UUID uuid;
+  private final @NotNull UUID uuid;
 
   public static final SentryId EMPTY_ID = new SentryId(new UUID(0, 0));
 
