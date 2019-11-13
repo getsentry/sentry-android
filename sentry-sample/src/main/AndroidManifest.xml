@@ -30,8 +30,8 @@
 
     <meta-data android:name="io.sentry.debug" android:value="true" />
 
-    <!-- Raise a ANR event if UI thread blocked for over 2 seconds -->
-    <meta-data android:name="io.sentry.anr.timeout-interval-mills" android:value="2000" />
+    <!-- To change the time used to watch for ANR. By default it's 5 seconds (5000 below as it's in milliseconds) -->
+    <meta-data android:name="io.sentry.anr.timeout-interval-mills" android:value="1000" />
 
     <!-- Raise ANR events even if the debugger is attached -->
 <!--    <meta-data android:name="io.sentry.anr.report-debug" android:value="true" />-->
