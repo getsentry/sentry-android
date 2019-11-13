@@ -44,7 +44,7 @@ public final class AndroidSerializer implements ISerializer {
         .registerTypeAdapter(SentryLevel.class, new SentryLevelSerializerAdapter(logger))
         .registerTypeAdapter(SentryLevel.class, new SentryLevelDeserializerAdapter(logger))
         .registerTypeAdapter(Contexts.class, new ContextsDeserializerAdapter(logger))
-//        .registerTypeAdapterFactory(UnknownPropertiesTypeAdapterFactory.get())
+        .registerTypeAdapterFactory(UnknownPropertiesTypeAdapterFactory.get())
         .create();
   }
 
