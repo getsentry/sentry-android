@@ -11,7 +11,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import org.jetbrains.annotations.NotNull;
 
-public final class EnvelopeSender implements IEnvelopeSender {
+public final class EnvelopeSender extends DirectoryProcessor implements IEnvelopeSender {
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");
@@ -23,6 +23,7 @@ public final class EnvelopeSender implements IEnvelopeSender {
 
   public EnvelopeSender(
       IHub hub, IEnvelopeReader envelopeReader, ISerializer serializer, ILogger logger) {
+    super(logger);
     this.hub = Objects.requireNonNull(hub, "Hub is required.");
     this.envelopeReader = Objects.requireNonNull(envelopeReader, "Envelope reader is required.");
     this.serializer = Objects.requireNonNull(serializer, "Serializer is required.");
@@ -30,15 +31,16 @@ public final class EnvelopeSender implements IEnvelopeSender {
   }
 
   @Override
-  public void processEnvelopeFile(@NotNull String path) {
+  protected void processFile(File file) {
     InputStream stream = null;
-    File file = null;
     try {
-      file = new File(path);
       stream = new FileInputStream(file);
       SentryEnvelope envelope = envelopeReader.read(stream);
       if (envelope == null) {
-        logger.log(SentryLevel.ERROR, "Stream from path %s resulted in a null envelope.", path);
+        logger.log(
+            SentryLevel.ERROR,
+            "Stream from path %s resulted in a null envelope.",
+            file.getAbsolutePath());
       } else {
         processEnvelope(envelope);
       }
@@ -59,6 +61,16 @@ public final class EnvelopeSender implements IEnvelopeSender {
         }
       }
     }
+  }
+
+  @Override
+  protected boolean isRelevantFileName(String fileName) {
+    return true; // TODO: Use an extension to filter out relevant files
+  }
+
+  @Override
+  public void processEnvelopeFile(@NotNull String path) {
+    processFile(new File(path));
   }
 
   private void processEnvelope(SentryEnvelope envelope) throws IOException {
