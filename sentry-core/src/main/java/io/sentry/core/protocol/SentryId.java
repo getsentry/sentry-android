@@ -33,7 +33,7 @@ public final class SentryId {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SentryId sentryId = (SentryId) o;
-    return uuid.equals(sentryId.uuid);
+    return uuid.compareTo(sentryId.uuid) == 0;
   }
 
   @Override
