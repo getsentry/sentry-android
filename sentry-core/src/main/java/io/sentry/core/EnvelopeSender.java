@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.hints.*;
 import io.sentry.core.util.Objects;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -9,7 +10,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import org.jetbrains.annotations.NotNull;
+import java.util.concurrent.*;
+
+import org.jetbrains.annotations.*;
+
+import static io.sentry.core.ILogger.logIfNotNull;
+import static io.sentry.core.SentryLevel.ERROR;
 
 public final class EnvelopeSender extends DirectoryProcessor implements IEnvelopeSender {
 
@@ -33,6 +39,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
   @Override
   protected void processFile(File file) {
     InputStream stream = null;
+    CachedEnvelopeHint hint = new CachedEnvelopeHint(5000, logger); // TODO: Take timeout from options
     try {
       stream = new FileInputStream(file);
       SentryEnvelope envelope = envelopeReader.read(stream);
@@ -42,7 +49,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             "Stream from path %s resulted in a null envelope.",
             file.getAbsolutePath());
       } else {
-        processEnvelope(envelope);
+        processEnvelope(envelope, hint);
       }
     } catch (Exception e) {
       logger.log(SentryLevel.ERROR, "Error processing envelope.", e);
@@ -52,8 +59,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       } catch (IOException ex) {
         logger.log(SentryLevel.ERROR, "Error closing envelope.", ex);
       }
-      if (file != null) {
-        // TODO: Handle error, at least ignore in memory
+      if (file != null && !hint.getRetry()) {
         try {
           file.delete();
         } catch (Exception e) {
@@ -73,11 +79,12 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     processFile(new File(path));
   }
 
-  private void processEnvelope(SentryEnvelope envelope) throws IOException {
+  private void processEnvelope(SentryEnvelope envelope, CachedEnvelopeHint hint) throws IOException {
     logger.log(SentryLevel.DEBUG, "Envelope for event Id: %s", envelope.getHeader().getEventId());
     int items = 0;
     for (SentryEnvelopeItem item : envelope.getItems()) {
       items++;
+
       if (item.getHeader() == null) {
         logger.log(SentryLevel.ERROR, "Item %d has no header", items);
         continue;
@@ -102,7 +109,9 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                   event.getEventId());
               continue;
             }
-            hub.captureEvent(event);
+            hub.captureEvent(event, hint);
+            hint.waitFlush();
+            hint.newCountDown();
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
           }
         }
@@ -111,6 +120,63 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
         logger.log(
             SentryLevel.WARNING, "Item %d of type: %s ignored.", items, item.getHeader().getType());
       }
+
+      if (!hint.succeeded) {
+        // Failed to send an item of the envelope: Stop attempting to send the rest (an attachment without the event that created it isn't useful)
+        logger.log(SentryLevel.WARNING, "Envelope for event Id: %s had a failed capture at item %d. No more items will be sent.", envelope.getHeader().getEventId(), items);
+        break;
+      }
+      hint.resetSubmissionResult();
+    }
+  }
+
+  private static final class CachedEnvelopeHint implements Cached, Retryable, SubmissionResult, Flushable {
+    boolean retry = false;
+    boolean succeeded = false;
+
+    private CountDownLatch latch;
+    private final long timeoutMills;
+    private final @Nullable ILogger logger;
+
+    CachedEnvelopeHint(final long timeoutMills, final @Nullable ILogger logger) {
+      this.timeoutMills = timeoutMills;
+      this.latch = new CountDownLatch(1);
+      this.logger = logger;
+    }
+
+    void waitFlush() {
+      try {
+        latch.await(timeoutMills, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        logIfNotNull(
+          logger, ERROR, "Exception while awaiting for flush in UncaughtExceptionHint", e);
+      }
+    }
+
+    public void newCountDown() {
+      latch = new CountDownLatch(1);
+    }
+
+    @Override
+    public void flushed() {
+      latch.countDown();
+    }
+
+    @Override
+    public boolean getRetry() {
+      return retry;
+    }
+
+    @Override
+    public void setRetry(boolean retry) {
+      this.retry = retry;
+    }
+
+    void resetSubmissionResult() { succeeded = false; }
+
+    @Override
+    public void markSucceeded() {
+      succeeded = true;
     }
   }
 }
