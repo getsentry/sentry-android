@@ -13,12 +13,7 @@ git config core.hooksPath hooks/
 To run the build and tests:
 
 ```shell
-./gradlew build
-```
-
-To publish it:
-```shell
-./gradlew clean build bintrayUpload -PbintrayUser={userid_bintray} -PbintrayKey={apikey_bintray} -PdryRun=false
+./gradlew clean build
 ```
 
 Build and tests are automatically run against branches and pull requests
