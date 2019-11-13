@@ -108,7 +108,8 @@ configure<PublishExtension> {
     repository = Config.Sentry.repository
     dryRun = Config.Deploy.dryRun
     override = Config.Deploy.override
-    sign = Config.Deploy.sign
+    // TODO: uncomment it to publish new version, waiting PR to be merged
+//    sign = Config.Deploy.sign
     artifactId = "sentry-android-core"
 }
 

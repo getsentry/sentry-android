@@ -48,8 +48,10 @@ object Config {
     object Sentry {
         val SENTRY_CLIENT_NAME = "sentry.java.android"
         val group = "io.sentry"
+//        TODO: change version to publish new version
         val version = "2.0.0-alpha04"
         val description = "SDK for sentry.io"
+//        TODO: change version code to publish new version, follow the pattern of `version`
         val buildVersionCode = 20004
         val website = "https://sentry.io"
         val userOrg = "getsentry"
@@ -73,7 +75,9 @@ object Config {
     }
 
     object Deploy {
-        val novodaBintray = "com.novoda:bintray-release:0.9.2"
+//        TODO: change version to 0.9.2 to publish new version, which supports `sign` field
+//        lets wait a bit for PR to be reviewed or we publish ourselves https://github.com/novoda/bintray-release/issues/301
+        val novodaBintray = "com.novoda:bintray-release:0.9.1"
         val novodaBintrayId = "com.novoda.bintray-release"
         val dryRun = true // If set to true this will run everything but it won't upload the package to bintray. If false then it will upload normally.
         val override = true
