@@ -232,7 +232,7 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
 
     // this way of getting the size of storage might be problematic for storages bigger than 2GB
     // check the use of https://developer.android.com/reference/java/io/File.html#getFreeSpace%28%29
-    File internalStorageFile = getInternalStorageFile();
+    File internalStorageFile = context.getExternalFilesDir(null);
     if (internalStorageFile != null) {
       StatFs internalStorageStat = new StatFs(internalStorageFile.getPath());
       device.setStorageSize(getTotalInternalStorage(internalStorageStat));
@@ -533,10 +533,6 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
       log(SentryLevel.ERROR, "Error getting unused internal storage amount.", e);
       return null;
     }
-  }
-
-  private File getInternalStorageFile() {
-    return context.getExternalFilesDir(null);
   }
 
   private StatFs getExternalStorageStat(File internalStorage) {
