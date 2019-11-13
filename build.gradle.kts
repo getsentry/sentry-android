@@ -23,7 +23,7 @@ buildscript {
         classpath(Config.BuildPlugins.androidGradle)
         classpath(kotlin(Config.BuildPlugins.kotlinGradlePlugin, version = Config.kotlinVersion))
         classpath(Config.QualityPlugins.errorpronePlugin)
-        classpath(Config.Deploy.bintray)
+        classpath(Config.Deploy.novodaBintray)
     }
 }
 

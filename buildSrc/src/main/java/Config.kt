@@ -57,23 +57,26 @@ object Config {
         val licence = "MIT"
         val issueTracker = "https://github.com/getsentry/sentry-android/issues"
         val repository = "https://github.com/getsentry/sentry-android"
-        val dryRun = true // If set to true this will run everything but it won't upload the package to bintray. If false then it will upload normally.
-        val override = true
-        val sign = true
+        val devName = "Sentry Team and Contributers"
+        val devEmail = "accounts@sentry.io"
+        val devUser = "getsentry"
     }
 
     object CompileOnly {
         private val nopenVersion = "1.0.1"
 
-        val annotations = "org.jetbrains:annotations:18.0.0"
-        val noopen = "com.jakewharton.nopen:nopen-annotations:$nopenVersion"
-        val noopenProne = "com.jakewharton.nopen:nopen-checker:$nopenVersion"
+        val jetbrainsAnnotations = "org.jetbrains:annotations:18.0.0"
+        val nopen = "com.jakewharton.nopen:nopen-annotations:$nopenVersion"
+        val nopenChecker = "com.jakewharton.nopen:nopen-checker:$nopenVersion"
         val errorprone = "com.google.errorprone:error_prone_core:2.3.3"
-        val errorProneJavac = "com.google.errorprone:javac:9+181-r4173-1"
+        val errorProneJavac8 = "com.google.errorprone:javac:9+181-r4173-1"
     }
 
     object Deploy {
-        val bintray = "com.novoda:bintray-release:0.9.2"
-        val bintrayPlugin = "com.novoda.bintray-release"
+        val novodaBintray = "com.novoda:bintray-release:0.9.2"
+        val novodaBintrayId = "com.novoda.bintray-release"
+        val dryRun = true // If set to true this will run everything but it won't upload the package to bintray. If false then it will upload normally.
+        val override = true
+        val sign = true
     }
 }
