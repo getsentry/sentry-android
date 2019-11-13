@@ -117,7 +117,7 @@ val SITE_URL = Config.Sentry.website
 val GIT_URL = Config.Sentry.repository
 val LICENSE = Config.Sentry.licence
 val DEVELOPER_ID = "marandaneto"
-val DEVELOPER_NAME = "Manoel Aranda Neto"
+val DEVELOPER_NAME = "Sentry team and Contributers"
 val DEVELOPER_EMAIL = "maranda@sentry.io"
 
 gradle.taskGraph.whenReady {
