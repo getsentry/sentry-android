@@ -176,7 +176,8 @@ public final class AsyncConnection implements Closeable, Connection {
             throw new IllegalStateException(message);
           }
         } catch (IOException e) {
-          eventCache.store(event);
+          //          eventCache.store(event); TODO: its already saving at first, do we still need
+          // it?
           // Failure due to IO is allowed to retry the event
           if (hint instanceof io.sentry.core.hints.Retryable) {
             ((io.sentry.core.hints.Retryable) hint).setRetry(true);

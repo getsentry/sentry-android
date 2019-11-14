@@ -111,7 +111,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
               continue;
             }
             hub.captureEvent(event, hint);
-            hint.waitFlush();
+            hint.waitFlush(); // why do we need to waitFlush? is not ok to be async?
             hint.newCountDown();
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
           }
