@@ -30,7 +30,7 @@ final class SendCachedEvent extends DirectoryProcessor {
   }
 
   @Override
-  protected void processFile(File file) {
+  protected void processFile(@NotNull File file) {
     if (!isRelevantFileName(file.getName())) {
       logIfNotNull(
           logger, SentryLevel.DEBUG, "File '%s' doesn't match extension expected.", file.getName());
