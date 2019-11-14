@@ -72,7 +72,7 @@ class EnvelopeSenderTest {
         assertTrue(File(path).exists()) // sanity check
         sut.processEnvelopeFile(path)
 
-        verify(fixture.hub, times(1))!!.captureEvent(expected)
+        verify(fixture.hub, times(1))!!.captureEvent(eq(expected), any())
         assertFalse(File(path).exists())
         // Additionally make sure we have no errors logged
         verify(fixture.logger, never())!!.log(eq(SentryLevel.ERROR), any(), any<Any>())
