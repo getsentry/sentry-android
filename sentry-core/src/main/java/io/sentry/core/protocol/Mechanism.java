@@ -12,6 +12,7 @@ public final class Mechanism implements IUnknownPropertiesConsumer {
   private Map<String, Object> meta;
   private Map<String, Object> data;
   private final transient Thread thread;
+  private Boolean synthetic;
 
   public Mechanism() {
     this(null);
@@ -79,5 +80,13 @@ public final class Mechanism implements IUnknownPropertiesConsumer {
   @Override
   public void acceptUnknownProperties(Map<String, Object> unknown) {
     this.unknown = unknown;
+  }
+
+  public Boolean getSynthetic() {
+    return synthetic;
+  }
+
+  public void setSynthetic(Boolean synthetic) {
+    this.synthetic = synthetic;
   }
 }
