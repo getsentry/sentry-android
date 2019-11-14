@@ -1,5 +1,8 @@
 package io.sentry.core;
 
+import static io.sentry.core.ILogger.logIfNotNull;
+import static io.sentry.core.SentryLevel.ERROR;
+
 import io.sentry.core.hints.*;
 import io.sentry.core.util.Objects;
 import java.io.ByteArrayInputStream;
@@ -11,11 +14,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.concurrent.*;
-
 import org.jetbrains.annotations.*;
-
-import static io.sentry.core.ILogger.logIfNotNull;
-import static io.sentry.core.SentryLevel.ERROR;
 
 public final class EnvelopeSender extends DirectoryProcessor implements IEnvelopeSender {
 
@@ -39,7 +38,8 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
   @Override
   protected void processFile(File file) {
     InputStream stream = null;
-    CachedEnvelopeHint hint = new CachedEnvelopeHint(5000, logger); // TODO: Take timeout from options
+    CachedEnvelopeHint hint =
+        new CachedEnvelopeHint(5000, logger); // TODO: Take timeout from options
     try {
       stream = new FileInputStream(file);
       SentryEnvelope envelope = envelopeReader.read(stream);
@@ -79,7 +79,8 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     processFile(new File(path));
   }
 
-  private void processEnvelope(SentryEnvelope envelope, CachedEnvelopeHint hint) throws IOException {
+  private void processEnvelope(SentryEnvelope envelope, CachedEnvelopeHint hint)
+      throws IOException {
     logger.log(SentryLevel.DEBUG, "Envelope for event Id: %s", envelope.getHeader().getEventId());
     int items = 0;
     for (SentryEnvelopeItem item : envelope.getItems()) {
@@ -122,15 +123,21 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       }
 
       if (!hint.succeeded) {
-        // Failed to send an item of the envelope: Stop attempting to send the rest (an attachment without the event that created it isn't useful)
-        logger.log(SentryLevel.WARNING, "Envelope for event Id: %s had a failed capture at item %d. No more items will be sent.", envelope.getHeader().getEventId(), items);
+        // Failed to send an item of the envelope: Stop attempting to send the rest (an attachment
+        // without the event that created it isn't useful)
+        logger.log(
+            SentryLevel.WARNING,
+            "Envelope for event Id: %s had a failed capture at item %d. No more items will be sent.",
+            envelope.getHeader().getEventId(),
+            items);
         break;
       }
       hint.resetSubmissionResult();
     }
   }
 
-  private static final class CachedEnvelopeHint implements Cached, Retryable, SubmissionResult, Flushable {
+  private static final class CachedEnvelopeHint
+      implements Cached, Retryable, SubmissionResult, Flushable {
     boolean retry = false;
     boolean succeeded = false;
 
@@ -149,7 +156,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
         latch.await(timeoutMills, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         logIfNotNull(
-          logger, ERROR, "Exception while awaiting for flush in UncaughtExceptionHint", e);
+            logger, ERROR, "Exception while awaiting for flush in UncaughtExceptionHint", e);
       }
     }
 
@@ -172,7 +179,9 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       this.retry = retry;
     }
 
-    void resetSubmissionResult() { succeeded = false; }
+    void resetSubmissionResult() {
+      succeeded = false;
+    }
 
     @Override
     public void markSucceeded() {

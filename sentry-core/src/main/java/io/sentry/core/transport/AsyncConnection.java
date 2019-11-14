@@ -157,7 +157,7 @@ public final class AsyncConnection implements Closeable, Connection {
           if (result.isSuccess()) {
             eventCache.discard(event);
             if (hint instanceof SubmissionResult) {
-              ((SubmissionResult)hint).markSucceeded();
+              ((SubmissionResult) hint).markSucceeded();
             }
           } else {
             suggestedRetryDelay = result.getRetryMillis();
