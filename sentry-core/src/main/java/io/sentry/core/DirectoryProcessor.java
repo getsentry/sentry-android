@@ -3,18 +3,18 @@ package io.sentry.core;
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import java.io.File;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
-public abstract class DirectoryProcessor {
+abstract class DirectoryProcessor {
 
   private ILogger logger;
 
-  protected DirectoryProcessor(@Nullable ILogger logger) {
+  protected DirectoryProcessor(@NotNull ILogger logger) {
 
     this.logger = logger;
   }
 
-  void processDirectory(File directory) {
+  void processDirectory(@NotNull File directory) {
     if (!directory.exists()) {
       logIfNotNull(
           logger,

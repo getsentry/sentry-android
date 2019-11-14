@@ -143,7 +143,7 @@ public final class AsyncConnection implements Closeable, Connection {
         flush();
       } finally {
         if (hint instanceof Flushable) {
-          ((Flushable) hint).flushed();
+          ((Flushable) hint).markFlushed();
         }
       }
     }

@@ -3,7 +3,10 @@ package io.sentry.core;
 import static io.sentry.core.ILogger.logIfNotNull;
 import static io.sentry.core.SentryLevel.ERROR;
 
-import io.sentry.core.hints.*;
+import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.Flushable;
+import io.sentry.core.hints.Retryable;
+import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -13,8 +16,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.concurrent.*;
-import org.jetbrains.annotations.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class EnvelopeSender extends DirectoryProcessor implements IEnvelopeSender {
 
@@ -36,7 +42,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
   }
 
   @Override
-  protected void processFile(File file) {
+  protected void processFile(@NotNull File file) {
     InputStream stream = null;
     CachedEnvelopeHint hint =
         new CachedEnvelopeHint(5000, logger); // TODO: Take timeout from options
@@ -79,7 +85,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     processFile(new File(path));
   }
 
-  private void processEnvelope(SentryEnvelope envelope, CachedEnvelopeHint hint)
+  private void processEnvelope(@NotNull SentryEnvelope envelope, @NotNull CachedEnvelopeHint hint)
       throws IOException {
     logger.log(SentryLevel.DEBUG, "Envelope for event Id: %s", envelope.getHeader().getEventId());
     int items = 0;
@@ -165,7 +171,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     }
 
     @Override
-    public void flushed() {
+    public void markFlushed() {
       latch.countDown();
     }
 

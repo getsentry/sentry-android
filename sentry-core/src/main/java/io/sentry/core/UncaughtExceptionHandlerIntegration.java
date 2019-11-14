@@ -125,7 +125,7 @@ public final class UncaughtExceptionHandlerIntegration
     }
 
     @Override
-    public void flushed() {
+    public void markFlushed() {
       latch.countDown();
     }
   }
