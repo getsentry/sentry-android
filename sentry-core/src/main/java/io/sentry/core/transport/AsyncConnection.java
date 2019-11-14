@@ -157,7 +157,7 @@ public final class AsyncConnection implements Closeable, Connection {
           if (result.isSuccess()) {
             eventCache.discard(event);
             if (hint instanceof SubmissionResult) {
-              ((SubmissionResult)hint).markSucceeded();
+              ((SubmissionResult) hint).markSucceeded();
             }
           } else {
             suggestedRetryDelay = result.getRetryMillis();
@@ -176,7 +176,6 @@ public final class AsyncConnection implements Closeable, Connection {
             throw new IllegalStateException(message);
           }
         } catch (IOException e) {
-          eventCache.store(event);
           // Failure due to IO is allowed to retry the event
           if (hint instanceof io.sentry.core.hints.Retryable) {
             ((io.sentry.core.hints.Retryable) hint).setRetry(true);
