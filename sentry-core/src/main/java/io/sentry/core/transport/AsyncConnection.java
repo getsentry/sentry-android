@@ -6,15 +6,15 @@ import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.cache.IEventCache;
+import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.DiskFlushNotification;
+import io.sentry.core.hints.SubmissionResult;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import io.sentry.core.hints.Cached;
-import io.sentry.core.hints.DiskFlushNotification;
-import io.sentry.core.hints.SubmissionResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -161,7 +161,10 @@ public final class AsyncConnection implements Closeable, Connection {
       } finally {
         if (hint instanceof SubmissionResult) {
           logIfNotNull(
-            options.getLogger(), SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
+              options.getLogger(),
+              SentryLevel.DEBUG,
+              "Marking event submission result: %s",
+              result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
         }
       }

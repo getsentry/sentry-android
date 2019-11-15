@@ -146,8 +146,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     }
   }
 
-  private static final class CachedEnvelopeHint
-      implements Cached, Retryable, SubmissionResult {
+  private static final class CachedEnvelopeHint implements Cached, Retryable, SubmissionResult {
     boolean retry = false;
     boolean succeeded = false;
 
