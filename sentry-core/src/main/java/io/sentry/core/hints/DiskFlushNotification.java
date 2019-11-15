@@ -1,5 +1,5 @@
 package io.sentry.core.hints;
 
-public interface Flushable {
+public interface DiskFlushNotification {
   void markFlushed();
 }

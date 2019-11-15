@@ -76,7 +76,7 @@ class EnvelopeSenderTest {
         assertFalse(File(path).exists())
         // Additionally make sure we have no errors logged
         verify(fixture.logger, never())!!.log(eq(SentryLevel.ERROR), any(), any<Any>())
-        verify(fixture.logger, never())!!.log(eq(SentryLevel.ERROR), any(), any())
+        verify(fixture.logger, never())!!.log(eq(SentryLevel.ERROR), any<String>(), any())
     }
 
     @Test
@@ -98,7 +98,7 @@ class EnvelopeSenderTest {
     fun `when processEnvelopeFile is called with a invalid path, logs error`() {
         val sut = fixture.getSut()
         sut.processEnvelopeFile(File.separator + "i-hope-it-doesnt-exist" + File.separator + "file.txt")
-        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), any(), argWhere { it is FileNotFoundException })
+        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), any<String>(), argWhere { it is FileNotFoundException })
     }
 
     @Test

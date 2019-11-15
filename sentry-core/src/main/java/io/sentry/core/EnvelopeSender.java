@@ -4,7 +4,7 @@ import static io.sentry.core.ILogger.logIfNotNull;
 import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.hints.Cached;
-import io.sentry.core.hints.Flushable;
+import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
@@ -142,7 +142,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
   }
 
   private static final class CachedEnvelopeHint
-      implements Cached, Retryable, SubmissionResult, Flushable {
+      implements Cached, Retryable, SubmissionResult, DiskFlushNotification {
     boolean retry = false;
     boolean succeeded = false;
 

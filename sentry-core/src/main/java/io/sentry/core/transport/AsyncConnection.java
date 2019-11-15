@@ -95,6 +95,7 @@ public final class AsyncConnection implements Closeable, Connection {
   @Override
   public void close() throws IOException {
     executor.shutdown();
+    logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "Shutting down");
     try {
       if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
         logIfNotNull(
@@ -141,18 +142,25 @@ public final class AsyncConnection implements Closeable, Connection {
     public void run() {
       try {
         flush();
-      } finally {
-        if (hint instanceof Flushable) {
-          ((Flushable) hint).markFlushed();
-        }
+        logIfNotNull(
+          options.getLogger(), SentryLevel.DEBUG, "Event flushed: %s", event.getEventId());
+      } catch (Exception e) {
+        logIfNotNull(
+          options.getLogger(), SentryLevel.ERROR, e, "Event submission failed: %s", event.getEventId());
+        throw e;
       }
     }
 
     private void flush() {
+      eventCache.store(event);
+      if (hint instanceof DiskFlushNotification) {
+        ((DiskFlushNotification) hint).markFlushed();
+        logIfNotNull(
+          options.getLogger(), SentryLevel.DEBUG, "Disk flush event fired: %s", event.getEventId());
+      }
+
       if (transportGate.isSendingAllowed()) {
         try {
-          eventCache.store(event);
-
           TransportResult result = transport.send(event);
           if (result.isSuccess()) {
             eventCache.discard(event);
@@ -183,7 +191,6 @@ public final class AsyncConnection implements Closeable, Connection {
           throw new IllegalStateException("Sending the event failed.", e);
         }
       } else {
-        eventCache.store(event);
         // If transportGate is blocking from sending, allowed to retry
         if (hint instanceof io.sentry.core.hints.Retryable) {
           ((io.sentry.core.hints.Retryable) hint).setRetry(true);

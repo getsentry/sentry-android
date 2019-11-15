@@ -10,45 +10,53 @@ abstract class DirectoryProcessor {
   private ILogger logger;
 
   protected DirectoryProcessor(@NotNull ILogger logger) {
-
     this.logger = logger;
   }
 
   void processDirectory(@NotNull File directory) {
-    if (!directory.exists()) {
-      logIfNotNull(
+    try {
+      if (!directory.exists()) {
+        logIfNotNull(
           logger,
           SentryLevel.WARNING,
           "Directory '%s' doesn't exist. No cached events to send.",
           directory.getAbsolutePath());
-      return;
-    }
-    if (!directory.isDirectory()) {
-      logIfNotNull(
+        return;
+      }
+      if (!directory.isDirectory()) {
+        logIfNotNull(
           logger,
           SentryLevel.ERROR,
           "Cache dir %s is not a directory.",
           directory.getAbsolutePath());
-      return;
-    }
+        return;
+      }
 
-    File[] listFiles = directory.listFiles();
-    if (listFiles == null) {
-      logIfNotNull(logger, SentryLevel.ERROR, "Cache dir %s is null.", directory.getAbsolutePath());
-      return;
-    }
+      File[] listFiles = directory.listFiles();
+      if (listFiles == null) {
+        logIfNotNull(logger, SentryLevel.ERROR, "Cache dir %s is null.", directory.getAbsolutePath());
+        return;
+      }
 
-    File[] filteredListFiles = directory.listFiles((d, name) -> isRelevantFileName(name));
+      File[] filteredListFiles = directory.listFiles((d, name) -> isRelevantFileName(name));
 
-    logIfNotNull(
+      logIfNotNull(
         logger,
         SentryLevel.DEBUG,
         "Processing %d items from cache dir %s",
         filteredListFiles != null ? filteredListFiles.length : 0,
         directory.getAbsolutePath());
 
-    for (File file : listFiles) {
-      processFile(file);
+      for (File file : listFiles) {
+        processFile(file);
+      }
+    } catch (Exception e) {
+      logIfNotNull(
+        logger,
+        SentryLevel.ERROR,
+        e,
+        "Failed processing '%s'",
+        directory.getAbsolutePath());
     }
   }
 

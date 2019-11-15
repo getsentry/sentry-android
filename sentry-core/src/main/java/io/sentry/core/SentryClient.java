@@ -66,10 +66,16 @@ public final class SentryClient implements ISentryClient {
       // Going through again could be reading data that is no longer relevant
       // i.e proguard id, app version, threads
       applyScope(event, scope);
+    } else {
+      logIfNotNull(
+        options.getLogger(),
+        SentryLevel.DEBUG,
+        "Event was cached so not applying scope: %s",
+        event.getEventId());
+    }
 
-      for (EventProcessor processor : options.getEventProcessors()) {
-        processor.process(event, hint);
-      }
+    for (EventProcessor processor : options.getEventProcessors()) {
+      processor.process(event, hint);
     }
 
     event = executeBeforeSend(event, hint);

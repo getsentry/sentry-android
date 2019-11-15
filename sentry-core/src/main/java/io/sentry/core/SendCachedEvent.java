@@ -1,10 +1,10 @@
 package io.sentry.core;
 
 import static io.sentry.core.ILogger.logIfNotNull;
+import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.cache.DiskCache;
-import io.sentry.core.hints.Cached;
-import io.sentry.core.hints.Retryable;
+import io.sentry.core.hints.*;
 import io.sentry.core.util.Objects;
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,7 +14,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 final class SendCachedEvent extends DirectoryProcessor {
   private static final Charset UTF_8 = Charset.forName("UTF-8");
@@ -31,14 +35,14 @@ final class SendCachedEvent extends DirectoryProcessor {
 
   @Override
   protected void processFile(@NotNull File file) {
-    if (!isRelevantFileName(file.getName())) {
-      logIfNotNull(
-          logger, SentryLevel.DEBUG, "File '%s' doesn't match extension expected.", file.getName());
+    if (!file.isFile()) {
+      logIfNotNull(logger, SentryLevel.DEBUG, "'%s' is not a file.", file.getAbsolutePath());
       return;
     }
 
-    if (!file.isFile()) {
-      logIfNotNull(logger, SentryLevel.DEBUG, "'%s' is not a file.", file.getAbsolutePath());
+    if (!isRelevantFileName(file.getName())) {
+      logIfNotNull(
+          logger, SentryLevel.DEBUG, "File '%s' doesn't match extension expected.", file.getName());
       return;
     }
 
@@ -51,11 +55,15 @@ final class SendCachedEvent extends DirectoryProcessor {
       return;
     }
 
-    SendCachedEventHint hint = new SendCachedEventHint();
+    SendCachedEventHint hint = new SendCachedEventHint(5000, logger); // TODO: get timeout from logs
     try (Reader reader =
         new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF_8))) {
       SentryEvent event = serializer.deserializeEvent(reader);
       hub.captureEvent(event, hint);
+      if (!hint.waitFlush()) {
+        logIfNotNull(
+          logger, SentryLevel.WARNING, "Timed out waiting for event submission: %s", event.getEventId());
+      }
     } catch (FileNotFoundException e) {
       logIfNotNull(logger, SentryLevel.ERROR, "File '%s' cannot be found.", file.getName(), e);
     } catch (IOException e) {
@@ -67,6 +75,9 @@ final class SendCachedEvent extends DirectoryProcessor {
       // Unless the transport marked this to be retried, it'll be deleted.
       if (!hint.getRetry()) {
         safeDelete(file, "after trying to capture it");
+        logIfNotNull(logger, SentryLevel.DEBUG, "Deleted file %s.", file.getName());
+      } else {
+        logIfNotNull(logger, SentryLevel.INFO, "File not deleted since retry was marked. %s.", file.getName());
       }
     }
   }
@@ -89,9 +100,17 @@ final class SendCachedEvent extends DirectoryProcessor {
     }
   }
 
-  private static final class SendCachedEventHint implements Cached, Retryable {
+  private static final class SendCachedEventHint implements Cached, Retryable, SubmissionResult {
     boolean retry = false;
+    private final CountDownLatch latch;
+    private final long timeoutMills;
+    private final @Nullable ILogger logger;
 
+    SendCachedEventHint(final long timeoutMills, final @Nullable ILogger logger) {
+      this.timeoutMills = timeoutMills;
+      this.latch = new CountDownLatch(1);
+      this.logger = logger;
+    }
     @Override
     public boolean getRetry() {
       return retry;
@@ -100,6 +119,21 @@ final class SendCachedEvent extends DirectoryProcessor {
     @Override
     public void setRetry(boolean retry) {
       this.retry = retry;
+    }
+
+    boolean waitFlush() {
+      try {
+        return latch.await(timeoutMills, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        logIfNotNull(
+          logger, ERROR, "Exception while awaiting on lock.", e);
+      }
+      return false;
+    }
+
+    @Override
+    public void markSucceeded() {
+      latch.countDown();
     }
   }
 }
