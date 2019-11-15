@@ -44,7 +44,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
   protected void processFile(@NotNull File file) {
     InputStream stream = null;
     CachedEnvelopeHint hint =
-        new CachedEnvelopeHint(5000, logger); // TODO: Take timeout from options
+        new CachedEnvelopeHint(15000, logger); // TODO: Take timeout from options
     try {
       stream = new FileInputStream(file);
       SentryEnvelope envelope = envelopeReader.read(stream);
@@ -116,9 +116,16 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
               continue;
             }
             hub.captureEvent(event, hint);
-            hint.waitFlush();
-            hint.newCountDown();
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
+            if (!hint.waitFlush()) {
+              logIfNotNull(
+                  logger,
+                  SentryLevel.WARNING,
+                  "Timed out waiting for event submission: %s",
+                  event.getEventId());
+              break;
+            }
+            hint.newCountDown();
           }
         }
       } else {
@@ -156,13 +163,13 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       this.logger = logger;
     }
 
-    void waitFlush() {
+    boolean waitFlush() {
       try {
-        latch.await(timeoutMills, TimeUnit.MILLISECONDS);
+        return latch.await(timeoutMills, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
-        logIfNotNull(
-            logger, ERROR, "Exception while awaiting for flush in UncaughtExceptionHint", e);
+        logIfNotNull(logger, ERROR, "Exception while awaiting on lock.", e);
       }
+      return false;
     }
 
     public void newCountDown() {
