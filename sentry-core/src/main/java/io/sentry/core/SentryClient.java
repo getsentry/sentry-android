@@ -68,10 +68,10 @@ public final class SentryClient implements ISentryClient {
       applyScope(event, scope);
     } else {
       logIfNotNull(
-        options.getLogger(),
-        SentryLevel.DEBUG,
-        "Event was cached so not applying scope: %s",
-        event.getEventId());
+          options.getLogger(),
+          SentryLevel.DEBUG,
+          "Event was cached so not applying scope: %s",
+          event.getEventId());
     }
 
     for (EventProcessor processor : options.getEventProcessors()) {

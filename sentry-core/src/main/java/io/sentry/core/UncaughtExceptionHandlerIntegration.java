@@ -77,7 +77,10 @@ public final class UncaughtExceptionHandlerIntegration
       // Block until the event is flushed to disk
       if (!hint.waitFlush()) {
         logIfNotNull(
-          options.getLogger(), SentryLevel.WARNING, "Timed out waiting to flush event to disk before crashing. Event: %s", event.getEventId());
+            options.getLogger(),
+            SentryLevel.WARNING,
+            "Timed out waiting to flush event to disk before crashing. Event: %s",
+            event.getEventId());
       }
     } catch (Exception e) {
       logIfNotNull(
@@ -85,6 +88,8 @@ public final class UncaughtExceptionHandlerIntegration
     }
 
     if (defaultExceptionHandler != null) {
+      logIfNotNull(
+          options.getLogger(), SentryLevel.INFO, "Invoking inner uncaught exception handler.");
       defaultExceptionHandler.uncaughtException(thread, thrown);
     }
   }

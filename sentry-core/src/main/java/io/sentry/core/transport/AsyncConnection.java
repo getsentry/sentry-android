@@ -143,10 +143,14 @@ public final class AsyncConnection implements Closeable, Connection {
       try {
         flush();
         logIfNotNull(
-          options.getLogger(), SentryLevel.DEBUG, "Event flushed: %s", event.getEventId());
+            options.getLogger(), SentryLevel.DEBUG, "Event flushed: %s", event.getEventId());
       } catch (Exception e) {
         logIfNotNull(
-          options.getLogger(), SentryLevel.ERROR, e, "Event submission failed: %s", event.getEventId());
+            options.getLogger(),
+            SentryLevel.ERROR,
+            e,
+            "Event submission failed: %s",
+            event.getEventId());
         throw e;
       }
     }
@@ -156,7 +160,10 @@ public final class AsyncConnection implements Closeable, Connection {
       if (hint instanceof DiskFlushNotification) {
         ((DiskFlushNotification) hint).markFlushed();
         logIfNotNull(
-          options.getLogger(), SentryLevel.DEBUG, "Disk flush event fired: %s", event.getEventId());
+            options.getLogger(),
+            SentryLevel.DEBUG,
+            "Disk flush event fired: %s",
+            event.getEventId());
       }
 
       if (transportGate.isSendingAllowed()) {

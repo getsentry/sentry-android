@@ -16,7 +16,6 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,14 +54,19 @@ final class SendCachedEvent extends DirectoryProcessor {
       return;
     }
 
-    SendCachedEventHint hint = new SendCachedEventHint(5000, logger); // TODO: get timeout from logs
+    SendCachedEventHint hint =
+        new SendCachedEventHint(
+            15000, logger); // TODO: get timeout from logs (should be bigger than network timeout)
     try (Reader reader =
         new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF_8))) {
       SentryEvent event = serializer.deserializeEvent(reader);
       hub.captureEvent(event, hint);
       if (!hint.waitFlush()) {
         logIfNotNull(
-          logger, SentryLevel.WARNING, "Timed out waiting for event submission: %s", event.getEventId());
+            logger,
+            SentryLevel.WARNING,
+            "Timed out waiting for event submission: %s",
+            event.getEventId());
       }
     } catch (FileNotFoundException e) {
       logIfNotNull(logger, SentryLevel.ERROR, "File '%s' cannot be found.", file.getName(), e);
@@ -77,7 +81,11 @@ final class SendCachedEvent extends DirectoryProcessor {
         safeDelete(file, "after trying to capture it");
         logIfNotNull(logger, SentryLevel.DEBUG, "Deleted file %s.", file.getName());
       } else {
-        logIfNotNull(logger, SentryLevel.INFO, "File not deleted since retry was marked. %s.", file.getName());
+        logIfNotNull(
+            logger,
+            SentryLevel.INFO,
+            "File not deleted since retry was marked. %s.",
+            file.getName());
       }
     }
   }
@@ -111,6 +119,7 @@ final class SendCachedEvent extends DirectoryProcessor {
       this.latch = new CountDownLatch(1);
       this.logger = logger;
     }
+
     @Override
     public boolean getRetry() {
       return retry;
@@ -125,8 +134,7 @@ final class SendCachedEvent extends DirectoryProcessor {
       try {
         return latch.await(timeoutMills, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
-        logIfNotNull(
-          logger, ERROR, "Exception while awaiting on lock.", e);
+        logIfNotNull(logger, ERROR, "Exception while awaiting on lock.", e);
       }
       return false;
     }

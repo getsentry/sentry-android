@@ -17,46 +17,43 @@ abstract class DirectoryProcessor {
     try {
       if (!directory.exists()) {
         logIfNotNull(
-          logger,
-          SentryLevel.WARNING,
-          "Directory '%s' doesn't exist. No cached events to send.",
-          directory.getAbsolutePath());
+            logger,
+            SentryLevel.WARNING,
+            "Directory '%s' doesn't exist. No cached events to send.",
+            directory.getAbsolutePath());
         return;
       }
       if (!directory.isDirectory()) {
         logIfNotNull(
-          logger,
-          SentryLevel.ERROR,
-          "Cache dir %s is not a directory.",
-          directory.getAbsolutePath());
+            logger,
+            SentryLevel.ERROR,
+            "Cache dir %s is not a directory.",
+            directory.getAbsolutePath());
         return;
       }
 
       File[] listFiles = directory.listFiles();
       if (listFiles == null) {
-        logIfNotNull(logger, SentryLevel.ERROR, "Cache dir %s is null.", directory.getAbsolutePath());
+        logIfNotNull(
+            logger, SentryLevel.ERROR, "Cache dir %s is null.", directory.getAbsolutePath());
         return;
       }
 
       File[] filteredListFiles = directory.listFiles((d, name) -> isRelevantFileName(name));
 
       logIfNotNull(
-        logger,
-        SentryLevel.DEBUG,
-        "Processing %d items from cache dir %s",
-        filteredListFiles != null ? filteredListFiles.length : 0,
-        directory.getAbsolutePath());
+          logger,
+          SentryLevel.DEBUG,
+          "Processing %d items from cache dir %s",
+          filteredListFiles != null ? filteredListFiles.length : 0,
+          directory.getAbsolutePath());
 
       for (File file : listFiles) {
         processFile(file);
       }
     } catch (Exception e) {
       logIfNotNull(
-        logger,
-        SentryLevel.ERROR,
-        e,
-        "Failed processing '%s'",
-        directory.getAbsolutePath());
+          logger, SentryLevel.ERROR, e, "Failed processing '%s'", directory.getAbsolutePath());
     }
   }
 
