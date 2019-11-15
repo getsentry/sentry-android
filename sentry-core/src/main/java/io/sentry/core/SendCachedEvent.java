@@ -143,7 +143,7 @@ final class SendCachedEvent extends DirectoryProcessor {
     }
 
     @Override
-    public void markSucceeded() {
+    public void setResult(boolean succeeded) {
       latch.countDown();
     }
   }

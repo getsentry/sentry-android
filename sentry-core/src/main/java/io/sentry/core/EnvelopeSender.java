@@ -4,7 +4,6 @@ import static io.sentry.core.ILogger.logIfNotNull;
 import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.hints.Cached;
-import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
@@ -125,7 +124,6 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                   event.getEventId());
               break;
             }
-            hint.newCountDown();
           }
         }
       } else {
@@ -144,12 +142,12 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             items);
         break;
       }
-      hint.resetSubmissionResult();
+      hint.reset();
     }
   }
 
   private static final class CachedEnvelopeHint
-      implements Cached, Retryable, SubmissionResult, DiskFlushNotification {
+      implements Cached, Retryable, SubmissionResult {
     boolean retry = false;
     boolean succeeded = false;
 
@@ -172,13 +170,9 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       return false;
     }
 
-    public void newCountDown() {
+    public void reset() {
       latch = new CountDownLatch(1);
-    }
-
-    @Override
-    public void markFlushed() {
-      latch.countDown();
+      succeeded = false;
     }
 
     @Override
@@ -191,13 +185,10 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       this.retry = retry;
     }
 
-    void resetSubmissionResult() {
-      succeeded = false;
-    }
-
     @Override
-    public void markSucceeded() {
-      succeeded = true;
+    public void setResult(boolean succeeded) {
+      this.succeeded = succeeded;
+      latch.countDown();
     }
   }
 }

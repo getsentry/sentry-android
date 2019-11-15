@@ -6,14 +6,18 @@ import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.cache.IEventCache;
-import io.sentry.core.hints.*;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.jetbrains.annotations.*;
+import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.DiskFlushNotification;
+import io.sentry.core.hints.SubmissionResult;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 /** A connection to Sentry that sends the events asynchronously. */
 public final class AsyncConnection implements Closeable, Connection {
@@ -131,6 +135,7 @@ public final class AsyncConnection implements Closeable, Connection {
     private Object hint;
     private IEventCache eventCache;
     long suggestedRetryDelay;
+    TransportResult failedResult = TransportResult.error(5000, -1);
 
     EventSender(SentryEvent event, Object hint, IEventCache eventCache) {
       this.event = event;
@@ -140,8 +145,9 @@ public final class AsyncConnection implements Closeable, Connection {
 
     @Override
     public void run() {
+      TransportResult result = this.failedResult;
       try {
-        flush();
+        result = flush();
         logIfNotNull(
             options.getLogger(), SentryLevel.DEBUG, "Event flushed: %s", event.getEventId());
       } catch (Exception e) {
@@ -152,10 +158,17 @@ public final class AsyncConnection implements Closeable, Connection {
             "Event submission failed: %s",
             event.getEventId());
         throw e;
+      } finally {
+        if (hint instanceof SubmissionResult) {
+          logIfNotNull(
+            options.getLogger(), SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
+          ((SubmissionResult) hint).setResult(result.isSuccess());
+        }
       }
     }
 
-    private void flush() {
+    private TransportResult flush() {
+      TransportResult result = this.failedResult;
       eventCache.store(event);
       if (hint instanceof DiskFlushNotification) {
         ((DiskFlushNotification) hint).markFlushed();
@@ -168,12 +181,9 @@ public final class AsyncConnection implements Closeable, Connection {
 
       if (transportGate.isSendingAllowed()) {
         try {
-          TransportResult result = transport.send(event);
+          result = transport.send(event);
           if (result.isSuccess()) {
             eventCache.discard(event);
-            if (hint instanceof SubmissionResult) {
-              ((SubmissionResult) hint).markSucceeded();
-            }
           } else {
             suggestedRetryDelay = result.getRetryMillis();
 
@@ -203,6 +213,7 @@ public final class AsyncConnection implements Closeable, Connection {
           ((io.sentry.core.hints.Retryable) hint).setRetry(true);
         }
       }
+      return result;
     }
 
     @Override

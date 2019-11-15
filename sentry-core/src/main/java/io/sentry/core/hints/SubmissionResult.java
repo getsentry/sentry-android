@@ -1,5 +1,5 @@
 package io.sentry.core.hints;
 
 public interface SubmissionResult {
-  void markSucceeded();
+  void setResult(boolean success);
 }
