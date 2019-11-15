@@ -4,7 +4,9 @@ import static io.sentry.core.ILogger.logIfNotNull;
 import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.cache.DiskCache;
-import io.sentry.core.hints.*;
+import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.Retryable;
+import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
 import java.io.BufferedReader;
 import java.io.File;
@@ -56,7 +58,7 @@ final class SendCachedEvent extends DirectoryProcessor {
 
     SendCachedEventHint hint =
         new SendCachedEventHint(
-            15000, logger); // TODO: get timeout from logs (should be bigger than network timeout)
+            15000, logger); // TODO: get timeout from options (should be bigger than network timeout)
     try (Reader reader =
         new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF_8))) {
       SentryEvent event = serializer.deserializeEvent(reader);
