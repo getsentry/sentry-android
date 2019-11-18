@@ -30,10 +30,7 @@ public interface ISentryClient {
     Message sentryMessage = new Message();
     sentryMessage.setFormatted(message);
     event.setMessage(sentryMessage);
-
-    if (scope == null || scope.getLevel() == null) {
-      event.setLevel(level);
-    }
+    event.setLevel(level);
 
     return captureEvent(event, scope);
   }

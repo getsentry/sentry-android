@@ -155,19 +155,6 @@ class SentryClientTest {
     }
 
     @Test
-    fun `when captureMessage is called with scope, scope level should have priority over message level`() {
-        var sentEvent: SentryEvent? = null
-        fixture.sentryOptions.setBeforeSend { e, _ -> sentEvent = e; e }
-        val sut = fixture.getSut()
-
-        // this method creates a scope with FATAL level
-        val scope = createScope()
-
-        sut.captureMessage(null, SentryLevel.DEBUG, scope)
-        assertEquals(SentryLevel.FATAL, sentEvent!!.level)
-    }
-
-    @Test
     fun `when event has release, value from options not applied`() {
         val event = SentryEvent()
         val expected = "original"
