@@ -310,7 +310,7 @@ class HubTest {
         sut.bindClient(mockClient)
 
         sut.captureMessage("test")
-        verify(mockClient, times(1)).captureMessage(any(), any())
+        verify(mockClient, times(1)).captureMessage(any(), any(), any())
     }
     //endregion
 
