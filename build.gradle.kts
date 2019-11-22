@@ -24,6 +24,7 @@ buildscript {
         classpath(kotlin(Config.BuildPlugins.kotlinGradlePlugin, version = Config.kotlinVersion))
         classpath(Config.QualityPlugins.errorpronePlugin)
         classpath(Config.Deploy.novodaBintray)
+        classpath("com.ydq.android.gradle.build.tool:nativeBundle:1.0.3")
     }
 }
 

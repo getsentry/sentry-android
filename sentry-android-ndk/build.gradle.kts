@@ -5,6 +5,8 @@ plugins {
     kotlin("android")
     jacoco
     id(Config.Deploy.novodaBintrayId)
+    id("com.ydq.android.gradle.native-aar.export")
+//    id("com.ydq.android.gradle.native-aar.import")
 }
 
 android {
@@ -59,6 +61,7 @@ android {
     externalNativeBuild {
         cmake {
             setPath("CMakeLists.txt")
+            setVersion("3.10.2")
         }
     }
 
@@ -102,6 +105,10 @@ android {
     }
 
     ndkVersion = "20.1.5948944"
+
+    nativeBundleExport {
+        headerDir = "${project.projectDir}/sentry-native/include"
+    }
 }
 
 dependencies {
