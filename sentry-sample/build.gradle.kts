@@ -73,11 +73,9 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
-    // if travis ci hangs again on this task, remove comments
-//    tasks.all {
-//        if (this.name == "signingConfigWriterDebugAndroidTest") {
-//            this.enabled = false
-//            println("${this.name} is SKIPPED")
+//    sourceSets {
+//        getByName("main") {
+//            jniLibs.srcDirs("build/intermediates/merged_native_libs/release/out/lib")
 //        }
 //    }
 
