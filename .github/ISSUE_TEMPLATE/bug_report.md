@@ -32,6 +32,10 @@ _Sentry Android Gradle Plugin:_
 - [ ]  Yes -> If yes, which version?
 - [ ]  No
 
+_Proguard/R8:_
+- [ ]  Enabled
+- [ ]  Disabled
+
 _sentry-android installed with:_
 - [ ] JCenter
 - [ ] Bintray
