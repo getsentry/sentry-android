@@ -4,7 +4,6 @@ plugins {
     id("com.android.application")
     kotlin("android")
 //    id("io.sentry.android.gradle") how to add sentry gradle plugin
-    id("com.ydq.android.gradle.native-aar.import")
 }
 
 android {
@@ -26,7 +25,6 @@ android {
         externalNativeBuild {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
-                arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
             }
         }
 
@@ -73,7 +71,6 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
-
 }
 
 dependencies {

@@ -6,12 +6,17 @@ plugins {
     jacoco
     id(Config.Deploy.novodaBintrayId)
     id("com.ydq.android.gradle.native-aar.export")
-//    id("com.ydq.android.gradle.native-aar.import")
 }
 
 android {
     compileSdkVersion(Config.Android.compileSdkVersion)
     buildToolsVersion(Config.Android.buildToolsVersion)
+
+    val sentryNativeSrc = if (File("${project.projectDir}/sentry-native-local").exists()) {
+        "sentry-native-local"
+    } else {
+        "sentry-native"
+    }
 
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
@@ -29,14 +34,8 @@ android {
         versionCode = Config.Sentry.buildVersionCode
 
         externalNativeBuild {
-            val sentryNativeSrc = if (File("${project.projectDir}/sentry-native-local").exists()) {
-                "sentry-native-local"
-            } else {
-                "sentry-native"
-            }
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
-                arguments.add(0, "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON")
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
             }
         }
@@ -61,7 +60,6 @@ android {
     externalNativeBuild {
         cmake {
             setPath("CMakeLists.txt")
-//            setVersion("3.10.2")
         }
     }
 
@@ -107,7 +105,7 @@ android {
     ndkVersion = "20.1.5948944"
 
     nativeBundleExport {
-        headerDir = "${project.projectDir}/sentry-native/include"
+        headerDir = "${project.projectDir}/$sentryNativeSrc/include"
     }
 }
 
