@@ -73,35 +73,37 @@ public final class Sentry {
     hub.close();
   }
 
-  public static SentryId captureEvent(SentryEvent event) {
+  public @NotNull static SentryId captureEvent(@NotNull SentryEvent event) {
     return getCurrentHub().captureEvent(event);
   }
 
-  public static SentryId captureEvent(SentryEvent event, @Nullable Object hint) {
+  public @NotNull static SentryId captureEvent(@NotNull SentryEvent event, @Nullable Object hint) {
     return getCurrentHub().captureEvent(event, hint);
   }
 
-  public static SentryId captureMessage(String message) {
+  public @NotNull static SentryId captureMessage(@NotNull String message) {
     return getCurrentHub().captureMessage(message);
   }
 
-  public static SentryId captureMessage(String message, SentryLevel level) {
+  public @NotNull static SentryId captureMessage(
+      @NotNull String message, @NotNull SentryLevel level) {
     return getCurrentHub().captureMessage(message, level);
   }
 
-  public static SentryId captureException(Throwable throwable) {
+  public @NotNull static SentryId captureException(@NotNull Throwable throwable) {
     return getCurrentHub().captureException(throwable);
   }
 
-  public static SentryId captureException(Throwable throwable, @Nullable Object hint) {
+  public @NotNull static SentryId captureException(
+      @NotNull Throwable throwable, @Nullable Object hint) {
     return getCurrentHub().captureException(throwable, hint);
   }
 
-  public static void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {
+  public static void addBreadcrumb(@NotNull Breadcrumb breadcrumb, @Nullable Object hint) {
     getCurrentHub().addBreadcrumb(breadcrumb, hint);
   }
 
-  public static void addBreadcrumb(Breadcrumb breadcrumb) {
+  public static void addBreadcrumb(@NotNull Breadcrumb breadcrumb) {
     getCurrentHub().addBreadcrumb(breadcrumb);
   }
 
@@ -109,15 +111,15 @@ public final class Sentry {
     getCurrentHub().setLevel(level);
   }
 
-  public static void setTransaction(String transaction) {
+  public static void setTransaction(@Nullable String transaction) {
     getCurrentHub().setTransaction(transaction);
   }
 
-  public static void setUser(User user) {
+  public static void setUser(@Nullable User user) {
     getCurrentHub().setUser(user);
   }
 
-  public static void setFingerprint(List<String> fingerprint) {
+  public static void setFingerprint(@NotNull List<String> fingerprint) {
     getCurrentHub().setFingerprint(fingerprint);
   }
 
@@ -125,15 +127,15 @@ public final class Sentry {
     getCurrentHub().clearBreadcrumbs();
   }
 
-  public static void setTag(String key, String value) {
+  public static void setTag(@NotNull String key, @Nullable String value) {
     getCurrentHub().setTag(key, value);
   }
 
-  public static void setExtra(String key, String value) {
+  public static void setExtra(@NotNull String key, @Nullable String value) {
     getCurrentHub().setExtra(key, value);
   }
 
-  public static SentryId getLastEventId() {
+  public @NotNull static SentryId getLastEventId() {
     return getCurrentHub().getLastEventId();
   }
 
@@ -145,15 +147,15 @@ public final class Sentry {
     getCurrentHub().popScope();
   }
 
-  public static void withScope(ScopeCallback callback) {
+  public static void withScope(@NotNull ScopeCallback callback) {
     getCurrentHub().withScope(callback);
   }
 
-  public static void configureScope(ScopeCallback callback) {
+  public static void configureScope(@NotNull ScopeCallback callback) {
     getCurrentHub().configureScope(callback);
   }
 
-  public static void bindClient(ISentryClient client) {
+  public static void bindClient(@NotNull ISentryClient client) {
     getCurrentHub().bindClient(client);
   }
 
@@ -162,6 +164,6 @@ public final class Sentry {
   }
 
   public interface OptionsConfiguration<T extends SentryOptions> {
-    void configure(T options);
+    void configure(@NotNull T options);
   }
 }

@@ -77,7 +77,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public @NotNull SentryId captureEvent(SentryEvent event, @Nullable Object hint) {
+  public @NotNull SentryId captureEvent(@NotNull SentryEvent event, @Nullable Object hint) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -109,7 +109,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public @NotNull SentryId captureMessage(String message, SentryLevel level) {
+  public @NotNull SentryId captureMessage(@NotNull String message, @NotNull SentryLevel level) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -138,7 +138,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public @NotNull SentryId captureException(Throwable throwable, @Nullable Object hint) {
+  public @NotNull SentryId captureException(@NotNull Throwable throwable, @Nullable Object hint) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       logIfNotNull(
@@ -200,7 +200,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void addBreadcrumb(Breadcrumb breadcrumb, @Nullable Object hint) {
+  public void addBreadcrumb(@NotNull Breadcrumb breadcrumb, @Nullable Object hint) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -279,7 +279,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setFingerprint(List<String> fingerprint) {
+  public void setFingerprint(@NotNull List<String> fingerprint) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -318,7 +318,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setTag(String key, String value) {
+  public void setTag(@NotNull String key, String value) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -337,7 +337,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setExtra(String key, String value) {
+  public void setExtra(@NotNull String key, String value) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
