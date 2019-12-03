@@ -94,9 +94,8 @@ public final class UncaughtExceptionHandlerIntegration
     }
   }
 
-  @NotNull
   @TestOnly
-  static Throwable getUnhandledThrowable(Thread thread, Throwable thrown) {
+  static @NotNull Throwable getUnhandledThrowable(Thread thread, Throwable thrown) {
     Mechanism mechanism = new Mechanism();
     mechanism.setHandled(false);
     mechanism.setType("UncaughtExceptionHandler");

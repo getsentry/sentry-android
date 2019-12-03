@@ -224,11 +224,13 @@ public class SentryOptions {
   }
 
   public interface BeforeSendCallback {
-    SentryEvent execute(SentryEvent event, @Nullable Object hint);
+    @Nullable
+    SentryEvent execute(@NotNull SentryEvent event, @Nullable Object hint);
   }
 
   public interface BeforeBreadcrumbCallback {
-    Breadcrumb execute(Breadcrumb breadcrumb, @Nullable Object hint);
+    @Nullable
+    Breadcrumb execute(@NotNull Breadcrumb breadcrumb, @Nullable Object hint);
   }
 
   public SentryOptions() {

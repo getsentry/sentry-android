@@ -1,7 +1,9 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import io.sentry.core.protocol.User;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -101,6 +103,34 @@ public final class Sentry {
 
   public static void addBreadcrumb(Breadcrumb breadcrumb) {
     getCurrentHub().addBreadcrumb(breadcrumb);
+  }
+
+  public static void setLevel(SentryLevel level) {
+    getCurrentHub().setLevel(level);
+  }
+
+  public static void setTransaction(String transaction) {
+    getCurrentHub().setTransaction(transaction);
+  }
+
+  public static void setUser(User user) {
+    getCurrentHub().setUser(user);
+  }
+
+  public static void setFingerprint(List<String> fingerprint) {
+    getCurrentHub().setFingerprint(fingerprint);
+  }
+
+  public static void clearBreadcrumbs() {
+    getCurrentHub().clearBreadcrumbs();
+  }
+
+  public static void setTag(String key, String value) {
+    getCurrentHub().setTag(key, value);
+  }
+
+  public static void setExtra(String key, String value) {
+    getCurrentHub().setExtra(key, value);
   }
 
   public static SentryId getLastEventId() {
