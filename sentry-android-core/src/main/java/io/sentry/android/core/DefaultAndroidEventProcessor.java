@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import static android.content.Context.ACTIVITY_SERVICE;
+import static io.sentry.core.ILogger.logIfNotNull;
 
 import android.Manifest;
 import android.app.ActivityManager;
@@ -47,13 +48,38 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @Override
   public SentryEvent process(SentryEvent event, @Nullable Object hint) {
-    // TODO: Split by data to apply to cached events and
-    if (event.getSdk() == null) {
-      event.setSdk(getSdkVersion());
+    if (!(hint instanceof Cached)) {
+      processNonCachedEvent(event);
+    } else {
+      logIfNotNull(
+          options.getLogger(),
+          SentryLevel.DEBUG,
+          "Event was cached so not applying data relevant to the current app execution/version: %s",
+          event.getEventId());
     }
 
+    if (event.getContexts().getDevice() == null) {
+      event.getContexts().setDevice(getDevice());
+    }
+    if (event.getContexts().getOperatingSystem() == null) {
+      event.getContexts().setOperatingSystem(getOperatingSystem());
+    }
+
+    return event;
+  }
+
+  // Data to be applied to events that was created in the running process
+  private void processNonCachedEvent(SentryEvent event) {
     if (event.getUser() == null) {
       event.setUser(getUser());
+    }
+    setAppExtras(event);
+
+    if (event.getDebugMeta() == null) {
+      event.setDebugMeta(getDebugMeta());
+    }
+    if (event.getSdk() == null) {
+      event.setSdk(getSdkVersion());
     }
 
     PackageInfo packageInfo = getPackageInfo();
@@ -68,20 +94,6 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
         event.getContexts().setApp(getApp(packageInfo));
       }
     }
-    setAppExtras(event);
-
-    if (event.getDebugMeta() == null) {
-      event.setDebugMeta(getDebugMeta());
-    }
-
-    if (event.getContexts().getDevice() == null) {
-      event.getContexts().setDevice(getDevice());
-    }
-    if (event.getContexts().getOperatingSystem() == null) {
-      event.getContexts().setOperatingSystem(getOperatingSystem());
-    }
-
-    return event;
   }
 
   private List<DebugImage> getDebugImages() {
