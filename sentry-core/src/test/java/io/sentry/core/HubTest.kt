@@ -585,7 +585,7 @@ class HubTest {
     }
     //endregion
 
-    //region setUser tests
+    //region setFingerprint tests
     @Test
     fun `when setFingerprint is called on disabled client, do nothing`() {
         val hub = generateHub()
@@ -658,7 +658,7 @@ class HubTest {
     }
     //endregion
 
-    //region setUser tests
+    //region setTag tests
     @Test
     fun `when setTag is called on disabled client, do nothing`() {
         val hub = generateHub()
