@@ -31,7 +31,7 @@ public final class Hub implements IHub {
   private volatile @NotNull SentryId lastEventId;
   private final @NotNull SentryOptions options;
   private volatile boolean isEnabled;
-  private final Deque<StackItem> stack = new LinkedBlockingDeque<>();
+  private final @NotNull Deque<StackItem> stack = new LinkedBlockingDeque<>();
 
   public Hub(@NotNull SentryOptions options) {
     this(options, createRootStackItem(options));
@@ -227,7 +227,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setLevel(SentryLevel level) {
+  public void setLevel(@Nullable SentryLevel level) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -244,7 +244,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setTransaction(String transaction) {
+  public void setTransaction(@Nullable String transaction) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -262,7 +262,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setUser(User user) {
+  public void setUser(@Nullable User user) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
@@ -318,13 +318,13 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setTag(@NotNull String key, String value) {
+  public void setTag(@NotNull String key, @NotNull String value) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
           SentryLevel.WARNING,
           "Instance is disabled and this 'setTag' call is a no-op.");
-    } else if (key == null) {
+    } else if (key == null || value == null) {
       logIfNotNull(options.getLogger(), SentryLevel.WARNING, "setTag called with null parameter.");
     } else {
       StackItem item = stack.peek();
@@ -337,13 +337,13 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void setExtra(@NotNull String key, String value) {
+  public void setExtra(@NotNull String key, @NotNull String value) {
     if (!isEnabled()) {
       logIfNotNull(
           options.getLogger(),
           SentryLevel.WARNING,
           "Instance is disabled and this 'setExtra' call is a no-op.");
-    } else if (key == null) {
+    } else if (key == null || value == null) {
       logIfNotNull(
           options.getLogger(), SentryLevel.WARNING, "setExtra called with null parameter.");
     } else {

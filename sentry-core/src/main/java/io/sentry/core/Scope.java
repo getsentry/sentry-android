@@ -112,7 +112,7 @@ public final class Scope implements Cloneable {
     return tags;
   }
 
-  public void setTag(@NotNull String key, @Nullable String value) {
+  public void setTag(@NotNull String key, @NotNull String value) {
     this.tags.put(key, value);
   }
 
@@ -120,7 +120,7 @@ public final class Scope implements Cloneable {
     return extra;
   }
 
-  public void setExtra(@NotNull String key, @Nullable String value) {
+  public void setExtra(@NotNull String key, @NotNull String value) {
     this.extra.put(key, value);
   }
 
