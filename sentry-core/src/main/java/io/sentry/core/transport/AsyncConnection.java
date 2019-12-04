@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 /** A connection to Sentry that sends the events asynchronously. */
-@ApiStatus.Internal // TODO: check if its only internal
+@ApiStatus.Internal
 public final class AsyncConnection implements Closeable, Connection {
   private final ITransport transport;
   private final ITransportGate transportGate;

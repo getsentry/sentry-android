@@ -35,7 +35,7 @@ class HttpTransportTest {
             whenever(connection.inputStream).thenReturn(mock())
         }
 
-        fun getSUT(): HttpTransport {
+        fun getSUT(): ITransport {
             val options = SentryOptions()
             options.setSerializer(serializer)
             options.proxy = proxy

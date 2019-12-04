@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
  * A simple cache implementation storing the events to a disk, each event in a separater file in a
  * configured directory.
  */
-@ApiStatus.Internal // TODO: check if its only internal
+@ApiStatus.Internal
 public final class DiskCache implements IEventCache {
   /** File suffix added to all serialized event files. */
   public static final String FILE_SUFFIX = ".sentry-event";
