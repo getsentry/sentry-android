@@ -27,6 +27,7 @@ buildscript {
         classpath(Config.Deploy.novodaBintray)
 
         // add classpath of androidNativeBundle
+        // com.ydq.android.gradle.build.tool:nativeBundle:1.0.3
         classpath(Config.NativePlugins.nativeBundle)
 
         // add classpath of sentry android gradle plugin
