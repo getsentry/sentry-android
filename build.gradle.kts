@@ -25,6 +25,8 @@ buildscript {
         classpath(kotlin(Config.BuildPlugins.kotlinGradlePlugin, version = Config.kotlinVersion))
         classpath(Config.QualityPlugins.errorpronePlugin)
         classpath(Config.Deploy.novodaBintray)
+
+        // add classpath of androidNativeBundle
         classpath(Config.NativePlugins.nativeBundle)
     }
 }
