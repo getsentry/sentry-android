@@ -28,6 +28,9 @@ buildscript {
 
         // add classpath of androidNativeBundle
         classpath(Config.NativePlugins.nativeBundle)
+
+        // add classpath of sentry android gradle plugin
+//        classpath("io.sentry:sentry-android-gradle-plugin:1.7.28")
     }
 }
 

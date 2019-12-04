@@ -4,6 +4,9 @@ plugins {
 
     // apply androidNativeBundle plugin
     id("com.ydq.android.gradle.native-aar.import")
+
+    // apply sentry android gradle plugin
+//    id("io.sentry.android.gradle")
 }
 
 android {
