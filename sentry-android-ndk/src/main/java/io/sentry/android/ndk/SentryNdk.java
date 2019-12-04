@@ -3,6 +3,9 @@ package io.sentry.android.ndk;
 import io.sentry.core.SentryOptions;
 
 public class SentryNdk {
+
+  private SentryNdk() {}
+
   static {
     System.loadLibrary("sentry");
   }

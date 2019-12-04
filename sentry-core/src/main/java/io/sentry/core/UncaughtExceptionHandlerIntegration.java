@@ -27,7 +27,7 @@ public final class UncaughtExceptionHandlerIntegration
   private SentryOptions options;
 
   private boolean registered = false;
-  private UncaughtExceptionHandler threadAdapter;
+  private final UncaughtExceptionHandler threadAdapter;
 
   UncaughtExceptionHandlerIntegration() {
     this(UncaughtExceptionHandler.Adapter.getInstance());

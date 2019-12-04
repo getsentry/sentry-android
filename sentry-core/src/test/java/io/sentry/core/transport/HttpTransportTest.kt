@@ -41,7 +41,7 @@ class HttpTransportTest {
             options.proxy = proxy
 
             return object : HttpTransport(options, requestUpdater, connectionTimeout, readTimeout, bypassSecurity, dsn) {
-                override fun open(url: URL?, proxy: Proxy?): HttpURLConnection {
+                override fun open(proxy: Proxy?): HttpURLConnection {
                     return connection
                 }
             }

@@ -75,7 +75,7 @@ public final class SentryClient implements ISentryClient {
     }
 
     for (EventProcessor processor : options.getEventProcessors()) {
-      processor.process(event, hint);
+      event = processor.process(event, hint);
     }
 
     event = executeBeforeSend(event, hint);
@@ -193,9 +193,7 @@ public final class SentryClient implements ISentryClient {
     // https://docs.sentry.io/development/sdk-dev/features/#event-sampling
     if (options.getSampling() != null && random != null) {
       double sampling = options.getSampling();
-      if (sampling < random.nextDouble()) {
-        return false; // bad luck
-      }
+      return !(sampling < random.nextDouble()); // bad luck
     }
     return true;
   }

@@ -132,10 +132,10 @@ public final class AsyncConnection implements Closeable, Connection {
 
   private final class EventSender implements Retryable {
     final SentryEvent event;
-    private Object hint;
-    private IEventCache eventCache;
+    private final Object hint;
+    private final IEventCache eventCache;
     long suggestedRetryDelay;
-    TransportResult failedResult = TransportResult.error(5000, -1);
+    final TransportResult failedResult = TransportResult.error(5000, -1);
 
     EventSender(SentryEvent event, Object hint, IEventCache eventCache) {
       this.event = event;

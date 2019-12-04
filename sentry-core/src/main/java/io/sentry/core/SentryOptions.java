@@ -12,8 +12,8 @@ import org.jetbrains.annotations.Nullable;
 public class SentryOptions {
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
 
-  private @NotNull List<EventProcessor> eventProcessors = new ArrayList<>();
-  private @NotNull List<Integration> integrations = new ArrayList<>();
+  private final @NotNull List<EventProcessor> eventProcessors = new ArrayList<>();
+  private final @NotNull List<Integration> integrations = new ArrayList<>();
 
   private @Nullable String dsn;
   private long shutdownTimeoutMills = 5000;
