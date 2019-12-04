@@ -1,7 +1,9 @@
 package io.sentry.android.ndk;
 
 import io.sentry.core.SentryOptions;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 public class SentryNdk {
 
   private SentryNdk() {}

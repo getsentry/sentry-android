@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 public final class SentryClient implements ISentryClient {
   static final String SENTRY_PROTOCOL_VERSION = "7";
@@ -34,6 +35,7 @@ public final class SentryClient implements ISentryClient {
     this(options, null);
   }
 
+  @TestOnly
   public SentryClient(SentryOptions options, @Nullable Connection connection) {
     this.options = options;
     this.enabled = true;

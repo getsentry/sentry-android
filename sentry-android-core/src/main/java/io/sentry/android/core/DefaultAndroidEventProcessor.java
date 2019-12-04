@@ -25,7 +25,7 @@ import java.nio.file.Files;
 import java.util.*;
 import org.jetbrains.annotations.Nullable;
 
-public final class DefaultAndroidEventProcessor implements EventProcessor {
+final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");

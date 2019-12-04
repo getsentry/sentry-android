@@ -15,11 +15,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 /** A connection to Sentry that sends the events asynchronously. */
+@ApiStatus.Internal // TODO: check if its only internal
 public final class AsyncConnection implements Closeable, Connection {
   private final ITransport transport;
   private final ITransportGate transportGate;

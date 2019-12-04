@@ -17,7 +17,7 @@ import java.io.Writer;
 import java.util.Date;
 import java.util.TimeZone;
 
-public final class AndroidSerializer implements ISerializer {
+final class AndroidSerializer implements ISerializer {
 
   private final ILogger logger;
   private final Gson gson;
