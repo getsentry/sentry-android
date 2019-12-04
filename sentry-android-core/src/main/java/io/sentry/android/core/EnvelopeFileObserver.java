@@ -8,9 +8,9 @@ import org.jetbrains.annotations.Nullable;
 
 final class EnvelopeFileObserver extends FileObserver {
 
-  private String rootPath;
+  private final String rootPath;
   private final IEnvelopeSender envelopeSender;
-  private ILogger logger;
+  private final ILogger logger;
 
   // The preferred overload (Taking File instead of String) is only available from API 29
   @SuppressWarnings("deprecation")

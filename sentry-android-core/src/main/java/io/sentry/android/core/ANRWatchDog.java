@@ -22,11 +22,11 @@ final class ANRWatchDog extends Thread {
     void onAppNotResponding(ApplicationNotResponding error);
   }
 
-  private boolean reportInDebug;
-  private ANRListener anrListener;
+  private final boolean reportInDebug;
+  private final ANRListener anrListener;
   private final IHandler uiHandler;
   private final long timeoutIntervalMills;
-  private ILogger logger;
+  private final ILogger logger;
 
   private AtomicLong tick = new AtomicLong(0);
   private volatile boolean reported = false;
