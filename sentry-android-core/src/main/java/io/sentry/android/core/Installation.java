@@ -13,6 +13,8 @@ final class Installation {
   private static final String INSTALLATION = "INSTALLATION";
   private static final Charset UTF_8 = Charset.forName("UTF-8");
 
+  private Installation() {}
+
   public static synchronized String id(Context context) {
     if (sID == null) {
       File installation = new File(context.getFilesDir(), INSTALLATION);
