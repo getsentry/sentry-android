@@ -4,8 +4,11 @@ import static io.sentry.core.ILogger.logIfNotNull;
 
 import io.sentry.core.hints.Cached;
 import io.sentry.core.util.Objects;
+import java.util.List;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+@ApiStatus.Internal
 public final class MainEventProcessor implements EventProcessor {
 
   private final SentryOptions options;

@@ -9,7 +9,7 @@ import io.sentry.core.SentryOptions;
 import io.sentry.core.exception.ExceptionMechanismException;
 import io.sentry.core.protocol.Mechanism;
 
-public final class AnrIntegration implements Integration {
+final class AnrIntegration implements Integration {
   private static ANRWatchDog anrWatchDog;
 
   @Override
@@ -40,7 +40,6 @@ public final class AnrIntegration implements Integration {
 
                 Mechanism mechanism = new Mechanism();
                 mechanism.setType("ANR");
-                mechanism.setHandled(false);
                 ExceptionMechanismException throwable =
                     new ExceptionMechanismException(mechanism, error, Thread.currentThread());
 
