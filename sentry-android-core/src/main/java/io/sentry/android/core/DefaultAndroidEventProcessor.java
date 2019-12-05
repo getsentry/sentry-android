@@ -797,7 +797,7 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
       } catch (RuntimeException e) {
         log(SentryLevel.ERROR, "Could not generate device Id.", e);
 
-        androidId = UUID.randomUUID().toString();
+        return null;
       }
     }
 
