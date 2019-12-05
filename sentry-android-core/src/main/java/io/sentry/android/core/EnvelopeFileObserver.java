@@ -1,7 +1,9 @@
 package io.sentry.android.core;
 
 import android.os.FileObserver;
-import io.sentry.core.*;
+import io.sentry.core.IEnvelopeSender;
+import io.sentry.core.ILogger;
+import io.sentry.core.SentryLevel;
 import io.sentry.core.util.Objects;
 import java.io.File;
 import org.jetbrains.annotations.Nullable;
