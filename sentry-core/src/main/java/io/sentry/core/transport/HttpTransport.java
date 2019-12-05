@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
  */
 @Open
 @ApiStatus.NonExtendable // only not final because of testing
+@ApiStatus.Internal
 public class HttpTransport implements ITransport {
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
