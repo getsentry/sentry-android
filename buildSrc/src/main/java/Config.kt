@@ -22,7 +22,7 @@ object Config {
         val timber = "com.jakewharton.timber:timber:4.7.1"
         // only bump gson if https://github.com/google/gson/issues/1597 is fixed
         val gson = "com.google.code.gson:gson:2.8.5"
-        val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-4"
+        val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0"
     }
 
     object TestLibs {
@@ -78,8 +78,6 @@ object Config {
     object Deploy {
         val novodaBintray = "com.novoda:bintray-release:0.9.2"
         val novodaBintrayId = "com.novoda.bintray-release"
-        val dryRun = true // If set to true this will run everything but it won't upload the package to bintray. If false then it will upload normally.
-        val override = true
         val sign = true
     }
 
