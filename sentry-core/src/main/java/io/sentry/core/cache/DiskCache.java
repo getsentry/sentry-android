@@ -23,12 +23,14 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * A simple cache implementation storing the events to a disk, each event in a separater file in a
  * configured directory.
  */
+@ApiStatus.Internal
 public final class DiskCache implements IEventCache {
   /** File suffix added to all serialized event files. */
   public static final String FILE_SUFFIX = ".sentry-event";
@@ -127,9 +129,8 @@ public final class DiskCache implements IEventCache {
     return new File(directory.getAbsolutePath(), event.getEventId().toString() + FILE_SUFFIX);
   }
 
-  @NotNull
   @Override
-  public Iterator<SentryEvent> iterator() {
+  public @NotNull Iterator<SentryEvent> iterator() {
     File[] allCachedEvents = allEventFiles();
 
     List<SentryEvent> ret = new ArrayList<>(allCachedEvents.length);

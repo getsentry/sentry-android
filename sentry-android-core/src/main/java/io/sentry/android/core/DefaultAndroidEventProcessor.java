@@ -13,30 +13,56 @@ import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
-import android.os.*;
+import android.os.BatteryManager;
+import android.os.Build;
+import android.os.Environment;
+import android.os.LocaleList;
+import android.os.StatFs;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import io.sentry.android.core.util.Permissions;
-import io.sentry.core.*;
-import io.sentry.core.hints.*;
-import io.sentry.core.protocol.*;
+import io.sentry.core.DateUtils;
+import io.sentry.core.EventProcessor;
+import io.sentry.core.ILogger;
+import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryLevel;
+import io.sentry.core.SentryOptions;
+import io.sentry.core.hints.Cached;
+import io.sentry.core.protocol.App;
+import io.sentry.core.protocol.DebugImage;
+import io.sentry.core.protocol.DebugMeta;
+import io.sentry.core.protocol.Device;
+import io.sentry.core.protocol.OperatingSystem;
+import io.sentry.core.protocol.SdkVersion;
+import io.sentry.core.protocol.User;
 import io.sentry.core.util.Objects;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.TimeZone;
 import org.jetbrains.annotations.Nullable;
 
-public final class DefaultAndroidEventProcessor implements EventProcessor {
+final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");
-
-  final Context context;
-  private final SentryOptions options;
-
   // it could also be a parameter and get from Sentry.init(...)
   private static final Date appStartTime = DateUtils.getCurrentDateTime();
+  final Context context;
+  private final SentryOptions options;
 
   public DefaultAndroidEventProcessor(Context context, SentryOptions options) {
     this.context =
@@ -797,7 +823,23 @@ public final class DefaultAndroidEventProcessor implements EventProcessor {
   private String getAndroidId() {
     // Android 29 has changed and -> Avoid using hardware identifiers, find another way in the
     // future
-    return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    String androidId =
+        Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+    //    https://android-developers.googleblog.com/2011/03/identifying-app-installations.html
+    if (androidId == null
+        || androidId.isEmpty()
+        || androidId.toLowerCase(Locale.ROOT).contentEquals("9774d56d682e549c")) {
+      try {
+        androidId = Installation.id(context);
+      } catch (RuntimeException e) {
+        log(SentryLevel.ERROR, "Could not generate device Id.", e);
+
+        return null;
+      }
+    }
+
+    return androidId;
   }
 
   private String[] getProGuardUuids() {

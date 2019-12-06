@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.config.KotlinCompilerVersion
 import com.novoda.gradle.release.PublishExtension
+import org.jetbrains.kotlin.config.KotlinCompilerVersion
 
 plugins {
     id("com.android.library")
@@ -104,8 +104,6 @@ configure<PublishExtension> {
     setLicences(Config.Sentry.licence)
     issueTracker = Config.Sentry.issueTracker
     repository = Config.Sentry.repository
-    dryRun = Config.Deploy.dryRun
-    override = Config.Deploy.override
     sign = Config.Deploy.sign
     artifactId = "sentry-android-core"
 }

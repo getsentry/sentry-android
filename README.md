@@ -11,13 +11,18 @@ Android SDK for Sentry
 [![AppVeyor](https://ci.appveyor.com/api/projects/status/kr49snupeb1dsgwa/branch/master?svg=true)](https://ci.appveyor.com/project/sentry/sentry-android/branch/master)
 [![Tests](https://img.shields.io/appveyor/tests/sentry/sentry-android/master?compact_message)](https://ci.appveyor.com/project/sentry/sentry-android/branch/master/tests)
 [![codecov](https://codecov.io/gh/getsentry/sentry-android/branch/master/graph/badge.svg)](https://codecov.io/gh/getsentry/sentry-android)
+[![Discord Chat](https://img.shields.io/discord/621778831602221064.svg)](https://discord.gg/Ww9hbqr)  
 
 |      Packages          | bintray |
 | ---------------------- | ------- |
-| sentry-android | [![sentry-android](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android)](https://bintray.com/beta/#/getsentry/sentry-android/sentry-android?tab=overview) |
-| sentry-android-core | [![sentry-android-core](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android-core)](https://bintray.com/beta/#/getsentry/sentry-android/sentry-android-core?tab=overview) |
-| sentry-android-ndk | [![sentry-android-ndk](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android-ndk)](https://bintray.com/beta/#/getsentry/sentry-android/sentry-android-ndk?tab=overview) |
-| sentry-core | [![sentry-core](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-core)](https://bintray.com/beta/#/getsentry/sentry-android/sentry-core?tab=overview) |
+| sentry-android | [![sentry-android](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android)](https://bintray.com/getsentry/sentry-android/sentry-android?tab=overview) |
+| sentry-android-core | [![sentry-android-core](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android-core)](https://bintray.com/getsentry/sentry-android/sentry-android-core?tab=overview) |
+| sentry-android-ndk | [![sentry-android-ndk](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android-ndk)](https://bintray.com/getsentry/sentry-android/sentry-android-ndk?tab=overview) |
+| sentry-core | [![sentry-core](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-core)](https://bintray.com/getsentry/sentry-android/sentry-core?tab=overview) |
+
+# Docs
+
+That's the initial page of the release [2.x and its docs](https://docs.sentry.io/platforms/android).
 
 # Note
 
