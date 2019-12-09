@@ -67,6 +67,7 @@ android {
         getByName("debug")
         getByName("release") {
             consumerProguardFiles("proguard-rules.pro")
+            multiDexKeepProguard = file("multidex-config.pro")
         }
     }
 
