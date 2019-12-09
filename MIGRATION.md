@@ -29,7 +29,7 @@ SentryAndroid.init(context, options -> {
 });
 ```
 
-#### Set tags
+#### Set tag
 
 _Old_:
 
@@ -85,11 +85,45 @@ Sentry.captureMessage("This is a test", SentryLevel.WARNING); // or specific lev
 _Old_:
 
 ```
-Sentry.getContext().recordBreadcrumb(new BreadcrumbBuilder().setMessage("User made an action").build());
+Sentry.getContext().recordBreadcrumb(
+  new BreadcrumbBuilder().setMessage("User made an action").build()
+);
 ```
 
 _New_:
 
 ```
 Sentry.addBreadcrumb(new Breadcrumb("User made an action"));
+```
+
+#### User
+
+_Old_:
+
+```
+Sentry.getContext().setUser(
+  new UserBuilder().setEmail("hello@sentry.io").build()
+);
+```
+
+_New_:
+
+```
+User user = new User();
+user.setEmail("hello@sentry.io");
+Sentry.setUser(user);
+```
+
+#### Set extra
+
+_Old_:
+
+```
+Sentry.getContext().addExtra("extra", "thing");
+```
+
+_New_:
+
+```
+Sentry.setExtra("extra", "thing");
 ```
