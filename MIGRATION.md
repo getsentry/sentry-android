@@ -10,6 +10,7 @@ Sentry.init("___PUBLIC_DSN___", new AndroidSentryClientFactory(context));
 
 _New_:
 
+The SDK is able to initialize automatically. The only thing required is to make the DSN available.
 *`sentry.properties` has been discontinued and configurations on this SDK version is over `AndroidManifest.xml` or code.*
 
 ```xml
