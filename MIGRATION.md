@@ -94,7 +94,7 @@ Sentry.getContext().recordBreadcrumb(
 _New_:
 
 ```
-Sentry.addBreadcrumb(new Breadcrumb("User made an action"));
+Sentry.addBreadcrumb("User made an action");
 ```
 
 #### User
