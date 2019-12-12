@@ -74,7 +74,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
-    contextData = executorService.submit(this::loadContextData);
+    contextData = executorService.submit(() -> loadContextData());
 
     executorService.shutdown();
   }
