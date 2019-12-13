@@ -56,21 +56,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 final class DefaultAndroidEventProcessor implements EventProcessor {
 
-  private static final String PROGUARD_UUID = "proGuardUuids";
-  private static final String ROOTED = "rooted";
-  private static final String ANDROID_ID = "androidId";
-  private static final String KERNEL_VERSION = "kernelVersion";
-  private static final String EMULATOR = "emulator";
+  @TestOnly static final String PROGUARD_UUID = "proGuardUuids";
+  @TestOnly static final String ROOTED = "rooted";
+  @TestOnly static final String ANDROID_ID = "androidId";
+  @TestOnly static final String KERNEL_VERSION = "kernelVersion";
+  @TestOnly static final String EMULATOR = "emulator";
 
   // it could also be a parameter and get from Sentry.init(...)
   private static final Date appStartTime = DateUtils.getCurrentDateTime();
-  final Context context;
+
+  @TestOnly final Context context;
+
   private final SentryOptions options;
 
-  private final Future<Map<String, Object>> contextData;
+  @TestOnly final Future<Map<String, Object>> contextData;
 
   public DefaultAndroidEventProcessor(Context context, SentryOptions options) {
     this.context =
