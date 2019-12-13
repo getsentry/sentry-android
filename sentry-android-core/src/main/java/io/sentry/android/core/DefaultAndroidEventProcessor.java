@@ -59,6 +59,12 @@ import org.jetbrains.annotations.Nullable;
 
 final class DefaultAndroidEventProcessor implements EventProcessor {
 
+  private static final String PROGUARD_UUID = "proGuardUuids";
+  private static final String ROOTED = "rooted";
+  private static final String ANDROID_ID = "androidId";
+  private static final String KERNEL_VERSION = "kernelVersion";
+  private static final String EMULATOR = "emulator";
+
   // it could also be a parameter and get from Sentry.init(...)
   private static final Date appStartTime = DateUtils.getCurrentDateTime();
   final Context context;
@@ -83,22 +89,23 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     Map<String, Object> map = new HashMap<>();
     String[] proGuardUuids = getProGuardUuids();
     if (proGuardUuids != null) {
-      map.put("proGuardUuids", proGuardUuids);
+      map.put(PROGUARD_UUID, proGuardUuids);
     }
 
-    map.put("rooted", isRooted());
+    map.put(ROOTED, isRooted());
 
     String androidId = getAndroidId();
     if (androidId != null) {
-      map.put("androidId", androidId);
+      map.put(ANDROID_ID, androidId);
     }
 
     String kernelVersion = getKernelVersion();
     if (kernelVersion != null) {
-      map.put("kernelVersion", kernelVersion);
+      map.put(KERNEL_VERSION, kernelVersion);
     }
 
-    map.put("emulator", isEmulator());
+    // its not IO, but it has been cached in the old version as well
+    map.put(EMULATOR, isEmulator());
 
     return map;
   }
@@ -156,7 +163,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   private List<DebugImage> getDebugImages() {
     String[] uuids = null;
     try {
-      Object proGuardUuids = contextData.get().get("proGuardUuids");
+      Object proGuardUuids = contextData.get().get(PROGUARD_UUID);
       if (proGuardUuids != null) {
         uuids = (String[]) proGuardUuids;
       }
@@ -299,7 +306,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     device.setOrientation(getOrientation());
 
     try {
-      Object emulator = contextData.get().get("emulator");
+      Object emulator = contextData.get().get(EMULATOR);
       if (emulator != null) {
         device.setSimulator((Boolean) emulator);
       }
@@ -732,12 +739,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     os.setBuild(Build.DISPLAY);
 
     try {
-      Object kernelVersion = contextData.get().get("kernelVersion");
+      Object kernelVersion = contextData.get().get(KERNEL_VERSION);
       if (kernelVersion != null) {
         os.setKernelVersion((String) kernelVersion);
       }
 
-      Object rooted = contextData.get().get("rooted");
+      Object rooted = contextData.get().get(ROOTED);
       if (rooted != null) {
         os.setRooted((Boolean) rooted);
       }
@@ -860,7 +867,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     User user = new User();
 
     try {
-      Object androidId = contextData.get().get("androidId");
+      Object androidId = contextData.get().get(ANDROID_ID);
 
       if (androidId != null) {
         user.setId((String) androidId);
