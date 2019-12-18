@@ -29,6 +29,7 @@ final class AndroidOptionsInitializer {
     options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
     options.addIntegration(new NdkIntegration());
     options.addIntegration(new AnrIntegration());
+    options.addIntegration(new ActivityLifeCycleIntegration(context));
 
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
