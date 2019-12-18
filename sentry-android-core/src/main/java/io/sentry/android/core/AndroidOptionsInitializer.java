@@ -30,6 +30,7 @@ final class AndroidOptionsInitializer {
     options.addIntegration(new NdkIntegration());
     options.addIntegration(new AnrIntegration());
     options.addIntegration(new ActivityLifeCycleIntegration(context));
+    options.addIntegration(new AppLifeCycleIntegration());
 
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));
