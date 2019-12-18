@@ -1,7 +1,7 @@
 package io.sentry.sample;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 import io.sentry.core.Breadcrumb;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryLevel;
@@ -9,7 +9,7 @@ import io.sentry.core.protocol.User;
 import java.util.Collections;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

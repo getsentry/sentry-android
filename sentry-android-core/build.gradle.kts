@@ -80,6 +80,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime:2.1.0")
     implementation("androidx.lifecycle:lifecycle-common-java8:2.1.0")
     implementation("androidx.lifecycle:lifecycle-extensions:2.1.0")
+    implementation("androidx.fragment:fragment:1.1.0")
 
     compileOnly(Config.CompileOnly.nopen)
     errorprone(Config.CompileOnly.nopenChecker)
