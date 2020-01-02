@@ -3,6 +3,8 @@ package io.sentry.core;
 import static io.sentry.core.ILogger.logIfNotNull;
 
 import com.jakewharton.nopen.annotation.Open;
+import io.sentry.core.transport.ITransport;
+import io.sentry.core.transport.NoOpHttpTransport;
 import java.io.File;
 import java.net.Proxy;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public class SentryOptions {
   private @Nullable Double sampleRate;
   private @NotNull List<String> inAppExcludes;
   private @NotNull List<String> inAppIncludes;
+  private @NotNull ITransport transport = NoOpHttpTransport.getInstance();
 
   public void addEventProcessor(@NotNull EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -226,6 +229,14 @@ public class SentryOptions {
       inAppIncludes = new ArrayList<>();
     }
     inAppIncludes.add(include);
+  }
+
+  public @NotNull ITransport getTransport() {
+    return transport;
+  }
+
+  public void setTransport(@Nullable ITransport transport) {
+    this.transport = transport != null ? transport : NoOpHttpTransport.getInstance();
   }
 
   public interface BeforeSendCallback {

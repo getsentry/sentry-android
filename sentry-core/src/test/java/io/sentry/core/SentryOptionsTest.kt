@@ -1,5 +1,6 @@
 package io.sentry.core
 
+import io.sentry.core.transport.NoOpHttpTransport
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -99,5 +100,19 @@ class SentryOptionsTest {
         val options = SentryOptions()
         options.cacheDirPath = "${File.separator}test"
         assertEquals("${File.separator}test${File.separator}outbox", options.outboxPath)
+    }
+
+    @Test
+    fun `when options is initialized, transport is NoOp`() {
+        val options = SentryOptions()
+        assertNotNull(options.transport)
+        assertEquals(NoOpHttpTransport.getInstance(), options.transport)
+    }
+
+    @Test
+    fun `when transport is set to null, it should become NoOp`() {
+        val options = SentryOptions()
+        options.setTransport(null)
+        assertEquals(NoOpHttpTransport.getInstance(), options.transport)
     }
 }
