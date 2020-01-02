@@ -2,6 +2,7 @@ package io.sentry.core
 
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class HttpTransportFactoryTest {
 
@@ -16,5 +17,14 @@ class HttpTransportFactoryTest {
             dsn = "ttps://key@sentry.io/proj"
         }
         assertFailsWith<IllegalArgumentException> { HttpTransportFactory.create(options) }
+    }
+
+    @Test
+    fun `When options is set correctly, HttpTransport is created`() {
+        val options = SentryOptions().apply {
+            dsn = "https://key@sentry.io/proj"
+        }
+        val transport = HttpTransportFactory.create(options)
+        assertNotNull(transport)
     }
 }
