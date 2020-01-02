@@ -325,7 +325,7 @@ class SentryClientTest {
 
     @Test
     fun `when transport is NoOp, it should initialize it`() {
-        val sut = fixture.getSut()
+        fixture.getSut()
         assertTrue(fixture.sentryOptions.transport is HttpTransport)
     }
 
@@ -335,10 +335,10 @@ class SentryClientTest {
             dsn = dsnString
         }
         val transport = HttpTransport(sentryOptions, mock(), 500, 500, false, URL("https://key@sentry.io/proj"))
-        sentryOptions.setTransport(transport)
+        sentryOptions.transport = transport
 
         val connection = mock<AsyncConnection>()
-        val client = SentryClient(sentryOptions, connection)
+        SentryClient(sentryOptions, connection)
 
         assertEquals(transport, sentryOptions.transport)
     }
