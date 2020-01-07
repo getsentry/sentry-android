@@ -2,12 +2,14 @@ package io.sentry.core;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+/**
+ * needed because of isIntegrationAvailable otherwise custom integrations will need to do it
+ * manually.
+ */
 public abstract class HubWrapper implements IHub {
 
   public boolean isIntegrationAvailable(Integration integration) {
-    SentryOptions sentryOptions = getSentryClient().getSentryOptions();
-
-    for (Integration item : sentryOptions.getIntegrations()) {
+    for (Integration item : getSentryClient().getSentryOptions().getIntegrations()) {
       if (item.equals(integration)) {
         return true;
       }

@@ -173,10 +173,6 @@ public final class Sentry {
     getCurrentHub().flush(timeoutMills);
   }
 
-  //  public static IHub clone() {
-  //    return getCurrentHub().clone();
-  //  }
-
   public interface OptionsConfiguration<T extends SentryOptions> {
     void configure(@NotNull T options);
   }

@@ -4,8 +4,11 @@ import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+/**
+ * this is a wrapper on top of the Hub and Sentry static class so we are able to still do unit
+ * testing.
+ */
 final class IntegrationHub extends HubWrapper {
   @Override
   public boolean isEnabled() {
@@ -109,7 +112,7 @@ final class IntegrationHub extends HubWrapper {
 
   @Override
   public IHub clone() {
-    throw new NotImplementedException();
+    return Sentry.getCurrentHub().clone();
   }
 
   @Override
