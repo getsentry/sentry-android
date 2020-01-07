@@ -24,7 +24,15 @@ final class SendCachedEventFireAndForgetIntegration implements Integration {
 
   @SuppressWarnings("FutureReturnValueIgnored")
   @Override
-  public void register(@NotNull IHub hub, @NotNull SentryOptions options) {
+  public void register(@NotNull HubWrapper hub, @NotNull SentryOptions options) {
+    if (!hub.isIntegrationAvailable(this)) {
+      logIfNotNull(
+          options.getLogger(),
+          SentryLevel.INFO,
+          "SendCachedEventFireAndForget integration is not available on this hub.");
+      return;
+    }
+
     String cachedDir = options.getCacheDirPath();
     if (cachedDir == null) {
       logIfNotNull(

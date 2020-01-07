@@ -75,4 +75,6 @@ public interface IHub {
   void flush(long timeoutMills);
 
   IHub clone();
+
+  ISentryClient getSentryClient();
 }

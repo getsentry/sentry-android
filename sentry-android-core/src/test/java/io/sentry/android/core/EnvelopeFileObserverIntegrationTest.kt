@@ -5,6 +5,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.Hub
+import io.sentry.core.HubWrapper
 import io.sentry.core.SentryOptions
 import java.io.File
 import java.nio.file.Files
@@ -46,8 +47,9 @@ class EnvelopeFileObserverIntegrationTest {
         options.cacheDirPath = file.absolutePath
         options.addIntegration(integrationMock)
         options.setSerializer(mock())
-        val hub = Hub(options)
-        verify(integrationMock).register(hub, options)
+        val expected = mock<HubWrapper>()
+        val hub = Hub(options, expected)
+        verify(integrationMock).register(expected, options)
         hub.close()
         verify(integrationMock, times(1)).close()
     }

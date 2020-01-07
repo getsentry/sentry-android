@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class SentryClient implements ISentryClient {
@@ -32,11 +33,11 @@ public final class SentryClient implements ISentryClient {
     return enabled;
   }
 
-  SentryClient(SentryOptions options) {
+  SentryClient(@NotNull SentryOptions options) {
     this(options, null);
   }
 
-  public SentryClient(SentryOptions options, @Nullable Connection connection) {
+  public SentryClient(@NotNull SentryOptions options, @Nullable Connection connection) {
     this.options = options;
     this.enabled = true;
 
@@ -201,6 +202,11 @@ public final class SentryClient implements ISentryClient {
   @Override
   public void flush(long timeoutMills) {
     // TODO: Flush transport
+  }
+
+  @Override
+  public SentryOptions getSentryOptions() {
+    return options;
   }
 
   private boolean sample() {

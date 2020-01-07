@@ -2,7 +2,7 @@ package io.sentry.android.core;
 
 import static io.sentry.core.ILogger.logIfNotNull;
 
-import io.sentry.core.IHub;
+import io.sentry.core.HubWrapper;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -13,12 +13,18 @@ final class AnrIntegration implements Integration {
   private static ANRWatchDog anrWatchDog;
 
   @Override
-  public void register(IHub hub, SentryOptions options) {
+  public void register(HubWrapper hub, SentryOptions options) {
     register(hub, (SentryAndroidOptions) options);
   }
 
-  private void register(IHub hub, SentryAndroidOptions options) {
+  private void register(HubWrapper hub, SentryAndroidOptions options) {
     logIfNotNull(options.getLogger(), SentryLevel.DEBUG, "ANR enabled: %s", options.isAnrEnabled());
+
+    if (!hub.isIntegrationAvailable(this)) {
+      logIfNotNull(
+          options.getLogger(), SentryLevel.INFO, "ANR integration is not available on this hub.");
+      return;
+    }
 
     if (options.isAnrEnabled() && anrWatchDog == null) {
       logIfNotNull(

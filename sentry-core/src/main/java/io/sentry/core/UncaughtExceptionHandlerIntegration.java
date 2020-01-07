@@ -38,7 +38,15 @@ final class UncaughtExceptionHandlerIntegration
   }
 
   @Override
-  public void register(IHub hub, SentryOptions options) {
+  public void register(HubWrapper hub, SentryOptions options) {
+    if (!hub.isIntegrationAvailable(this)) {
+      logIfNotNull(
+          options.getLogger(),
+          SentryLevel.INFO,
+          "UncaughtException integration is not available on this hub.");
+      return;
+    }
+
     if (registered) {
       logIfNotNull(
           options.getLogger(),

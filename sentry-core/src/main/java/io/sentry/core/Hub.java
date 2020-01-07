@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 public final class Hub implements IHub {
 
@@ -33,19 +34,30 @@ public final class Hub implements IHub {
   private volatile boolean isEnabled;
   private final @NotNull Deque<StackItem> stack = new LinkedBlockingDeque<>();
 
+  private final @NotNull HubWrapper integrationHub;
+
   public Hub(@NotNull SentryOptions options) {
-    this(options, createRootStackItem(options));
+    this(options, new IntegrationHub());
+  }
+
+  @TestOnly
+  public Hub(@NotNull SentryOptions options, @NotNull HubWrapper integrationHub) {
+    this(options, createRootStackItem(options), integrationHub);
 
     // Register integrations against a root Hub
     for (Integration integration : options.getIntegrations()) {
-      integration.register(this, options);
+      integration.register(integrationHub, options);
     }
   }
 
-  private Hub(@NotNull SentryOptions options, @Nullable StackItem rootStackItem) {
+  private Hub(
+      @NotNull SentryOptions options,
+      @Nullable StackItem rootStackItem,
+      @NotNull HubWrapper integrationHub) {
     validateOptions(options);
 
     this.options = options;
+    this.integrationHub = integrationHub;
     if (rootStackItem != null) {
       this.stack.push(rootStackItem);
     }
@@ -533,7 +545,7 @@ public final class Hub implements IHub {
       logIfNotNull(options.getLogger(), SentryLevel.WARNING, "Disabled Hub cloned.");
     }
     // Clone will be invoked in parallel
-    Hub clone = new Hub(this.options, null);
+    Hub clone = new Hub(this.options, this.integrationHub);
     for (StackItem item : this.stack) {
       Scope clonedScope;
       try {
@@ -547,5 +559,33 @@ public final class Hub implements IHub {
       clone.stack.push(cloneItem);
     }
     return clone;
+  }
+
+  @Override
+  public ISentryClient getSentryClient() {
+    ISentryClient sentryClient = NoOpSentryClient.getInstance();
+    if (!isEnabled()) {
+      logIfNotNull(
+          options.getLogger(),
+          SentryLevel.WARNING,
+          "Instance is disabled and this 'getSentryClient' call is a no-op.");
+    } else {
+      try {
+        StackItem item = stack.peek();
+        if (item != null) {
+          sentryClient = item.client;
+        } else {
+          logIfNotNull(
+              options.getLogger(), SentryLevel.FATAL, "Stack peek was null when getSentryClient");
+        }
+      } catch (Exception e) {
+        logIfNotNull(
+            options.getLogger(),
+            SentryLevel.ERROR,
+            "Error while getSentryClient: " + e.getMessage(),
+            e);
+      }
+    }
+    return sentryClient;
   }
 }

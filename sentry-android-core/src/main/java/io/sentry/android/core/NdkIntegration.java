@@ -1,7 +1,9 @@
 package io.sentry.android.core;
 
+import static io.sentry.core.ILogger.logIfNotNull;
+
 import android.os.Build;
-import io.sentry.core.IHub;
+import io.sentry.core.HubWrapper;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -13,7 +15,13 @@ final class NdkIntegration implements Integration {
   }
 
   @Override
-  public void register(IHub hub, SentryOptions options) {
+  public void register(HubWrapper hub, SentryOptions options) {
+    if (!hub.isIntegrationAvailable(this)) {
+      logIfNotNull(
+          options.getLogger(), SentryLevel.INFO, "NDK integration is not available on this hub.");
+      return;
+    }
+
     // Note: `hub` isn't used here because the NDK integration writes files to disk which are picked
     // up by another
     // integration. The NDK directory watching must happen before this integration runs.

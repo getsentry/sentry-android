@@ -28,4 +28,9 @@ final class NoOpSentryClient implements ISentryClient {
 
   @Override
   public void flush(long timeoutMills) {}
+
+  @Override
+  public SentryOptions getSentryOptions() {
+    return new SentryOptions();
+  }
 }

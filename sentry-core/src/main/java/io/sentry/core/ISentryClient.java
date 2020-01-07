@@ -56,4 +56,6 @@ public interface ISentryClient {
   default SentryId captureException(Throwable throwable, @Nullable Scope scope) {
     return captureException(throwable, scope, null);
   }
+
+  SentryOptions getSentryOptions();
 }

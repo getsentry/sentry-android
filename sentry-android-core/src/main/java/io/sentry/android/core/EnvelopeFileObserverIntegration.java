@@ -1,7 +1,9 @@
 package io.sentry.android.core;
 
+import static io.sentry.core.ILogger.logIfNotNull;
+
 import io.sentry.core.EnvelopeSender;
-import io.sentry.core.IHub;
+import io.sentry.core.HubWrapper;
 import io.sentry.core.ILogger;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
@@ -20,7 +22,15 @@ abstract class EnvelopeFileObserverIntegration implements Integration, Closeable
   }
 
   @Override
-  public void register(IHub hub, SentryOptions options) {
+  public void register(HubWrapper hub, SentryOptions options) {
+    if (!hub.isIntegrationAvailable(this)) {
+      logIfNotNull(
+          options.getLogger(),
+          SentryLevel.INFO,
+          "EnvelopeFileObserver integration is not available on this hub.");
+      return;
+    }
+
     ILogger logger = options.getLogger();
     String path = getPath(options);
     if (path == null) {

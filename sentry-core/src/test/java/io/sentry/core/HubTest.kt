@@ -53,7 +53,8 @@ class HubTest {
         options.dsn = "https://key@sentry.io/proj"
         options.setSerializer(mock())
         options.addIntegration(integrationMock)
-        val expected = Hub(options)
+        val expected = mock<HubWrapper>()
+        Hub(options, expected)
         verify(integrationMock).register(expected, options)
     }
 
@@ -65,7 +66,8 @@ class HubTest {
         options.dsn = "https://key@sentry.io/proj"
         options.setSerializer(mock())
         options.addIntegration(integrationMock)
-        val expected = Hub(options)
+        val expected = mock<HubWrapper>()
+        Hub(options, expected)
         verify(integrationMock).register(expected, options)
         expected.clone()
         verifyNoMoreInteractions(integrationMock)
@@ -524,11 +526,13 @@ class HubTest {
             setSerializer(mock())
         }
         doAnswer {
-            val hub = it.arguments[0] as IHub
+            val hub = it.arguments[0] as HubWrapper
             assertTrue(hub.isEnabled)
         }.whenever(mock).register(any(), eq(options))
-        Hub(options)
-        verify(mock, times(1)).register(any(), eq(options))
+        val expected = mock<HubWrapper>()
+        whenever(expected.isEnabled).thenReturn(true)
+        Hub(options, expected)
+        verify(mock, times(1)).register(expected, options)
     }
 
     //region setLevel tests

@@ -89,4 +89,9 @@ final class NoOpHub implements IHub {
   public IHub clone() {
     return instance;
   }
+
+  @Override
+  public ISentryClient getSentryClient() {
+    return NoOpSentryClient.getInstance();
+  }
 }

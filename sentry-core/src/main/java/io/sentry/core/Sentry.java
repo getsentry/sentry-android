@@ -16,7 +16,7 @@ public final class Sentry {
 
   private static volatile @NotNull IHub mainHub = NoOpHub.getInstance();
 
-  private static @NotNull IHub getCurrentHub() {
+  static @NotNull IHub getCurrentHub() {
     IHub hub = currentHub.get();
     if (hub == null) {
       currentHub.set(mainHub.clone());
@@ -169,9 +169,13 @@ public final class Sentry {
     getCurrentHub().bindClient(client);
   }
 
-  public static void flush(int timeoutMills) {
+  public static void flush(long timeoutMills) {
     getCurrentHub().flush(timeoutMills);
   }
+
+  //  public static IHub clone() {
+  //    return getCurrentHub().clone();
+  //  }
 
   public interface OptionsConfiguration<T extends SentryOptions> {
     void configure(@NotNull T options);
