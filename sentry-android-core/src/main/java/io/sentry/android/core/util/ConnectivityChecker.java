@@ -10,9 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
-public final class CheckConnectivity {
+public final class ConnectivityChecker {
 
-  private CheckConnectivity() {}
+  private ConnectivityChecker() {}
 
   /**
    * Check whether the application has internet access at a point in time.

@@ -19,7 +19,7 @@ import android.os.StatFs;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import io.sentry.android.core.util.CheckConnectivity;
+import io.sentry.android.core.util.ConnectivityChecker;
 import io.sentry.core.DateUtils;
 import io.sentry.core.EventProcessor;
 import io.sentry.core.ILogger;
@@ -303,7 +303,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       device.setBatteryLevel(getBatteryLevel(batteryIntent));
       device.setCharging(isCharging(batteryIntent));
     }
-    device.setOnline(CheckConnectivity.isConnected(context, options.getLogger()));
+    device.setOnline(ConnectivityChecker.isConnected(context, options.getLogger()));
     device.setOrientation(getOrientation());
 
     try {
