@@ -3,6 +3,7 @@ package io.sentry.core
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 class DsnTest {
 
@@ -33,6 +34,14 @@ class DsnTest {
     fun `dsn parsed with trailing slash`() {
         val dsn = Dsn("http://key@host/id/")
         assertEquals("http://host/api/id/store/", dsn.sentryUri.toURL().toString())
+    }
+
+    @Test
+    fun `dsn parsed with no delimiter for key`() {
+        val dsn = Dsn("https://publicKey@host/id")
+
+        assertEquals("publicKey", dsn.publicKey)
+        assertNull(dsn.secretKey)
     }
 
     @Test
