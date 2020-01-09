@@ -6,7 +6,6 @@ import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.mockingDetails
 import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import io.sentry.core.hints.Cached
@@ -106,7 +105,7 @@ class SentryClientTest {
         val sut = fixture.getSut()
         val actual = SentryEvent()
         sut.captureEvent(actual)
-        verify(fixture.connection, times(1)).send(eq(expected), isNull())
+        verify(fixture.connection).send(eq(expected), isNull())
         verifyNoMoreInteractions(fixture.connection)
     }
 
@@ -383,7 +382,7 @@ class SentryClientTest {
         val sut = fixture.getSut()
 
         sut.captureEvent(event, scope)
-        verify(processor, times(1)).process(eq(event), anyOrNull())
+        verify(processor).process(eq(event), anyOrNull())
     }
 
     @Test
@@ -394,7 +393,7 @@ class SentryClientTest {
         val event = SentryEvent()
 
         fixture.getSut().captureEvent(event)
-        verify(processor, times(1)).process(eq(event), anyOrNull())
+        verify(processor).process(eq(event), anyOrNull())
     }
 
     private fun createScope(): Scope {
