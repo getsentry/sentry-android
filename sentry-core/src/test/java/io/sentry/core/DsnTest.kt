@@ -7,9 +7,14 @@ import kotlin.test.assertFailsWith
 class DsnTest {
 
     @Test
-    fun `dsn parsed with path`() {
-        val dsn = Dsn("https://key@host/path/id")
+    fun `dsn parsed with path, sets all properties`() {
+        val dsn = Dsn("https://publicKey:secretKey@host/path/id")
+
         assertEquals("https://host/path/api/id/store/", dsn.sentryUri.toURL().toString())
+        assertEquals("publicKey", dsn.publicKey)
+        assertEquals("secretKey", dsn.secretKey)
+        assertEquals("/path/", dsn.path)
+        assertEquals("id", dsn.projectId)
     }
 
     @Test
@@ -39,6 +44,12 @@ class DsnTest {
     @Test
     fun `when no key exists, throws exception`() {
         val ex = assertFailsWith<InvalidDsnException> { Dsn("http://host/id") }
+        assertEquals("java.lang.IllegalArgumentException: Invalid DSN: No public key provided.", ex.message)
+    }
+
+    @Test
+    fun `when only passing secret key, throws exception`() {
+        val ex = assertFailsWith<InvalidDsnException> { Dsn("https://:secret@host/path/id") }
         assertEquals("java.lang.IllegalArgumentException: Invalid DSN: No public key provided.", ex.message)
     }
 }
