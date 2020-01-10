@@ -15,7 +15,7 @@ import org.jetbrains.annotations.TestOnly;
 
 final class AnrIntegration implements Integration, Closeable {
 
-  @TestOnly private static ANRWatchDog anrWatchDog;
+  private static ANRWatchDog anrWatchDog;
 
   @Override
   public void register(IHub hub, SentryOptions options) {
