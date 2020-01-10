@@ -33,9 +33,6 @@ object Config {
         val androidxRunner = "androidx.test:runner:$androidxTestVersion"
         val androidxJunit = "androidx.test.ext:junit:1.1.1"
         val robolectric = "org.robolectric:robolectric:4.3.1"
-        val junit = "junit:junit:4.12"
-        val espressoCore = "androidx.test.espresso:espresso-core:3.2.0"
-        val androidxOrchestrator = "androidx.test:orchestrator:$androidxTestVersion"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     }
 
@@ -85,7 +82,7 @@ object Config {
     }
 
     object NativePlugins {
-        val nativeBundlePlugin = "com.ydq.android.gradle.build.tool:nativeBundle:1.0.3"
+        val nativeBundlePlugin = "com.ydq.android.gradle.build.tool:nativeBundle:1.0.4"
         val nativeBundleExport = "com.ydq.android.gradle.native-aar.export"
     }
 }
