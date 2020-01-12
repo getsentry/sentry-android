@@ -10,16 +10,16 @@ import org.jetbrains.annotations.TestOnly;
 final class AndroidTransportGate implements ITransportGate {
 
   private final Context context;
-  private final ILogger loger;
+  private final ILogger logger;
 
-  AndroidTransportGate(@NotNull Context context, @NotNull ILogger loger) {
+  AndroidTransportGate(@NotNull Context context, @NotNull ILogger logger) {
     this.context = context;
-    this.loger = loger;
+    this.logger = logger;
   }
 
   @Override
   public boolean isSendingAllowed() {
-    return isConnected(ConnectivityChecker.isConnected(context, loger));
+    return isConnected(ConnectivityChecker.isConnected(context, logger));
   }
 
   @TestOnly
