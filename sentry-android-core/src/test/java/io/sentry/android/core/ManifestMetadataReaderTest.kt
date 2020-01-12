@@ -30,7 +30,7 @@ class ManifestMetadataReaderTest {
         // tests for the returned boolean are in SentryInitProviderTest
         val logger = mock<ILogger>()
         assertTrue(ManifestMetadataReader.isAutoInit(context, logger))
-        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to read auto-init from android manifest metadata."), any())
+        verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
     }
 
     @Test
@@ -41,6 +41,6 @@ class ManifestMetadataReaderTest {
         ManifestMetadataReader.applyMetadata(context, options)
         val logger = mock<ILogger>()
         options.setLogger(logger)
-        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to read configuration from android manifest metadata."), any())
+        verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
     }
 }
