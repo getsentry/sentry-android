@@ -97,7 +97,7 @@ public final class Sentry {
    * Close the SDK
    */
   public static synchronized void close() {
-    IHub hub = getCurrentHub(); // TODO: should we not close all the hubs?
+    IHub hub = getCurrentHub();
     mainHub = NoOpHub.getInstance();
     hub.close();
   }
