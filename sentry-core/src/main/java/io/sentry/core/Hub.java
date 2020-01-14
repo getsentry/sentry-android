@@ -506,7 +506,7 @@ public final class Hub implements IHub {
       options.getLogger().log(SentryLevel.WARNING, "Disabled Hub cloned.");
     }
     // Clone will be invoked in parallel
-    Hub clone = new Hub(this.options, null);
+    final Hub clone = new Hub(this.options, null);
     for (StackItem item : this.stack) {
       Scope clonedScope;
       try {
@@ -516,7 +516,7 @@ public final class Hub implements IHub {
         options.getLogger().log(SentryLevel.ERROR, "Clone not supported");
         clonedScope = new Scope(options.getMaxBreadcrumbs(), options.getBeforeBreadcrumb());
       }
-      StackItem cloneItem = new StackItem(item.client, clonedScope);
+      final StackItem cloneItem = new StackItem(item.client, clonedScope);
       clone.stack.push(cloneItem);
     }
     return clone;

@@ -3,13 +3,13 @@ package io.sentry.core;
 import io.sentry.core.protocol.User;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,23 +17,23 @@ public final class Scope implements Cloneable {
   private @Nullable SentryLevel level;
   private @Nullable String transaction;
   private @Nullable User user;
-  private @NotNull List<String> fingerprint = new ArrayList<>();
+  private @NotNull List<String> fingerprint = new CopyOnWriteArrayList<>();
   private @NotNull Queue<Breadcrumb> breadcrumbs;
   private @NotNull Map<String, String> tags = new ConcurrentHashMap<>();
   private @NotNull Map<String, Object> extra = new ConcurrentHashMap<>();
   private final int maxBreadcrumb;
   private @Nullable final SentryOptions.BeforeBreadcrumbCallback beforeBreadcrumbCallback;
-  private @NotNull List<EventProcessor> eventProcessors = new ArrayList<>();
+  private @NotNull List<EventProcessor> eventProcessors = new CopyOnWriteArrayList<>();
 
   public Scope(
-      int maxBreadcrumb,
+      final int maxBreadcrumb,
       @Nullable final SentryOptions.BeforeBreadcrumbCallback beforeBreadcrumbCallback) {
     this.maxBreadcrumb = maxBreadcrumb;
     this.beforeBreadcrumbCallback = beforeBreadcrumbCallback;
     this.breadcrumbs = createBreadcrumbsList(this.maxBreadcrumb);
   }
 
-  public Scope(int maxBreadcrumb) {
+  public Scope(final int maxBreadcrumb) {
     this(maxBreadcrumb, null);
   }
 
@@ -131,51 +131,60 @@ public final class Scope implements Cloneable {
 
   @Override
   public Scope clone() throws CloneNotSupportedException {
-    Scope clone = (Scope) super.clone();
-    clone.level = level != null ? SentryLevel.valueOf(level.name().toUpperCase(Locale.ROOT)) : null;
-    clone.user = user != null ? user.clone() : null;
-    clone.fingerprint = fingerprint != null ? new ArrayList<>(fingerprint) : null;
-    clone.eventProcessors = eventProcessors != null ? new ArrayList<>(eventProcessors) : null;
+    final Scope clone = (Scope) super.clone();
 
-    if (breadcrumbs != null) {
-      Queue<Breadcrumb> breadcrumbsClone = createBreadcrumbsList(maxBreadcrumb);
+    final SentryLevel levelRef = level;
+    clone.level =
+        levelRef != null ? SentryLevel.valueOf(levelRef.name().toUpperCase(Locale.ROOT)) : null;
 
-      for (Breadcrumb item : breadcrumbs) {
-        Breadcrumb breadcrumbClone = item.clone();
-        breadcrumbsClone.add(breadcrumbClone);
+    final User userRef = user;
+    clone.user = userRef != null ? userRef.clone() : null;
+
+    clone.fingerprint = new CopyOnWriteArrayList<>(fingerprint);
+    clone.eventProcessors = new CopyOnWriteArrayList<>(eventProcessors);
+
+    final Queue<Breadcrumb> breadcrumbsRef = breadcrumbs;
+    //    if (breadcrumbs != null) {
+    Queue<Breadcrumb> breadcrumbsClone = createBreadcrumbsList(maxBreadcrumb);
+
+    for (Breadcrumb item : breadcrumbsRef) {
+      final Breadcrumb breadcrumbClone = item.clone();
+      breadcrumbsClone.add(breadcrumbClone);
+    }
+    clone.breadcrumbs = breadcrumbsClone;
+    //    } else {
+    //      clone.breadcrumbs = null;
+    //    }
+
+    final Map<String, String> tagsRef = tags;
+    //    if (tags != null) {
+    final Map<String, String> tagsClone = new ConcurrentHashMap<>();
+
+    for (Map.Entry<String, String> item : tagsRef.entrySet()) {
+      if (item != null) {
+        tagsClone.put(item.getKey(), item.getValue());
       }
-      clone.breadcrumbs = breadcrumbsClone;
-    } else {
-      clone.breadcrumbs = null;
     }
 
-    if (tags != null) {
-      Map<String, String> tagsClone = new ConcurrentHashMap<>();
+    clone.tags = tagsClone;
+    //    } else {
+    //      clone.tags = null;
+    //    }
 
-      for (Map.Entry<String, String> item : tags.entrySet()) {
-        if (item != null) {
-          tagsClone.put(item.getKey(), item.getValue());
-        }
+    final Map<String, Object> extraRef = extra;
+    //        if (extra != null) {
+    Map<String, Object> extraClone = new HashMap<>();
+
+    for (Map.Entry<String, Object> item : extraRef.entrySet()) {
+      if (item != null) {
+        extraClone.put(item.getKey(), item.getValue());
       }
-
-      clone.tags = tagsClone;
-    } else {
-      clone.tags = null;
     }
 
-    if (extra != null) {
-      Map<String, Object> extraClone = new HashMap<>();
-
-      for (Map.Entry<String, Object> item : extra.entrySet()) {
-        if (item != null) {
-          extraClone.put(item.getKey(), item.getValue());
-        }
-      }
-
-      clone.extra = extraClone;
-    } else {
-      clone.extra = null;
-    }
+    clone.extra = extraClone;
+    //        } else {
+    //            clone.extra = null;
+    //        }
 
     return clone;
   }

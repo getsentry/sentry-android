@@ -11,7 +11,7 @@ import org.jetbrains.annotations.TestOnly;
 
 public final class SentryEvent implements IUnknownPropertiesConsumer {
   private SentryId eventId;
-  private Date timestamp;
+  private final Date timestamp;
   private transient Throwable throwable;
   private Message message;
   private String serverName;
@@ -36,7 +36,7 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
   private Map<String, String> modules;
   private DebugMeta debugMeta;
 
-  SentryEvent(SentryId eventId, Date timestamp) {
+  SentryEvent(SentryId eventId, final Date timestamp) {
     this.eventId = eventId;
     this.timestamp = timestamp;
   }
@@ -48,6 +48,11 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
 
   public SentryEvent() {
     this(new SentryId(), DateUtils.getCurrentDateTime());
+  }
+
+  @TestOnly
+  public SentryEvent(final Date timestamp) {
+    this(new SentryId(), timestamp);
   }
 
   public SentryId getEventId() {
@@ -134,10 +139,10 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     this.eventId = eventId;
   }
 
-  @TestOnly
-  public void setTimestamp(Date timestamp) {
-    this.timestamp = timestamp;
-  }
+  //  @TestOnly
+  //  public void setTimestamp(Date timestamp) {
+  //    this.timestamp = timestamp;
+  //  }
 
   public void setThrowable(Throwable throwable) {
     this.throwable = throwable;

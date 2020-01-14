@@ -10,7 +10,7 @@ import org.jetbrains.annotations.TestOnly;
 
 public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
 
-  private Date timestamp;
+  private final Date timestamp;
   private String message;
   private String type;
   private Map<String, String> data;
@@ -18,7 +18,7 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
   private SentryLevel level;
   private Map<String, Object> unknown;
 
-  Breadcrumb(Date timestamp) {
+  Breadcrumb(final Date timestamp) {
     this.timestamp = timestamp;
   }
 
@@ -33,10 +33,6 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
 
   public Date getTimestamp() {
     return (Date) timestamp.clone();
-  }
-
-  void setTimestamp(Date timestamp) {
-    this.timestamp = timestamp;
   }
 
   public String getMessage() {
@@ -92,14 +88,16 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
 
   @Override
   public Breadcrumb clone() throws CloneNotSupportedException {
-    Breadcrumb clone = (Breadcrumb) super.clone();
+    final Breadcrumb clone = (Breadcrumb) super.clone();
 
-    clone.timestamp = timestamp != null ? (Date) timestamp.clone() : null;
+    //    final Date timestampRef = timestamp;
+    //    clone.timestamp = timestamp != null ? (Date) timestamp.clone() : null;
 
-    if (data != null) {
-      Map<String, String> dataClone = new ConcurrentHashMap<>();
+    final Map<String, String> dataRef = data;
+    if (dataRef != null) {
+      final Map<String, String> dataClone = new ConcurrentHashMap<>();
 
-      for (Map.Entry<String, String> item : data.entrySet()) {
+      for (Map.Entry<String, String> item : dataRef.entrySet()) {
         if (item != null) {
           dataClone.put(item.getKey(), item.getValue());
         }
@@ -110,10 +108,11 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
       clone.data = null;
     }
 
-    if (unknown != null) {
-      Map<String, Object> unknownClone = new HashMap<>();
+    final Map<String, Object> unknownRef = unknown;
+    if (unknownRef != null) {
+      final Map<String, Object> unknownClone = new HashMap<>();
 
-      for (Map.Entry<String, Object> item : unknown.entrySet()) {
+      for (Map.Entry<String, Object> item : unknownRef.entrySet()) {
         if (item != null) {
           unknownClone.put(item.getKey(), item.getValue()); // shallow copy
         }
@@ -124,7 +123,9 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
       clone.unknown = null;
     }
 
-    clone.level = level != null ? SentryLevel.valueOf(level.name().toUpperCase(Locale.ROOT)) : null;
+    final SentryLevel levelRef = level;
+    clone.level =
+        levelRef != null ? SentryLevel.valueOf(levelRef.name().toUpperCase(Locale.ROOT)) : null;
 
     return clone;
   }
