@@ -1,8 +1,6 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.User;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -91,9 +89,6 @@ public final class Scope implements Cloneable {
           data = new HashMap<>();
         }
         data.put("sentry:message", e.getMessage());
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        data.put("sentry:stacktrace", sw.toString());
         breadcrumb.setData(data);
       }
 
