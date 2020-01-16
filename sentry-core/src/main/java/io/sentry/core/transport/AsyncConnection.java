@@ -30,17 +30,10 @@ public final class AsyncConnection implements Closeable, Connection {
   public AsyncConnection(
       ITransport transport,
       ITransportGate transportGate,
-      IBackOffIntervalStrategy backOffIntervalStrategy,
       IEventCache eventCache,
-      //      int maxRetries,
       int maxQueueSize,
       SentryOptions options) {
-    this(
-        transport,
-        transportGate,
-        eventCache,
-        initExecutor(maxQueueSize, backOffIntervalStrategy, eventCache),
-        options);
+    this(transport, transportGate, eventCache, initExecutor(maxQueueSize, eventCache), options);
   }
 
   @TestOnly
@@ -57,9 +50,7 @@ public final class AsyncConnection implements Closeable, Connection {
     this.executor = executorService;
   }
 
-  private static RetryingThreadPoolExecutor initExecutor(
-      //      int maxRetries,
-      int maxQueueSize, IBackOffIntervalStrategy backOffIntervalStrategy, IEventCache eventCache) {
+  private static RetryingThreadPoolExecutor initExecutor(int maxQueueSize, IEventCache eventCache) {
 
     RejectedExecutionHandler storeEvents =
         (r, executor) -> {
@@ -70,12 +61,7 @@ public final class AsyncConnection implements Closeable, Connection {
 
     int corePoolSize = 1;
     return new RetryingThreadPoolExecutor(
-        corePoolSize,
-        //        maxRetries,
-        maxQueueSize,
-        new AsyncConnectionThreadFactory(),
-        backOffIntervalStrategy,
-        storeEvents);
+        corePoolSize, maxQueueSize, new AsyncConnectionThreadFactory(), storeEvents);
   }
 
   /**

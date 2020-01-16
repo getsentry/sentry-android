@@ -31,10 +31,8 @@ import org.jetbrains.annotations.NotNull;
  * <p>This class is not public because it is used solely in {@link AsyncConnection}.
  */
 final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
-  //  private final int maxRetries;
   private final int maxQueueSize;
   private final AtomicInteger currentlyRunning;
-  private final IBackOffIntervalStrategy backOffIntervalStrategy;
 
   private static final int HTTP_TOO_MANY_REQUESTS = 429;
 
@@ -48,22 +46,16 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
    * @param corePoolSize the minimum number of threads started // * @param maxRetries the maximum
    *     number of retries of failing tasks
    * @param threadFactory the thread factory to construct new threads
-   * @param backOffIntervalStrategy the strategy for obtaining delays between retries if not
-   *     suggested by the tasks
    * @param rejectedExecutionHandler specifies what to do with the tasks that cannot be run (e.g.
    *     during the shutdown)
    */
   public RetryingThreadPoolExecutor(
       int corePoolSize,
-      //    int maxRetries,
       int maxQueueSize,
       ThreadFactory threadFactory,
-      IBackOffIntervalStrategy backOffIntervalStrategy,
       RejectedExecutionHandler rejectedExecutionHandler) {
     super(corePoolSize, threadFactory, rejectedExecutionHandler);
-    //    this.maxRetries = maxRetries;
     this.maxQueueSize = maxQueueSize;
-    this.backOffIntervalStrategy = backOffIntervalStrategy;
     this.currentlyRunning = new AtomicInteger();
   }
 
@@ -111,10 +103,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   protected <V> RunnableScheduledFuture<V> decorateTask(
       Runnable runnable, RunnableScheduledFuture<V> task) {
 
-    //    int attempt = 0;
-
     if (runnable instanceof NextAttempt) {
-      //      attempt = ((NextAttempt) runnable).attempt;
       runnable = ((NextAttempt) runnable).runnable;
     }
 
@@ -157,17 +146,11 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
       }
 
       if (t != null) {
-        //        int attempt = ar.attempt.get();
-        //        if (attempt < maxRetries) {
         long delayMillis = -1;
         int responseCode = -1;
         if (ar.suppliedAction instanceof Retryable) {
           delayMillis = ((Retryable) ar.suppliedAction).getSuggestedRetryDelayMillis();
           responseCode = ((Retryable) ar.suppliedAction).getResponseCode();
-        }
-
-        if (delayMillis < 0) {
-          delayMillis = backOffIntervalStrategy.nextDelayMillis(1);
         }
 
         if (responseCode == HTTP_TOO_MANY_REQUESTS) {
@@ -203,11 +186,9 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   }
 
   private static final class NextAttempt implements Runnable {
-    //    private final int attempt;
     private final Runnable runnable;
 
     private NextAttempt(Runnable runnable) {
-      //      this.attempt = attempt;
       this.runnable = runnable;
     }
 
@@ -220,12 +201,10 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   private static final class AttemptedRunnable<V> implements RunnableScheduledFuture<V> {
     private final RunnableScheduledFuture<?> task;
     private final Runnable suppliedAction;
-    //    final AtomicInteger attempt;
 
     AttemptedRunnable(RunnableScheduledFuture<?> task, Runnable suppliedAction) {
       this.task = task;
       this.suppliedAction = suppliedAction;
-      //      this.attempt = new AtomicInteger(attempt);
     }
 
     @Override
@@ -245,7 +224,6 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
     @Override
     public void run() {
-      //      attempt.incrementAndGet();
       task.run();
     }
 

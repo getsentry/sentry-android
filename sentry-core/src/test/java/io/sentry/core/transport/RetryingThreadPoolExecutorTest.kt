@@ -27,14 +27,13 @@ class RetryingThreadPoolExecutorTest {
             t.isDaemon = true
             t
         }
-        val rerunImmediately = io.sentry.core.transport.IBackOffIntervalStrategy { 0L }
 
         // make sure we have enough threads to handle more than the maximum number of enqueued operations
         // in reality this would not be a problem but the test code needs to synchronize the main thread
         // with a number of jobs. If there weren't enough threads, the main thread could block indefinitely
         // because there wouldn't be enough worker threads to handle all jobs in the queue (because the test
         // code blocks the worker threads).
-        threadPool = RetryingThreadPoolExecutor(maxQueueSize + 1, maxQueueSize, threadFactory, rerunImmediately, DiscardPolicy())
+        threadPool = RetryingThreadPoolExecutor(maxQueueSize + 1, maxQueueSize, threadFactory, DiscardPolicy())
     }
 
     @AfterTest
