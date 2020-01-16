@@ -171,23 +171,10 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
         }
 
         if (responseCode == HTTP_TOO_MANY_REQUESTS) {
-          // if I delay or await this thread to finish respecting delayMillis, next ones might not
-          // have the chance to cache the event
-          // eg
-          // https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ThreadPoolExecutor.html
-          // using a ReentrantLock pauseLock
-
-          //            List<Runnable> runnables = shutdownNow();
-          // it should be possible to reschedule again with the delay, but again, we delay the
-          // caching of events
-          //          shutdownNow();
           getQueue().clear();
 
           scheduleRetryAfterDelay(delayMillis);
         }
-        //          schedule(new NextAttempt(attempt, ar.suppliedAction), delayMillis,
-        // TimeUnit.MILLISECONDS);
-        //        }
       }
     } finally {
       currentlyRunning.decrementAndGet();

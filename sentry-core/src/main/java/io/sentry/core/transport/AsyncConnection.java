@@ -93,7 +93,6 @@ public final class AsyncConnection implements Closeable, Connection {
       currentEventCache = NoOpEventCache.getInstance();
     }
     executor.submit(new EventSender(event, hint, currentEventCache));
-    //    future.cancel(true); if I hold a reference of the future here, I can only cancel it anyway
   }
 
   @Override
@@ -175,12 +174,7 @@ public final class AsyncConnection implements Closeable, Connection {
             .log(SentryLevel.DEBUG, "Disk flush event fired: %s", event.getEventId());
       }
 
-      // might be able to hacky this if I check the last result, at least is gonna store, but wont
-      // try again after X seconds, only after restart
-      // or maybe even using a hint
-      if (transportGate
-          .isSendingAllowed()) { // maybe a pauseLock = new ReentrantLock(); here too, but we still
-        // need to calculate the time
+      if (transportGate.isSendingAllowed()) {
         try {
           result = transport.send(event);
           if (result.isSuccess()) {
