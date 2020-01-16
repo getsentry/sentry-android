@@ -32,14 +32,14 @@ public final class AsyncConnection implements Closeable, Connection {
       ITransportGate transportGate,
       IBackOffIntervalStrategy backOffIntervalStrategy,
       IEventCache eventCache,
-      int maxRetries,
+      //      int maxRetries,
       int maxQueueSize,
       SentryOptions options) {
     this(
         transport,
         transportGate,
         eventCache,
-        initExecutor(maxRetries, maxQueueSize, backOffIntervalStrategy, eventCache),
+        initExecutor(maxQueueSize, backOffIntervalStrategy, eventCache),
         options);
   }
 
@@ -58,10 +58,8 @@ public final class AsyncConnection implements Closeable, Connection {
   }
 
   private static RetryingThreadPoolExecutor initExecutor(
-      int maxRetries,
-      int maxQueueSize,
-      IBackOffIntervalStrategy backOffIntervalStrategy,
-      IEventCache eventCache) {
+      //      int maxRetries,
+      int maxQueueSize, IBackOffIntervalStrategy backOffIntervalStrategy, IEventCache eventCache) {
 
     RejectedExecutionHandler storeEvents =
         (r, executor) -> {
@@ -70,9 +68,10 @@ public final class AsyncConnection implements Closeable, Connection {
           }
         };
 
+    int corePoolSize = 1;
     return new RetryingThreadPoolExecutor(
-        1,
-        maxRetries,
+        corePoolSize,
+        //        maxRetries,
         maxQueueSize,
         new AsyncConnectionThreadFactory(),
         backOffIntervalStrategy,
@@ -94,6 +93,7 @@ public final class AsyncConnection implements Closeable, Connection {
       currentEventCache = NoOpEventCache.getInstance();
     }
     executor.submit(new EventSender(event, hint, currentEventCache));
+    //    future.cancel(true); if I hold a reference of the future here, I can only cancel it anyway
   }
 
   @Override
@@ -134,8 +134,9 @@ public final class AsyncConnection implements Closeable, Connection {
     final SentryEvent event;
     private final Object hint;
     private final IEventCache eventCache;
-    long suggestedRetryDelay;
-    final TransportResult failedResult = TransportResult.error(5000, -1);
+    private long suggestedRetryDelay;
+    private int responseCode;
+    private final TransportResult failedResult = TransportResult.error(5000, -1);
 
     EventSender(SentryEvent event, Object hint, IEventCache eventCache) {
       this.event = event;
@@ -174,13 +175,19 @@ public final class AsyncConnection implements Closeable, Connection {
             .log(SentryLevel.DEBUG, "Disk flush event fired: %s", event.getEventId());
       }
 
-      if (transportGate.isSendingAllowed()) {
+      // might be able to hacky this if I check the last result, at least is gonna store, but wont
+      // try again after X seconds, only after restart
+      // or maybe even using a hint
+      if (transportGate
+          .isSendingAllowed()) { // maybe a pauseLock = new ReentrantLock(); here too, but we still
+        // need to calculate the time
         try {
           result = transport.send(event);
           if (result.isSuccess()) {
             eventCache.discard(event);
           } else {
             suggestedRetryDelay = result.getRetryMillis();
+            responseCode = result.getResponseCode();
 
             String message =
                 "The transport failed to send the event with response code "
@@ -212,6 +219,11 @@ public final class AsyncConnection implements Closeable, Connection {
     @Override
     public long getSuggestedRetryDelayMillis() {
       return suggestedRetryDelay;
+    }
+
+    @Override
+    public int getResponseCode() {
+      return responseCode;
     }
   }
 }

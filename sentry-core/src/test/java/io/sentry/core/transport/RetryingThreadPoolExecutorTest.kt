@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -33,7 +34,7 @@ class RetryingThreadPoolExecutorTest {
         // with a number of jobs. If there weren't enough threads, the main thread could block indefinitely
         // because there wouldn't be enough worker threads to handle all jobs in the queue (because the test
         // code blocks the worker threads).
-        threadPool = RetryingThreadPoolExecutor(maxQueueSize + 1, maxRetries, maxQueueSize, threadFactory, rerunImmediately, DiscardPolicy())
+        threadPool = RetryingThreadPoolExecutor(maxQueueSize + 1, maxQueueSize, threadFactory, rerunImmediately, DiscardPolicy())
     }
 
     @AfterTest
@@ -57,6 +58,7 @@ class RetryingThreadPoolExecutorTest {
         assertEquals(1, actualTimes.get(), "Successful task should only be run once.")
     }
 
+    @Ignore("theres no retry")
     @Test
     fun `retries while failing`() {
         val counter = CountDownLatch(3)
@@ -78,6 +80,7 @@ class RetryingThreadPoolExecutorTest {
         assertEquals(3, actualTimes.get(), "Shouldn't see any more attempts after 3 failures, but saw some")
     }
 
+    @Ignore("theres no retry")
     @Test
     fun `retries at most maxRetries-times`() {
         val counter = CountDownLatch(maxRetries)
@@ -96,11 +99,13 @@ class RetryingThreadPoolExecutorTest {
         assertEquals(maxRetries, actualTimes.get(), "Shouldn't see any more attempts after max retries, but saw some")
     }
 
+    @Ignore("theres no retry")
     @Test
     fun `honors suggested delay on error`() {
         val counter = CountDownLatch(maxRetries)
         val now = System.currentTimeMillis()
         val delay = 40L
+//        val responseCode = 429
 
         threadPool?.submit(object : Retryable {
             override fun run() {
@@ -110,6 +115,10 @@ class RetryingThreadPoolExecutorTest {
 
             override fun getSuggestedRetryDelayMillis(): Long {
                 return delay
+            }
+
+            override fun getResponseCode(): Int {
+                return 429
             }
         })
 

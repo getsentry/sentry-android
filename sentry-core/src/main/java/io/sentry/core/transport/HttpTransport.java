@@ -105,6 +105,7 @@ public class HttpTransport implements ITransport {
       connection.getInputStream().close();
       options.getLogger().log(DEBUG, "Event sent %s successfully.", event.getEventId());
       return TransportResult.success();
+      //      throw new IOException();
     } catch (IOException e) {
       long retryAfterMs = 1000; // the default is 1s
       String retryAfterHeader = connection.getHeaderField("Retry-After");
@@ -120,6 +121,7 @@ public class HttpTransport implements ITransport {
       int responseCode = -1;
       try {
         responseCode = connection.getResponseCode();
+
         if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
           options
               .getLogger()
