@@ -16,6 +16,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 /**
  * This is a thread pool executor enriched for the possibility of retrying the supplied tasks.
@@ -35,25 +36,27 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   private final AtomicInteger currentlyRunning;
 
   private static final int HTTP_TOO_MANY_REQUESTS = 429;
+  static final long HTTP_RETRY_AFTER_DEFAULT_DELAY = 60000; // default 60s
 
-  private final AtomicBoolean retryAfter = new AtomicBoolean(false);
+  @TestOnly final AtomicBoolean retryAfter = new AtomicBoolean(false);
+
   private final Timer timer = new Timer(true);
   private TimerTask timerTaskRetryAfter;
 
   /**
    * Creates a new instance of the thread pool.
    *
-   * @param corePoolSize the minimum number of threads started // * @param maxRetries the maximum
-   *     number of retries of failing tasks
+   * @param corePoolSize the minimum number of threads started
    * @param threadFactory the thread factory to construct new threads
    * @param rejectedExecutionHandler specifies what to do with the tasks that cannot be run (e.g.
    *     during the shutdown)
    */
   public RetryingThreadPoolExecutor(
-      int corePoolSize,
-      int maxQueueSize,
-      ThreadFactory threadFactory,
-      RejectedExecutionHandler rejectedExecutionHandler) {
+      final int corePoolSize,
+      final int maxQueueSize,
+      final ThreadFactory threadFactory,
+      final RejectedExecutionHandler rejectedExecutionHandler) {
+
     super(corePoolSize, threadFactory, rejectedExecutionHandler);
     this.maxQueueSize = maxQueueSize;
     this.currentlyRunning = new AtomicInteger();
@@ -65,15 +68,14 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
    * @param task the task to execute
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  // https://errorprone.info/bugpattern/FutureReturnValueIgnored
-  public void submit(Retryable task) {
+  public void submit(final Retryable task) {
     if (isSchedulingAllowed()) {
       super.submit(task);
     }
   }
 
   @Override
-  public Future<?> submit(Runnable task) {
+  public Future<?> submit(final Runnable task) {
     if (isSchedulingAllowed()) {
       return super.submit(task);
     } else {
@@ -82,7 +84,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   }
 
   @Override
-  public <T> Future<T> submit(Runnable task, T result) {
+  public <T> Future<T> submit(final Runnable task, final T result) {
     if (isSchedulingAllowed()) {
       return super.submit(task, result);
     } else {
@@ -91,7 +93,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   }
 
   @Override
-  public <T> Future<T> submit(Callable<T> task) {
+  public <T> Future<T> submit(final Callable<T> task) {
     if (isSchedulingAllowed()) {
       return super.submit(task);
     } else {
@@ -101,7 +103,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
   @Override
   protected <V> RunnableScheduledFuture<V> decorateTask(
-      Runnable runnable, RunnableScheduledFuture<V> task) {
+      Runnable runnable, final RunnableScheduledFuture<V> task) {
 
     if (runnable instanceof NextAttempt) {
       runnable = ((NextAttempt) runnable).runnable;
@@ -111,15 +113,14 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   }
 
   @Override
-  protected void beforeExecute(Thread t, Runnable r) {
+  protected void beforeExecute(final Thread t, final Runnable r) {
     super.beforeExecute(t, r);
     currentlyRunning.incrementAndGet();
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
-  // https://errorprone.info/bugpattern/FutureReturnValueIgnored
   @Override
-  protected void afterExecute(Runnable r, Throwable t) {
+  protected void afterExecute(final Runnable r, Throwable t) {
     try {
       super.afterExecute(r, t);
 
@@ -127,7 +128,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
         return;
       }
 
-      AttemptedRunnable<?> ar = (AttemptedRunnable) r;
+      final AttemptedRunnable<?> ar = (AttemptedRunnable) r;
 
       // taken verbatim from the javadoc of the method in ThreadPoolExecutor - this makes sure we
       // capture the exceptions from the tasks
@@ -156,6 +157,11 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
         if (responseCode == HTTP_TOO_MANY_REQUESTS) {
           getQueue().clear();
 
+          // just a check for sanity
+          if (delayMillis <= 0) {
+            delayMillis = HTTP_RETRY_AFTER_DEFAULT_DELAY;
+          }
+
           scheduleRetryAfterDelay(delayMillis);
         }
       }
@@ -164,7 +170,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
   }
 
-  private void scheduleRetryAfterDelay(long delayMillis) {
+  private void scheduleRetryAfterDelay(final long delayMillis) {
     if (!retryAfter.getAndSet(true)) {
       if (timerTaskRetryAfter != null) {
         timerTaskRetryAfter.cancel();
@@ -188,7 +194,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   private static final class NextAttempt implements Runnable {
     private final Runnable runnable;
 
-    private NextAttempt(Runnable runnable) {
+    private NextAttempt(final Runnable runnable) {
       this.runnable = runnable;
     }
 
@@ -202,7 +208,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     private final RunnableScheduledFuture<?> task;
     private final Runnable suppliedAction;
 
-    AttemptedRunnable(RunnableScheduledFuture<?> task, Runnable suppliedAction) {
+    AttemptedRunnable(final RunnableScheduledFuture<?> task, final Runnable suppliedAction) {
       this.task = task;
       this.suppliedAction = suppliedAction;
     }
@@ -213,12 +219,12 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public long getDelay(@NotNull TimeUnit unit) {
+    public long getDelay(final @NotNull TimeUnit unit) {
       return task.getDelay(unit);
     }
 
     @Override
-    public int compareTo(@NotNull Delayed o) {
+    public int compareTo(final @NotNull Delayed o) {
       return task.compareTo(o);
     }
 
@@ -228,7 +234,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
+    public boolean cancel(final boolean mayInterruptIfRunning) {
       return task.cancel(mayInterruptIfRunning);
     }
 
@@ -249,14 +255,14 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public V get(long timeout, @NotNull TimeUnit unit)
+    public V get(final long timeout, final @NotNull TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException {
       task.get(timeout, unit);
       return null;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
       AttemptedRunnable<?> that = (AttemptedRunnable<?>) o;
@@ -276,7 +282,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
   private static final class CancelledFuture<T> implements Future<T> {
     @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
+    public boolean cancel(final boolean mayInterruptIfRunning) {
       return false;
     }
 
@@ -296,7 +302,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
     }
 
     @Override
-    public T get(long timeout, @NotNull TimeUnit unit) {
+    public T get(final long timeout, final @NotNull TimeUnit unit) {
       throw new CancellationException();
     }
   }
