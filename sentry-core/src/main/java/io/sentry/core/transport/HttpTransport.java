@@ -107,7 +107,7 @@ public class HttpTransport implements ITransport {
       return TransportResult.success();
       //      throw new IOException();
     } catch (IOException e) {
-      long retryAfterMs = 1000; // the default is 1s
+      long retryAfterMs = 60000; // the default is 60s
       String retryAfterHeader = connection.getHeaderField("Retry-After");
       if (retryAfterHeader != null) {
         try {
