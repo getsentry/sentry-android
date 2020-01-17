@@ -96,6 +96,7 @@ class RetryingThreadPoolExecutorTest {
         })
 
         threadPool?.submit {
+            counter.countDown()
             actualTimes.incrementAndGet()
         }
 
@@ -103,11 +104,12 @@ class RetryingThreadPoolExecutorTest {
 
         assertTrue(threadPool?.retryAfter?.get()!!)
         assertEquals(1, actualTimes.get())
+        assertEquals(0, counter.count, "Should not have retried, but it did.")
     }
 
     @Test
     fun `honors suggested delay on error, but accept new tasks after delay has passed`() {
-        val counter = CountDownLatch(1)
+        var counter = CountDownLatch(1)
         val actualTimes = AtomicInteger()
         val delay = 1000L
 
@@ -130,13 +132,13 @@ class RetryingThreadPoolExecutorTest {
         Thread.sleep(1000)
         counter.await(1, TimeUnit.MINUTES)
 
-        val counterAfterRetry = CountDownLatch(1)
+        counter = CountDownLatch(1)
         threadPool?.submit {
-            counterAfterRetry.countDown()
+            counter.countDown()
             actualTimes.incrementAndGet()
         }
 
-        counterAfterRetry.await(1, TimeUnit.MINUTES)
+        counter.await(1, TimeUnit.MINUTES)
 
         assertFalse(threadPool?.retryAfter?.get()!!)
         assertEquals(2, actualTimes.get())

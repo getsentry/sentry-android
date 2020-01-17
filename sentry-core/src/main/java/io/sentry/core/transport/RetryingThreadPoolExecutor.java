@@ -36,7 +36,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   private final AtomicInteger currentlyRunning;
 
   private static final int HTTP_TOO_MANY_REQUESTS = 429;
-  static final long HTTP_RETRY_AFTER_DEFAULT_DELAY = 60000; // default 60s
+  static final long HTTP_RETRY_AFTER_DEFAULT_DELAY_MS = 60000; // default 60s
 
   @TestOnly final AtomicBoolean retryAfter = new AtomicBoolean(false);
 
@@ -159,7 +159,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
           // just a check for sanity
           if (delayMillis <= 0) {
-            delayMillis = HTTP_RETRY_AFTER_DEFAULT_DELAY;
+            delayMillis = HTTP_RETRY_AFTER_DEFAULT_DELAY_MS;
           }
 
           scheduleRetryAfterDelay(delayMillis);

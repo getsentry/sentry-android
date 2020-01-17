@@ -1,7 +1,7 @@
 package io.sentry.core.transport;
 
 import static io.sentry.core.SentryLevel.*;
-import static io.sentry.core.transport.RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY;
+import static io.sentry.core.transport.RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY_MS;
 
 import com.jakewharton.nopen.annotation.Open;
 import io.sentry.core.ISerializer;
@@ -108,7 +108,7 @@ public class HttpTransport implements ITransport {
       return TransportResult.success();
       //      throw new IOException();
     } catch (IOException e) {
-      long retryAfterMs = HTTP_RETRY_AFTER_DEFAULT_DELAY;
+      long retryAfterMs = HTTP_RETRY_AFTER_DEFAULT_DELAY_MS;
       final String retryAfterHeader = connection.getHeaderField("Retry-After");
       if (retryAfterHeader != null) {
         try {

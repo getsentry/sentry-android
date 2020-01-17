@@ -1,6 +1,6 @@
 package io.sentry.core.transport;
 
-import static io.sentry.core.transport.RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY;
+import static io.sentry.core.transport.RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY_MS;
 
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
@@ -124,7 +124,7 @@ public final class AsyncConnection implements Closeable, Connection {
     private long suggestedRetryDelay;
     private int responseCode;
     private final TransportResult failedResult =
-        TransportResult.error(HTTP_RETRY_AFTER_DEFAULT_DELAY, -1);
+        TransportResult.error(HTTP_RETRY_AFTER_DEFAULT_DELAY_MS, -1);
 
     EventSender(final SentryEvent event, final Object hint, final IEventCache eventCache) {
       this.event = event;
