@@ -16,7 +16,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.TestOnly;
 
 /**
  * This is a thread pool executor enriched for the possibility of retrying the supplied tasks.
@@ -38,7 +37,7 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
   private static final int HTTP_TOO_MANY_REQUESTS = 429;
   static final long HTTP_RETRY_AFTER_DEFAULT_DELAY_MS = 60000; // default 60s
 
-  @TestOnly final AtomicBoolean retryAfter = new AtomicBoolean(false);
+  private final AtomicBoolean retryAfter = new AtomicBoolean(false);
 
   private final Timer timer = new Timer(true);
   private TimerTask timerTaskRetryAfter;

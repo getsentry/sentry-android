@@ -66,10 +66,9 @@ class RetryingThreadPoolExecutorTest {
             throw RuntimeException()
         }
 
-        counter.await(1, TimeUnit.MINUTES)
+        counter.await()
         Thread.sleep(1000)
 
-        assertEquals(0, counter.count, "Should not have retried, but it did.")
         assertEquals(1, actualTimes.get(), "Shouldn't see any more attempts, but saw some")
     }
 
@@ -77,7 +76,7 @@ class RetryingThreadPoolExecutorTest {
     fun `honors suggested delay on error and do not accept new tasks`() {
         val counter = CountDownLatch(1)
         val actualTimes = AtomicInteger()
-        val delay = 1000L
+        val delay = 100L
 
         threadPool?.submit(object : Retryable {
             override fun run() {
@@ -96,13 +95,12 @@ class RetryingThreadPoolExecutorTest {
         })
 
         threadPool?.submit {
-            counter.countDown()
             actualTimes.incrementAndGet()
         }
 
         counter.await(1, TimeUnit.MINUTES)
+        Thread.sleep(1000)
 
-        assertTrue(threadPool?.retryAfter?.get()!!)
         assertEquals(1, actualTimes.get())
         assertEquals(0, counter.count, "Should not have retried, but it did.")
     }
@@ -111,7 +109,7 @@ class RetryingThreadPoolExecutorTest {
     fun `honors suggested delay on error, but accept new tasks after delay has passed`() {
         var counter = CountDownLatch(1)
         val actualTimes = AtomicInteger()
-        val delay = 1000L
+        val delay = 100L
 
         threadPool?.submit(object : Retryable {
             override fun run() {
@@ -129,8 +127,8 @@ class RetryingThreadPoolExecutorTest {
             }
         })
 
-        Thread.sleep(1000)
         counter.await(1, TimeUnit.MINUTES)
+        Thread.sleep(1000)
 
         counter = CountDownLatch(1)
         threadPool?.submit {
@@ -139,8 +137,8 @@ class RetryingThreadPoolExecutorTest {
         }
 
         counter.await(1, TimeUnit.MINUTES)
+        Thread.sleep(1000)
 
-        assertFalse(threadPool?.retryAfter?.get()!!)
         assertEquals(2, actualTimes.get())
     }
 
