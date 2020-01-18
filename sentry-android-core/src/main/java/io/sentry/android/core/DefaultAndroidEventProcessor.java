@@ -14,6 +14,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.LocaleList;
+import android.os.Looper;
 import android.os.StatFs;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -21,7 +22,6 @@ import android.util.DisplayMetrics;
 import io.sentry.android.core.util.ConnectivityChecker;
 import io.sentry.core.DateUtils;
 import io.sentry.core.EventProcessor;
-import io.sentry.core.ILogger;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -32,6 +32,7 @@ import io.sentry.core.protocol.DebugMeta;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.OperatingSystem;
 import io.sentry.core.protocol.SdkVersion;
+import io.sentry.core.protocol.SentryThread;
 import io.sentry.core.protocol.User;
 import io.sentry.core.util.Objects;
 import java.io.BufferedReader;
@@ -160,6 +161,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         event.getContexts().setApp(getApp(packageInfo));
       }
     }
+
+    if (event.getThreads() != null) {
+      for (SentryThread thread : event.getThreads()) {
+        thread.setCurrent(Looper.getMainLooper().getThread().getId() == thread.getId());
+      }
+    }
   }
 
   private List<DebugImage> getDebugImages() {
@@ -170,7 +177,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         uuids = (String[]) proGuardUuids;
       }
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting proGuardUuids.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting proGuardUuids.", e);
       return null;
     }
 
@@ -257,7 +264,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     try {
       return context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting package info.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting package info.", e);
       return null;
     }
   }
@@ -313,7 +320,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         device.setSimulator((Boolean) emulator);
       }
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting emulator.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting emulator.", e);
     }
 
     ActivityManager.MemoryInfo memInfo = getMemInfo();
@@ -352,6 +359,17 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
     device.setBootTime(getBootTime());
     device.setTimezone(getTimeZone());
+
+    if (device.getId() == null) {
+      device.setId(getDeviceId());
+    }
+    if (device.getLanguage() == null) {
+      device.setLanguage(Locale.getDefault().toString()); // eg en_US
+    }
+    if (device.getConnectionType() == null) {
+      // wifi, ethernet or cellular, null if none
+      device.setConnectionType(ConnectivityChecker.getConnectionType(context, options.getLogger()));
+    }
 
     return device;
   }
@@ -405,10 +423,10 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         actManager.getMemoryInfo(memInfo);
         return memInfo;
       }
-      log(SentryLevel.INFO, "Error getting MemoryInfo.");
+      options.getLogger().log(SentryLevel.INFO, "Error getting MemoryInfo.");
       return null;
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting MemoryInfo.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting MemoryInfo.", e);
       return null;
     }
   }
@@ -427,7 +445,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     try {
       return Build.MODEL.split(" ", -1)[0];
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting device family.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting device family.", e);
       return null;
     }
   }
@@ -450,7 +468,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
       return ((float) level / (float) scale) * percentMultiplier;
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting device battery level.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting device battery level.", e);
       return null;
     }
   }
@@ -466,7 +484,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       return plugged == BatteryManager.BATTERY_PLUGGED_AC
           || plugged == BatteryManager.BATTERY_PLUGGED_USB;
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting device charging state.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting device charging state.", e);
       return null;
     }
   }
@@ -484,11 +502,13 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         case Configuration.ORIENTATION_PORTRAIT:
           return Device.DeviceOrientation.PORTRAIT;
         default:
-          log(SentryLevel.INFO, "No device orientation available (ORIENTATION_UNDEFINED)");
+          options
+              .getLogger()
+              .log(SentryLevel.INFO, "No device orientation available (ORIENTATION_UNDEFINED)");
           return null;
       }
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting device orientation.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting device orientation.", e);
       return null;
     }
   }
@@ -518,7 +538,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
           || Build.PRODUCT.contains("emulator")
           || Build.PRODUCT.contains("simulator");
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error checking whether application is running in an emulator.", e);
+      options
+          .getLogger()
+          .log(
+              SentryLevel.ERROR,
+              "Error checking whether application is running in an emulator.",
+              e);
       return null;
     }
   }
@@ -534,7 +559,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       long totalBlocks = getBlockCountLong(stat);
       return totalBlocks * blockSize;
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting total internal storage amount.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting total internal storage amount.", e);
       return null;
     }
   }
@@ -589,7 +614,9 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       long availableBlocks = getAvailableBlocksLong(stat);
       return availableBlocks * blockSize;
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting unused internal storage amount.", e);
+      options
+          .getLogger()
+          .log(SentryLevel.ERROR, "Error getting unused internal storage amount.", e);
       return null;
     }
   }
@@ -600,10 +627,10 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       if (path != null) { // && path.canRead()) { canRead() will read return false
         return new StatFs(path.getPath());
       }
-      log(SentryLevel.INFO, "Not possible to read external files directory");
+      options.getLogger().log(SentryLevel.INFO, "Not possible to read external files directory");
       return null;
     }
-    log(SentryLevel.INFO, "External storage is not mounted or emulated.");
+    options.getLogger().log(SentryLevel.INFO, "External storage is not mounted or emulated.");
     return null;
   }
 
@@ -639,7 +666,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         return file;
       }
     } else {
-      log(SentryLevel.INFO, "Not possible to read getExternalFilesDirs");
+      options.getLogger().log(SentryLevel.INFO, "Not possible to read getExternalFilesDirs");
     }
     return null;
   }
@@ -656,7 +683,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       long totalBlocks = getBlockCountLong(stat);
       return totalBlocks * blockSize;
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting total external storage amount.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting total external storage amount.", e);
       return null;
     }
   }
@@ -678,7 +705,9 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       long availableBlocks = getAvailableBlocksLong(stat);
       return availableBlocks * blockSize;
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting unused external storage amount.", e);
+      options
+          .getLogger()
+          .log(SentryLevel.ERROR, "Error getting unused external storage amount.", e);
       return null;
     }
   }
@@ -692,7 +721,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     try {
       return context.getResources().getDisplayMetrics();
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting DisplayMetrics.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting DisplayMetrics.", e);
       return null;
     }
   }
@@ -714,7 +743,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         os.setRooted((Boolean) rooted);
       }
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting OperatingSystem.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting OperatingSystem.", e);
     }
 
     return os;
@@ -752,7 +781,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     try (BufferedReader br = new BufferedReader(new FileReader(file))) {
       return br.readLine();
     } catch (IOException e) {
-      log(SentryLevel.ERROR, errorMsg, e);
+      options.getLogger().log(SentryLevel.ERROR, errorMsg, e);
     }
 
     return defaultVersion;
@@ -794,10 +823,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
           return true;
         }
       } catch (Exception e) {
-        log(
-            SentryLevel.ERROR,
-            "Exception while attempting to detect whether the device is rooted",
-            e);
+        options
+            .getLogger()
+            .log(
+                SentryLevel.ERROR,
+                "Exception while attempting to detect whether the device is rooted",
+                e);
       }
     }
 
@@ -822,7 +853,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         return context.getString(stringId);
       }
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting application name.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting application name.", e);
     }
 
     return null;
@@ -830,18 +861,22 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   public User getUser() {
     User user = new User();
+    user.setId(getDeviceId());
 
+    return user;
+  }
+
+  private String getDeviceId() {
     try {
       Object androidId = contextData.get().get(ANDROID_ID);
 
       if (androidId != null) {
-        user.setId((String) androidId);
+        return (String) androidId;
       }
     } catch (Exception e) {
-      log(SentryLevel.ERROR, "Error getting androidId.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting androidId.", e);
     }
-
-    return user;
+    return null;
   }
 
   @SuppressWarnings("HardwareIds")
@@ -858,7 +893,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       try {
         androidId = Installation.id(context);
       } catch (RuntimeException e) {
-        log(SentryLevel.ERROR, "Could not generate device Id.", e);
+        options.getLogger().log(SentryLevel.ERROR, "Could not generate device Id.", e);
 
         return null;
       }
@@ -882,32 +917,22 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
           if (uuid != null && !uuid.isEmpty()) {
             return uuid.split("\\|");
           }
-          log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
+          options
+              .getLogger()
+              .log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
         } catch (IOException e) {
-          log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
+          options.getLogger().log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
         }
-        log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
+        options
+            .getLogger()
+            .log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
       } else {
-        log(SentryLevel.INFO, "Proguard UUIDs file not found.");
+        options.getLogger().log(SentryLevel.INFO, "Proguard UUIDs file not found.");
       }
     } catch (IOException e) {
-      log(SentryLevel.ERROR, "Error listing Proguard files.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error listing Proguard files.", e);
     }
 
     return null;
-  }
-
-  private void log(SentryLevel level, String message, Throwable throwable) {
-    ILogger logger = options.getLogger();
-    if (options.isDebug()) {
-      logger.log(level, message, throwable);
-    }
-  }
-
-  private void log(SentryLevel level, String message, Object... args) {
-    ILogger logger = options.getLogger();
-    if (options.isDebug()) {
-      logger.log(level, message, args);
-    }
   }
 }

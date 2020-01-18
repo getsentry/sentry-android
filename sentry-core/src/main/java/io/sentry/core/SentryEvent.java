@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
 public final class SentryEvent implements IUnknownPropertiesConsumer {
@@ -139,11 +140,6 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     this.eventId = eventId;
   }
 
-  //  @TestOnly
-  //  public void setTimestamp(Date timestamp) {
-  //    this.timestamp = timestamp;
-  //  }
-
   public void setThrowable(Throwable throwable) {
     this.throwable = throwable;
   }
@@ -196,7 +192,7 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     this.sdk = sdk;
   }
 
-  public List<String> getFingerprints() {
+  List<String> getFingerprints() {
     return fingerprint;
   }
 
@@ -219,12 +215,18 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     breadcrumbs.add(breadcrumb);
   }
 
-  public Map<String, String> getTags() {
+  Map<String, String> getTags() {
     return tags;
   }
 
   public void setTags(Map<String, String> tags) {
     this.tags = tags;
+  }
+
+  public void removeTag(@NotNull String key) {
+    if (tags != null) {
+      tags.remove(key);
+    }
   }
 
   public void setTag(String key, String value) {
@@ -234,7 +236,7 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     tags.put(key, value);
   }
 
-  public Map<String, Object> getExtras() {
+  Map<String, Object> getExtras() {
     return extra;
   }
 
@@ -247,6 +249,12 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
       extra = new HashMap<>();
     }
     extra.put(key, value);
+  }
+
+  public void removeExtra(@NotNull String key) {
+    if (extra != null) {
+      extra.remove(key);
+    }
   }
 
   public Contexts getContexts() {
@@ -268,12 +276,25 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     return unknown;
   }
 
-  public Map<String, String> getModules() {
+  Map<String, String> getModules() {
     return modules;
   }
 
   public void setModules(Map<String, String> modules) {
     this.modules = modules;
+  }
+
+  public void setModule(String key, String value) {
+    if (modules == null) {
+      modules = new HashMap<>();
+    }
+    modules.put(key, value);
+  }
+
+  public void removeModule(@NotNull String key) {
+    if (modules != null) {
+      modules.remove(key);
+    }
   }
 
   public DebugMeta getDebugMeta() {

@@ -1,8 +1,6 @@
 package io.sentry.core
 
 import io.sentry.core.protocol.User
-import java.io.PrintWriter
-import java.io.StringWriter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -34,8 +32,6 @@ class ScopeTest {
         val data = mutableMapOf(Pair("data", "data"))
         breadcrumb.data = data
 
-//        val date = Date()
-//        breadcrumb.timestamp = date
         breadcrumb.type = "type"
         breadcrumb.level = SentryLevel.DEBUG
         breadcrumb.category = "category"
@@ -184,9 +180,6 @@ class ScopeTest {
     @Test
     fun `when adding breadcrumb, executeBreadcrumb will be executed and throw, but breadcrumb will be added`() {
         val exception = Exception("test")
-        val sw = StringWriter()
-        exception.printStackTrace(PrintWriter(sw))
-        val stacktrace = sw.toString()
 
         val options = SentryOptions().apply {
             setBeforeBreadcrumb { _, _ -> throw exception }
@@ -197,7 +190,6 @@ class ScopeTest {
         scope.addBreadcrumb(actual)
 
         assertEquals("test", actual.data["sentry:message"])
-        assertEquals(stacktrace, actual.data["sentry:stacktrace"])
     }
 
     @Test

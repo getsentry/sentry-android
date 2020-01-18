@@ -90,9 +90,6 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
   public Breadcrumb clone() throws CloneNotSupportedException {
     final Breadcrumb clone = (Breadcrumb) super.clone();
 
-    //    final Date timestampRef = timestamp;
-    //    clone.timestamp = timestamp != null ? (Date) timestamp.clone() : null;
-
     final Map<String, String> dataRef = data;
     if (dataRef != null) {
       final Map<String, String> dataClone = new ConcurrentHashMap<>();

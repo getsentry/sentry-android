@@ -1,8 +1,7 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.User;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -17,7 +16,7 @@ public final class Scope implements Cloneable {
   private @Nullable SentryLevel level;
   private @Nullable String transaction;
   private @Nullable User user;
-  private @NotNull List<String> fingerprint = new CopyOnWriteArrayList<>();
+  private @NotNull List<String> fingerprint = new ArrayList<>();
   private @NotNull Queue<Breadcrumb> breadcrumbs;
   private @NotNull Map<String, String> tags = new ConcurrentHashMap<>();
   private @NotNull Map<String, Object> extra = new ConcurrentHashMap<>();
@@ -61,7 +60,8 @@ public final class Scope implements Cloneable {
     this.user = user;
   }
 
-  public @NotNull List<String> getFingerprint() {
+  @NotNull
+  List<String> getFingerprint() {
     return fingerprint;
   }
 
@@ -91,13 +91,12 @@ public final class Scope implements Cloneable {
           data = new HashMap<>();
         }
         data.put("sentry:message", e.getMessage());
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        data.put("sentry:stacktrace", sw.toString());
         breadcrumb.setData(data);
       }
 
       if (breadcrumb == null) {
+        //        options.getLogger().log(SentryLevel.INFO, "Breadcrumb was dropped by scope
+        // beforeBreadcrumb");
         return;
       }
     }
@@ -109,7 +108,19 @@ public final class Scope implements Cloneable {
     breadcrumbs.clear();
   }
 
-  public @NotNull Map<String, String> getTags() {
+  public void clear() {
+    level = null;
+    transaction = null;
+    user = null;
+    fingerprint.clear();
+    breadcrumbs.clear();
+    tags.clear();
+    extra.clear();
+    eventProcessors.clear();
+  }
+
+  @NotNull
+  Map<String, String> getTags() {
     return tags;
   }
 
@@ -117,12 +128,21 @@ public final class Scope implements Cloneable {
     this.tags.put(key, value);
   }
 
-  public @NotNull Map<String, Object> getExtras() {
+  public void removeTag(@NotNull String key) {
+    this.tags.remove(key);
+  }
+
+  @NotNull
+  Map<String, Object> getExtras() {
     return extra;
   }
 
   public void setExtra(@NotNull String key, @NotNull String value) {
     this.extra.put(key, value);
+  }
+
+  public void removeExtra(@NotNull String key) {
+    this.extra.remove(key);
   }
 
   private @NotNull Queue<Breadcrumb> createBreadcrumbsList(final int maxBreadcrumb) {
@@ -140,11 +160,11 @@ public final class Scope implements Cloneable {
     final User userRef = user;
     clone.user = userRef != null ? userRef.clone() : null;
 
-    clone.fingerprint = new CopyOnWriteArrayList<>(fingerprint);
+    clone.fingerprint = new ArrayList<>(fingerprint);
     clone.eventProcessors = new CopyOnWriteArrayList<>(eventProcessors);
 
     final Queue<Breadcrumb> breadcrumbsRef = breadcrumbs;
-    //    if (breadcrumbs != null) {
+
     Queue<Breadcrumb> breadcrumbsClone = createBreadcrumbsList(maxBreadcrumb);
 
     for (Breadcrumb item : breadcrumbsRef) {
@@ -152,12 +172,9 @@ public final class Scope implements Cloneable {
       breadcrumbsClone.add(breadcrumbClone);
     }
     clone.breadcrumbs = breadcrumbsClone;
-    //    } else {
-    //      clone.breadcrumbs = null;
-    //    }
 
     final Map<String, String> tagsRef = tags;
-    //    if (tags != null) {
+
     final Map<String, String> tagsClone = new ConcurrentHashMap<>();
 
     for (Map.Entry<String, String> item : tagsRef.entrySet()) {
@@ -167,12 +184,9 @@ public final class Scope implements Cloneable {
     }
 
     clone.tags = tagsClone;
-    //    } else {
-    //      clone.tags = null;
-    //    }
 
     final Map<String, Object> extraRef = extra;
-    //        if (extra != null) {
+
     Map<String, Object> extraClone = new HashMap<>();
 
     for (Map.Entry<String, Object> item : extraRef.entrySet()) {
@@ -182,9 +196,6 @@ public final class Scope implements Cloneable {
     }
 
     clone.extra = extraClone;
-    //        } else {
-    //            clone.extra = null;
-    //        }
 
     return clone;
   }

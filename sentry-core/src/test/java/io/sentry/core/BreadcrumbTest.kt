@@ -14,8 +14,7 @@ class BreadcrumbTest {
         breadcrumb.data = data
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
-//        val date = Date()
-//        breadcrumb.timestamp = date
+
         breadcrumb.type = "type"
         val level = SentryLevel.DEBUG
         breadcrumb.level = level
@@ -25,7 +24,6 @@ class BreadcrumbTest {
 
         assertNotNull(clone)
         assertNotSame(breadcrumb, clone)
-//        assertNotSame(breadcrumb.timestamp, clone.timestamp)
 
         assertNotSame(breadcrumb.data, clone.data)
 
@@ -40,9 +38,7 @@ class BreadcrumbTest {
         breadcrumb.data = data
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
-//        val date = Date()
-//        val dateIso = DateUtils.getTimestamp(date)
-//        breadcrumb.timestamp = date
+
         breadcrumb.type = "type"
         val level = SentryLevel.DEBUG
         breadcrumb.level = level
@@ -56,7 +52,6 @@ class BreadcrumbTest {
         assertEquals("type", clone.type)
         assertEquals(SentryLevel.DEBUG, clone.level)
         assertEquals("category", clone.category)
-//        assertEquals(dateIso, DateUtils.getTimestamp(clone.timestamp))
     }
 
     @Test
@@ -67,9 +62,7 @@ class BreadcrumbTest {
         breadcrumb.data = data
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
-//        val date = Date()
-//        val dateIso = DateUtils.getTimestamp(date)
-//        breadcrumb.timestamp = date
+
         breadcrumb.type = "type"
         val level = SentryLevel.DEBUG
         breadcrumb.level = level
@@ -82,7 +75,7 @@ class BreadcrumbTest {
         breadcrumb.data["otherData"] = "otherData"
         val newUnknown = mapOf(Pair("unknown", "newUnknown"), Pair("otherUnknown", "otherUnknown"))
         breadcrumb.acceptUnknownProperties(newUnknown)
-//        breadcrumb.timestamp = Date()
+
         breadcrumb.type = "newType"
         breadcrumb.level = SentryLevel.FATAL
         breadcrumb.category = "newCategory"
@@ -95,7 +88,6 @@ class BreadcrumbTest {
         assertEquals("type", clone.type)
         assertEquals(SentryLevel.DEBUG, clone.level)
         assertEquals("category", clone.category)
-//        assertEquals(dateIso, DateUtils.getTimestamp(clone.timestamp))
     }
 
     @Test

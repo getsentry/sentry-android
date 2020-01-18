@@ -8,8 +8,6 @@ import io.sentry.core.transport.Connection;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +79,6 @@ public final class SentryClient implements ISentryClient {
       event = applyScope(event, scope, hint);
 
       if (event == null) {
-        // event dropped by the scope event processors
         return SentryId.EMPTY_ID;
       }
     } else {
@@ -92,12 +89,26 @@ public final class SentryClient implements ISentryClient {
 
     for (EventProcessor processor : options.getEventProcessors()) {
       event = processor.process(event, hint);
+
+      if (event == null) {
+        options
+            .getLogger()
+            .log(
+                SentryLevel.DEBUG,
+                "Event was dropped by processor: %s",
+                processor.getClass().getName());
+        break;
+      }
+    }
+
+    if (event == null) {
+      return SentryId.EMPTY_ID;
     }
 
     event = executeBeforeSend(event, hint);
 
     if (event == null) {
-      // Event dropped by the beforeSend callback
+      options.getLogger().log(SentryLevel.DEBUG, "Event was dropped by beforeSend");
       return SentryId.EMPTY_ID;
     }
 
@@ -155,6 +166,12 @@ public final class SentryClient implements ISentryClient {
         event = processor.process(event, hint);
 
         if (event == null) {
+          options
+              .getLogger()
+              .log(
+                  SentryLevel.DEBUG,
+                  "Event was dropped by scope processor: %s",
+                  processor.getClass().getName());
           break;
         }
       }
@@ -180,9 +197,6 @@ public final class SentryClient implements ISentryClient {
         breadcrumb.setCategory("SentryClient");
         Map<String, String> data = new HashMap<>();
         data.put("sentry:message", e.getMessage());
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        data.put("sentry:stacktrace", sw.toString()); // might be obfuscated
         breadcrumb.setLevel(SentryLevel.ERROR);
         breadcrumb.setData(data);
         event.addBreadcrumb(breadcrumb);
@@ -193,7 +207,7 @@ public final class SentryClient implements ISentryClient {
 
   @Override
   public void close() {
-    options.getLogger().log(SentryLevel.INFO, "Closing SDK.");
+    options.getLogger().log(SentryLevel.INFO, "Closing SentryClient.");
 
     try {
       flush(options.getShutdownTimeout());
