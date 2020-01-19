@@ -9,7 +9,7 @@ import kotlin.test.assertNotSame
 class ScopeTest {
     @Test
     fun `cloning scope wont have the same references`() {
-        val scope = Scope(1)
+        val scope = Scope(SentryOptions())
         val level = SentryLevel.DEBUG
         scope.level = level
 
@@ -56,7 +56,7 @@ class ScopeTest {
 
     @Test
     fun `cloning scope will have the same values`() {
-        val scope = Scope(1)
+        val scope = Scope(SentryOptions())
         val level = SentryLevel.DEBUG
         scope.level = level
 
@@ -93,7 +93,7 @@ class ScopeTest {
 
     @Test
     fun `cloning scope and changing the original values wont change the clone values`() {
-        val scope = Scope(1)
+        val scope = Scope(SentryOptions())
         val level = SentryLevel.DEBUG
         scope.level = level
 
@@ -160,7 +160,7 @@ class ScopeTest {
             setBeforeBreadcrumb { breadcrumb, _ -> breadcrumb }
         }
 
-        val scope = Scope(1, options.beforeBreadcrumb)
+        val scope = Scope(options)
         scope.addBreadcrumb(Breadcrumb())
         assertEquals(1, scope.breadcrumbs.count())
     }
@@ -171,7 +171,7 @@ class ScopeTest {
             setBeforeBreadcrumb { _, _ -> null }
         }
 
-        val scope = Scope(1, options.beforeBreadcrumb)
+        val scope = Scope(options)
         scope.addBreadcrumb(Breadcrumb())
         assertEquals(0, scope.breadcrumbs.count())
     }
@@ -184,7 +184,7 @@ class ScopeTest {
             setBeforeBreadcrumb { _, _ -> throw exception }
         }
 
-        val scope = Scope(1, options.beforeBreadcrumb)
+        val scope = Scope(options)
         val actual = Breadcrumb()
         scope.addBreadcrumb(actual)
 
@@ -195,7 +195,7 @@ class ScopeTest {
     fun `when adding breadcrumb, executeBreadcrumb wont be executed as its not set, but it will be added`() {
         val options = SentryOptions()
 
-        val scope = Scope(1, options.beforeBreadcrumb)
+        val scope = Scope(options)
         scope.addBreadcrumb(Breadcrumb())
         assertEquals(1, scope.breadcrumbs.count())
     }
@@ -203,7 +203,7 @@ class ScopeTest {
     @Test
     fun `when adding eventProcessor, eventProcessor should be in the list`() {
         val processor = CustomEventProcessor()
-        val scope = Scope(1)
+        val scope = Scope(SentryOptions())
         scope.addEventProcessor(processor)
         assertEquals(processor, scope.eventProcessors.first())
     }

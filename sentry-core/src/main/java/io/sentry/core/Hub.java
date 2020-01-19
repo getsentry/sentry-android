@@ -60,7 +60,7 @@ public final class Hub implements IHub {
 
   private static StackItem createRootStackItem(@NotNull SentryOptions options) {
     validateOptions(options);
-    Scope scope = new Scope(options.getMaxBreadcrumbs(), options.getBeforeBreadcrumb());
+    Scope scope = new Scope(options);
     ISentryClient client = new SentryClient(options);
     return new StackItem(client, scope);
   }
@@ -196,15 +196,7 @@ public final class Hub implements IHub {
     } else {
       StackItem item = stack.peek();
       if (item != null) {
-        SentryOptions.BeforeBreadcrumbCallback callback = options.getBeforeBreadcrumb();
-        if (callback != null) {
-          breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb, hint);
-        }
-        if (breadcrumb != null) {
-          item.scope.addBreadcrumb(breadcrumb, false);
-        } else {
-          options.getLogger().log(SentryLevel.INFO, "Breadcrumb was dropped by beforeBreadcrumb");
-        }
+        item.scope.addBreadcrumb(breadcrumb, hint);
       } else {
         options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when addBreadcrumb");
       }
@@ -333,25 +325,6 @@ public final class Hub implements IHub {
         options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when setExtra");
       }
     }
-  }
-
-  private @Nullable Breadcrumb executeBeforeBreadcrumb(
-      @NotNull SentryOptions.BeforeBreadcrumbCallback callback,
-      @NotNull Breadcrumb breadcrumb,
-      @Nullable Object hint) {
-    try {
-      breadcrumb = callback.execute(breadcrumb, hint);
-    } catch (Exception e) {
-      options
-          .getLogger()
-          .log(
-              SentryLevel.ERROR,
-              "The BeforeBreadcrumbCallback callback threw an exception. It will be added as breadcrumb and continue.",
-              e);
-
-      breadcrumb.setData("sentry:message", e.getMessage());
-    }
-    return breadcrumb;
   }
 
   @Override
@@ -496,7 +469,7 @@ public final class Hub implements IHub {
       options.getLogger().log(SentryLevel.WARNING, "Disabled Hub cloned.");
     }
     // Clone will be invoked in parallel
-    final Hub clone = new Hub(this.options, null);
+    Hub clone = new Hub(this.options, null);
     for (StackItem item : this.stack) {
       Scope clonedScope;
       try {
@@ -504,9 +477,9 @@ public final class Hub implements IHub {
       } catch (CloneNotSupportedException e) {
         // TODO: Why do we need to deal with this? We must guarantee clone is possible here!
         options.getLogger().log(SentryLevel.ERROR, "Clone not supported");
-        clonedScope = new Scope(options.getMaxBreadcrumbs(), options.getBeforeBreadcrumb());
+        clonedScope = new Scope(options);
       }
-      final StackItem cloneItem = new StackItem(item.client, clonedScope);
+      StackItem cloneItem = new StackItem(item.client, clonedScope);
       clone.stack.push(cloneItem);
     }
     return clone;
