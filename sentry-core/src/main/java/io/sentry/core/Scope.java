@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.protocol.Contexts;
 import io.sentry.core.protocol.User;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,8 @@ public final class Scope implements Cloneable {
   private @NotNull Map<String, String> tags = new ConcurrentHashMap<>();
   private @NotNull Map<String, Object> extra = new ConcurrentHashMap<>();
   private @NotNull List<EventProcessor> eventProcessors = new CopyOnWriteArrayList<>();
+  private Contexts contexts = new Contexts();
+
   private final @NotNull SentryOptions options;
 
   public Scope(final @NotNull SentryOptions options) {
@@ -146,6 +149,14 @@ public final class Scope implements Cloneable {
     this.extra.remove(key);
   }
 
+  public Contexts getContexts() {
+    return contexts;
+  }
+
+  public void setContexts(Contexts contexts) {
+    this.contexts = contexts;
+  }
+
   private @NotNull Queue<Breadcrumb> createBreadcrumbsList(final int maxBreadcrumb) {
     return SynchronizedQueue.synchronizedQueue(new CircularFifoQueue<>(maxBreadcrumb));
   }
@@ -188,7 +199,7 @@ public final class Scope implements Cloneable {
 
     final Map<String, Object> extraRef = extra;
 
-    Map<String, Object> extraClone = new HashMap<>();
+    Map<String, Object> extraClone = new ConcurrentHashMap<>();
 
     for (Map.Entry<String, Object> item : extraRef.entrySet()) {
       if (item != null) {
@@ -196,7 +207,18 @@ public final class Scope implements Cloneable {
       }
     }
 
-    clone.extra = extraClone;
+
+    final Contexts contextsRef = contexts;
+
+    Contexts contextsClone = new Contexts();
+
+    for (Map.Entry<String, Object> item : contextsRef.entrySet()) {
+      if (item != null) {
+        contextsClone.put(item.getKey(), item.getValue());
+      }
+    }
+
+    clone.contexts = contextsRef;
 
     return clone;
   }
