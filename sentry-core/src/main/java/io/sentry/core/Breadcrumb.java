@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
 public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
@@ -13,7 +14,7 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
   private final Date timestamp;
   private String message;
   private String type;
-  private Map<String, String> data;
+  private Map<String, String> data = new ConcurrentHashMap<>();
   private String category;
   private SentryLevel level;
   private Map<String, Object> unknown;
@@ -51,12 +52,16 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
     this.type = type;
   }
 
-  public Map<String, String> getData() {
+  Map<String, String> getData() {
     return data;
   }
 
-  public void setData(Map<String, String> data) {
-    this.data = data;
+  public void setData(@NotNull String key, @NotNull String value) {
+    data.put(key, value);
+  }
+
+  public void removeData(@NotNull String key) {
+    data.remove(key);
   }
 
   public String getCategory() {

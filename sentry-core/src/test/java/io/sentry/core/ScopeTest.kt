@@ -29,8 +29,7 @@ class ScopeTest {
 
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        val data = mutableMapOf(Pair("data", "data"))
-        breadcrumb.data = data
+        breadcrumb.setData("data", "data")
 
         breadcrumb.type = "type"
         breadcrumb.level = SentryLevel.DEBUG

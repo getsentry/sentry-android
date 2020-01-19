@@ -5,9 +5,7 @@ import io.sentry.core.protocol.User;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -351,12 +349,7 @@ public final class Hub implements IHub {
               "The BeforeBreadcrumbCallback callback threw an exception. It will be added as breadcrumb and continue.",
               e);
 
-      Map<String, String> data = breadcrumb.getData();
-      if (breadcrumb.getData() == null) {
-        data = new HashMap<>();
-      }
-      data.put("sentry:message", e.getMessage());
-      breadcrumb.setData(data);
+      breadcrumb.setData("sentry:message", e.getMessage());
     }
     return breadcrumb;
   }

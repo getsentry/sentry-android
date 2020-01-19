@@ -10,8 +10,7 @@ class BreadcrumbTest {
     fun `cloning breadcrumb wont have the same references`() {
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        val data = mutableMapOf(Pair("data", "data"))
-        breadcrumb.data = data
+        breadcrumb.setData("data", "data")
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
 
@@ -34,8 +33,7 @@ class BreadcrumbTest {
     fun `cloning breadcrumb will have the same values`() {
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        val data = mutableMapOf(Pair("data", "data"))
-        breadcrumb.data = data
+        breadcrumb.setData("data", "data")
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
 
@@ -58,8 +56,7 @@ class BreadcrumbTest {
     fun `cloning breadcrumb and changing the original values wont change the clone values`() {
         val breadcrumb = Breadcrumb()
         breadcrumb.message = "message"
-        val data = mutableMapOf(Pair("data", "data"))
-        breadcrumb.data = data
+        breadcrumb.setData("data", "data")
         val unknown = mapOf(Pair("unknown", "unknown"))
         breadcrumb.acceptUnknownProperties(unknown)
 

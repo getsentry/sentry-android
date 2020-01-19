@@ -84,14 +84,7 @@ public final class Scope implements Cloneable {
         breadcrumb =
             beforeBreadcrumbCallback.execute(breadcrumb, null); // TODO: whats about hint here?
       } catch (Exception e) {
-        // TODO: log it
-
-        Map<String, String> data = breadcrumb.getData();
-        if (breadcrumb.getData() == null) {
-          data = new HashMap<>();
-        }
-        data.put("sentry:message", e.getMessage());
-        breadcrumb.setData(data);
+        breadcrumb.setData("sentry:message", e.getMessage());
       }
 
       if (breadcrumb == null) {
