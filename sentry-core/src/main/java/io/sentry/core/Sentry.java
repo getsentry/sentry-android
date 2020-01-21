@@ -21,7 +21,7 @@ public final class Sentry {
    *
    * @return the hub
    */
-  private static @NotNull IHub getCurrentHub() {
+  static @NotNull IHub getCurrentHub() {
     IHub hub = currentHub.get();
     if (hub == null) {
       currentHub.set(mainHub.clone());
@@ -317,7 +317,7 @@ public final class Sentry {
    *
    * @param timeoutMills time in milliseconds
    */
-  public static void flush(int timeoutMills) {
+  public static void flush(long timeoutMills) {
     getCurrentHub().flush(timeoutMills);
   }
 
