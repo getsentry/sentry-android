@@ -39,6 +39,7 @@ public class SentryOptions {
   private @Nullable ITransport transport;
   private @Nullable ITransportGate transportGate;
   private @Nullable String dist;
+  private boolean defaultIntegrations = true;
 
   public void addEventProcessor(@NotNull EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -252,6 +253,14 @@ public class SentryOptions {
     this.transportGate = transportGate;
   }
 
+  public boolean isDefaultIntegrations() {
+    return defaultIntegrations;
+  }
+
+  public void setDefaultIntegrations(boolean defaultIntegrations) {
+    this.defaultIntegrations = defaultIntegrations;
+  }
+
   public interface BeforeSendCallback {
     @Nullable
     SentryEvent execute(@NotNull SentryEvent event, @Nullable Object hint);
@@ -300,8 +309,7 @@ public class SentryOptions {
         new SendCachedEventFireAndForgetIntegration(
             (hub, options) -> {
               EnvelopeSender envelopeSender =
-                  new EnvelopeSender(
-                      hub, new io.sentry.core.EnvelopeReader(), options.getSerializer(), logger);
+                  new EnvelopeSender(hub, new EnvelopeReader(), options.getSerializer(), logger);
               if (options.getOutboxPath() != null) {
                 File outbox = new File(options.getOutboxPath());
                 return () -> envelopeSender.processDirectory(outbox);
