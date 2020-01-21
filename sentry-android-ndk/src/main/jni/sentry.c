@@ -44,6 +44,7 @@ JNIEXPORT void JNICALL Java_io_sentry_android_ndk_SentryNdk_initSentryNative(JNI
 
     sentry_options_t *options = sentry_options_new();
 
+    sentry_options_set_database_path(options, g_transport_options.outbox_path);
     sentry_options_set_transport(
             options, sentry_new_function_transport(send_envelope, NULL));
     sentry_options_set_debug(options, g_transport_options.debug);
