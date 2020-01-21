@@ -140,4 +140,11 @@ public interface ISentryClient {
   default SentryId captureException(Throwable throwable, @Nullable Scope scope) {
     return captureException(throwable, scope, null);
   }
+
+  /**
+   * Returns the SentryOptions bound to this client
+   *
+   * @return the SentryOptions object
+   */
+  SentryOptions getSentryOptions();
 }

@@ -210,4 +210,11 @@ public interface IHub {
    * @return the cloned Hub
    */
   IHub clone();
+
+  /**
+   * Returns the client bound to this hub
+   *
+   * @return the ISentryClient object
+   */
+  ISentryClient getSentryClient();
 }

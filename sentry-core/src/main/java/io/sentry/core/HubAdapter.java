@@ -119,4 +119,9 @@ public final class HubAdapter implements IHub {
   public IHub clone() {
     return Sentry.getCurrentHub().clone();
   }
+
+  @Override
+  public ISentryClient getSentryClient() {
+    return Sentry.getCurrentHub().getSentryClient();
+  }
 }

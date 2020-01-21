@@ -21,7 +21,7 @@ public final class Sentry {
    *
    * @return the hub
    */
-  static @NotNull IHub getCurrentHub() {
+  public static @NotNull IHub getCurrentHub() {
     IHub hub = currentHub.get();
     if (hub == null) {
       currentHub.set(mainHub.clone());

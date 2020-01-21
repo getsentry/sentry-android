@@ -484,4 +484,30 @@ public final class Hub implements IHub {
     }
     return clone;
   }
+
+  @Override
+  public ISentryClient getSentryClient() {
+    ISentryClient sentryClient = NoOpSentryClient.getInstance();
+    if (!isEnabled()) {
+      options
+          .getLogger()
+          .log(
+              SentryLevel.WARNING,
+              "Instance is disabled and this 'getSentryClient' call is a no-op.");
+    } else {
+      try {
+        StackItem item = stack.peek();
+        if (item != null) {
+          sentryClient = item.client;
+        } else {
+          options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when getSentryClient");
+        }
+      } catch (Exception e) {
+        options
+            .getLogger()
+            .log(SentryLevel.ERROR, "Error while getSentryClient: " + e.getMessage(), e);
+      }
+    }
+    return sentryClient;
+  }
 }
