@@ -44,6 +44,11 @@ final class AnrIntegration implements Integration, Closeable {
 
   @TestOnly
   void reportANR(IHub hub, final @NotNull ILogger logger, ApplicationNotResponding error) {
+    if (!hub.isIntegrationEnabled(AnrIntegration.class)) {
+      logger.log(SentryLevel.WARNING, "AnrIntegration is not enabled to the current hub.");
+      return;
+    }
+
     logger.log(SentryLevel.INFO, "ANR triggered with message: %s", error.getMessage());
 
     Mechanism mechanism = new Mechanism();

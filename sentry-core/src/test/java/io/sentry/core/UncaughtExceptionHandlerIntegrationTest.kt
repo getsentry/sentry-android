@@ -1,6 +1,7 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
@@ -42,6 +43,10 @@ class UncaughtExceptionHandlerIntegrationTest {
         val threadMock = mock<Thread>()
         val throwableMock = mock<Throwable>()
         val hubMock = mock<IHub>()
+
+        whenever(hubMock.isIntegrationEnabled(eq(UncaughtExceptionHandlerIntegration::class.java)))
+            .thenReturn(true)
+
         val options = SentryOptions()
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
@@ -57,6 +62,10 @@ class UncaughtExceptionHandlerIntegrationTest {
         val defaultHandlerMock = mock<Thread.UncaughtExceptionHandler>()
         whenever(handlerMock.defaultUncaughtExceptionHandler).thenReturn(defaultHandlerMock)
         val hubMock = mock<IHub>()
+
+        whenever(hubMock.isIntegrationEnabled(eq(UncaughtExceptionHandlerIntegration::class.java)))
+            .thenReturn(true)
+
         val options = SentryOptions()
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
@@ -70,6 +79,10 @@ class UncaughtExceptionHandlerIntegrationTest {
         val threadMock = mock<Thread>()
         val throwableMock = mock<Throwable>()
         val hubMock = mock<IHub>()
+
+        whenever(hubMock.isIntegrationEnabled(eq(UncaughtExceptionHandlerIntegration::class.java)))
+            .thenReturn(true)
+
         whenever(hubMock.captureException(any())).thenAnswer { invocation ->
             val e = (invocation.arguments[1] as ExceptionMechanismException)
             assertNotNull(e)

@@ -124,4 +124,9 @@ public final class HubAdapter implements IHub {
   public ISentryClient getSentryClient() {
     return Sentry.getCurrentHub().getSentryClient();
   }
+
+  @Override
+  public <T extends Integration> boolean isIntegrationEnabled(Class<T> integration) {
+    return Sentry.getCurrentHub().isIntegrationEnabled(integration);
+  }
 }

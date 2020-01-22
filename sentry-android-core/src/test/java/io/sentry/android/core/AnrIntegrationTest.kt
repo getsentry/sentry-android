@@ -1,8 +1,10 @@
 package io.sentry.android.core
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.IHub
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -42,6 +44,10 @@ class AnrIntegrationTest {
     @Test
     fun `When ANR watch dog is triggered, it should capture exception`() {
         val hub = mock<IHub>()
+
+        whenever(hub.isIntegrationEnabled(eq(AnrIntegration::class.java)))
+            .thenReturn(true)
+
         val integration = AnrIntegration()
         integration.reportANR(hub, mock(), mock())
         verify(hub).captureException(any())

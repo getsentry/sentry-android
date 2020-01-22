@@ -35,6 +35,17 @@ final class SendCachedEventFireAndForgetIntegration implements Integration {
       ExecutorService es = Executors.newSingleThreadExecutor();
       es.submit(
           () -> {
+            // we have 2 instances of type SendCachedEventFireAndForgetIntegration
+            // we might need to use .equals instead of instanceOf
+            if (!hub.isIntegrationEnabled(SendCachedEventFireAndForgetIntegration.class)) {
+              options
+                  .getLogger()
+                  .log(
+                      SentryLevel.WARNING,
+                      "SendCachedEventFireAndForgetIntegration is not enabled to the current hub.");
+              return;
+            }
+
             try {
               sender.send();
               options

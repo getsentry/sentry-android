@@ -224,9 +224,20 @@ public final class SentryClient implements ISentryClient {
   }
 
   @Override
-  public SentryOptions getSentryOptions() {
-    return options;
+  public <T extends Integration> boolean isIntegrationEnabled(Class<T> integration) {
+    for (Integration item : options.getIntegrations()) {
+      if (integration.isInstance(item)) {
+        return true;
+      }
+    }
+
+    return false;
   }
+
+  //  @Override
+  //  public SentryOptions getSentryOptions() {
+  //    return options;
+  //  }
 
   private boolean sample() {
     // https://docs.sentry.io/development/sdk-dev/features/#event-sampling

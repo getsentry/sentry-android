@@ -3,11 +3,14 @@ package io.sentry.android.core
 import android.os.FileObserver
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nhaarman.mockitokotlin2.anyOrNull
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.IEnvelopeSender
+import io.sentry.core.IHub
 import io.sentry.core.ILogger
 import io.sentry.core.SentryOptions
 import java.io.File
@@ -23,6 +26,7 @@ class EnvelopeFileObserverTest {
         var path: String? = "."
         var envelopeSender: IEnvelopeSender = mock()
         var logger: ILogger = mock()
+        var hub: IHub = mock()
 
         init {
             val options = SentryOptions()
@@ -31,7 +35,7 @@ class EnvelopeFileObserverTest {
         }
 
         fun getSut(): EnvelopeFileObserver {
-            return EnvelopeFileObserver(path, envelopeSender, logger)
+            return EnvelopeFileObserver(path, envelopeSender, logger, hub)
         }
     }
 
@@ -41,6 +45,10 @@ class EnvelopeFileObserverTest {
     fun `envelope sender is called with fully qualified path`() {
         val sut = fixture.getSut()
         val param = "file-name.txt"
+
+        whenever(fixture.hub.isIntegrationEnabled(eq(EnvelopeFileObserverIntegration::class.java)))
+            .thenReturn(true)
+
         sut.onEvent(FileObserver.CLOSE_WRITE, param)
         verify(fixture.envelopeSender).processEnvelopeFile(fixture.path + File.separator + param)
     }

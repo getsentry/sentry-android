@@ -217,4 +217,13 @@ public interface IHub {
    * @return the ISentryClient object
    */
   ISentryClient getSentryClient();
+
+  /**
+   * Check if the given integration is enabled to this hub
+   *
+   * @param integration the Integration class
+   * @param <T> a class that implements Integration
+   * @return true if enabled or false otherwise
+   */
+  <T extends Integration> boolean isIntegrationEnabled(Class<T> integration);
 }

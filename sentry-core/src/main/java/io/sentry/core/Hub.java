@@ -510,4 +510,9 @@ public final class Hub implements IHub {
     }
     return sentryClient;
   }
+
+  @Override
+  public <T extends Integration> boolean isIntegrationEnabled(Class<T> integration) {
+    return getSentryClient().isIntegrationEnabled(integration);
+  }
 }

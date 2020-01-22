@@ -142,9 +142,11 @@ public interface ISentryClient {
   }
 
   /**
-   * Returns the SentryOptions bound to this client
+   * Check if the given integration is enabled to this client
    *
-   * @return the SentryOptions object
+   * @param integration the Integration class
+   * @param <T> a class that implements Integration
+   * @return true if enabled or false otherwise
    */
-  SentryOptions getSentryOptions();
+  <T extends Integration> boolean isIntegrationEnabled(Class<T> integration);
 }

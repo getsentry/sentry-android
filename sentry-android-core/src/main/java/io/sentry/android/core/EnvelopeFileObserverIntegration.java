@@ -32,7 +32,7 @@ abstract class EnvelopeFileObserverIntegration implements Integration, Closeable
       EnvelopeSender envelopeSender =
           new EnvelopeSender(hub, new EnvelopeReader(), options.getSerializer(), logger);
 
-      observer = new EnvelopeFileObserver(path, envelopeSender, logger);
+      observer = new EnvelopeFileObserver(path, envelopeSender, logger, hub);
       observer.startWatching();
     }
   }

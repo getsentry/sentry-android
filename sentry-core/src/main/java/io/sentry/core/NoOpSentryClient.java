@@ -30,7 +30,12 @@ final class NoOpSentryClient implements ISentryClient {
   public void flush(long timeoutMills) {}
 
   @Override
-  public SentryOptions getSentryOptions() {
-    return new SentryOptions();
+  public <T extends Integration> boolean isIntegrationEnabled(Class<T> integration) {
+    return false;
   }
+
+  //  @Override
+  //  public SentryOptions getSentryOptions() {
+  //    return new SentryOptions();
+  //  }
 }

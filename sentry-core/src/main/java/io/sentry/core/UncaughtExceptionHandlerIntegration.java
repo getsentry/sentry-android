@@ -67,6 +67,15 @@ final class UncaughtExceptionHandlerIntegration
 
   @Override
   public void uncaughtException(Thread thread, Throwable thrown) {
+    if (!hub.isIntegrationEnabled(UncaughtExceptionHandlerIntegration.class)) {
+      options
+          .getLogger()
+          .log(
+              SentryLevel.WARNING,
+              "UncaughtExceptionHandlerIntegration is not enabled to the current hub.");
+      return;
+    }
+
     options.getLogger().log(SentryLevel.INFO, "Uncaught exception received.");
 
     try {
