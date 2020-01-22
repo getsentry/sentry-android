@@ -212,13 +212,6 @@ public interface IHub {
   IHub clone();
 
   /**
-   * Returns the client bound to this hub
-   *
-   * @return the ISentryClient object
-   */
-  ISentryClient getSentryClient();
-
-  /**
    * Check if the given integration is enabled to this hub
    *
    * @param integration the Integration class

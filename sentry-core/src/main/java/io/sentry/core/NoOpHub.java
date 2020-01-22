@@ -91,11 +91,6 @@ final class NoOpHub implements IHub {
   }
 
   @Override
-  public ISentryClient getSentryClient() {
-    return NoOpSentryClient.getInstance();
-  }
-
-  @Override
   public <T extends Integration> boolean isIntegrationEnabled(Class<T> integration) {
     return false;
   }

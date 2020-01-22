@@ -36,7 +36,7 @@ public final class Hub implements IHub {
     // Register integrations against the current hub at the given time
     // Default integrations should run only once
     if (ranDefaultIntegrations.getAndSet(true)) {
-      if (options.isEnableDefaultIntegrations()) {
+      if (options.isDefaultIntegrationsEnabled()) {
         for (Integration integration : options.getDefaultIntegrations()) {
           integration.register(HubAdapter.getInstance(), options);
         }
@@ -175,7 +175,7 @@ public final class Hub implements IHub {
           .log(SentryLevel.WARNING, "Instance is disabled and this 'close' call is a no-op.");
     } else {
       try {
-        if (options.isEnableDefaultIntegrations()) {
+        if (options.isDefaultIntegrationsEnabled()) {
           for (Integration integration : options.getDefaultIntegrations()) {
             if (integration instanceof Closeable) {
               ((Closeable) integration).close();
@@ -505,8 +505,12 @@ public final class Hub implements IHub {
     return clone;
   }
 
-  @Override
-  public ISentryClient getSentryClient() {
+  /**
+   * Returns the client bound to this hub
+   *
+   * @return the ISentryClient object
+   */
+  private ISentryClient getSentryClient() {
     ISentryClient sentryClient = NoOpSentryClient.getInstance();
     if (!isEnabled()) {
       options

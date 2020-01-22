@@ -40,7 +40,7 @@ public class SentryOptions {
   private @Nullable ITransport transport;
   private @Nullable ITransportGate transportGate;
   private @Nullable String dist;
-  private boolean enableDefaultIntegrations = true;
+  private boolean defaultIntegrationsEnabled = true;
 
   public void addEventProcessor(@NotNull EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -263,12 +263,12 @@ public class SentryOptions {
     this.transportGate = transportGate;
   }
 
-  public boolean isEnableDefaultIntegrations() {
-    return enableDefaultIntegrations;
+  public boolean isDefaultIntegrationsEnabled() {
+    return defaultIntegrationsEnabled;
   }
 
-  public void setEnableDefaultIntegrations(boolean enableDefaultIntegrations) {
-    this.enableDefaultIntegrations = enableDefaultIntegrations;
+  public void setDefaultIntegrationsEnabled(boolean defaultIntegrationsEnabled) {
+    this.defaultIntegrationsEnabled = defaultIntegrationsEnabled;
   }
 
   public interface BeforeSendCallback {
