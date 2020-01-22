@@ -234,11 +234,6 @@ public final class SentryClient implements ISentryClient {
     return false;
   }
 
-  //  @Override
-  //  public SentryOptions getSentryOptions() {
-  //    return options;
-  //  }
-
   private boolean sample() {
     // https://docs.sentry.io/development/sdk-dev/features/#event-sampling
     if (options.getSampleRate() != null && random != null) {

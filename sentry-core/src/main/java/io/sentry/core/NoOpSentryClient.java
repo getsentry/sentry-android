@@ -33,9 +33,4 @@ final class NoOpSentryClient implements ISentryClient {
   public <T extends Integration> boolean isIntegrationEnabled(Class<T> integration) {
     return false;
   }
-
-  //  @Override
-  //  public SentryOptions getSentryOptions() {
-  //    return new SentryOptions();
-  //  }
 }
