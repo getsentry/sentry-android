@@ -25,9 +25,9 @@ final class AndroidOptionsInitializer {
     setDefaultInApp(context, options);
 
     // Integrations are registered in the same order. Watch outbox before adding NDK:
-    options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
-    options.addIntegration(new NdkIntegration());
-    options.addIntegration(new AnrIntegration());
+    options.addDefaultIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
+    options.addDefaultIntegration(new NdkIntegration());
+    options.addDefaultIntegration(new AnrIntegration());
 
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
     options.setSerializer(new AndroidSerializer(options.getLogger()));

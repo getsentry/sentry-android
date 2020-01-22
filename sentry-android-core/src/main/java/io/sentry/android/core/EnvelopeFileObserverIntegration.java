@@ -47,7 +47,8 @@ abstract class EnvelopeFileObserverIntegration implements Integration, Closeable
   @TestOnly
   abstract String getPath(SentryOptions options);
 
-  static final class OutboxEnvelopeFileObserverIntegration extends EnvelopeFileObserverIntegration {
+  private static final class OutboxEnvelopeFileObserverIntegration
+      extends EnvelopeFileObserverIntegration {
     @Override
     protected String getPath(final SentryOptions options) {
       return options.getOutboxPath();

@@ -41,7 +41,7 @@ class SentryOptionsTest {
 
     @Test
     fun `when options is initialized, integrations contain UncaughtExceptionHandlerIntegration`() {
-        assertTrue(SentryOptions().integrations.any { it is UncaughtExceptionHandlerIntegration })
+        assertTrue(SentryOptions().defaultIntegrations.any { it is UncaughtExceptionHandlerIntegration })
     }
 
     @Test

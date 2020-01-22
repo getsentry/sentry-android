@@ -225,6 +225,12 @@ public final class SentryClient implements ISentryClient {
 
   @Override
   public <T extends Integration> boolean isIntegrationEnabled(Class<T> integration) {
+    for (Integration item : options.getDefaultIntegrations()) {
+      if (integration.isInstance(item)) {
+        return true;
+      }
+    }
+
     for (Integration item : options.getIntegrations()) {
       if (integration.isInstance(item)) {
         return true;

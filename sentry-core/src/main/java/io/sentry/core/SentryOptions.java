@@ -16,6 +16,7 @@ public class SentryOptions {
 
   private final @NotNull List<EventProcessor> eventProcessors = new ArrayList<>();
   private final @NotNull List<Integration> integrations = new ArrayList<>();
+  private final @NotNull List<Integration> defaultIntegrations = new ArrayList<>();
 
   private @Nullable String dsn;
   private long shutdownTimeoutMills = 2000; // default 2s
@@ -39,7 +40,7 @@ public class SentryOptions {
   private @Nullable ITransport transport;
   private @Nullable ITransportGate transportGate;
   private @Nullable String dist;
-  private boolean defaultIntegrations = true;
+  private boolean enableDefaultIntegrations = true;
 
   public void addEventProcessor(@NotNull EventProcessor eventProcessor) {
     eventProcessors.add(eventProcessor);
@@ -53,8 +54,17 @@ public class SentryOptions {
     integrations.add(integration);
   }
 
+  public void addDefaultIntegration(@NotNull Integration integration) {
+    defaultIntegrations.add(integration);
+  }
+
   public @NotNull List<Integration> getIntegrations() {
     return integrations;
+  }
+
+  @NotNull
+  List<Integration> getDefaultIntegrations() {
+    return defaultIntegrations;
   }
 
   public @Nullable String getDsn() {
@@ -253,12 +263,12 @@ public class SentryOptions {
     this.transportGate = transportGate;
   }
 
-  public boolean isDefaultIntegrations() {
-    return defaultIntegrations;
+  public boolean isEnableDefaultIntegrations() {
+    return enableDefaultIntegrations;
   }
 
-  public void setDefaultIntegrations(boolean defaultIntegrations) {
-    this.defaultIntegrations = defaultIntegrations;
+  public void setEnableDefaultIntegrations(boolean enableDefaultIntegrations) {
+    this.enableDefaultIntegrations = enableDefaultIntegrations;
   }
 
   public interface BeforeSendCallback {
@@ -287,7 +297,7 @@ public class SentryOptions {
     eventProcessors.add(new MainEventProcessor(this));
 
     // Start off sending any cached event.
-    integrations.add(
+    defaultIntegrations.add(
         new SendCachedEventFireAndForgetIntegration(
             (hub, options) -> {
               SendCachedEvent sender =
@@ -305,7 +315,7 @@ public class SentryOptions {
               }
             }));
     // Send cache envelopes from NDK
-    integrations.add(
+    defaultIntegrations.add(
         new SendCachedEventFireAndForgetIntegration(
             (hub, options) -> {
               EnvelopeSender envelopeSender =
@@ -322,6 +332,6 @@ public class SentryOptions {
                 return null;
               }
             }));
-    integrations.add(new UncaughtExceptionHandlerIntegration());
+    defaultIntegrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }

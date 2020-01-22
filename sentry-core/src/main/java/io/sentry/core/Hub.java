@@ -7,6 +7,7 @@ import java.io.Closeable;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,10 +28,21 @@ public final class Hub implements IHub {
   private volatile boolean isEnabled;
   private final @NotNull Deque<StackItem> stack = new LinkedBlockingDeque<>();
 
+  private static final AtomicBoolean ranDefaultIntegrations = new AtomicBoolean(false);
+
   public Hub(@NotNull SentryOptions options) {
     this(options, createRootStackItem(options));
 
     // Register integrations against the current hub at the given time
+    // Default integrations should run only once
+    if (ranDefaultIntegrations.getAndSet(true)) {
+      if (options.isEnableDefaultIntegrations()) {
+        for (Integration integration : options.getDefaultIntegrations()) {
+          integration.register(HubAdapter.getInstance(), options);
+        }
+      }
+    }
+
     for (Integration integration : options.getIntegrations()) {
       integration.register(HubAdapter.getInstance(), options);
     }
@@ -163,6 +175,14 @@ public final class Hub implements IHub {
           .log(SentryLevel.WARNING, "Instance is disabled and this 'close' call is a no-op.");
     } else {
       try {
+        if (options.isEnableDefaultIntegrations()) {
+          for (Integration integration : options.getDefaultIntegrations()) {
+            if (integration instanceof Closeable) {
+              ((Closeable) integration).close();
+            }
+          }
+        }
+
         for (Integration integration : options.getIntegrations()) {
           if (integration instanceof Closeable) {
             ((Closeable) integration).close();

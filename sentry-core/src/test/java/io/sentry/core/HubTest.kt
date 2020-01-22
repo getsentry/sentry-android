@@ -50,7 +50,7 @@ class HubTest {
         options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         options.setSerializer(mock())
-        options.addIntegration(integrationMock)
+        options.addDefaultIntegration(integrationMock)
         Hub(options)
         val expected = HubAdapter.getInstance()
         verify(integrationMock).register(expected, options)
@@ -63,7 +63,7 @@ class HubTest {
         options.cacheDirPath = file.absolutePath
         options.dsn = "https://key@sentry.io/proj"
         options.setSerializer(mock())
-        options.addIntegration(integrationMock)
+        options.addDefaultIntegration(integrationMock)
         val hub = Hub(options)
         val expected = HubAdapter.getInstance()
         verify(integrationMock).register(expected, options)
@@ -517,7 +517,7 @@ class HubTest {
         var options: SentryOptions? = null
         // init main hub and make it enabled
         Sentry.init {
-            it.addIntegration(mock)
+            it.addDefaultIntegration(mock)
             it.dsn = "https://key@sentry.io/proj"
             it.cacheDirPath = file.absolutePath
             it.setSerializer(mock())
