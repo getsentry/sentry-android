@@ -102,7 +102,7 @@ class UncaughtExceptionHandlerIntegrationTest {
         val integrationMock = mock<UncaughtExceptionHandlerIntegration>()
         val options = SentryOptions()
         options.dsn = "https://key@sentry.io/proj"
-        options.addDefaultIntegration(integrationMock)
+        options.addIntegration(integrationMock)
         options.cacheDirPath = file.absolutePath
         options.setSerializer(mock())
         val expected = HubAdapter.getInstance()

@@ -44,7 +44,7 @@ class EnvelopeFileObserverIntegrationTest {
         val options = SentryOptions()
         options.dsn = "https://key@sentry.io/proj"
         options.cacheDirPath = file.absolutePath
-        options.addDefaultIntegration(integrationMock)
+        options.addIntegration(integrationMock)
         options.setSerializer(mock())
         val expected = HubAdapter.getInstance()
         val hub = Hub(options)
