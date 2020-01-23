@@ -76,8 +76,18 @@ public final class HubAdapter implements IHub {
   }
 
   @Override
+  public void removeTag(String key) {
+    Sentry.removeTag(key);
+  }
+
+  @Override
   public void setExtra(String key, String value) {
     Sentry.setExtra(key, value);
+  }
+
+  @Override
+  public void removeExtra(String key) {
+    Sentry.removeExtra(key);
   }
 
   @Override

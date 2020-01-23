@@ -280,7 +280,7 @@ public final class Sentry {
    *
    * @param key the key
    */
-  public void removeExtra(@NotNull String key) {
+  public static void removeExtra(@NotNull String key) {
     getCurrentHub().removeExtra(key);
   }
 
