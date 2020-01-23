@@ -35,8 +35,8 @@ public class SentryOptions {
   private @Nullable String environment;
   private @Nullable Proxy proxy;
   private @Nullable Double sampleRate;
-  private @NotNull List<String> inAppExcludes;
-  private @NotNull List<String> inAppIncludes;
+  private @NotNull List<String> inAppExcludes = new ArrayList<>();
+  private @NotNull List<String> inAppIncludes = new ArrayList<>();
   private @Nullable ITransport transport;
   private @Nullable ITransportGate transportGate;
   private @Nullable String dist;
@@ -222,9 +222,6 @@ public class SentryOptions {
   }
 
   public void addInAppExclude(@NotNull String exclude) {
-    if (inAppExcludes == null) {
-      inAppExcludes = new ArrayList<>();
-    }
     inAppExcludes.add(exclude);
   }
 
@@ -233,9 +230,6 @@ public class SentryOptions {
   }
 
   public void addInAppInclude(@NotNull String include) {
-    if (inAppIncludes == null) {
-      inAppIncludes = new ArrayList<>();
-    }
     inAppIncludes.add(include);
   }
 
@@ -282,18 +276,6 @@ public class SentryOptions {
   }
 
   public SentryOptions() {
-    inAppExcludes = new ArrayList<>();
-    inAppExcludes.add("io.sentry.");
-    inAppExcludes.add("java.");
-    inAppExcludes.add("javax.");
-    inAppExcludes.add("sun.");
-    inAppExcludes.add("com.oracle.");
-    inAppExcludes.add("oracle.");
-    inAppExcludes.add("org.jetbrains.");
-
-    inAppIncludes =
-        new ArrayList<>(); // make the list available so processor below can take the reference
-
     eventProcessors.add(new MainEventProcessor(this));
 
     // Start off sending any cached event.
