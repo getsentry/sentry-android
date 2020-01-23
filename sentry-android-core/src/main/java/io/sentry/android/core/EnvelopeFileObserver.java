@@ -36,8 +36,7 @@ final class EnvelopeFileObserver extends FileObserver {
 
     if (!hub.isIntegrationEnabled(EnvelopeFileObserverIntegration.class)) {
       logger.log(
-          SentryLevel.WARNING,
-          "EnvelopeFileObserverIntegration is not enabled to the current hub.");
+          SentryLevel.INFO, "EnvelopeFileObserverIntegration is not enabled for the current hub.");
       return;
     }
 

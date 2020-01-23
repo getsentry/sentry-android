@@ -71,8 +71,8 @@ final class UncaughtExceptionHandlerIntegration
       options
           .getLogger()
           .log(
-              SentryLevel.WARNING,
-              "UncaughtExceptionHandlerIntegration is not enabled to the current hub.");
+              SentryLevel.INFO,
+              "UncaughtExceptionHandlerIntegration is not enabled for the current hub.");
       return;
     }
 

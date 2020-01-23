@@ -39,8 +39,8 @@ final class SendCachedEventFireAndForgetIntegration implements Integration {
               options
                   .getLogger()
                   .log(
-                      SentryLevel.WARNING,
-                      "SendCachedEventFireAndForgetIntegration is not enabled to the current hub.");
+                      SentryLevel.INFO,
+                      "SendCachedEventFireAndForgetIntegration is not enabled for the current hub.");
               return;
             }
 
