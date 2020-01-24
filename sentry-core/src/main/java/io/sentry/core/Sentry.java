@@ -15,6 +15,7 @@ public final class Sentry {
   private static final @NotNull ThreadLocal<IHub> currentHub = new ThreadLocal<>();
 
   private static volatile @NotNull IHub mainHub = NoOpHub.getInstance();
+  private static volatile boolean isGlobalHubMode = false;
 
   /**
    * Returns the current (threads) hub, if none, clones the mainHub and returns it.
@@ -22,11 +23,19 @@ public final class Sentry {
    * @return the hub
    */
   private static @NotNull IHub getCurrentHub() {
+    if (isGlobalHubMode) {
+      return mainHub;
+    }
     IHub hub = currentHub.get();
     if (hub == null) {
       currentHub.set(mainHub.clone());
     }
     return currentHub.get();
+  }
+
+  /** Sets whether to use a single (global) Hub as opposed to one per thread. */
+  public static void setGlobalHubMode(boolean useGlobalHubMode) {
+    isGlobalHubMode = useGlobalHubMode;
   }
 
   /**
@@ -295,12 +304,18 @@ public final class Sentry {
 
   /** Pushes a new scope while inheriting the current scope's data. */
   public static void pushScope() {
-    getCurrentHub().pushScope();
+    // pushScope is no-op in global hub mode
+    if (!isGlobalHubMode) {
+      getCurrentHub().pushScope();
+    }
   }
 
   /** Removes the first scope */
   public static void popScope() {
-    getCurrentHub().popScope();
+    // popScope is no-op in global hub mode
+    if (!isGlobalHubMode) {
+      getCurrentHub().popScope();
+    }
   }
 
   /**

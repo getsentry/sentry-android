@@ -56,6 +56,7 @@ public final class SentryAndroid {
       @NotNull ILogger logger,
       @NotNull Sentry.OptionsConfiguration<SentryAndroidOptions> configuration) {
     try {
+      Sentry.setGlobalHubMode(true);
       Sentry.init(
           OptionsContainer.create(SentryAndroidOptions.class),
           options -> {
