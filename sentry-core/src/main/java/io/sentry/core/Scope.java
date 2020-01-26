@@ -3,7 +3,6 @@ package io.sentry.core;
 import io.sentry.core.protocol.Contexts;
 import io.sentry.core.protocol.User;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -149,11 +148,11 @@ public final class Scope implements Cloneable {
     this.extra.remove(key);
   }
 
-  public Contexts getContexts() {
+  public @NotNull Contexts getContexts() {
     return contexts;
   }
 
-  public void setContexts(Contexts contexts) {
+  public void setContexts(@NotNull Contexts contexts) {
     this.contexts = contexts;
   }
 
@@ -207,18 +206,9 @@ public final class Scope implements Cloneable {
       }
     }
 
+    clone.extra = extraClone;
 
-    final Contexts contextsRef = contexts;
-
-    Contexts contextsClone = new Contexts();
-
-    for (Map.Entry<String, Object> item : contextsRef.entrySet()) {
-      if (item != null) {
-        contextsClone.put(item.getKey(), item.getValue());
-      }
-    }
-
-    clone.contexts = contextsRef;
+    clone.contexts = new Contexts(contexts);
 
     return clone;
   }

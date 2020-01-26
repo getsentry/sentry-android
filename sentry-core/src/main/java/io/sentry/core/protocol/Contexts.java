@@ -1,9 +1,14 @@
 package io.sentry.core.protocol;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Contexts extends ConcurrentHashMap<String, Object> {
   private static final long serialVersionUID = 252445813254943011L;
+
+  public Contexts(Map<String, Object> initialValues) {
+    super(initialValues);
+  }
 
   private <T> T toContextType(String key, Class<T> clazz) {
     Object item = get(key);
