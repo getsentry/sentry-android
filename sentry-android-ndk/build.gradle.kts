@@ -39,9 +39,9 @@ android {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
                 arguments.add(0, "-DANDROID_PIE=ON")
-                arguments.add(0, "-DANDROID_PLATFORM=android-${Config.Android.targetSdkVersion}")
-                arguments.add(0, "-DANDROID_TOOLCHAIN=clang")
-                cppFlags.add(0, "-std=c++14")
+//                arguments.add(0, "-DANDROID_PLATFORM=android-${Config.Android.targetSdkVersion}")
+//                arguments.add(0, "-DANDROID_TOOLCHAIN=clang")
+//                cppFlags.add(0, "-std=c++14")
             }
         }
 
