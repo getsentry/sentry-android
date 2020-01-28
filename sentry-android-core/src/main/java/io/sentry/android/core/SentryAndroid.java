@@ -56,13 +56,13 @@ public final class SentryAndroid {
       @NotNull ILogger logger,
       @NotNull Sentry.OptionsConfiguration<SentryAndroidOptions> configuration) {
     try {
-      Sentry.setGlobalHubMode(true);
       Sentry.init(
           OptionsContainer.create(SentryAndroidOptions.class),
           options -> {
             AndroidOptionsInitializer.init(options, context, logger);
             configuration.configure(options);
-          });
+          },
+          true);
     } catch (IllegalAccessException e) {
       logger.log(SentryLevel.FATAL, "Fatal error during SentryAndroid.init(...)", e);
 
