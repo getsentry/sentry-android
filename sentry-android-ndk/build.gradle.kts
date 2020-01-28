@@ -38,10 +38,25 @@ android {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
+
+                // https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#additional-required-arguments
                 arguments.add(0, "-DANDROID_PIE=ON")
-//                arguments.add(0, "-DANDROID_PLATFORM=android-${Config.Android.targetSdkVersion}")
-//                arguments.add(0, "-DANDROID_TOOLCHAIN=clang")
-//                cppFlags.add(0, "-std=c++14")
+
+                // https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#os-versions
+                arguments.add(0, "-DANDROID_PLATFORM=android-${Config.Android.targetSdkVersion - 1}")
+
+                // https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#clang
+                // do we need that? please read it
+                // arguments.add(0, "-DANDROID_TOOLCHAIN=clang") or clang++?
+
+                // https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#introduction
+                // should we move away from binutils and use lld?
+                // to enable it we should set -fuse-ld=lld or ANDROID_LD=lld if I got it right
+                arguments.add(0, "-DANDROID_LD=lld")
+
+                // https://github.com/android/ndk/wiki/Changelog-r21
+                // I dont think its needed because c++14 is the default one since r19
+                // cppFlags.add(0, "-std=c++14")
             }
         }
 
