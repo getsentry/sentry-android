@@ -19,10 +19,10 @@ public final class Sentry {
   private static volatile @NotNull IHub mainHub = NoOpHub.getInstance();
 
   /** Default value for globalHubMode is false */
-  private static final boolean GLOBAL_HUB_DEFAULT_VALUE = false;
+  private static final boolean GLOBAL_HUB_DEFAULT_MODE = false;
 
   /** whether to use a single (global) Hub as opposed to one per thread. */
-  private static volatile boolean globalHubMode = GLOBAL_HUB_DEFAULT_VALUE;
+  private static volatile boolean globalHubMode = GLOBAL_HUB_DEFAULT_MODE;
 
   /**
    * Returns the current (threads) hub, if none, clones the mainHub and returns it.
@@ -51,16 +51,7 @@ public final class Sentry {
 
   /** Initializes the SDK */
   public static void init() {
-    init(GLOBAL_HUB_DEFAULT_VALUE);
-  }
-
-  /**
-   * Initializes the SDK
-   *
-   * @param globalHubMode the globalHubMode
-   */
-  public static void init(boolean globalHubMode) {
-    init(new SentryOptions(), globalHubMode);
+    init(new SentryOptions(), GLOBAL_HUB_DEFAULT_MODE);
   }
 
   /**
@@ -76,7 +67,7 @@ public final class Sentry {
       @NotNull OptionsContainer<T> clazz, @NotNull OptionsConfiguration<T> optionsConfiguration)
       throws IllegalAccessException, InstantiationException, NoSuchMethodException,
           InvocationTargetException {
-    init(clazz, optionsConfiguration, GLOBAL_HUB_DEFAULT_VALUE);
+    init(clazz, optionsConfiguration, GLOBAL_HUB_DEFAULT_MODE);
   }
 
   /**
@@ -106,7 +97,7 @@ public final class Sentry {
    * @param optionsConfiguration configuration options callback
    */
   public static void init(@NotNull OptionsConfiguration<SentryOptions> optionsConfiguration) {
-    init(optionsConfiguration, GLOBAL_HUB_DEFAULT_VALUE);
+    init(optionsConfiguration, GLOBAL_HUB_DEFAULT_MODE);
   }
 
   /**
