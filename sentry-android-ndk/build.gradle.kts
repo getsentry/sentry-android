@@ -40,6 +40,7 @@ android {
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
                 arguments.add(0, "-DANDROID_PIE=ON")
                 arguments.add(0, "-DANDROID_PLATFORM=android-${Config.Android.targetSdkVersion}")
+                cppFlags.add(0, "-std=c++14")
             }
         }
 
