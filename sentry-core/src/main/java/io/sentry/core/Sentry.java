@@ -29,7 +29,7 @@ public final class Sentry {
    *
    * @return the hub
    */
-  private static @NotNull IHub getCurrentHub() {
+  static @NotNull IHub getCurrentHub() {
     if (globalHubMode) {
       return mainHub;
     }
@@ -332,7 +332,7 @@ public final class Sentry {
    *
    * @param key the key
    */
-  public void removeExtra(@NotNull String key) {
+  public static void removeExtra(@NotNull String key) {
     getCurrentHub().removeExtra(key);
   }
 
@@ -393,7 +393,7 @@ public final class Sentry {
    *
    * @param timeoutMills time in milliseconds
    */
-  public static void flush(int timeoutMills) {
+  public static void flush(long timeoutMills) {
     getCurrentHub().flush(timeoutMills);
   }
 
