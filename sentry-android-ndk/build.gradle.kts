@@ -38,6 +38,8 @@ android {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
+                arguments.add(0, "-DANDROID_PIE=ON")
+                arguments.add(0, "-DANDROID_PLATFORM=android-${Config.Android.targetSdkVersion}")
             }
         }
 
