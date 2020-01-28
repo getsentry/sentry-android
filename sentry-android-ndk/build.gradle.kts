@@ -38,6 +38,18 @@ android {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
+
+                // https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#additional-required-arguments
+                arguments.add(0, "-DANDROID_PIE=ON")
+
+                // https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#os-versions
+                // do we need that if we have minSdkVersion?
+                // arguments.add(0, "-DANDROID_PLATFORM=android-${Config.Android.targetSdkVersion - 1}")
+
+                // https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#introduction
+                // should we move away from binutils and use lld?
+                // to enable it we should set -fuse-ld=lld or ANDROID_LD=lld if I got it right
+                arguments.add(0, "-DANDROID_LD=lld")
             }
         }
 
