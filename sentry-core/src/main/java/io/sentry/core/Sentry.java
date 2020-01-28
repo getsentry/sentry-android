@@ -12,16 +12,27 @@ public final class Sentry {
 
   private Sentry() {}
 
+  /** Holds Hubs per thread or only mainHub if globalHubMode is enabled. */
   private static final @NotNull ThreadLocal<IHub> currentHub = new ThreadLocal<>();
 
+  /** The Main Hub or NoOp if Sentry is disabled. */
   private static volatile @NotNull IHub mainHub = NoOpHub.getInstance();
 
+  /** Default value for globalHubMode is false */
+  private static final boolean GLOBAL_HUB_DEFAULT_MODE = false;
+
+  /** whether to use a single (global) Hub as opposed to one per thread. */
+  private static volatile boolean globalHubMode = GLOBAL_HUB_DEFAULT_MODE;
+
   /**
-   * Returns the current (thread’s) hub, if none, clones the mainHub and returns it.
+   * Returns the current (threads) hub, if none, clones the mainHub and returns it.
    *
    * @return the hub
    */
-  private static @NotNull IHub getCurrentHub() {
+  static @NotNull IHub getCurrentHub() {
+    if (globalHubMode) {
+      return mainHub;
+    }
     IHub hub = currentHub.get();
     if (hub == null) {
       currentHub.set(mainHub.clone());
@@ -40,14 +51,13 @@ public final class Sentry {
 
   /** Initializes the SDK */
   public static void init() {
-    init(new SentryOptions());
+    init(new SentryOptions(), GLOBAL_HUB_DEFAULT_MODE);
   }
 
   /**
-   * Initializes the SDK Used by integrations that define their own SentryOptions
-   *
-   * @param clazz class OptionsContainer for SentryOptions
+   * @param clazz OptionsContainer for SentryOptions
    * @param optionsConfiguration configuration options callback
+   * @param <T> class that extends SentryOptions
    * @throws IllegalAccessException the IllegalAccessException
    * @throws InstantiationException the InstantiationException
    * @throws NoSuchMethodException the NoSuchMethodException
@@ -57,9 +67,28 @@ public final class Sentry {
       @NotNull OptionsContainer<T> clazz, @NotNull OptionsConfiguration<T> optionsConfiguration)
       throws IllegalAccessException, InstantiationException, NoSuchMethodException,
           InvocationTargetException {
+    init(clazz, optionsConfiguration, GLOBAL_HUB_DEFAULT_MODE);
+  }
+
+  /**
+   * @param clazz OptionsContainer for SentryOptions
+   * @param optionsConfiguration configuration options callback
+   * @param globalHubMode the globalHubMode
+   * @param <T> class that extends SentryOptions
+   * @throws IllegalAccessException the IllegalAccessException
+   * @throws InstantiationException the InstantiationException
+   * @throws NoSuchMethodException the NoSuchMethodException
+   * @throws InvocationTargetException the InvocationTargetException
+   */
+  public static <T extends SentryOptions> void init(
+      @NotNull OptionsContainer<T> clazz,
+      @NotNull OptionsConfiguration<T> optionsConfiguration,
+      boolean globalHubMode)
+      throws IllegalAccessException, InstantiationException, NoSuchMethodException,
+          InvocationTargetException {
     T options = clazz.createInstance();
     optionsConfiguration.configure(options);
-    init(options);
+    init(options, globalHubMode);
   }
 
   /**
@@ -68,12 +97,31 @@ public final class Sentry {
    * @param optionsConfiguration configuration options callback
    */
   public static void init(@NotNull OptionsConfiguration<SentryOptions> optionsConfiguration) {
-    SentryOptions options = new SentryOptions();
-    optionsConfiguration.configure(options);
-    init(options);
+    init(optionsConfiguration, GLOBAL_HUB_DEFAULT_MODE);
   }
 
-  private static synchronized <T extends SentryOptions> void init(@NotNull T options) {
+  /**
+   * Initializes the SDK with an optional configuration options callback.
+   *
+   * @param optionsConfiguration configuration options callback
+   * @param globalHubMode the globalHubMode
+   */
+  public static void init(
+      @NotNull OptionsConfiguration<SentryOptions> optionsConfiguration, boolean globalHubMode) {
+    SentryOptions options = new SentryOptions();
+    optionsConfiguration.configure(options);
+    init(options, globalHubMode);
+  }
+
+  /**
+   * Initializes the SDK with a SentryOptions and globalHubMode
+   *
+   * @param options options the SentryOptions
+   * @param globalHubMode the globalHubMode
+   * @param <T> a class that extends SentryOptions or SentryOptions itself.
+   */
+  private static synchronized <T extends SentryOptions> void init(
+      @NotNull T options, boolean globalHubMode) {
     String dsn = options.getDsn();
     if (dsn == null) {
       throw new IllegalArgumentException("DSN is required. Use empty string to disable SDK.");
@@ -87,6 +135,9 @@ public final class Sentry {
 
     ILogger logger = options.getLogger();
     logger.log(SentryLevel.INFO, "Initializing SDK with DSN: '%s'", options.getDsn());
+
+    logger.log(SentryLevel.INFO, "GlobalHubMode: '%s'", String.valueOf(globalHubMode));
+    Sentry.globalHubMode = globalHubMode;
 
     IHub hub = getCurrentHub();
     mainHub = new Hub(options);
@@ -224,7 +275,7 @@ public final class Sentry {
   }
 
   /**
-   * Shallow merges user configuration (email, username, …) to the current Scope.
+   * Shallow merges user configuration (email, username, etc) to the current Scope.
    *
    * @param user the user
    */
@@ -257,6 +308,15 @@ public final class Sentry {
   }
 
   /**
+   * Removes the tag to a string value to the current Scope
+   *
+   * @param key the key
+   */
+  public static void removeTag(@NotNull String key) {
+    getCurrentHub().removeTag(key);
+  }
+
+  /**
    * Sets the extra key to an arbitrary value to the current Scope, overwriting a potential previous
    * value
    *
@@ -265,6 +325,15 @@ public final class Sentry {
    */
   public static void setExtra(@NotNull String key, @NotNull String value) {
     getCurrentHub().setExtra(key, value);
+  }
+
+  /**
+   * Removes the extra key to an arbitrary value to the current Scope
+   *
+   * @param key the key
+   */
+  public static void removeExtra(@NotNull String key) {
+    getCurrentHub().removeExtra(key);
   }
 
   /**
@@ -278,12 +347,18 @@ public final class Sentry {
 
   /** Pushes a new scope while inheriting the current scope's data. */
   public static void pushScope() {
-    getCurrentHub().pushScope();
+    // pushScope is no-op in global hub mode
+    if (!globalHubMode) {
+      getCurrentHub().pushScope();
+    }
   }
 
   /** Removes the first scope */
   public static void popScope() {
-    getCurrentHub().popScope();
+    // popScope is no-op in global hub mode
+    if (!globalHubMode) {
+      getCurrentHub().popScope();
+    }
   }
 
   /**
@@ -318,7 +393,7 @@ public final class Sentry {
    *
    * @param timeoutMills time in milliseconds
    */
-  public static void flush(int timeoutMills) {
+  public static void flush(long timeoutMills) {
     getCurrentHub().flush(timeoutMills);
   }
 

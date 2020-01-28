@@ -42,6 +42,9 @@ public final class Device implements IUnknownPropertiesConsumer {
   private Integer screenDpi;
   private Date bootTime;
   private TimeZone timezone;
+  private String id;
+  private String language;
+  private String connectionType;
 
   @SuppressWarnings("unused")
   private Map<String, Object> unknown;
@@ -251,7 +254,8 @@ public final class Device implements IUnknownPropertiesConsumer {
   }
 
   public Date getBootTime() {
-    return bootTime != null ? (Date) bootTime.clone() : null;
+    final Date bootTimeRef = bootTime;
+    return bootTimeRef != null ? (Date) bootTimeRef.clone() : null;
   }
 
   public void setBootTime(Date bootTime) {
@@ -288,6 +292,30 @@ public final class Device implements IUnknownPropertiesConsumer {
 
   public void setScreenHeightPixels(Integer screenHeightPixels) {
     this.screenHeightPixels = screenHeightPixels;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public String getLanguage() {
+    return language;
+  }
+
+  public void setLanguage(String language) {
+    this.language = language;
+  }
+
+  public String getConnectionType() {
+    return connectionType;
+  }
+
+  public void setConnectionType(String connectionType) {
+    this.connectionType = connectionType;
   }
 
   public enum DeviceOrientation {

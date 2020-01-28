@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,20 +20,12 @@ public final class Scope implements Cloneable {
   private @NotNull Queue<Breadcrumb> breadcrumbs;
   private @NotNull Map<String, String> tags = new ConcurrentHashMap<>();
   private @NotNull Map<String, Object> extra = new ConcurrentHashMap<>();
-  private final int maxBreadcrumb;
-  private @Nullable final SentryOptions.BeforeBreadcrumbCallback beforeBreadcrumbCallback;
-  private @NotNull List<EventProcessor> eventProcessors = new ArrayList<>();
+  private @NotNull List<EventProcessor> eventProcessors = new CopyOnWriteArrayList<>();
+  private final @NotNull SentryOptions options;
 
-  public Scope(
-      int maxBreadcrumb,
-      @Nullable final SentryOptions.BeforeBreadcrumbCallback beforeBreadcrumbCallback) {
-    this.maxBreadcrumb = maxBreadcrumb;
-    this.beforeBreadcrumbCallback = beforeBreadcrumbCallback;
-    this.breadcrumbs = createBreadcrumbsList(this.maxBreadcrumb);
-  }
-
-  public Scope(int maxBreadcrumb) {
-    this(maxBreadcrumb, null);
+  public Scope(final @NotNull SentryOptions options) {
+    this.options = options;
+    this.breadcrumbs = createBreadcrumbsList(options.getMaxBreadcrumbs());
   }
 
   public @Nullable SentryLevel getLevel() {
@@ -59,7 +52,8 @@ public final class Scope implements Cloneable {
     this.user = user;
   }
 
-  public @NotNull List<String> getFingerprint() {
+  @NotNull
+  List<String> getFingerprint() {
     return fingerprint;
   }
 
@@ -72,39 +66,62 @@ public final class Scope implements Cloneable {
     return breadcrumbs;
   }
 
-  public void addBreadcrumb(@NotNull Breadcrumb breadcrumb) {
-    addBreadcrumb(breadcrumb, true);
+  private @Nullable Breadcrumb executeBeforeBreadcrumb(
+      final @NotNull SentryOptions.BeforeBreadcrumbCallback callback,
+      @NotNull Breadcrumb breadcrumb,
+      final @Nullable Object hint) {
+    try {
+      breadcrumb = callback.execute(breadcrumb, hint);
+    } catch (Exception e) {
+      options
+          .getLogger()
+          .log(
+              SentryLevel.ERROR,
+              "The BeforeBreadcrumbCallback callback threw an exception. It will be added as breadcrumb and continue.",
+              e);
+
+      breadcrumb.setData("sentry:message", e.getMessage());
+    }
+    return breadcrumb;
   }
 
-  void addBreadcrumb(@NotNull Breadcrumb breadcrumb, boolean executeBeforeBreadcrumb) {
-    if (executeBeforeBreadcrumb && beforeBreadcrumbCallback != null) {
-      try {
-        breadcrumb =
-            beforeBreadcrumbCallback.execute(breadcrumb, null); // TODO: whats about hint here?
-      } catch (Exception e) {
-        // TODO: log it
-
-        Map<String, String> data = breadcrumb.getData();
-        if (breadcrumb.getData() == null) {
-          data = new HashMap<>();
-        }
-        data.put("sentry:message", e.getMessage());
-        breadcrumb.setData(data);
-      }
-
-      if (breadcrumb == null) {
-        return;
-      }
+  public void addBreadcrumb(@NotNull Breadcrumb breadcrumb, final @Nullable Object hint) {
+    if (breadcrumb == null) {
+      return;
     }
 
-    this.breadcrumbs.add(breadcrumb);
+    SentryOptions.BeforeBreadcrumbCallback callback = options.getBeforeBreadcrumb();
+    if (callback != null) {
+      breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb, hint);
+    }
+    if (breadcrumb != null) {
+      this.breadcrumbs.add(breadcrumb);
+    } else {
+      options.getLogger().log(SentryLevel.INFO, "Breadcrumb was dropped by beforeBreadcrumb");
+    }
+  }
+
+  public void addBreadcrumb(@NotNull Breadcrumb breadcrumb) {
+    addBreadcrumb(breadcrumb, null);
   }
 
   public void clearBreadcrumbs() {
     breadcrumbs.clear();
   }
 
-  public @NotNull Map<String, String> getTags() {
+  public void clear() {
+    level = null;
+    transaction = null;
+    user = null;
+    fingerprint.clear();
+    breadcrumbs.clear();
+    tags.clear();
+    extra.clear();
+    eventProcessors.clear();
+  }
+
+  @NotNull
+  Map<String, String> getTags() {
     return tags;
   }
 
@@ -112,12 +129,21 @@ public final class Scope implements Cloneable {
     this.tags.put(key, value);
   }
 
-  public @NotNull Map<String, Object> getExtras() {
+  public void removeTag(@NotNull String key) {
+    this.tags.remove(key);
+  }
+
+  @NotNull
+  Map<String, Object> getExtras() {
     return extra;
   }
 
   public void setExtra(@NotNull String key, @NotNull String value) {
     this.extra.put(key, value);
+  }
+
+  public void removeExtra(@NotNull String key) {
+    this.extra.remove(key);
   }
 
   private @NotNull Queue<Breadcrumb> createBreadcrumbsList(final int maxBreadcrumb) {
@@ -126,51 +152,51 @@ public final class Scope implements Cloneable {
 
   @Override
   public Scope clone() throws CloneNotSupportedException {
-    Scope clone = (Scope) super.clone();
-    clone.level = level != null ? SentryLevel.valueOf(level.name().toUpperCase(Locale.ROOT)) : null;
-    clone.user = user != null ? user.clone() : null;
-    clone.fingerprint = fingerprint != null ? new ArrayList<>(fingerprint) : null;
-    clone.eventProcessors = eventProcessors != null ? new ArrayList<>(eventProcessors) : null;
+    final Scope clone = (Scope) super.clone();
 
-    if (breadcrumbs != null) {
-      Queue<Breadcrumb> breadcrumbsClone = createBreadcrumbsList(maxBreadcrumb);
+    final SentryLevel levelRef = level;
+    clone.level =
+        levelRef != null ? SentryLevel.valueOf(levelRef.name().toUpperCase(Locale.ROOT)) : null;
 
-      for (Breadcrumb item : breadcrumbs) {
-        Breadcrumb breadcrumbClone = item.clone();
-        breadcrumbsClone.add(breadcrumbClone);
+    final User userRef = user;
+    clone.user = userRef != null ? userRef.clone() : null;
+
+    clone.fingerprint = new ArrayList<>(fingerprint);
+    clone.eventProcessors = new CopyOnWriteArrayList<>(eventProcessors);
+
+    final Queue<Breadcrumb> breadcrumbsRef = breadcrumbs;
+
+    Queue<Breadcrumb> breadcrumbsClone = createBreadcrumbsList(options.getMaxBreadcrumbs());
+
+    for (Breadcrumb item : breadcrumbsRef) {
+      final Breadcrumb breadcrumbClone = item.clone();
+      breadcrumbsClone.add(breadcrumbClone);
+    }
+    clone.breadcrumbs = breadcrumbsClone;
+
+    final Map<String, String> tagsRef = tags;
+
+    final Map<String, String> tagsClone = new ConcurrentHashMap<>();
+
+    for (Map.Entry<String, String> item : tagsRef.entrySet()) {
+      if (item != null) {
+        tagsClone.put(item.getKey(), item.getValue());
       }
-      clone.breadcrumbs = breadcrumbsClone;
-    } else {
-      clone.breadcrumbs = null;
     }
 
-    if (tags != null) {
-      Map<String, String> tagsClone = new ConcurrentHashMap<>();
+    clone.tags = tagsClone;
 
-      for (Map.Entry<String, String> item : tags.entrySet()) {
-        if (item != null) {
-          tagsClone.put(item.getKey(), item.getValue());
-        }
+    final Map<String, Object> extraRef = extra;
+
+    Map<String, Object> extraClone = new HashMap<>();
+
+    for (Map.Entry<String, Object> item : extraRef.entrySet()) {
+      if (item != null) {
+        extraClone.put(item.getKey(), item.getValue());
       }
-
-      clone.tags = tagsClone;
-    } else {
-      clone.tags = null;
     }
 
-    if (extra != null) {
-      Map<String, Object> extraClone = new HashMap<>();
-
-      for (Map.Entry<String, Object> item : extra.entrySet()) {
-        if (item != null) {
-          extraClone.put(item.getKey(), item.getValue());
-        }
-      }
-
-      clone.extra = extraClone;
-    } else {
-      clone.extra = null;
-    }
+    clone.extra = extraClone;
 
     return clone;
   }

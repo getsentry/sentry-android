@@ -5,9 +5,7 @@ import io.sentry.core.protocol.User;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +32,7 @@ public final class Hub implements IHub {
 
     // Register integrations against a root Hub
     for (Integration integration : options.getIntegrations()) {
-      integration.register(this, options);
+      integration.register(HubAdapter.getInstance(), options);
     }
   }
 
@@ -62,7 +60,7 @@ public final class Hub implements IHub {
 
   private static StackItem createRootStackItem(@NotNull SentryOptions options) {
     validateOptions(options);
-    Scope scope = new Scope(options.getMaxBreadcrumbs(), options.getBeforeBreadcrumb());
+    Scope scope = new Scope(options);
     ISentryClient client = new SentryClient(options);
     return new StackItem(client, scope);
   }
@@ -198,13 +196,7 @@ public final class Hub implements IHub {
     } else {
       StackItem item = stack.peek();
       if (item != null) {
-        SentryOptions.BeforeBreadcrumbCallback callback = options.getBeforeBreadcrumb();
-        if (callback != null) {
-          breadcrumb = executeBeforeBreadcrumb(callback, breadcrumb, hint);
-        }
-        if (breadcrumb != null) {
-          item.scope.addBreadcrumb(breadcrumb, false);
-        }
+        item.scope.addBreadcrumb(breadcrumb, hint);
       } else {
         options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when addBreadcrumb");
       }
@@ -318,6 +310,24 @@ public final class Hub implements IHub {
   }
 
   @Override
+  public void removeTag(@NotNull String key) {
+    if (!isEnabled()) {
+      options
+          .getLogger()
+          .log(SentryLevel.WARNING, "Instance is disabled and this 'removeTag' call is a no-op.");
+    } else if (key == null) {
+      options.getLogger().log(SentryLevel.WARNING, "removeTag called with null parameter.");
+    } else {
+      StackItem item = stack.peek();
+      if (item != null) {
+        item.scope.removeTag(key);
+      } else {
+        options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when removeTag");
+      }
+    }
+  }
+
+  @Override
   public void setExtra(@NotNull String key, @NotNull String value) {
     if (!isEnabled()) {
       options
@@ -335,28 +345,22 @@ public final class Hub implements IHub {
     }
   }
 
-  private @Nullable Breadcrumb executeBeforeBreadcrumb(
-      @NotNull SentryOptions.BeforeBreadcrumbCallback callback,
-      @NotNull Breadcrumb breadcrumb,
-      @Nullable Object hint) {
-    try {
-      breadcrumb = callback.execute(breadcrumb, hint);
-    } catch (Exception e) {
+  @Override
+  public void removeExtra(@NotNull String key) {
+    if (!isEnabled()) {
       options
           .getLogger()
-          .log(
-              SentryLevel.ERROR,
-              "The BeforeBreadcrumbCallback callback threw an exception. It will be added as breadcrumb and continue.",
-              e);
-
-      Map<String, String> data = breadcrumb.getData();
-      if (breadcrumb.getData() == null) {
-        data = new HashMap<>();
+          .log(SentryLevel.WARNING, "Instance is disabled and this 'removeExtra' call is a no-op.");
+    } else if (key == null) {
+      options.getLogger().log(SentryLevel.WARNING, "removeExtra called with null parameter.");
+    } else {
+      StackItem item = stack.peek();
+      if (item != null) {
+        item.scope.removeExtra(key);
+      } else {
+        options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when removeExtra");
       }
-      data.put("sentry:message", e.getMessage());
-      breadcrumb.setData(data);
     }
-    return breadcrumb;
   }
 
   @Override
@@ -509,7 +513,7 @@ public final class Hub implements IHub {
       } catch (CloneNotSupportedException e) {
         // TODO: Why do we need to deal with this? We must guarantee clone is possible here!
         options.getLogger().log(SentryLevel.ERROR, "Clone not supported");
-        clonedScope = new Scope(options.getMaxBreadcrumbs(), options.getBeforeBreadcrumb());
+        clonedScope = new Scope(options);
       }
       StackItem cloneItem = new StackItem(item.client, clonedScope);
       clone.stack.push(cloneItem);
