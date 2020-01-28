@@ -7,9 +7,6 @@ add_subdirectory(${SENTRY_NATIVE_SRC})
 # sentry-native submodule include path.
 include_directories(${SENTRY_NATIVE_SRC}/include)
 
-# https://android.googlesource.com/platform/ndk/+/master/docs/BuildSystemMaintainers.md#additional-required-arguments
-set(CMAKE_SHARED_LINKER_FLAGS" ${CMAKE_SHARED_LINKER_FLAGS} -Wl,--build-id=sha1")
-
 # sentry-native source code.
 file(GLOB SENTRY_ANDROID_SOURCES ${CMAKE_SOURCE_DIR}/src/main/jni/*.c)
 
