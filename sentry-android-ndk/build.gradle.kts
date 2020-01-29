@@ -36,6 +36,7 @@ android {
 
         externalNativeBuild {
             cmake {
+                targets.add("sentry-android")
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
             }
