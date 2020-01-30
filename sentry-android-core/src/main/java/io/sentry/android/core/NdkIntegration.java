@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 
 final class NdkIntegration implements Integration {
   private boolean isNdkAvailable() {
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
   }
 
   @Override
