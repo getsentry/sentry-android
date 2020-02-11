@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 class MainEventProcessorTest {
     class Fixture(attachStacktrace: Boolean = false) {
-        val sentryOptions: SentryOptions = SentryOptions().apply {
+        private val sentryOptions: SentryOptions = SentryOptions().apply {
             dsn = dsnString
             release = "release"
             environment = "environment"
