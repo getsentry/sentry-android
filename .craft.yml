@@ -1,0 +1,24 @@
+github:
+  owner: getsentry
+  repo: sentry-android
+  targets:
+    - name: bintray
+    - name: github
+    - name: registry
+      type: sdk
+      config:
+      canonical: "maven:sentry-android"
+    - name: registry
+      type: sdk
+      config:
+      canonical: "maven:sentry-android-core"
+      - name: registry
+      type: sdk
+      config:
+      canonical: "maven:sentry-android-ndk"
+    - name: registry
+      type: sdk
+      config:
+      canonical: "maven:sentry-core"
+statusProvider:
+  name: github
