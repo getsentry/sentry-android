@@ -24,6 +24,7 @@ final class AndroidLogger implements ILogger {
   public void log(SentryLevel level, String message, Throwable throwable) {
 
     switch (level) {
+      case LOG:
       case DEBUG:
         Log.d(tag, message, throwable);
         break;

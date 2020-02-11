@@ -215,6 +215,15 @@ class AndroidSerializerTest {
     }
 
     @Test
+    fun `when deserializing a event with breadcrumbs containing data, it should become have breadcrumbs`() {
+        val jsonEvent = "{\"message\":{\"message\":\"test\"},\"level\":\"info\",\"event_id\":\"286eecc053ea4c05879273226b51764c\",\"platform\":\"node\",\"sdk\":{\"name\":\"sentry.javascript.react-native\",\"packages\":[{\"name\":\"npm:@sentry/react-native\",\"version\":\"1.2.2\"}],\"version\":\"1.2.2\",\"integrations\":[\"ReactNativeErrorHandlers\",\"Release\",\"InboundFilters\",\"FunctionToString\",\"LinkedErrors\",\"UserAgent\",\"Breadcrumbs\",\"DebugSymbolicator\",\"RewriteFrames\",\"DeviceContext\"]},\"tags\":{\"hermes\":\"true\"},\"breadcrumbs\":[{\"timestamp\":1581420865.987,\"category\":\"console\",\"data\":{\"arguments\":[\"console .log test\"],\"logger\":\"console\"},\"level\":\"log\",\"message\":\"console .log test\"},{\"timestamp\":1581420866.014,\"category\":\"console\",\"data\":{\"arguments\":[\"Running \\\"hermes\\\" with {\\\"rootTag\\\":1}\"],\"logger\":\"console\"},\"level\":\"log\",\"message\":\"Running \\\"hermes\\\" with {\\\"rootTag\\\":1}\"}],\"release\":\"com.hermes@1.0+1\",\"dist\":\"1\",\"extra\":{\"componentStack\":\"[undefined]\",\"jsEngine\":\"[undefined]\"}}"
+
+        val actual = serializer.deserializeEvent(StringReader(jsonEvent))
+
+        assertEquals(2, actual.breadcrumbs.size)
+    }
+
+    @Test
     fun `when theres a null value, gson wont blow up`() {
         val json = FileFromResources.invoke("event.json")
         val event = serializer.deserializeEvent(StringReader(json))
