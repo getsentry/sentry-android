@@ -28,8 +28,8 @@ public final class DateDeserializerAdapter implements JsonDeserializer<Date> {
       return json == null ? null : DateUtils.getDateTime(json.getAsString());
     } catch (Exception e) {
       logger.log(
-          SentryLevel.ERROR,
-          "Error when deserializing UTC timestamp format, might be mills timestamp format.",
+          SentryLevel.DEBUG,
+          "Error when deserializing UTC timestamp format, it might be mills timestamp format.",
           e);
     }
     try {
