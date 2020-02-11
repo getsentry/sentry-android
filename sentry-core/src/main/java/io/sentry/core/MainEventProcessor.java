@@ -72,7 +72,14 @@ public final class MainEventProcessor implements EventProcessor {
     }
 
     if (event.getThreads() == null) {
-      event.setThreads(sentryThreadFactory.getCurrentThreads());
+      // that means user has called Sentry.captureMessage
+      if (event.getMessage() != null && event.getExceptions() == null) {
+        if (options.isAttachStacktrace()) {
+          event.setThreads(sentryThreadFactory.getCurrentThreads());
+        }
+      } else {
+        event.setThreads(sentryThreadFactory.getCurrentThreads());
+      }
     }
   }
 }

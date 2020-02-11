@@ -138,6 +138,12 @@ public class SentryOptions {
   private @Nullable String dist;
 
   /**
+   * When enabled, stack traces are automatically attached to all messages logged. Stack traces are
+   * always attached to exceptions but when this is set stack traces are also sent with messages
+   */
+  private boolean attachStacktrace;
+
+  /**
    * Adds an event processor
    *
    * @param eventProcessor the event processor
@@ -585,6 +591,24 @@ public class SentryOptions {
    */
   public void setTransportGate(@Nullable ITransportGate transportGate) {
     this.transportGate = transportGate;
+  }
+
+  /**
+   * Checks if the AttachStacktrace is enabled or not
+   *
+   * @return true if enabled or false otherwise
+   */
+  public boolean isAttachStacktrace() {
+    return attachStacktrace;
+  }
+
+  /**
+   * Sets the attachStacktrace to enabled or disabled
+   *
+   * @param attachStacktrace true if enabled or false otherwise
+   */
+  public void setAttachStacktrace(boolean attachStacktrace) {
+    this.attachStacktrace = attachStacktrace;
   }
 
   /** The BeforeSend callback */

@@ -1,20 +1,23 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.mock
+import io.sentry.core.protocol.Message
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class MainEventProcessorTest {
-    class Fixture {
-        private val sentryOptions: SentryOptions = SentryOptions().apply {
+    class Fixture(attachStacktrace: Boolean = false) {
+        val sentryOptions: SentryOptions = SentryOptions().apply {
             dsn = dsnString
             release = "release"
             environment = "environment"
             dist = "dist"
+            isAttachStacktrace = attachStacktrace
         }
         fun getSut() = MainEventProcessor(sentryOptions)
     }
@@ -72,6 +75,34 @@ class MainEventProcessorTest {
         assertNull(event.release)
         assertNull(event.environment)
         assertNull(event.threads)
+    }
+
+    @Test
+    fun `when processing a message and attach stacktrace is disabled, threads should not be set`() {
+        val sut = fixture.getSut()
+
+        var event = SentryEvent().apply {
+            message = Message().apply {
+                formatted = "test"
+            }
+        }
+        event = sut.process(event, null)
+
+        assertNull(event.threads)
+    }
+
+    @Test
+    fun `when processing a message and attach stacktrace is enabled, threads should be set`() {
+        val sut = Fixture(true).getSut()
+
+        var event = SentryEvent().apply {
+            message = Message().apply {
+                formatted = "test"
+            }
+        }
+        event = sut.process(event, null)
+
+        assertNotNull(event.threads)
     }
 
     private fun generateCrashedEvent(crashedThread: Thread = Thread.currentThread()) = SentryEvent().apply {
