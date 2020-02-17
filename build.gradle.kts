@@ -15,7 +15,6 @@ configure<JavaPluginConvention> {
 
 buildscript {
     repositories {
-        mavenLocal()
         google()
         jcenter()
         maven { setUrl("https://dl.bintray.com/novoda-oss/snapshots/") }
@@ -38,7 +37,6 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenLocal()
         google()
         jcenter()
         mavenCentral()
