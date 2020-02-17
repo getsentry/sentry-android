@@ -39,6 +39,9 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven {
+            setUrl("https://dl.bintray.com/getsentry/sentry-android")
+        }
         mavenCentral()
     }
     group = Config.Sentry.group
