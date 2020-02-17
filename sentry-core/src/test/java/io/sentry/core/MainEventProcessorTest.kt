@@ -1,7 +1,6 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.mock
-import io.sentry.core.protocol.Message
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -11,15 +10,17 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class MainEventProcessorTest {
-    class Fixture(attachStacktrace: Boolean = false) {
+    class Fixture {
         private val sentryOptions: SentryOptions = SentryOptions().apply {
             dsn = dsnString
             release = "release"
             environment = "environment"
             dist = "dist"
-            isAttachStacktrace = attachStacktrace
         }
-        fun getSut() = MainEventProcessor(sentryOptions)
+        fun getSut(attachThreads: Boolean = true): MainEventProcessor {
+            sentryOptions.isAttachThreads = attachThreads
+            return MainEventProcessor(sentryOptions)
+        }
     }
 
     private val fixture = Fixture()
@@ -78,28 +79,20 @@ class MainEventProcessorTest {
     }
 
     @Test
-    fun `when processing a message and attach stacktrace is disabled, threads should not be set`() {
-        val sut = fixture.getSut()
+    fun `when processing an event and attach threads is disabled, threads should not be set`() {
+        val sut = fixture.getSut(false)
 
-        var event = SentryEvent().apply {
-            message = Message().apply {
-                formatted = "test"
-            }
-        }
+        var event = SentryEvent()
         event = sut.process(event, null)
 
         assertNull(event.threads)
     }
 
     @Test
-    fun `when processing a message and attach stacktrace is enabled, threads should be set`() {
-        val sut = Fixture(true).getSut()
+    fun `when processing an event and attach threads is enabled, threads should be set`() {
+        val sut = fixture.getSut()
 
-        var event = SentryEvent().apply {
-            message = Message().apply {
-                formatted = "test"
-            }
-        }
+        var event = SentryEvent()
         event = sut.process(event, null)
 
         assertNotNull(event.threads)
