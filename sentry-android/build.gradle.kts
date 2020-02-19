@@ -1,9 +1,6 @@
-import com.novoda.gradle.release.PublishExtension
-
 plugins {
     id("com.android.library")
     kotlin("android")
-    id(Config.Deploy.novodaBintray)
     id(Config.QualityPlugins.gradleVersions)
 }
 
@@ -37,17 +34,4 @@ dependencies {
     api(project(":sentry-android-ndk"))
 }
 
-//TODO: move these blocks to parent gradle file, DRY
-configure<PublishExtension> {
-    userOrg = Config.Sentry.userOrg
-    groupId = project.group.toString()
-    publishVersion = project.version.toString()
-    desc = Config.Sentry.description
-    website = Config.Sentry.website
-    repoName = Config.Sentry.repoName
-    setLicences(Config.Sentry.licence)
-    issueTracker = Config.Sentry.issueTracker
-    repository = Config.Sentry.repository
-    sign = Config.Deploy.sign
-    artifactId = "sentry-android"
-}
+apply(from = "../gradle/gradle-mvn-push.gradle")

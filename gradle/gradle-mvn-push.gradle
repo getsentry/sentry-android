@@ -1,0 +1,118 @@
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+afterEvaluate { project ->
+    if (project.getPlugins().hasPlugin('com.android.application') ||
+            project.getPlugins().hasPlugin('com.android.library')) {
+
+        task androidJavadocs(type: Javadoc) {
+            source = android.sourceSets.main.java.source
+            classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        }
+
+        task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+            classifier = 'javadoc'
+            from androidJavadocs.destinationDir
+        }
+
+        task androidSourcesJar(type: Jar) {
+            classifier = 'sources'
+            from android.sourceSets.main.java.source
+        }
+    } else {
+
+        task sourcesJar(type: Jar, dependsOn: classes) {
+            classifier = 'sources'
+            from sourceSets.main.allSource
+        }
+
+        task javadocJar(type: Jar, dependsOn: javadoc) {
+            classifier = 'javadoc'
+            from javadoc.destinationDir
+        }
+    }
+
+    if (JavaVersion.current().isJava8Compatible()) {
+        allprojects {
+            tasks.withType(Javadoc) {
+                options.addStringOption('Xdoclint:none', '-quiet')
+            }
+        }
+    }
+
+//    artifacts {
+//        if (project.getPlugins().hasPlugin('com.android.application') ||
+//                project.getPlugins().hasPlugin('com.android.library')) {
+//            archives androidSourcesJar
+//            archives androidJavadocsJar
+//        } else {
+//            archives sourcesJar
+//            archives javadocJar
+//        }
+//    }
+
+    publishing {
+        publications {
+            release(MavenPublication) {
+                if (project.getPlugins().hasPlugin('com.android.application') ||
+                        project.getPlugins().hasPlugin('com.android.library')) {
+                    from components.release
+                    artifact androidSourcesJar
+                    artifact androidJavadocsJar
+                } else {
+                    from components.java
+                    artifact sourcesJar
+                    artifact javadocJar
+                }
+
+                pom {
+                    name = project.name
+                    description = "SDK for sentry.io"
+                    url = "https://github.com/getsentry/sentry-android"
+                    developers {
+                        developer {
+                            id = "getsentry"
+                            name = "Sentry Team and Contributors"
+                            email = "accounts@sentry.io"
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:https://github.com/getsentry/sentry-android.git"
+                        developerConnection = "scm:git:ssh://git@github.com/getsentry/sentry-android.git"
+                        url = "https://github.com/getsentry/sentry-android"
+                    }
+                }
+            }
+        }
+    }
+
+    bintray {
+        user = project.hasProperty("user") ? project.getProperty("user") : ""
+        key = project.hasProperty("key") ? project.getProperty("key") : ""
+        publications = ['release']
+//        configurations = ['archives']
+        dryRun = project.hasProperty("dryRun") ? project.getProperty("dryRun") : true
+        publish = true
+        pkg {
+            repo = "sentry-android"
+            name = project.group.toString() + ":" + project.name
+            userOrg = "getsentry"
+            desc = "SDK for sentry.io"
+            websiteUrl = "https://sentry.io"
+            issueTrackerUrl = "https://github.com/getsentry/sentry-android/issues"
+            vcsUrl = "https://github.com/getsentry/sentry-android.git"
+            licenses = ["MIT"]
+
+            version {
+                name = project.version.toString()
+                gpg {
+                    sign = true
+                }
+                mavenCentralSync {
+                    sync = true
+                }
+            }
+        }
+    }
+    project.tasks.bintrayUpload.mustRunAfter(project.tasks.uploadArchives)
+}

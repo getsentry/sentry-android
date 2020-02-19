@@ -1,10 +1,7 @@
-import com.novoda.gradle.release.PublishExtension
-
 plugins {
     id("com.android.library")
     kotlin("android")
     jacoco
-    id(Config.Deploy.novodaBintray)
     id(Config.NativePlugins.nativeBundleExport)
     id(Config.QualityPlugins.gradleVersions)
 }
@@ -122,17 +119,4 @@ tasks.named("preBuild") {
     dependsOn(initNative)
 }
 
-//TODO: move thse blocks to parent gradle file, DRY
-configure<PublishExtension> {
-    userOrg = Config.Sentry.userOrg
-    groupId = project.group.toString()
-    publishVersion = project.version.toString()
-    desc = Config.Sentry.description
-    website = Config.Sentry.website
-    repoName = Config.Sentry.repoName
-    setLicences(Config.Sentry.licence)
-    issueTracker = Config.Sentry.issueTracker
-    repository = Config.Sentry.repository
-    sign = Config.Deploy.sign
-    artifactId = "sentry-android-ndk"
-}
+apply(from = "../gradle/gradle-mvn-push.gradle")

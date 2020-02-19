@@ -1,11 +1,8 @@
-import com.novoda.gradle.release.PublishExtension
-
 plugins {
     `java-library`
     kotlin("jvm")
     jacoco
     id(Config.QualityPlugins.errorProne)
-    id(Config.Deploy.novodaBintray)
     id(Config.QualityPlugins.gradleVersions)
 }
 
@@ -55,17 +52,4 @@ tasks {
     }
 }
 
-//TODO: move thse blocks to parent gradle file, DRY
-configure<PublishExtension> {
-    userOrg = Config.Sentry.userOrg
-    groupId = project.group.toString()
-    publishVersion = project.version.toString()
-    desc = Config.Sentry.description
-    website = Config.Sentry.website
-    repoName = Config.Sentry.repoName
-    setLicences(Config.Sentry.licence)
-    issueTracker = Config.Sentry.issueTracker
-    repository = Config.Sentry.repository
-    sign = Config.Deploy.sign
-    artifactId = "sentry-core"
-}
+apply(from = "../gradle/gradle-mvn-push.gradle")

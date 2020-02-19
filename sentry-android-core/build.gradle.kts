@@ -1,4 +1,3 @@
-import com.novoda.gradle.release.PublishExtension
 import org.jetbrains.kotlin.config.KotlinCompilerVersion
 
 plugins {
@@ -6,7 +5,6 @@ plugins {
     kotlin("android")
     jacoco
     id(Config.QualityPlugins.errorProne)
-    id(Config.Deploy.novodaBintray)
     id(Config.QualityPlugins.gradleVersions)
 }
 
@@ -94,17 +92,4 @@ dependencies {
     testImplementation(Config.TestLibs.mockitoKotlin)
 }
 
-//TODO: move thse blocks to parent gradle file, DRY
-configure<PublishExtension> {
-    userOrg = Config.Sentry.userOrg
-    groupId = project.group.toString()
-    publishVersion = project.version.toString()
-    desc = Config.Sentry.description
-    website = Config.Sentry.website
-    repoName = Config.Sentry.repoName
-    setLicences(Config.Sentry.licence)
-    issueTracker = Config.Sentry.issueTracker
-    repository = Config.Sentry.repository
-    sign = Config.Deploy.sign
-    artifactId = "sentry-android-core"
-}
+apply(from = "../gradle/gradle-mvn-push.gradle")

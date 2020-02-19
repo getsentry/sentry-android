@@ -23,15 +23,15 @@ buildscript {
         classpath(Config.BuildPlugins.androidGradle)
         classpath(kotlin(Config.BuildPlugins.kotlinGradlePlugin, version = Config.kotlinVersion))
         classpath(Config.QualityPlugins.errorpronePlugin)
-        classpath(Config.Deploy.novodaBintrayPlugin)
+        classpath(Config.Deploy.bintrayPlugin)
         classpath(Config.QualityPlugins.gradleVersionsPlugin)
 
         // add classpath of androidNativeBundle
-        // com.ydq.android.gradle.build.tool:nativeBundle:{version}}
+        // com.ydq.android.gradle.build.tool:nativeBundle:{version}
         classpath(Config.NativePlugins.nativeBundlePlugin)
 
         // add classpath of sentry android gradle plugin
-//        classpath("io.sentry:sentry-android-gradle-plugin:{version}}")
+//        classpath("io.sentry:sentry-android-gradle-plugin:{version}")
     }
 }
 

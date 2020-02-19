@@ -3,7 +3,7 @@ object Config {
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
-        val androidGradle = "com.android.tools.build:gradle:3.5.3"
+        val androidGradle = "com.android.tools.build:gradle:3.6.0-rc03"
         val kotlinGradlePlugin = "gradle-plugin"
     }
 
@@ -63,6 +63,9 @@ object Config {
         val devName = "Sentry Team and Contributors"
         val devEmail = "accounts@sentry.io"
         val devUser = "getsentry"
+        val scmConnection = "scm:git:https://github.com/getsentry/sentry-android.git"
+        val devConnection = "scm:git:ssh://git@github.com/getsentry/sentry-android.git"
+        val url = "https://github.com/getsentry/sentry-android"
     }
 
     object CompileOnly {
@@ -76,9 +79,7 @@ object Config {
     }
 
     object Deploy {
-        val novodaBintrayPlugin = "com.novoda:bintray-release:0.9.2"
-        val novodaBintray = "com.novoda.bintray-release"
-        val sign = true
+        val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     }
 
     object NativePlugins {

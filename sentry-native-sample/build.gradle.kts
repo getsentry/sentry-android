@@ -73,3 +73,9 @@ dependencies {
     implementation(Config.Libs.timber)
     debugImplementation(Config.Libs.leakCanary)
 }
+
+// how to enable upload of native debug symbols
+//sentry {
+//    uploadNativeSymbols = true
+//    includeNativeSources = true
+//}
