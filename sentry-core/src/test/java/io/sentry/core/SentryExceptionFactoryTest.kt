@@ -67,7 +67,6 @@ class SentryExceptionFactoryTest {
 
     @Test
     fun `when exception has a mechanism, it should get and set the mechanism's threadId`() {
-        val threadId = Thread.currentThread().id
         val exception = Exception("message")
         val mechanism = Mechanism()
         mechanism.type = "ANR"
