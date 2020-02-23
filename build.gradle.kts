@@ -17,7 +17,7 @@ buildscript {
     repositories {
         google()
         jcenter()
-        maven { setUrl("https://dl.bintray.com/novoda-oss/snapshots/") }
+//        maven { setUrl("https://dl.bintray.com/novoda-oss/snapshots/") }
     }
     dependencies {
         classpath(Config.BuildPlugins.androidGradle)
@@ -39,9 +39,9 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven {
-            setUrl("https://dl.bintray.com/getsentry/sentry-android")
-        }
+//        maven {
+//            setUrl("https://dl.bintray.com/getsentry/sentry-android")
+//        }
         mavenCentral()
     }
     group = Config.Sentry.group

@@ -19,7 +19,7 @@ cache:
   - "%USERPROFILE%\\.gradle\\wrapper"
   - "%USERPROFILE%\\.m2\\repository"
 build_script:
-  - cmd: gradlew.bat build
+  - cmd: gradlew.bat build bintrayUpload -PbintrayUser=BINTRAY_USERNAME -PbintrayKey=BINTRAY_KEY
 artifacts:
   - path: '**\libs\*sentry*.jar'
   - path: '**\outputs\aar\*sentry*.aar'

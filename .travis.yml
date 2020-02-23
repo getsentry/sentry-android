@@ -19,6 +19,9 @@ install:
   - echo y | sdkmanager "cmake;3.10.2.4988404" >/dev/null
 before_script:
   - export ANDROID_NDK_HOME=$ANDROID_HOME/ndk-bundle
+  - chmod +x ./gradlew
+script:
+- ./gradlew build bintrayUpload -PbintrayUser=BINTRAY_USERNAME -PbintrayKey=BINTRAY_KEY
 android:
   components:
     - platform-tools

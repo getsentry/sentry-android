@@ -43,11 +43,38 @@ configure<PublishExtension> {
     groupId = project.group.toString()
     publishVersion = project.version.toString()
     desc = Config.Sentry.description
-    website = Config.Sentry.website
+//    website = Config.Sentry.website
     repoName = Config.Sentry.repoName
-    setLicences(Config.Sentry.licence)
-    issueTracker = Config.Sentry.issueTracker
-    repository = Config.Sentry.repository
+//    setLicences(Config.Sentry.licence)
+//    issueTracker = Config.Sentry.issueTracker
+//    repository = Config.Sentry.repository
     sign = Config.Deploy.sign
-    artifactId = "sentry-android"
+    artifactId = project.name
+}
+
+afterEvaluate {
+    (publishing.publications.all {
+        (this as MavenPublication).apply {
+            pom {
+                licenses {
+                    license {
+                        name.set(Config.Sentry.licence)
+                        url.set(Config.Sentry.licenceUrl)
+                    }
+                }
+                developers {
+                    developer {
+                        id.set(Config.Sentry.userOrg)
+                        name.set(Config.Sentry.devName)
+                        email.set(Config.Sentry.devEmail)
+                    }
+                }
+                scm {
+                    connection.set(Config.Sentry.scmConnection)
+                    developerConnection.set(Config.Sentry.scmDevConnection)
+                    url.set(Config.Sentry.scmUrl)
+                }
+            }
+        }
+    })
 }
