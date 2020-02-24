@@ -128,12 +128,13 @@ configure<PublishExtension> {
     groupId = project.group.toString()
     publishVersion = project.version.toString()
     desc = Config.Sentry.description
-//    website = Config.Sentry.website
+    website = Config.Sentry.website
     repoName = Config.Sentry.repoName
-//    setLicences(Config.Sentry.licence)
-//    issueTracker = Config.Sentry.issueTracker
-//    repository = Config.Sentry.repository
+    setLicences(Config.Sentry.licence)
+    issueTracker = Config.Sentry.issueTracker
+    repository = Config.Sentry.repository
     sign = Config.Deploy.sign
+    mavenCentralSync = Config.Deploy.mavenCentralSync
     artifactId = project.name
 }
 
