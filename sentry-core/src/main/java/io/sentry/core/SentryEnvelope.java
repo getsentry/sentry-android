@@ -1,22 +1,28 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-final class SentryEnvelope {
+import java.io.IOException;
+import java.util.ArrayList;
 
-  private final SentryEnvelopeHeader header;
-  private final Iterable<SentryEnvelopeItem> items;
+// TODO: Move to io.sentry.core.internal and leave it as package-public?
+public final class SentryEnvelope {
+
+  private final @NotNull SentryEnvelopeHeader header;
+  private final @NotNull Iterable<SentryEnvelopeItem> items;
 
   public Iterable<SentryEnvelopeItem> getItems() {
     return items;
   }
 
-  public SentryEnvelopeHeader getHeader() {
+  public @NotNull SentryEnvelopeHeader getHeader() {
     return header;
   }
 
-  SentryEnvelope(SentryEnvelopeHeader header, Iterable<SentryEnvelopeItem> items) {
+  public SentryEnvelope(@NotNull SentryEnvelopeHeader header, @NotNull Iterable<SentryEnvelopeItem> items) {
     this.header = header;
     this.items = items;
   }
@@ -28,7 +34,19 @@ final class SentryEnvelope {
   }
 
   public SentryEnvelope(SentryId sentryId, Iterable<SentryEnvelopeItem> items) {
-    header = new SentryEnvelopeHeader(sentryId, null);
+    header = new SentryEnvelopeHeader(sentryId);
     this.items = items;
+  }
+
+  // Single item envelope with an envelope-allocated id
+  public SentryEnvelope(SentryEnvelopeItem item) {
+    header = new SentryEnvelopeHeader();
+    ArrayList<SentryEnvelopeItem> items = new ArrayList<>(1);
+    items.add(item);
+    this.items = items;
+  }
+
+  public static SentryEnvelope fromSession(ISerializer serializer, Session session) throws IOException {
+    return new SentryEnvelope(SentryEnvelopeItem.fromSession(serializer, session));
   }
 }

@@ -2,6 +2,8 @@ package io.sentry.core.transport;
 
 import static io.sentry.core.transport.RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY_MS;
 
+import io.sentry.core.SentryEnvelope;
+import io.sentry.core.SentryEnvelopeItem;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -11,6 +13,8 @@ import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.SubmissionResult;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
@@ -26,6 +30,7 @@ public final class AsyncConnection implements Closeable, Connection {
   private final ITransport transport;
   private final ITransportGate transportGate;
   private final ExecutorService executor;
+//  private final ExecutorService sessionExecutor;
   private final IEventCache eventCache;
   private final SentryOptions options;
 
@@ -81,6 +86,41 @@ public final class AsyncConnection implements Closeable, Connection {
       currentEventCache = NoOpEventCache.getInstance();
     }
     executor.submit(new EventSender(event, hint, currentEventCache));
+  }
+
+  // NOTE: This will not fallback to individual /store endpoints. Requires Sentry with Session health feature
+  @SuppressWarnings("FutureReturnValueIgnored")
+  @Override
+  public void send(@NotNull SentryEnvelope envelope, final @Nullable Object hint) throws IOException {
+    // For now no caching on envelopes
+//    IEventCache currentEventCache = NoOpEventCache.getInstance();
+//    if (hint instanceof Cached) {
+//      currentEventCache = NoOpEventCache.getInstance();
+//    }
+
+    // Optimize for/No allocations if no items are under 429
+    List<SentryEnvelopeItem> dropItems = null;
+    for (SentryEnvelopeItem item: envelope.getItems()) {
+      if (item.getHeader() != null && transport.isRetryAfter(item.getHeader().getType())) {
+        if (dropItems == null) {
+          dropItems = new ArrayList<>();
+        }
+        dropItems.add(item);
+      }
+    }
+
+    if (dropItems != null) {
+      // Need a new envelope
+      List<SentryEnvelopeItem> toSend = new ArrayList<>();
+      for (SentryEnvelopeItem item: envelope.getItems()) {
+        if (!dropItems.contains(item)) {
+          toSend.add(item);
+        }
+      }
+      envelope = new SentryEnvelope(envelope.getHeader(), toSend);
+    }
+
+    executor.submit(new EnvelopeSender(envelope, hint));
   }
 
   @Override
@@ -178,6 +218,101 @@ public final class AsyncConnection implements Closeable, Connection {
                     + ". Retrying in "
                     + suggestedRetryDelay
                     + "ms.";
+
+            options.getLogger().log(SentryLevel.ERROR, message);
+
+            throw new IllegalStateException(message);
+          }
+        } catch (IOException e) {
+          // Failure due to IO is allowed to retry the event
+          if (hint instanceof io.sentry.core.hints.Retryable) {
+            ((io.sentry.core.hints.Retryable) hint).setRetry(true);
+          }
+          throw new IllegalStateException("Sending the event failed.", e);
+        }
+      } else {
+        // If transportGate is blocking from sending, allowed to retry
+        if (hint instanceof io.sentry.core.hints.Retryable) {
+          ((io.sentry.core.hints.Retryable) hint).setRetry(true);
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public long getSuggestedRetryDelayMillis() {
+      return suggestedRetryDelay;
+    }
+
+    @Override
+    public int getResponseCode() {
+      return responseCode;
+    }
+  }
+
+  private final class EnvelopeSender implements Retryable {
+    private final SentryEnvelope envelope;
+    private final Object hint;
+//    private final IEventCache eventCache;
+    private long suggestedRetryDelay;
+    private int responseCode;
+    private final TransportResult failedResult =
+      TransportResult.error(HTTP_RETRY_AFTER_DEFAULT_DELAY_MS, -1);
+
+    EnvelopeSender(final SentryEnvelope envelope, final Object hint) {
+      this.envelope = envelope;
+      this.hint = hint;
+//      this.eventCache = eventCache;
+    }
+
+    @Override
+    public void run() {
+      TransportResult result = this.failedResult;
+      try {
+        result = flush();
+        options.getLogger().log(SentryLevel.DEBUG, "Envelope flushed: %s", envelope.getHeader().getEventId());
+      } catch (Exception e) {
+        options
+          .getLogger()
+          .log(SentryLevel.ERROR, e, "Envelope submission failed: %s", envelope.getHeader().getEventId());
+        throw e;
+      } finally {
+        // TODO: Now the server will respond (likely in the body, not agreed) for each of the envelope items
+        if (hint instanceof SubmissionResult) {
+          options
+            .getLogger()
+            .log(SentryLevel.DEBUG, "Marking envelope submission result: %s", result.isSuccess());
+          ((SubmissionResult) hint).setResult(result.isSuccess());
+        }
+      }
+    }
+
+    private TransportResult flush() {
+      TransportResult result = this.failedResult;
+      // TODO: Do we need special policies for caching envelopes?
+//      eventCache.store(envelope);
+//      if (hint instanceof DiskFlushNotification) {
+//        ((DiskFlushNotification) hint).markFlushed();
+//        options
+//          .getLogger()
+//          .log(SentryLevel.DEBUG, "Disk flush envelope fired: %s", envelope.getHeader().getEventId());
+//      }
+
+      if (transportGate.isSendingAllowed()) {
+        try {
+          result = transport.send(envelope);
+          if (result.isSuccess()) {
+//            eventCache.discard(envelope);
+          } else {
+            suggestedRetryDelay = result.getRetryMillis();
+            responseCode = result.getResponseCode();
+
+            final String message =
+              "The transport failed to send the event with response code "
+                + result.getResponseCode()
+                + ". Retrying in "
+                + suggestedRetryDelay
+                + "ms.";
 
             options.getLogger().log(SentryLevel.ERROR, message);
 

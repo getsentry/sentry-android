@@ -16,19 +16,30 @@ import io.sentry.android.core.adapters.TimeZoneDeserializerAdapter;
 import io.sentry.android.core.adapters.TimeZoneSerializerAdapter;
 import io.sentry.core.ILogger;
 import io.sentry.core.ISerializer;
+import io.sentry.core.SentryEnvelope;
+import io.sentry.core.SentryEnvelopeHeader;
+import io.sentry.core.SentryEnvelopeItem;
+import io.sentry.core.SentryEnvelopeItemHeader;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
+import io.sentry.core.Session;
 import io.sentry.core.protocol.Contexts;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.TimeZone;
 import org.jetbrains.annotations.NotNull;
 
 final class AndroidSerializer implements ISerializer {
+
+  @SuppressWarnings("CharsetObjectCanBeUsed")
+  private static final Charset UTF_8 = Charset.forName("UTF-8");
 
   private final @NotNull ILogger logger;
   private final Gson gson;
@@ -69,5 +80,29 @@ final class AndroidSerializer implements ISerializer {
     gson.toJson(event, SentryEvent.class, writer);
     writer.flush();
     writer.close();
+  }
+
+  @Override
+  public void serialize(Session session, Writer writer) throws IOException {
+    gson.toJson(session, Session.class, writer);
+    writer.flush();
+    writer.close();
+  }
+
+  @Override
+  public void serialize(SentryEnvelope envelope, OutputStream outputStream) throws Exception {
+    try (final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, UTF_8)) {
+      // Assuming I can use both outputStream and outputStreamWriter now:
+      gson.toJson(envelope.getHeader(), SentryEnvelopeHeader.class, outputStreamWriter);
+      outputStreamWriter.write("\n");
+      for (SentryEnvelopeItem item: envelope.getItems()) {
+        gson.toJson(item.getHeader(), SentryEnvelopeItemHeader.class, outputStreamWriter);
+        outputStreamWriter.flush();
+        outputStream.write(item.getData(), 0 , item.getData().length);
+        outputStream.flush();
+        outputStreamWriter.write("\n");
+      }
+      outputStreamWriter.flush();
+    }
   }
 }

@@ -36,6 +36,16 @@ final class NoOpHub implements IHub {
   }
 
   @Override
+  public void startSession() {
+
+  }
+
+  @Override
+  public void endSession() {
+
+  }
+
+  @Override
   public void close() {}
 
   @Override

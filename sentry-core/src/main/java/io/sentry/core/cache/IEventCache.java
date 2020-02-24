@@ -1,5 +1,6 @@
 package io.sentry.core.cache;
 
+import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEvent;
 
 /**

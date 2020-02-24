@@ -4,6 +4,8 @@ import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SentryId;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+
 /** Sentry Client interface */
 public interface ISentryClient {
 
@@ -140,4 +142,6 @@ public interface ISentryClient {
   default SentryId captureException(Throwable throwable, @Nullable Scope scope) {
     return captureException(throwable, scope, null);
   }
+
+  void captureSession(Session session) throws IOException;
 }

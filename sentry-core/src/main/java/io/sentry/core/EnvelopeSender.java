@@ -120,6 +120,8 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
               break;
             }
           }
+        } catch (Exception e) {
+          logger.log(ERROR, "Item failed to process.", e);
         }
       } else {
         // TODO: Handle attachments and other types

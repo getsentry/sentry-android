@@ -73,6 +73,9 @@ public interface IHub {
     return captureException(throwable, null);
   }
 
+  void startSession();
+  void endSession();
+
   /** Flushes out the queue for up to timeout seconds and disable the Hub. */
   void close();
 

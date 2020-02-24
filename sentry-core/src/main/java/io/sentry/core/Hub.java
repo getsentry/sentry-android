@@ -4,6 +4,7 @@ import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -131,10 +132,10 @@ public final class Hub implements IHub {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       options
-          .getLogger()
-          .log(
-              SentryLevel.WARNING,
-              "Instance is disabled and this 'captureException' call is a no-op.");
+        .getLogger()
+        .log(
+          SentryLevel.WARNING,
+          "Instance is disabled and this 'captureException' call is a no-op.");
     } else if (throwable == null) {
       options.getLogger().log(SentryLevel.WARNING, "captureException called with null parameter.");
     } else {
@@ -147,12 +148,57 @@ public final class Hub implements IHub {
         }
       } catch (Exception e) {
         options
-            .getLogger()
-            .log(SentryLevel.ERROR, "Error while capturing message: " + throwable.getMessage(), e);
+          .getLogger()
+          .log(SentryLevel.ERROR, "Error while capturing exception: " + throwable.getMessage(), e);
       }
     }
     this.lastEventId = sentryId;
     return sentryId;
+  }
+
+  @Override
+  public void startSession() {
+    StackItem item = this.stack.peek();
+    if (item != null) {
+      Scope.SessionPair pair = item.scope.startSession();
+      try {
+        item.client.captureSession(pair.getCurrent());
+      } catch (IOException e) {
+        options
+          .getLogger()
+          .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
+      }
+      if (pair.getPrevious() != null) {
+        try {
+          item.client.captureSession(pair.getPrevious());
+        } catch (IOException e) {
+          options
+            .getLogger()
+            .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
+        }
+      }
+    } else {
+      options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when startSession");
+    }
+  }
+
+  @Override
+  public void endSession() {
+    StackItem item = this.stack.peek();
+    if (item != null) {
+      Session previousSession = item.scope.endSession();
+      if (previousSession != null) {
+        try {
+          item.client.captureSession(previousSession);
+        } catch (IOException e) {
+          options
+            .getLogger()
+            .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
+        }
+      }
+    } else {
+      options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when startSession");
+    }
   }
 
   @Override

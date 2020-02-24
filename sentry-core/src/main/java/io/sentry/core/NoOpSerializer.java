@@ -1,5 +1,8 @@
 package io.sentry.core;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
@@ -21,4 +24,14 @@ final class NoOpSerializer implements ISerializer {
 
   @Override
   public void serialize(SentryEvent event, Writer writer) {}
+
+  @Override
+  public void serialize(Session session, Writer writer) throws IOException {
+
+  }
+
+  @Override
+  public void serialize(SentryEnvelope envelope, OutputStream outputStream) throws Exception {
+
+  }
 }
