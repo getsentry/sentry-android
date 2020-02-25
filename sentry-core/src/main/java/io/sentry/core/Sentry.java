@@ -118,10 +118,9 @@ public final class Sentry {
    *
    * @param options options the SentryOptions
    * @param globalHubMode the globalHubMode
-   * @param <T> a class that extends SentryOptions or SentryOptions itself.
    */
-  private static synchronized <T extends SentryOptions> void init(
-      @NotNull T options, boolean globalHubMode) {
+  public static synchronized void init(
+      @NotNull SentryOptions options, boolean globalHubMode) {
     String dsn = options.getDsn();
     if (dsn == null) {
       throw new IllegalArgumentException("DSN is required. Use empty string to disable SDK.");
