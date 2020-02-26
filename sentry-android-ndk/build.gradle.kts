@@ -136,6 +136,7 @@ configure<PublishExtension> {
     sign = Config.Deploy.sign
     mavenCentralSync = Config.Deploy.mavenCentralSync
     artifactId = project.name
+    uploadName = "${project.group}:${project.name}"
 }
 
 afterEvaluate {
