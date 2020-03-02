@@ -145,4 +145,7 @@ configure<PublishExtension> {
     scmDevConnection = Config.Sentry.scmDevConnection
     scmUrl  = Config.Sentry.scmUrl
     autoPublish = Config.Deploy.autoPublish
+    dryRun = Config.Deploy.isSNAPSHOT(project.version.toString())
+    bintrayUser = Config.Deploy.getEnv(Config.Deploy.bintrayUserProp)
+    bintrayKey = Config.Deploy.getEnv(Config.Deploy.bintrayKeyProp)
 }

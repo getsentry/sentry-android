@@ -1,3 +1,5 @@
+import java.util.Locale
+
 object Config {
     val kotlinVersion = "1.3.61"
     val kotlinStdLib = "stdlib-jdk8"
@@ -85,6 +87,19 @@ object Config {
         val mavenCentralSync = false
         // Craft will do it
         val autoPublish = false
+
+        val bintrayUserProp = "BINTRAY_USERNAME"
+        val bintrayKeyProp = "BINTRAY_KEY"
+
+        /**
+         * do not auto publish if version ends with SNAPSHOT
+         */
+        fun isSNAPSHOT(version: String): Boolean = version.toUpperCase(Locale.ROOT).endsWith("SNAPSHOT") // could be contains
+
+        /**
+         * returns an env. variable or the key if not set, it will fail with 401 Unauthorized
+         */
+        fun getEnv(key: String): String = if (System.getenv(key).isNullOrEmpty()) key else System.getenv(key)
     }
 
     object NativePlugins {
