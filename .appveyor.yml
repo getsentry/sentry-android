@@ -14,6 +14,7 @@ install:
   - set PATH=%PATH%;"%ANDROID_HOME%\tools\bin"
   - yes 2> nul | sdkmanager --licenses > nul
   - yes 2> nul | sdkmanager "platform-tools" "platforms;android-%ANDROID_BUILD_VERSION%"
+  - yes 2> nul | sdkmanager --install "ndk;20.0.5594570"
 cache:
   - "%USERPROFILE%\\.gradle\\caches"
   - "%USERPROFILE%\\.gradle\\wrapper"
