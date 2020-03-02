@@ -27,7 +27,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = project.version.toString()
-        versionCode = Config.Sentry.buildVersionCode
+        versionCode = project.properties[Config.Sentry.buildVersionCodeProp].toString().toInt()
 
         buildConfigField("String", "SENTRY_CLIENT_NAME", "\"${Config.Sentry.SENTRY_CLIENT_NAME}\"")
     }
@@ -116,4 +116,8 @@ configure<PublishExtension> {
     scmConnection = Config.Sentry.scmConnection
     scmDevConnection = Config.Sentry.scmDevConnection
     scmUrl  = Config.Sentry.scmUrl
+    autoPublish = Config.Deploy.autoPublish
+    dryRun = Config.Deploy.isSNAPSHOT(project.version.toString())
+    bintrayUser = Config.Deploy.getEnv(Config.Deploy.bintrayUserProp)
+    bintrayKey = Config.Deploy.getEnv(Config.Deploy.bintrayKeyProp)
 }

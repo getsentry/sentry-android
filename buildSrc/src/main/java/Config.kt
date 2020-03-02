@@ -1,3 +1,5 @@
+import java.util.Locale
+
 object Config {
     val kotlinVersion = "1.3.61"
     val kotlinStdLib = "stdlib-jdk8"
@@ -49,11 +51,9 @@ object Config {
     object Sentry {
         val SENTRY_CLIENT_NAME = "sentry.java.android"
         val group = "io.sentry"
-//        TODO: change version to publish new version
-        val version = "2.0.1"
+        val versionNameProp = "versionName"
         val description = "SDK for sentry.io"
-//        TODO: change version code to publish new version, follow the pattern of `version`
-        val buildVersionCode = 20017
+        val buildVersionCodeProp = "buildVersionCode"
         val website = "https://sentry.io"
         val userOrg = "getsentry"
         val repoName = "sentry-android"
@@ -82,7 +82,24 @@ object Config {
         val novodaBintrayPlugin = "com.novoda:bintray-release:1.0.1"
         val novodaBintray = "com.novoda.bintray-release"
         val sign = true
-        val mavenCentralSync = true
+        // we need a token and it's generated via https://oss.sonatype.org/#profile;User%20Token
+        // let's keep this step manual for now.
+        val mavenCentralSync = false
+        // Craft will do it
+        val autoPublish = false
+
+        val bintrayUserProp = "BINTRAY_USERNAME"
+        val bintrayKeyProp = "BINTRAY_KEY"
+
+        /**
+         * do not auto publish if version ends with SNAPSHOT
+         */
+        fun isSNAPSHOT(version: String): Boolean = version.toUpperCase(Locale.ROOT).endsWith("SNAPSHOT") // could be contains
+
+        /**
+         * returns an env. variable or the key if not set, it will fail with 401 Unauthorized
+         */
+        fun getEnv(key: String): String = if (System.getenv(key).isNullOrEmpty()) key else System.getenv(key)
     }
 
     object NativePlugins {
