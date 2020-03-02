@@ -16,7 +16,7 @@ android {
         minSdkVersion(Config.Android.minSdkVersionNdk)
 
         versionName = project.version.toString()
-        versionCode = Config.Sentry.buildVersionCode
+        versionCode = project.properties[Config.Sentry.buildVersionCodeProp].toString().toInt()
     }
 
     compileOptions {
@@ -59,4 +59,5 @@ configure<PublishExtension> {
     scmConnection = Config.Sentry.scmConnection
     scmDevConnection = Config.Sentry.scmDevConnection
     scmUrl  = Config.Sentry.scmUrl
+    autoPublish = Config.Deploy.autoPublish
 }

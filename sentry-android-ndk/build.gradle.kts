@@ -33,7 +33,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = project.version.toString()
-        versionCode = Config.Sentry.buildVersionCode
+        versionCode = project.properties[Config.Sentry.buildVersionCodeProp].toString().toInt()
 
         externalNativeBuild {
             cmake {
@@ -144,4 +144,5 @@ configure<PublishExtension> {
     scmConnection = Config.Sentry.scmConnection
     scmDevConnection = Config.Sentry.scmDevConnection
     scmUrl  = Config.Sentry.scmUrl
+    autoPublish = Config.Deploy.autoPublish
 }

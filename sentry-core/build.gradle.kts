@@ -77,5 +77,6 @@ configure<PublishExtension> {
     scmConnection = Config.Sentry.scmConnection
     scmDevConnection = Config.Sentry.scmDevConnection
     scmUrl  = Config.Sentry.scmUrl
+    autoPublish = Config.Deploy.autoPublish
 }
 
