@@ -12,7 +12,7 @@ environment:
 install:
   - mkdir "%ANDROID_HOME%"
   - appveyor DownloadFile "%SDK_TOOLS_URL%" -FileName "%TMP%/sdk-tools.zip"
-  - 7z x "%TMP%\\sdk-tools.zip" -o "%ANDROID_HOME%" > nul
+  - 7z x "%TMP%/sdk-tools.zip" -o"%ANDROID_HOME%" > nul
   - set PATH=%PATH%;"%ANDROID_HOME%\tools\bin"
   - yes 2> nul | sdkmanager --licenses > nul
   - yes 2> nul | sdkmanager "platform-tools" "platforms;android-%ANDROID_BUILD_VERSION%" > nul
