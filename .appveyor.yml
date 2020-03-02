@@ -27,7 +27,8 @@ build_script:
 artifacts:
   - path: '**\libs\*sentry*.jar'
   - path: '**\outputs\aar\*sentry*.aar'
-  - path: '**\outputs\aar\*sentry*.pom'
+  - path: '**\publications\**\pom-default.xml'
+  - path: '**\publications\**\module.json'
 on_finish:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
