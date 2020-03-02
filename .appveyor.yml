@@ -26,7 +26,7 @@ build_script:
   - cmd: gradlew.bat build bintrayUpload -PbintrayUser=BINTRAY_USERNAME -PbintrayKey=BINTRAY_KEY -PmavenCentralUser=MAVEN_USER -PmavenCentralPassword=MAVEN_PASS
 artifacts:
   - path: '**\libs\*sentry*.jar'
-  - path: '**\outputs\aar\*sentry*.aar'
+  - path: '**\outputs\aar\*sentry*release*.aar'
   - path: '**\publications\**\pom-default.xml'
   - path: '**\publications\**\module.json'
 on_finish:
