@@ -147,7 +147,7 @@ public final class SentryClient implements ISentryClient {
       return;
     }
 
-    if (session.getRelease() != null) {
+    if (session.getRelease() == null) {
       options
           .getLogger()
           .log(SentryLevel.WARNING, "Sessions can't be captured without setting a release.");
