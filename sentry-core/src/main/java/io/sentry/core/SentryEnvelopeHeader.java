@@ -1,7 +1,6 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

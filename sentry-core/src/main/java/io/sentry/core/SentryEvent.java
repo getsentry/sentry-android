@@ -311,7 +311,7 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
       return true;
     }
     if (exception != null) {
-      for (SentryException e: exception.getValues()) {
+      for (SentryException e : exception.getValues()) {
         if (e.getMechanism() != null && !e.getMechanism().isHandled()) {
           return true;
         }

@@ -74,6 +74,7 @@ public interface IHub {
   }
 
   void startSession();
+
   void endSession();
 
   /** Flushes out the queue for up to timeout seconds and disable the Hub. */

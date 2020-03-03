@@ -8,6 +8,7 @@ import java.io.IOException;
 /** A transport is in charge of sending the event to the Sentry server. */
 public interface ITransport extends Closeable {
   TransportResult send(SentryEvent event) throws IOException;
+
   boolean isRetryAfter(String type);
 
   TransportResult send(SentryEnvelope envelope) throws IOException;

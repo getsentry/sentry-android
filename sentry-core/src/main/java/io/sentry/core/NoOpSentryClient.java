@@ -1,9 +1,8 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
+import org.jetbrains.annotations.Nullable;
 
 final class NoOpSentryClient implements ISentryClient {
 
@@ -32,7 +31,5 @@ final class NoOpSentryClient implements ISentryClient {
   public void flush(long timeoutMills) {}
 
   @Override
-  public void captureSession(Session session) throws IOException {
-
-  }
+  public void captureSession(Session session) throws IOException {}
 }

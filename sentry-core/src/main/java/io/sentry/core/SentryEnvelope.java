@@ -1,12 +1,10 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.util.ArrayList;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 // TODO: Move to io.sentry.core.internal and leave it as package-public?
 public final class SentryEnvelope {
@@ -22,7 +20,8 @@ public final class SentryEnvelope {
     return header;
   }
 
-  public SentryEnvelope(@NotNull SentryEnvelopeHeader header, @NotNull Iterable<SentryEnvelopeItem> items) {
+  public SentryEnvelope(
+      @NotNull SentryEnvelopeHeader header, @NotNull Iterable<SentryEnvelopeItem> items) {
     this.header = header;
     this.items = items;
   }
@@ -46,7 +45,8 @@ public final class SentryEnvelope {
     this.items = items;
   }
 
-  public static SentryEnvelope fromSession(ISerializer serializer, Session session) throws IOException {
+  public static SentryEnvelope fromSession(ISerializer serializer, Session session)
+      throws IOException {
     return new SentryEnvelope(SentryEnvelopeItem.fromSession(serializer, session));
   }
 }

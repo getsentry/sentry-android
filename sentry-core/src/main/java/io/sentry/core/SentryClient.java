@@ -1,7 +1,5 @@
 package io.sentry.core;
 
-import com.sun.xml.internal.messaging.saaj.soap.Envelope;
-
 import io.sentry.core.cache.DiskCache;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.hints.Cached;
@@ -14,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,19 +114,20 @@ public final class SentryClient implements ISentryClient {
     }
 
     SentryEvent finalEvent = event;
-    scope.withSession(s -> {
-      if (finalEvent.isCrashed()) {
-        if (s != null) {
-          s.addError();
-        }
-      }
-      if (finalEvent.getEnvironment() != null) {
-        s.setEnvironment(finalEvent.getEnvironment());
-      }
-      if (finalEvent.getRelease() != null) {
-        s.setRelease(finalEvent.getRelease());
-      }
-    });
+    scope.withSession(
+        s -> {
+          if (finalEvent.isCrashed()) {
+            if (s != null) {
+              s.addError();
+            }
+          }
+          if (finalEvent.getEnvironment() != null) {
+            s.setEnvironment(finalEvent.getEnvironment());
+          }
+          if (finalEvent.getRelease() != null) {
+            s.setRelease(finalEvent.getRelease());
+          }
+        });
 
     try {
       connection.send(event, hint);
@@ -150,7 +148,9 @@ public final class SentryClient implements ISentryClient {
     }
 
     if (session.getRelease() != null) {
-      options.getLogger().log(SentryLevel.WARNING, "Sessions can't be captured without setting a release.");
+      options
+          .getLogger()
+          .log(SentryLevel.WARNING, "Sessions can't be captured without setting a release.");
       return;
     }
 
@@ -158,10 +158,7 @@ public final class SentryClient implements ISentryClient {
       SentryEnvelope envelope = SentryEnvelope.fromSession(options.getSerializer(), session);
       connection.send(envelope, null);
     } catch (IOException e) {
-      options
-        .getLogger()
-        .log(SentryLevel.ERROR,"Failed to capture session.", e);
-
+      options.getLogger().log(SentryLevel.ERROR, "Failed to capture session.", e);
     }
     // TODO: Do we want Hint here?
     connection.send(SentryEnvelope.fromSession(options.getSerializer(), session), null);

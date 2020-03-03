@@ -161,7 +161,8 @@ final class RetryingThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
           scheduleRetryAfterDelay(delayMillis);
           // TODO: This needs to be re-worked now.
-          // TODO: Either we need to ThreadPoolExecutors, or we need to support different 429's per item type (within envelopes)
+          // TODO: Either we need to ThreadPoolExecutors, or we need to support different 429's per
+          // item type (within envelopes)
           getQueue().clear();
         }
       }

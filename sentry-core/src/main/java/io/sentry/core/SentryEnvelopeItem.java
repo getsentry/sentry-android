@@ -1,13 +1,12 @@
 package io.sentry.core;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
+import org.jetbrains.annotations.Nullable;
 
 public final class SentryEnvelopeItem {
 
@@ -44,21 +43,22 @@ public final class SentryEnvelopeItem {
     return header;
   }
 
-  public static SentryEnvelopeItem fromSession(ISerializer serializer, Session session) throws IOException {
-    CachedItem cachedItem = new CachedItem(() -> {
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
-          Writer writer = new OutputStreamWriter(stream, UTF8)) {
-          serializer.serialize(session, writer);
-          writer.flush();
-          return stream.toByteArray();
-        }
-    });
+  public static SentryEnvelopeItem fromSession(ISerializer serializer, Session session)
+      throws IOException {
+    CachedItem cachedItem =
+        new CachedItem(
+            () -> {
+              try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                  Writer writer = new OutputStreamWriter(stream, UTF8)) {
+                serializer.serialize(session, writer);
+                writer.flush();
+                return stream.toByteArray();
+              }
+            });
 
-    SentryEnvelopeItemHeader itemHeader = new SentryEnvelopeItemHeader(
-      "session",
-      () -> cachedItem.getBytes().length,
-      "application/json",
-      null);
+    SentryEnvelopeItemHeader itemHeader =
+        new SentryEnvelopeItemHeader(
+            "session", () -> cachedItem.getBytes().length, "application/json", null);
 
     return new SentryEnvelopeItem(itemHeader, () -> cachedItem.getBytes());
   }

@@ -2,9 +2,8 @@ package io.sentry.core;
 
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SentryId;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
+import org.jetbrains.annotations.Nullable;
 
 /** Sentry Client interface */
 public interface ISentryClient {

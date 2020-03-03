@@ -132,10 +132,10 @@ public final class Hub implements IHub {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       options
-        .getLogger()
-        .log(
-          SentryLevel.WARNING,
-          "Instance is disabled and this 'captureException' call is a no-op.");
+          .getLogger()
+          .log(
+              SentryLevel.WARNING,
+              "Instance is disabled and this 'captureException' call is a no-op.");
     } else if (throwable == null) {
       options.getLogger().log(SentryLevel.WARNING, "captureException called with null parameter.");
     } else {
@@ -148,8 +148,9 @@ public final class Hub implements IHub {
         }
       } catch (Exception e) {
         options
-          .getLogger()
-          .log(SentryLevel.ERROR, "Error while capturing exception: " + throwable.getMessage(), e);
+            .getLogger()
+            .log(
+                SentryLevel.ERROR, "Error while capturing exception: " + throwable.getMessage(), e);
       }
     }
     this.lastEventId = sentryId;
@@ -165,16 +166,16 @@ public final class Hub implements IHub {
         item.client.captureSession(pair.getCurrent());
       } catch (IOException e) {
         options
-          .getLogger()
-          .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
+            .getLogger()
+            .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
       }
       if (pair.getPrevious() != null) {
         try {
           item.client.captureSession(pair.getPrevious());
         } catch (IOException e) {
           options
-            .getLogger()
-            .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
+              .getLogger()
+              .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
         }
       }
     } else {
@@ -192,8 +193,8 @@ public final class Hub implements IHub {
           item.client.captureSession(previousSession);
         } catch (IOException e) {
           options
-            .getLogger()
-            .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
+              .getLogger()
+              .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
         }
       }
     } else {

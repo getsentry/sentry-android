@@ -1,15 +1,12 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.User;
-
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.jetbrains.annotations.NotNull;
@@ -365,7 +362,7 @@ public final class Scope implements Cloneable {
 
   // Atomic operations on session
   public void withSession(@NotNull IWithSession sessionCallback) {
-    synchronized (sessionLock){
+    synchronized (sessionLock) {
       sessionCallback.accept(session);
     }
   }
@@ -391,7 +388,7 @@ public final class Scope implements Cloneable {
     return pair;
   }
 
-  public final class SessionPair {
+  public static final class SessionPair {
     private final Session previous;
     private final Session current;
 

@@ -91,14 +91,15 @@ final class AndroidSerializer implements ISerializer {
 
   @Override
   public void serialize(SentryEnvelope envelope, OutputStream outputStream) throws Exception {
-    try (final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, UTF_8)) {
+    try (final OutputStreamWriter outputStreamWriter =
+        new OutputStreamWriter(outputStream, UTF_8)) {
       // Assuming I can use both outputStream and outputStreamWriter now:
       gson.toJson(envelope.getHeader(), SentryEnvelopeHeader.class, outputStreamWriter);
       outputStreamWriter.write("\n");
-      for (SentryEnvelopeItem item: envelope.getItems()) {
+      for (SentryEnvelopeItem item : envelope.getItems()) {
         gson.toJson(item.getHeader(), SentryEnvelopeItemHeader.class, outputStreamWriter);
         outputStreamWriter.flush();
-        outputStream.write(item.getData(), 0 , item.getData().length);
+        outputStream.write(item.getData(), 0, item.getData().length);
         outputStream.flush();
         outputStreamWriter.write("\n");
       }

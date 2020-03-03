@@ -151,7 +151,8 @@ public class HttpTransport implements ITransport {
 
   @Override
   public boolean isRetryAfter(String type) {
-    // TODO: We need a mechanism (ConcurrentDictionary?) That will keep RetryAfter per envelope item type
+    // TODO: We need a mechanism (ConcurrentDictionary?) That will keep RetryAfter per envelope item
+    // type
     // The Timer we use now could be used to drop keys from the hashSet:
 
     // pseudo: return retryAfterHashSet.contains(type);
@@ -187,12 +188,14 @@ public class HttpTransport implements ITransport {
     connection.connect();
 
     try (final OutputStream outputStream = connection.getOutputStream()) {
-//      DataOutputStream dataStream = new DataOutputStream(conn.getOutputStream());
+      //      DataOutputStream dataStream = new DataOutputStream(conn.getOutputStream());
       serializer.serialize(envelope, outputStream);
 
       // need to also close the input stream of the connection
       connection.getInputStream().close();
-      options.getLogger().log(DEBUG, "Envelope sent %s successfully.", envelope.getHeader().getEventId());
+      options
+          .getLogger()
+          .log(DEBUG, "Envelope sent %s successfully.", envelope.getHeader().getEventId());
       return TransportResult.success();
     } catch (IOException e) {
       long retryAfterMs = HTTP_RETRY_AFTER_DEFAULT_DELAY_MS;
@@ -203,14 +206,15 @@ public class HttpTransport implements ITransport {
         if (rateLimitDetailString != null) {
           // RateLimitDetail rateLimitDetail = RateLimitDetail.fromString(rateLimitDetailString);
           // rateLimitMap.add(rateLimitDetail.getType()
-          // TODO: Schedule removal of rateLimitDetail.getType() from hashSet from rateLimitDetail.retryAfter
+          // TODO: Schedule removal of rateLimitDetail.getType() from hashSet from
+          // rateLimitDetail.retryAfter
 
         } else {
           // TODO: Original retryAfterMs code below:s
         }
         try {
           retryAfterMs =
-            (long) (Double.parseDouble(retryAfterHeader) * 1000L); // seconds -> milliseconds
+              (long) (Double.parseDouble(retryAfterHeader) * 1000L); // seconds -> milliseconds
         } catch (NumberFormatException __) {
           // let's use the default then
         }
@@ -223,12 +227,12 @@ public class HttpTransport implements ITransport {
         // TODO: 403 part of the protocol?
         if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
           options
-            .getLogger()
-            .log(
-              DEBUG,
-              "Envelope '"
-                + envelope.getHeader().getEventId()
-                + "' was rejected by the Sentry server due to a filter.");
+              .getLogger()
+              .log(
+                  DEBUG,
+                  "Envelope '"
+                      + envelope.getHeader().getEventId()
+                      + "' was rejected by the Sentry server due to a filter.");
         }
         logErrorInPayload(connection);
         // TODO: This TransportResult would need to expand to fit the response per envelope item
@@ -236,8 +240,8 @@ public class HttpTransport implements ITransport {
       } catch (IOException responseCodeException) {
         // this should not stop us from continuing. We'll just use -1 as response code.
         options
-          .getLogger()
-          .log(WARNING, "Failed to obtain response code while analyzing event send failure.", e);
+            .getLogger()
+            .log(WARNING, "Failed to obtain response code while analyzing event send failure.", e);
       }
 
       logErrorInPayload(connection);

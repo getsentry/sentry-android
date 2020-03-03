@@ -1,8 +1,7 @@
 package io.sentry.core;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.concurrent.Callable;
+import org.jetbrains.annotations.Nullable;
 
 public final class SentryEnvelopeItemHeader {
   private final String contentType;
@@ -39,7 +38,8 @@ public final class SentryEnvelopeItemHeader {
     this.getLength = null;
   }
 
-  SentryEnvelopeItemHeader(String type, Callable<Integer> getLength, String contentType, String fileName) {
+  SentryEnvelopeItemHeader(
+      String type, Callable<Integer> getLength, String contentType, String fileName) {
     this.type = type;
     this.length = -1;
     this.contentType = contentType;
