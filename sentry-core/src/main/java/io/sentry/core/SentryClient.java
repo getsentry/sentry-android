@@ -3,6 +3,7 @@ package io.sentry.core;
 import io.sentry.core.cache.DiskCache;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.Handled;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.transport.Connection;
 import io.sentry.core.transport.ITransport;
@@ -72,7 +73,8 @@ public final class SentryClient implements ISentryClient {
 
     options.getLogger().log(SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
-    if (!(hint instanceof Cached)) {
+    // if event is cached, but handled, its fine to apply scope's data
+    if (!(hint instanceof Cached) || ((hint instanceof Handled) && ((Handled) hint).isHandled())) {
       // Event has already passed through here before it was cached
       // Going through again could be reading data that is no longer relevant
       // i.e proguard id, app version, threads

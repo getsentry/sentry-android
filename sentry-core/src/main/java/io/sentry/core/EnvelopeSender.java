@@ -3,8 +3,10 @@ package io.sentry.core;
 import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.Handled;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SubmissionResult;
+import io.sentry.core.protocol.SentryException;
 import io.sentry.core.util.Objects;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -110,6 +112,22 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                   event.getEventId());
               continue;
             }
+
+            if (event.getExceptions() != null) {
+              for (SentryException sentryException : event.getExceptions()) {
+                // if event is cached like NDK envelopes, but its handled, its fine to apply scope
+                // data
+                if (sentryException.getMechanism() != null
+                    && sentryException.getMechanism().isHandled()) {
+                  hint.setHandled(true);
+                  break;
+                }
+              }
+            }
+            // the trick is, an event can be cached, without exceptions or mechanism and still has
+            // been handled
+            // how can we distinguish it? should NDK write a field and we check for it?
+
             hub.captureEvent(event, hint);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
             if (!hint.waitFlush()) {
@@ -141,9 +159,11 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     }
   }
 
-  private static final class CachedEnvelopeHint implements Cached, Retryable, SubmissionResult {
+  private static final class CachedEnvelopeHint
+      implements Cached, Retryable, SubmissionResult, Handled {
     boolean retry = false;
     boolean succeeded = false;
+    boolean handled = false;
 
     private CountDownLatch latch;
     private final long timeoutMills;
@@ -184,6 +204,16 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     public void setResult(boolean succeeded) {
       this.succeeded = succeeded;
       latch.countDown();
+    }
+
+    @Override
+    public void setHandled(boolean handled) {
+      this.handled = handled;
+    }
+
+    @Override
+    public boolean isHandled() {
+      return handled;
     }
   }
 }
