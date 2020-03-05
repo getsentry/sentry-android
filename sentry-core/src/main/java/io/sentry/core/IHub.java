@@ -54,6 +54,13 @@ public interface IHub {
    */
   SentryId captureMessage(String message, SentryLevel level);
 
+  // should it be the whole envelope at once? lets make it easy for now
+  void captureEnvelopeItem(SentryEnvelopeItem item, @Nullable Object hint);
+
+  default void captureEnvelopeItem(SentryEnvelopeItem item) {
+    captureEnvelopeItem(item, null);
+  }
+
   /**
    * Captures the exception.
    *

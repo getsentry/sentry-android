@@ -33,6 +33,9 @@ final class AndroidOptionsInitializer {
     options.setSerializer(new AndroidSerializer(options.getLogger()));
 
     options.setTransportGate(new AndroidTransportGate(context, options.getLogger()));
+
+    // TODO: remove it
+    options.setEnableSessionTracking(true);
   }
 
   private static void setDefaultInApp(Context context, final @NotNull SentryOptions options) {
@@ -44,10 +47,12 @@ final class AndroidOptionsInitializer {
 
   private static void initializeCacheDirs(Context context, SentryOptions options) {
     File cacheDir = new File(context.getCacheDir(), "sentry");
-    cacheDir.mkdirs();
-    options.setCacheDirPath(cacheDir.getAbsolutePath());
-    if (options.getOutboxPath() != null) {
+    if (cacheDir != null) {
+      cacheDir.mkdirs();
+      // TODO: requireNonNull
+      options.setCacheDirPath(cacheDir.getAbsolutePath());
       new File(options.getOutboxPath()).mkdirs();
+      new File(options.getSessionsPath()).mkdirs();
     } else {
       options.getLogger().log(SentryLevel.WARNING, "No outbox dir path is defined in options.");
     }

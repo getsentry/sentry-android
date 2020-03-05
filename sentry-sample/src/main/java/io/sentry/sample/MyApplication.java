@@ -2,6 +2,7 @@ package io.sentry.sample;
 
 import android.app.Application;
 import android.os.StrictMode;
+import io.sentry.core.Sentry;
 import timber.log.Timber;
 
 // import io.sentry.android.core.SentryAndroid;
@@ -26,6 +27,8 @@ public class MyApplication extends Application {
     //   });
     //   options.setAnrTimeoutIntervalMills(2000);
     // });
+
+    Sentry.startSession();
   }
 
   private void strictMode() {

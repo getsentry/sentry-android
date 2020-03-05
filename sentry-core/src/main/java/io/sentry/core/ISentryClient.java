@@ -143,4 +143,10 @@ public interface ISentryClient {
   }
 
   void captureSession(Session session) throws IOException;
+
+  void captureEnvelopeItem(SentryEnvelopeItem envelopeItem, @Nullable Object hint);
+
+  default void captureEnvelopeItem(SentryEnvelopeItem envelopeItem) {
+    captureEnvelopeItem(envelopeItem, null);
+  }
 }

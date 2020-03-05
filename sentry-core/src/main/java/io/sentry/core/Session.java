@@ -9,7 +9,8 @@ public final class Session {
     // TODO: What about 'Started' 'Ended'? Ok is not very clear
     Ok,
     Exited,
-    Crashed
+    Crashed,
+    Abnormal
   }
 
   private final Date started;
@@ -17,9 +18,11 @@ public final class Session {
   private volatile Date ended;
   private final AtomicInteger errorCount = new AtomicInteger();
   // TODO: serializes as 'did'? Must be UUID?
-  private String deviceId;
+  private String deviceId; // did, distinctId
   // serializes as 'sid'?
-  private String sessionId;
+  private String sessionId; // sid
+
+  // attrs
   private String ipAddress;
   private String userAgent;
   private String environment;

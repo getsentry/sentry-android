@@ -128,6 +128,9 @@ public final class Hub implements IHub {
   }
 
   @Override
+  public void captureEnvelopeItem(SentryEnvelopeItem item, @Nullable Object hint) {}
+
+  @Override
   public @NotNull SentryId captureException(@NotNull Throwable throwable, @Nullable Object hint) {
     SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
@@ -159,16 +162,11 @@ public final class Hub implements IHub {
 
   @Override
   public void startSession() {
+    // TODO: check isEnabled()
     StackItem item = this.stack.peek();
     if (item != null) {
       Scope.SessionPair pair = item.scope.startSession();
-      try {
-        item.client.captureSession(pair.getCurrent());
-      } catch (IOException e) {
-        options
-            .getLogger()
-            .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
-      }
+
       if (pair.getPrevious() != null) {
         try {
           item.client.captureSession(pair.getPrevious());
@@ -178,6 +176,17 @@ public final class Hub implements IHub {
               .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
         }
       }
+
+      try {
+        // TODO: workaround, remove it
+        pair.getCurrent().setRelease(options.getRelease());
+
+        item.client.captureSession(pair.getCurrent());
+      } catch (IOException e) {
+        options
+            .getLogger()
+            .log(SentryLevel.ERROR, "Error while capturing session: " + e.getMessage(), e);
+      }
     } else {
       options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when startSession");
     }
@@ -185,6 +194,7 @@ public final class Hub implements IHub {
 
   @Override
   public void endSession() {
+    // TODO: check isEnabled()
     StackItem item = this.stack.peek();
     if (item != null) {
       Session previousSession = item.scope.endSession();

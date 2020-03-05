@@ -14,5 +14,9 @@ public interface Connection {
 
   void send(SentryEnvelope event, @Nullable Object hint) throws IOException;
 
+  default void send(SentryEnvelope envelope) throws IOException {
+    send(envelope, null);
+  }
+
   void close() throws IOException;
 }

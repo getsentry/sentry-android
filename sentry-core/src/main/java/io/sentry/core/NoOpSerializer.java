@@ -22,6 +22,11 @@ final class NoOpSerializer implements ISerializer {
   }
 
   @Override
+  public Session deserializeSession(Reader reader) {
+    return null;
+  }
+
+  @Override
   public void serialize(SentryEvent event, Writer writer) {}
 
   @Override

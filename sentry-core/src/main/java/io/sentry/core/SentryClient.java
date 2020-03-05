@@ -142,6 +142,7 @@ public final class SentryClient implements ISentryClient {
 
   @Override
   public void captureSession(@NotNull Session session) throws IOException {
+    // TODO: this go to Hub probably
     if (!options.isEnableSessionTracking()) {
       options.getLogger().log(SentryLevel.WARNING, "Session tracking is disabled in the options.");
       return;
@@ -161,7 +162,16 @@ public final class SentryClient implements ISentryClient {
       options.getLogger().log(SentryLevel.ERROR, "Failed to capture session.", e);
     }
     // TODO: Do we want Hint here?
-    connection.send(SentryEnvelope.fromSession(options.getSerializer(), session), null);
+    //    connection.send(SentryEnvelope.fromSession(options.getSerializer(), session), null);
+  }
+
+  @Override
+  public void captureEnvelopeItem(SentryEnvelopeItem envelopeItem, @Nullable Object hint) {
+    try {
+      connection.send(new SentryEnvelope(envelopeItem), hint);
+    } catch (IOException e) {
+      options.getLogger().log(SentryLevel.ERROR, "Failed to capture session.", e);
+    }
   }
 
   private SentryEvent applyScope(SentryEvent event, @Nullable Scope scope, @Nullable Object hint) {

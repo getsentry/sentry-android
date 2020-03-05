@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -361,6 +362,7 @@ public final class Scope implements Cloneable {
   }
 
   // Atomic operations on session
+  @ApiStatus.Internal
   public void withSession(@NotNull IWithSession sessionCallback) {
     synchronized (sessionLock) {
       sessionCallback.accept(session);

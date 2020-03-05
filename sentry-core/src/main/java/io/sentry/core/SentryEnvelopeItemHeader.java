@@ -7,7 +7,7 @@ public final class SentryEnvelopeItemHeader {
   private final String contentType;
   private final String fileName;
   private final String type;
-  private final int length;
+  private final int length; // I think it should be long
   @Nullable private final Callable<Integer> getLength;
 
   // TODO: Looks like a type here that defaults to String for unknown values would be ideal
@@ -17,7 +17,11 @@ public final class SentryEnvelopeItemHeader {
 
   public int getLength() {
     if (getLength != null) {
-      return getLength();
+      try {
+        return getLength.call();
+      } catch (Exception ignored) {
+        return -1;
+      }
     }
     return length;
   }
@@ -39,7 +43,7 @@ public final class SentryEnvelopeItemHeader {
   }
 
   SentryEnvelopeItemHeader(
-      String type, Callable<Integer> getLength, String contentType, String fileName) {
+      String type, @Nullable Callable<Integer> getLength, String contentType, String fileName) {
     this.type = type;
     this.length = -1;
     this.contentType = contentType;

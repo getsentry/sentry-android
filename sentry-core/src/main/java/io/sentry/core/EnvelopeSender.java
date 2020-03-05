@@ -123,6 +123,32 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
         } catch (Exception e) {
           logger.log(ERROR, "Item failed to process.", e);
         }
+      } else if ("session".equals(item.getHeader().getType())) {
+        try (Reader reader =
+            new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8)) {
+          Session session = serializer.deserializeSession(reader);
+          if (session == null) {
+            logger.log(
+                SentryLevel.ERROR,
+                "Item %d of type %s returned null by the parser.",
+                items,
+                item.getHeader().getType());
+          } else {
+            // I could create a new SentryEnvelope with only items of the type session, but will
+            // capture 1 per 1 to be easier for now
+            hub.captureEnvelopeItem(item, hint);
+            logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
+            if (!hint.waitFlush()) {
+              logger.log(
+                  SentryLevel.WARNING,
+                  "Timed out waiting for item submission: %s",
+                  session.getSessionId());
+              break;
+            }
+          }
+        } catch (Exception e) {
+          logger.log(ERROR, "Item failed to process.", e);
+        }
       } else {
         // TODO: Handle attachments and other types
         logger.log(

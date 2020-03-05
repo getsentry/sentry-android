@@ -76,17 +76,22 @@ final class AndroidSerializer implements ISerializer {
   }
 
   @Override
+  public Session deserializeSession(Reader reader) {
+    return gson.fromJson(reader, Session.class);
+  }
+
+  @Override
   public void serialize(SentryEvent event, Writer writer) throws IOException {
     gson.toJson(event, SentryEvent.class, writer);
     writer.flush();
-    writer.close();
+    //    writer.close();
   }
 
   @Override
   public void serialize(Session session, Writer writer) throws IOException {
     gson.toJson(session, Session.class, writer);
     writer.flush();
-    writer.close();
+    //    writer.close();
   }
 
   @Override
