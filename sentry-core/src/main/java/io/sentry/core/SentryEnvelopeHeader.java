@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class SentryEnvelopeHeader {
+  // Event Id must be set if the envelope holds an event, or an item that is related to the event (e.g: attachments, user feedback)
   private final @NotNull SentryId eventId;
   // TODO: I noticed this dropped from the spec
   // Should be safe to delete since this was an optional field which was never used
