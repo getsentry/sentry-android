@@ -3,10 +3,11 @@ package io.sentry.core;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-// TODO: Move to io.sentry.core.internal and leave it as package-public?
+@ApiStatus.Internal
 public final class SentryEnvelope {
 
   // types: session_batch, session, event, attachment

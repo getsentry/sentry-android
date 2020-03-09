@@ -25,6 +25,7 @@ import io.sentry.core.SentryEnvelopeItemHeaderAdapter;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.Session;
+import io.sentry.core.SessionAdapter;
 import io.sentry.core.protocol.Contexts;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.SentryId;
@@ -71,6 +72,7 @@ final class AndroidSerializer implements ISerializer {
         .registerTypeAdapterFactory(UnknownPropertiesTypeAdapterFactory.get())
         .registerTypeAdapter(SentryEnvelopeHeader.class, new SentryEnvelopeHeaderAdapter())
         .registerTypeAdapter(SentryEnvelopeItemHeader.class, new SentryEnvelopeItemHeaderAdapter())
+        .registerTypeAdapter(Session.class, new SessionAdapter())
         .create();
   }
 

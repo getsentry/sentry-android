@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -362,8 +361,8 @@ public final class Scope implements Cloneable {
   }
 
   // Atomic operations on session
-  @ApiStatus.Internal
-  public void withSession(@NotNull IWithSession sessionCallback) {
+  //  @ApiStatus.Internal
+  void withSession(@NotNull IWithSession sessionCallback) {
     synchronized (sessionLock) {
       sessionCallback.accept(session);
     }
@@ -375,7 +374,8 @@ public final class Scope implements Cloneable {
   }
 
   // Returns a previous session (now closed) bound to this scope together with the newly created one
-  public @NotNull SessionPair startSession() {
+  @NotNull
+  SessionPair startSession() {
     Session previousSession;
     SessionPair pair;
     synchronized (sessionLock) {
@@ -390,7 +390,7 @@ public final class Scope implements Cloneable {
     return pair;
   }
 
-  public static final class SessionPair {
+  static final class SessionPair {
     private final Session previous;
     private final Session current;
 
@@ -409,7 +409,8 @@ public final class Scope implements Cloneable {
   }
 
   // ends a session, unbinds it from the scope and returns it.
-  public Session endSession() {
+  @Nullable
+  Session endSession() {
     Session previousSession = null;
     synchronized (sessionLock) {
       if (session != null) {

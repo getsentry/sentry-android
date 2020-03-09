@@ -1,9 +1,18 @@
 package io.sentry.core;
 
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Session {
+
+  public State getStatus() {
+    return status;
+  }
+
+  public void setStatus(State status) {
+    this.status = status;
+  }
 
   public enum State {
     // TODO: What about 'Started' 'Ended'? Ok is not very clear
@@ -20,7 +29,9 @@ public final class Session {
   // TODO: serializes as 'did'? Must be UUID?
   private String deviceId; // did, distinctId
   // serializes as 'sid'?
-  private String sessionId; // sid
+  private UUID sessionId; // sid
+  private Boolean init;
+  private State status;
 
   // attrs
   private String ipAddress;
@@ -60,11 +71,11 @@ public final class Session {
     this.deviceId = deviceId;
   }
 
-  public String getSessionId() {
+  public UUID getSessionId() {
     return sessionId;
   }
 
-  public void setSessionId(String sessionId) {
+  public void setSessionId(UUID sessionId) {
     this.sessionId = sessionId;
   }
 
@@ -98,5 +109,17 @@ public final class Session {
 
   public String getRelease() {
     return release;
+  }
+
+  public Boolean getInit() {
+    return init;
+  }
+
+  public void setInit(Boolean init) {
+    this.init = init;
+  }
+
+  public int errorCount() {
+    return errorCount.get();
   }
 }
