@@ -29,7 +29,7 @@
     </activity>
 
     <!--  NOTE: Replace the test DSN below with YOUR OWN DSN to see the events from this app in your Sentry project/dashboard -->
-    <meta-data android:name="io.sentry.dsn" android:value="http://1511aad18ebc4bc1a30fa8291a884314@e8379ba3.ngrok.io/1" />
+    <meta-data android:name="io.sentry.dsn" android:value="http://1511aad18ebc4bc1a30fa8291a884314@marandaneto.ngrok.io/1" />
 
 <!--    how to enable Sentry's debug mode-->
     <meta-data android:name="io.sentry.debug" android:value="true" />

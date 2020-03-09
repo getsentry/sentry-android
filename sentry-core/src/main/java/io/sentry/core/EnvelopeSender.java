@@ -3,7 +3,7 @@ package io.sentry.core;
 import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.hints.Cached;
-import io.sentry.core.hints.Retryable;
+import io.sentry.core.hints.RetryableHint;
 import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
 import java.io.ByteArrayInputStream;
@@ -169,7 +169,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     }
   }
 
-  private static final class CachedEnvelopeHint implements Cached, Retryable, SubmissionResult {
+  private static final class CachedEnvelopeHint implements Cached, RetryableHint, SubmissionResult {
     boolean retry = false;
     boolean succeeded = false;
 
