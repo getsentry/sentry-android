@@ -17,6 +17,7 @@ public final class Hub implements IHub {
     private volatile @NotNull ISentryClient client;
     private volatile @NotNull Scope scope;
 
+    // TODO: should we use? client, scope, session instead of session in the scope
     StackItem(@NotNull ISentryClient client, @NotNull Scope scope) {
       this.client = client;
       this.scope = scope;
@@ -128,7 +129,28 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void captureEnvelopeItem(SentryEnvelopeItem item, @Nullable Object hint) {}
+  public void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
+    if (!isEnabled()) {
+      options
+          .getLogger()
+          .log(
+              SentryLevel.WARNING,
+              "Instance is disabled and this 'captureEnvelope' call is a no-op.");
+    } else if (envelope == null) {
+      options.getLogger().log(SentryLevel.WARNING, "captureEnvelope called with null parameter.");
+    } else {
+      try {
+        StackItem item = stack.peek();
+        if (item != null) {
+          item.client.captureEnvelope(envelope, hint);
+        } else {
+          options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when captureEnvelope");
+        }
+      } catch (Exception e) {
+        options.getLogger().log(SentryLevel.ERROR, "Error while capturing envelope.", e);
+      }
+    }
+  }
 
   @Override
   public @NotNull SentryId captureException(@NotNull Throwable throwable, @Nullable Object hint) {

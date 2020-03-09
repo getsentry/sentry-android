@@ -34,5 +34,5 @@ final class NoOpSentryClient implements ISentryClient {
   public void captureSession(Session session) throws IOException {}
 
   @Override
-  public void captureEnvelopeItem(SentryEnvelopeItem envelopeItem, @Nullable Object hint) {}
+  public void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {}
 }

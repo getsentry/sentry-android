@@ -161,20 +161,22 @@ public final class SentryClient implements ISentryClient {
       return;
     }
 
+    SentryEnvelope envelope;
     try {
-      SentryEnvelope envelope = SentryEnvelope.fromSession(options.getSerializer(), session);
-      connection.send(envelope, null);
+      envelope = SentryEnvelope.fromSession(options.getSerializer(), session);
     } catch (IOException e) {
       options.getLogger().log(SentryLevel.ERROR, "Failed to capture session.", e);
+      return;
     }
+
     // TODO: Do we want Hint here?
-    //    connection.send(SentryEnvelope.fromSession(options.getSerializer(), session), null);
+    captureEnvelope(envelope);
   }
 
   @Override
-  public void captureEnvelopeItem(SentryEnvelopeItem envelopeItem, @Nullable Object hint) {
+  public void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
     try {
-      connection.send(new SentryEnvelope(envelopeItem), hint);
+      connection.send(envelope, hint);
     } catch (IOException e) {
       options.getLogger().log(SentryLevel.ERROR, "Failed to capture session.", e);
     }

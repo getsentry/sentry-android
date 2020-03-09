@@ -134,9 +134,8 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                 items,
                 item.getHeader().getType());
           } else {
-            // I could create a new SentryEnvelope with only items of the type session, but will
             // capture 1 per 1 to be easier for now
-            hub.captureEnvelopeItem(item, hint);
+            hub.captureEnvelope(new SentryEnvelope(item), hint);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
             if (!hint.waitFlush()) {
               logger.log(
