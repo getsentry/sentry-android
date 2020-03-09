@@ -18,8 +18,10 @@ import io.sentry.core.ILogger;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEnvelopeHeader;
+import io.sentry.core.SentryEnvelopeHeaderAdapter;
 import io.sentry.core.SentryEnvelopeItem;
 import io.sentry.core.SentryEnvelopeItemHeader;
+import io.sentry.core.SentryEnvelopeItemHeaderAdapter;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.Session;
@@ -67,6 +69,8 @@ final class AndroidSerializer implements ISerializer {
         .registerTypeAdapter(SentryLevel.class, new SentryLevelDeserializerAdapter(logger))
         .registerTypeAdapter(Contexts.class, new ContextsDeserializerAdapter(logger))
         .registerTypeAdapterFactory(UnknownPropertiesTypeAdapterFactory.get())
+        .registerTypeAdapter(SentryEnvelopeHeader.class, new SentryEnvelopeHeaderAdapter())
+        .registerTypeAdapter(SentryEnvelopeItemHeader.class, new SentryEnvelopeItemHeaderAdapter())
         .create();
   }
 

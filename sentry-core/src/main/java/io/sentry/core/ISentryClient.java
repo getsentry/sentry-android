@@ -144,6 +144,7 @@ public interface ISentryClient {
 
   void captureSession(Session session) throws IOException;
 
+  // TODO: ideally this returns a SentryId too
   void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint);
 
   default void captureEnvelope(SentryEnvelope envelope) {

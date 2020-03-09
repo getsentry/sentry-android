@@ -2,9 +2,6 @@ package io.sentry.core;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import io.sentry.core.protocol.SentryId;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -147,73 +144,5 @@ public final class EnvelopeReader implements IEnvelopeReader {
       byte[] buffer, int offset, int length) {
     String json = new String(buffer, offset, length, UTF_8);
     return gson.fromJson(json, SentryEnvelopeItemHeader.class);
-  }
-
-  private static final class SentryEnvelopeHeaderAdapter extends TypeAdapter<SentryEnvelopeHeader> {
-
-    @Override
-    public void write(JsonWriter out, SentryEnvelopeHeader value) {}
-
-    @Override
-    public SentryEnvelopeHeader read(JsonReader reader) throws IOException {
-      SentryId sentryId = SentryId.EMPTY_ID;
-      String auth = null;
-
-      reader.beginObject();
-      while (reader.hasNext()) {
-        switch (reader.nextName()) {
-          case "event_id":
-            sentryId = new SentryId(reader.nextString());
-            break;
-          case "auth":
-            auth = reader.nextString();
-            break;
-          default:
-            reader.skipValue();
-            break;
-        }
-      }
-      reader.endObject();
-
-      return new SentryEnvelopeHeader(sentryId, auth);
-    }
-  }
-
-  private static final class SentryEnvelopeItemHeaderAdapter
-      extends TypeAdapter<SentryEnvelopeItemHeader> {
-    @Override
-    public void write(JsonWriter out, SentryEnvelopeItemHeader value) throws IOException {}
-
-    @Override
-    public SentryEnvelopeItemHeader read(JsonReader reader) throws IOException {
-      String contentType = null;
-      String fileName = null;
-      String type = null;
-      int length = 0;
-
-      reader.beginObject();
-      while (reader.hasNext()) {
-        switch (reader.nextName()) {
-          case "content_type":
-            contentType = reader.nextString();
-            break;
-          case "filename":
-            fileName = reader.nextString();
-            break;
-          case "type":
-            type = reader.nextString();
-            break;
-          case "length":
-            length = reader.nextInt();
-            break;
-          default:
-            reader.skipValue();
-            break;
-        }
-      }
-      reader.endObject();
-
-      return new SentryEnvelopeItemHeader(type, length, contentType, fileName);
-    }
   }
 }

@@ -170,6 +170,7 @@ public final class SentryClient implements ISentryClient {
     }
 
     // TODO: Do we want Hint here?
+    // TODO: do we want to cache it or send right away? lets send it for now
     captureEnvelope(envelope);
   }
 

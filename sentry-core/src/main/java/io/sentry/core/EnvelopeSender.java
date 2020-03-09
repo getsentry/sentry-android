@@ -135,7 +135,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                 item.getHeader().getType());
           } else {
             // capture 1 per 1 to be easier for now
-            hub.captureEnvelope(new SentryEnvelope(item), hint);
+            hub.captureEnvelope(SentryEnvelope.fromSession(serializer, session), hint);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
             if (!hint.waitFlush()) {
               logger.log(

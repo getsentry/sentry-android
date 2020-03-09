@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 // TODO: Move to io.sentry.core.internal and leave it as package-public?
 public final class SentryEnvelope {
 
+  // types: session_batch, session, event, attachment
+  // an envelope cannot have 2 events, but eg multiple sessions
   private final @NotNull SentryEnvelopeHeader header;
   private final @NotNull Iterable<SentryEnvelopeItem> items;
 

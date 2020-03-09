@@ -15,7 +15,7 @@ public final class SentryEnvelopeItem {
 
   private final SentryEnvelopeItemHeader header;
   // Either dataFactory is set or data needs to be set.
-  private @Nullable Callable<byte[]> dataFactory;
+  private final @Nullable Callable<byte[]> dataFactory;
   // TODO: Can we have a slice or a reader here instead?
   private @Nullable byte[] data;
 
@@ -25,7 +25,7 @@ public final class SentryEnvelopeItem {
     this.dataFactory = null;
   }
 
-  SentryEnvelopeItem(SentryEnvelopeItemHeader header, Callable<byte[]> dataFactory) {
+  SentryEnvelopeItem(SentryEnvelopeItemHeader header, @Nullable Callable<byte[]> dataFactory) {
     this.header = header;
     this.dataFactory = dataFactory;
     this.data = null;
@@ -33,7 +33,7 @@ public final class SentryEnvelopeItem {
 
   // TODO: Should be a Stream
   public byte[] getData() throws Exception {
-    if (data == null) {
+    if (data == null && dataFactory != null) {
       data = dataFactory.call();
     }
     return data;
