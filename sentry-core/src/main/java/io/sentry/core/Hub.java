@@ -203,8 +203,6 @@ public final class Hub implements IHub {
           item.client.captureSession(pair.getPrevious());
         }
 
-        pair.getCurrent().setRelease(options.getRelease());
-
         item.client.captureSession(pair.getCurrent());
       } else {
         options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when startSession");

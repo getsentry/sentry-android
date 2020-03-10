@@ -384,9 +384,16 @@ public final class Scope implements Cloneable {
         session.end();
       }
       previousSession = session;
+
+      // TODO: extract to a new method?!
       session = new Session();
       session.setInit(true);
       session.setSequence(0);
+
+      session.setRelease(options.getRelease());
+      session.setEnvironment(options.getEnvironment());
+      session.setUserAgent(options.getSentryClientName());
+      //      session.setIpAddress(); // do we get that?
 
       pair = new SessionPair(session, previousSession);
     }
