@@ -100,8 +100,8 @@ public class HttpTransport implements ITransport {
     connection.connect();
 
     try (final OutputStream outputStream = connection.getOutputStream();
-        final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, UTF_8)) {
-      serializer.serialize(event, outputStreamWriter);
+        final Writer writer = new OutputStreamWriter(outputStream, UTF_8)) {
+      serializer.serialize(event, writer);
 
       // need to also close the input stream of the connection
       connection.getInputStream().close();
@@ -187,9 +187,9 @@ public class HttpTransport implements ITransport {
 
     connection.connect();
 
-    try (final OutputStream outputStream = connection.getOutputStream()) {
-      //      DataOutputStream dataStream = new DataOutputStream(conn.getOutputStream());
-      serializer.serialize(envelope, outputStream);
+    try (final OutputStream outputStream = connection.getOutputStream();
+        final Writer writer = new OutputStreamWriter(outputStream, UTF_8)) {
+      serializer.serialize(envelope, writer);
 
       // need to also close the input stream of the connection
       connection.getInputStream().close();
@@ -247,8 +247,9 @@ public class HttpTransport implements ITransport {
       logErrorInPayload(connection);
       return TransportResult.error(retryAfterMs, responseCode);
     } catch (Exception e) {
-      // TODO:
-      e.printStackTrace();
+      options
+          .getLogger()
+          .log(WARNING, "Failed to obtain error message while analyzing event send failure.", e);
       return TransportResult.error(-1, -1);
     } finally {
       connection.disconnect();

@@ -1,7 +1,6 @@
 package io.sentry.core;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 
@@ -14,5 +13,5 @@ public interface ISerializer {
 
   void serialize(Session session, Writer writer) throws IOException;
 
-  void serialize(SentryEnvelope envelope, OutputStream outputStream) throws Exception;
+  void serialize(SentryEnvelope envelope, Writer writer) throws Exception;
 }

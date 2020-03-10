@@ -30,8 +30,6 @@ import io.sentry.core.protocol.Contexts;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -90,31 +88,29 @@ final class AndroidSerializer implements ISerializer {
   public void serialize(SentryEvent event, Writer writer) throws IOException {
     gson.toJson(event, SentryEvent.class, writer);
     writer.flush();
-    //    writer.close();
   }
 
   @Override
   public void serialize(Session session, Writer writer) throws IOException {
     gson.toJson(session, Session.class, writer);
     writer.flush();
-    //    writer.close();
   }
 
   @Override
-  public void serialize(SentryEnvelope envelope, OutputStream outputStream) throws Exception {
-    try (final OutputStreamWriter outputStreamWriter =
-        new OutputStreamWriter(outputStream, UTF_8)) {
-      // Assuming I can use both outputStream and outputStreamWriter now:
-      gson.toJson(envelope.getHeader(), SentryEnvelopeHeader.class, outputStreamWriter);
-      outputStreamWriter.write("\n");
-      for (SentryEnvelopeItem item : envelope.getItems()) {
-        gson.toJson(item.getHeader(), SentryEnvelopeItemHeader.class, outputStreamWriter);
-        outputStreamWriter.flush();
-        outputStream.write(item.getData(), 0, item.getData().length);
-        outputStream.flush();
-        outputStreamWriter.write("\n");
-      }
-      outputStreamWriter.flush();
+  public void serialize(SentryEnvelope envelope, Writer writer) throws Exception {
+    gson.toJson(envelope.getHeader(), SentryEnvelopeHeader.class, writer);
+    writer.write("\n");
+    for (SentryEnvelopeItem item : envelope.getItems()) {
+      gson.toJson(item.getHeader(), SentryEnvelopeItemHeader.class, writer);
+      writer.write("\n");
+
+      // TODO: fix it
+      String data = new String(item.getData(), UTF_8);
+      //      writer.write(item.getData(), 0, item.getData().length);
+      writer.write(data);
+
+      writer.write("\n");
     }
+    writer.flush();
   }
 }

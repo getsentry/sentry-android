@@ -6,14 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Session {
 
-  public State getStatus() {
-    return status;
-  }
-
-  public void setStatus(State status) {
-    this.status = status;
-  }
-
   public enum State {
     // TODO: What about 'Started' 'Ended'? Ok is not very clear
     Ok,
@@ -22,12 +14,12 @@ public final class Session {
     Abnormal
   }
 
-  private final Date started;
+  private Date started; // TODO: maybe should be final and get it in the ctor
   // NOTE: Serializes as 'timestamp'
   private volatile Date ended;
-  private final AtomicInteger errorCount = new AtomicInteger();
+  private final AtomicInteger errorCount;
   // TODO: serializes as 'did'? Must be UUID?
-  private String deviceId; // did, distinctId
+  private String deviceId; // did, distinctId, optional
   // serializes as 'sid'?
   private UUID sessionId; // sid
   private Boolean init;
@@ -40,9 +32,15 @@ public final class Session {
   private String release;
 
   // TODO: started as non final and expose start() ?
-  public Session() {
+  public Session(final int errorCount) {
     // TODO: No millisecond precision?
     this.started = DateUtils.getCurrentDateTime();
+    this.errorCount = new AtomicInteger(errorCount);
+  }
+
+  // TODO: started as non final and expose start() ?
+  public Session() {
+    this(0);
   }
 
   public void addError() {
@@ -61,6 +59,10 @@ public final class Session {
 
   public Date getStarted() {
     return started;
+  }
+
+  public void setStarted(Date started) {
+    this.started = started;
   }
 
   public String getDeviceId() {
@@ -121,5 +123,18 @@ public final class Session {
 
   public int errorCount() {
     return errorCount.get();
+  }
+
+  // TODO: maybe this should be only in the ctor
+  public void setErrorCount(int errorCount) {
+    this.errorCount.set(errorCount);
+  }
+
+  public State getStatus() {
+    return status;
+  }
+
+  public void setStatus(State status) {
+    this.status = status;
   }
 }
