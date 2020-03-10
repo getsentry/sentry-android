@@ -14,7 +14,7 @@ public final class SessionAdapter extends TypeAdapter<Session> {
   @Override
   public void write(JsonWriter writer, Session value) throws IOException {
     if (value == null) {
-      writer.nullValue(); // TODO: is it compatible with envelopes?
+      writer.nullValue();
       return;
     }
     writer.beginObject();

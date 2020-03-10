@@ -147,13 +147,7 @@ public final class SentryClient implements ISentryClient {
   }
 
   @Override
-  public void captureSession(@NotNull Session session) throws IOException {
-    // TODO: this go to Hub probably
-    if (!options.isEnableSessionTracking()) {
-      options.getLogger().log(SentryLevel.WARNING, "Session tracking is disabled in the options.");
-      return;
-    }
-
+  public void captureSession(@NotNull Session session) {
     if (session.getRelease() == null) {
       options
           .getLogger()
@@ -179,7 +173,7 @@ public final class SentryClient implements ISentryClient {
     try {
       connection.send(envelope, hint);
     } catch (IOException e) {
-      options.getLogger().log(SentryLevel.ERROR, "Failed to capture session.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Failed to capture envelope.", e);
     }
   }
 

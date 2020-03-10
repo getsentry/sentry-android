@@ -2,6 +2,7 @@ package io.sentry.core;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
@@ -13,7 +14,7 @@ public final class SentryEnvelopeHeaderAdapter extends TypeAdapter<SentryEnvelop
   @Override
   public void write(JsonWriter writer, SentryEnvelopeHeader value) throws IOException {
     if (value == null) {
-      writer.nullValue(); // TODO: is it compatible with envelopes?
+      writer.nullValue();
       return;
     }
     writer.beginObject();
@@ -33,6 +34,11 @@ public final class SentryEnvelopeHeaderAdapter extends TypeAdapter<SentryEnvelop
 
   @Override
   public SentryEnvelopeHeader read(JsonReader reader) throws IOException {
+    if (reader.peek() == JsonToken.NULL) {
+      reader.nextNull();
+      return null;
+    }
+
     SentryId sentryId = SentryId.EMPTY_ID;
     String auth = null;
 
