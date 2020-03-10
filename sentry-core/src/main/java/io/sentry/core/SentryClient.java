@@ -116,17 +116,26 @@ public final class SentryClient implements ISentryClient {
     final SentryEvent finalEvent = event;
     if (scope != null) {
       scope.withSession(
-          s -> {
-            if (s != null) {
+          session -> {
+            if (session != null) {
+              //              boolean crashed = false;
               if (finalEvent.isCrashed()) {
-                s.addError();
+                session.setStatus(Session.State.Crashed);
+                //                crashed = true;
               }
+
+              if (Session.State.Crashed == session.getStatus() || finalEvent.isErrored()) {
+                session.addError();
+              }
+
               if (finalEvent.getEnvironment() != null) {
-                s.setEnvironment(finalEvent.getEnvironment());
+                session.setEnvironment(finalEvent.getEnvironment());
               }
               if (finalEvent.getRelease() != null) {
-                s.setRelease(finalEvent.getRelease());
+                session.setRelease(finalEvent.getRelease());
               }
+
+              // TODO: user, user agent
             } else {
               options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
             }

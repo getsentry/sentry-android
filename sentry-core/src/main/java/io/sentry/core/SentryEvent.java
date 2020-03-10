@@ -320,4 +320,8 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
 
     return false;
   }
+
+  public boolean isErrored() {
+    return exception != null && !exception.getValues().isEmpty();
+  }
 }

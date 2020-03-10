@@ -31,7 +31,6 @@ public final class AsyncConnection implements Closeable, Connection {
   private final ITransport transport;
   private final ITransportGate transportGate;
   private final ExecutorService executor;
-  //  private final ExecutorService sessionExecutor;
   private final IEventCache eventCache;
   private final SentryOptions options;
 

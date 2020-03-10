@@ -361,7 +361,6 @@ public final class Scope implements Cloneable {
   }
 
   // Atomic operations on session
-  //  @ApiStatus.Internal
   void withSession(@NotNull IWithSession sessionCallback) {
     synchronized (sessionLock) {
       sessionCallback.accept(session);
@@ -385,15 +384,18 @@ public final class Scope implements Cloneable {
       }
       previousSession = session;
 
-      // TODO: extract to a new method?!
+      // TODO: extract to a new method?! maybe into session.start()
       session = new Session();
       session.setInit(true);
       session.setSequence(0);
 
       session.setRelease(options.getRelease());
       session.setEnvironment(options.getEnvironment());
-      session.setUserAgent(options.getSentryClientName());
+      //      session.setUserAgent(options.getSentryClientName());
       //      session.setIpAddress(); // do we get that?
+      //      session.user = scope.user
+
+      session.start();
 
       pair = new SessionPair(session, previousSession);
     }

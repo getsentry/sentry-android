@@ -7,24 +7,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class Session {
 
   public enum State {
-    // TODO: What about 'Started' 'Ended'? Ok is not very clear
     Ok,
     Exited,
     Crashed,
-    Abnormal
+    Abnormal // ,
+    //    Degraded TODO: do we need it?
   }
 
   private Date started; // TODO: maybe should be final and get it in the ctor
   // NOTE: Serializes as 'timestamp'
-  private volatile Date ended;
+  private Date ended;
   private final AtomicInteger errorCount;
   // TODO: serializes as 'did'? Must be UUID?
   private String deviceId; // did, distinctId, optional
   // serializes as 'sid'?
   private UUID sessionId; // sid
   private Boolean init;
-  private State status;
+  private State status; // if none, it should be State.Ok
   private Integer sequence;
+  private Double duration; // maybe float?
+
+  // TODO: do we need user? if we have deviceId
+  // its only to set did properly, id, email or username
+  // but actually we'd like to go with a generated GUID
 
   // attrs
   private String ipAddress;
@@ -35,7 +40,7 @@ public final class Session {
   // TODO: started as non final and expose start() ?
   public Session(final int errorCount) {
     // TODO: No millisecond precision?
-    this.started = DateUtils.getCurrentDateTime();
+    //    this.started = DateUtils.getCurrentDateTime();
     this.errorCount = new AtomicInteger(errorCount);
   }
 
@@ -51,10 +56,13 @@ public final class Session {
   }
 
   public synchronized void end() {
-    if (ended != null) {
-      ended = DateUtils.getCurrentDateTime();
+    if (getEnded() != null) {
+      setEnded(DateUtils.getCurrentDateTime());
     } else {
       // TODO: take ILogger and log out a warn?
+    }
+    if (status == null || status == State.Ok) {
+      status = State.Exited;
     }
   }
 
@@ -145,5 +153,38 @@ public final class Session {
 
   public void setSequence(Integer sequence) {
     this.sequence = sequence;
+  }
+
+  public Double getDuration() {
+    return duration;
+  }
+
+  public void setDuration(Double duration) {
+    this.duration = duration;
+  }
+
+  public Date getEnded() {
+    return ended;
+  }
+
+  public void setEnded(Date ended) {
+    this.ended = ended;
+  }
+
+  public synchronized void start() {
+    if (sessionId == null) {
+      sessionId = UUID.randomUUID();
+    }
+    if (started == null) {
+      started = DateUtils.getCurrentDateTime();
+    }
+    if (status == null) {
+      status = State.Ok;
+    }
+    if (deviceId == null) {
+      // TODO: get as a param?
+      deviceId = UUID.randomUUID().toString();
+    }
+    // ip address come from user
   }
 }
