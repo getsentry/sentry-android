@@ -39,13 +39,17 @@ public final class SessionAdapter extends TypeAdapter<Session> {
       writer.name("status").value(value.getStatus().name().toLowerCase(Locale.ROOT));
     }
 
+    if (value.getSequence() != null) {
+      writer.name("seq").value(value.getSequence());
+    }
+
     int errorCount = value.errorCount();
     if (errorCount > 0) {
       writer.name("errors").value(errorCount);
     }
 
     // TODO: attrs
-    // TODO: seq, is timestamp started?, duration
+    // TODO: is timestamp started?, duration
 
     writer.endObject();
   }
@@ -60,18 +64,8 @@ public final class SessionAdapter extends TypeAdapter<Session> {
 
     reader.beginObject();
 
-    String fieldName;
     while (reader.hasNext()) {
-      JsonToken token = reader.peek();
-
-      if (token.equals(JsonToken.NAME)) {
-        // get the current token
-        fieldName = reader.nextName();
-      } else {
-        continue; // TODO: is even possilble to not be a name token?
-      }
-
-      switch (fieldName) {
+      switch (reader.nextName()) {
         case "sid":
           session.setSessionId(UUID.fromString(reader.nextString()));
           break;
@@ -89,6 +83,9 @@ public final class SessionAdapter extends TypeAdapter<Session> {
           break;
         case "errors":
           session.setErrorCount(reader.nextInt());
+          break;
+        case "seq":
+          session.setSequence(reader.nextInt());
           break;
         default:
           reader.skipValue();

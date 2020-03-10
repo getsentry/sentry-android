@@ -24,6 +24,7 @@ public final class Session {
   private UUID sessionId; // sid
   private Boolean init;
   private State status;
+  private Integer sequence;
 
   // attrs
   private String ipAddress;
@@ -136,5 +137,13 @@ public final class Session {
 
   public void setStatus(State status) {
     this.status = status;
+  }
+
+  public Integer getSequence() {
+    return sequence;
+  }
+
+  public void setSequence(Integer sequence) {
+    this.sequence = sequence;
   }
 }
