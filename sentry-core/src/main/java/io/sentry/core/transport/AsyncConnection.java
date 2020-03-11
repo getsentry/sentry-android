@@ -3,10 +3,10 @@ package io.sentry.core.transport;
 import static io.sentry.core.transport.RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY_MS;
 
 import io.sentry.core.SentryEnvelope;
-import io.sentry.core.SentryEnvelopeItem;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.cache.IEnvelopeCache;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.hints.DiskFlushNotification;
@@ -14,8 +14,6 @@ import io.sentry.core.hints.RetryableHint;
 import io.sentry.core.hints.SubmissionResult;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
@@ -32,15 +30,23 @@ public final class AsyncConnection implements Closeable, Connection {
   private final ITransportGate transportGate;
   private final ExecutorService executor;
   private final IEventCache eventCache;
+  private final IEnvelopeCache envelopeCache;
   private final SentryOptions options;
 
   public AsyncConnection(
       final ITransport transport,
       final ITransportGate transportGate,
       final IEventCache eventCache,
+      final IEnvelopeCache envelopeCache,
       final int maxQueueSize,
       final SentryOptions options) {
-    this(transport, transportGate, eventCache, initExecutor(maxQueueSize, eventCache), options);
+    this(
+        transport,
+        transportGate,
+        eventCache,
+        envelopeCache,
+        initExecutor(maxQueueSize, eventCache),
+        options);
   }
 
   @TestOnly
@@ -48,12 +54,14 @@ public final class AsyncConnection implements Closeable, Connection {
       final ITransport transport,
       final ITransportGate transportGate,
       final IEventCache eventCache,
+      final IEnvelopeCache envelopeCache,
       final ExecutorService executorService,
       final SentryOptions options) {
 
     this.transport = transport;
     this.transportGate = transportGate;
     this.eventCache = eventCache;
+    this.envelopeCache = envelopeCache;
     this.options = options;
     this.executor = executorService;
   }
@@ -95,34 +103,34 @@ public final class AsyncConnection implements Closeable, Connection {
   public void send(@NotNull SentryEnvelope envelope, final @Nullable Object hint)
       throws IOException {
     // For now no caching on envelopes
-    //    IEventCache currentEventCache = NoOpEventCache.getInstance();
-    //    if (hint instanceof Cached) {
-    //      currentEventCache = NoOpEventCache.getInstance();
-    //    }
+    IEnvelopeCache currentEventCache = envelopeCache;
+    if (hint instanceof Cached) {
+      currentEventCache = NoOpEnvelopeCache.getInstance();
+    }
 
     // Optimize for/No allocations if no items are under 429
-    List<SentryEnvelopeItem> dropItems = null;
-    for (SentryEnvelopeItem item : envelope.getItems()) {
-      if (item.getHeader() != null && transport.isRetryAfter(item.getHeader().getType())) {
-        if (dropItems == null) {
-          dropItems = new ArrayList<>();
-        }
-        dropItems.add(item);
-      }
-    }
+    //    List<SentryEnvelopeItem> dropItems = null;
+    //    for (SentryEnvelopeItem item : envelope.getItems()) {
+    //      if (item.getHeader() != null && transport.isRetryAfter(item.getHeader().getType())) {
+    //        if (dropItems == null) {
+    //          dropItems = new ArrayList<>();
+    //        }
+    //        dropItems.add(item);
+    //      }
+    //    }
+    //
+    //    if (dropItems != null) {
+    //      // Need a new envelope
+    //      List<SentryEnvelopeItem> toSend = new ArrayList<>();
+    //      for (SentryEnvelopeItem item : envelope.getItems()) {
+    //        if (!dropItems.contains(item)) {
+    //          toSend.add(item);
+    //        }
+    //      }
+    //      envelope = new SentryEnvelope(envelope.getHeader(), toSend);
+    //    }
 
-    if (dropItems != null) {
-      // Need a new envelope
-      List<SentryEnvelopeItem> toSend = new ArrayList<>();
-      for (SentryEnvelopeItem item : envelope.getItems()) {
-        if (!dropItems.contains(item)) {
-          toSend.add(item);
-        }
-      }
-      envelope = new SentryEnvelope(envelope.getHeader(), toSend);
-    }
-
-    executor.submit(new EnvelopeSender(envelope, hint));
+    executor.submit(new EnvelopeSender(envelope, hint, currentEventCache));
   }
 
   @Override
@@ -255,16 +263,17 @@ public final class AsyncConnection implements Closeable, Connection {
   private final class EnvelopeSender implements Retryable {
     private final SentryEnvelope envelope;
     private final Object hint;
-    //    private final IEventCache eventCache;
+    private final IEnvelopeCache envelopeCache;
     private long suggestedRetryDelay;
     private int responseCode;
     private final TransportResult failedResult =
         TransportResult.error(HTTP_RETRY_AFTER_DEFAULT_DELAY_MS, -1);
 
-    EnvelopeSender(final SentryEnvelope envelope, final Object hint) {
+    EnvelopeSender(
+        final SentryEnvelope envelope, final Object hint, final IEnvelopeCache envelopeCache) {
       this.envelope = envelope;
       this.hint = hint;
-      //      this.eventCache = eventCache;
+      this.envelopeCache = envelopeCache;
     }
 
     @Override
@@ -299,20 +308,22 @@ public final class AsyncConnection implements Closeable, Connection {
     private TransportResult flush() {
       TransportResult result = this.failedResult;
       // TODO: Do we need special policies for caching envelopes?
-      //      eventCache.store(envelope);
-      //      if (hint instanceof DiskFlushNotification) {
-      //        ((DiskFlushNotification) hint).markFlushed();
-      //        options
-      //          .getLogger()
-      //          .log(SentryLevel.DEBUG, "Disk flush envelope fired: %s",
-      // envelope.getHeader().getEventId());
-      //      }
+      envelopeCache.store(envelope);
+      if (hint instanceof DiskFlushNotification) {
+        ((DiskFlushNotification) hint).markFlushed();
+        options
+            .getLogger()
+            .log(
+                SentryLevel.DEBUG,
+                "Disk flush envelope fired: %s",
+                envelope.getHeader().getEventId());
+      }
 
       if (transportGate.isSendingAllowed()) {
         try {
           result = transport.send(envelope);
           if (result.isSuccess()) {
-            //            eventCache.discard(envelope);
+            envelopeCache.discard(envelope);
           } else {
             suggestedRetryDelay = result.getRetryMillis();
             responseCode = result.getResponseCode();

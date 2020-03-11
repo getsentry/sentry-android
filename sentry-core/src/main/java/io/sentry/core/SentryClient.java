@@ -1,6 +1,8 @@
 package io.sentry.core;
 
 import io.sentry.core.cache.DiskCache;
+import io.sentry.core.cache.EnvelopeCache;
+import io.sentry.core.cache.IEnvelopeCache;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.protocol.SentryId;
@@ -53,8 +55,9 @@ public final class SentryClient implements ISentryClient {
     if (connection == null) {
       // TODO this is obviously provisional and should be constructed based on the config in options
       IEventCache cache = new DiskCache(options);
+      IEnvelopeCache envelopeCache = new EnvelopeCache(options);
 
-      connection = AsyncConnectionFactory.create(options, cache);
+      connection = AsyncConnectionFactory.create(options, cache, envelopeCache);
     }
     this.connection = connection;
     random = options.getSampleRate() == null ? null : new Random();
@@ -114,42 +117,47 @@ public final class SentryClient implements ISentryClient {
       return SentryId.EMPTY_ID;
     }
 
-    // safe guard
-    if (options.isEnableSessionTracking()) {
-      final SentryEvent finalEvent = event;
-      if (scope != null) {
-        scope.withSession(
-            session -> {
-              if (session != null) {
-                Session.State status = null;
-                if (finalEvent.isCrashed()) {
-                  status = Session.State.Crashed;
-                }
-
-                boolean crashedOrErrored = false;
-                if (Session.State.Crashed == session.getStatus() || finalEvent.isErrored()) {
-                  crashedOrErrored = true;
-                }
-
-                User user = null;
-                if (finalEvent.getUser() != null) {
-                  user = finalEvent.getUser();
-                }
-
-                String userAgent = null;
-                if (finalEvent.getRequest() != null
-                    && finalEvent.getRequest().getHeaders() != null) {
-                  if (finalEvent.getRequest().getHeaders().containsKey("user-agent")) {
-                    userAgent = finalEvent.getRequest().getHeaders().get("user-agent");
+    // TODO: there's already this check above (if its cached), but it's before event processors and
+    // we'd need to refactor
+    // that as well, let's keep like this for now
+    if (!(hint instanceof Cached)) {
+      // safe guard
+      if (options.isEnableSessionTracking()) {
+        final SentryEvent finalEvent = event;
+        if (scope != null) {
+          scope.withSession(
+              session -> {
+                if (session != null) {
+                  Session.State status = null;
+                  if (finalEvent.isCrashed()) {
+                    status = Session.State.Crashed;
                   }
+
+                  boolean crashedOrErrored = false;
+                  if (Session.State.Crashed == session.getStatus() || finalEvent.isErrored()) {
+                    crashedOrErrored = true;
+                  }
+
+                  User user = null;
+                  if (finalEvent.getUser() != null) {
+                    user = finalEvent.getUser();
+                  }
+
+                  String userAgent = null;
+                  if (finalEvent.getRequest() != null
+                      && finalEvent.getRequest().getHeaders() != null) {
+                    if (finalEvent.getRequest().getHeaders().containsKey("user-agent")) {
+                      userAgent = finalEvent.getRequest().getHeaders().get("user-agent");
+                    }
+                  }
+                  session.update(status, user, userAgent, crashedOrErrored);
+                } else {
+                  options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
                 }
-                session.update(status, user, userAgent, crashedOrErrored);
-              } else {
-                options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
-              }
-            });
-      } else {
-        options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
+              });
+        } else {
+          options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
+        }
       }
     }
 
