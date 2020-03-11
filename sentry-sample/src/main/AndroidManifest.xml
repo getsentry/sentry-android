@@ -18,7 +18,6 @@
     tools:ignore="GoogleAppIndexingWarning, UnusedAttribute"
     android:usesCleartextTraffic="true" >
 <!--    TODO: needed or Android 8: Cleartext HTTP traffic not permitted-->
-    <!--    android:networkSecurityConfig="@xml/network_security_config"-->
 
     <activity android:name=".MainActivity">
       <intent-filter>
@@ -54,5 +53,6 @@
 
     <meta-data android:name="io.sentry.release" android:value="io.sentry.android@1.0+1" />
     <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
+    <meta-data android:name="io.sentry.environment" android:value="debug" />
   </application>
 </manifest>

@@ -14,6 +14,8 @@ import io.sentry.android.core.adapters.SentryLevelDeserializerAdapter;
 import io.sentry.android.core.adapters.SentryLevelSerializerAdapter;
 import io.sentry.android.core.adapters.TimeZoneDeserializerAdapter;
 import io.sentry.android.core.adapters.TimeZoneSerializerAdapter;
+import io.sentry.core.EnvelopeReader;
+import io.sentry.core.IEnvelopeReader;
 import io.sentry.core.ILogger;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
@@ -30,6 +32,7 @@ import io.sentry.core.protocol.Contexts;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -45,10 +48,13 @@ final class AndroidSerializer implements ISerializer {
   private final @NotNull ILogger logger;
   private final Gson gson;
 
+  private final IEnvelopeReader envelopeReader;
+
   public AndroidSerializer(final @NotNull ILogger logger) {
     this.logger = logger;
 
     gson = provideGson();
+    envelopeReader = new EnvelopeReader();
   }
 
   private Gson provideGson() {
@@ -82,6 +88,16 @@ final class AndroidSerializer implements ISerializer {
   @Override
   public Session deserializeSession(Reader reader) {
     return gson.fromJson(reader, Session.class);
+  }
+
+  @Override
+  public SentryEnvelope deserializeEnvelope(InputStream inputStream) {
+    try {
+      return envelopeReader.read(inputStream);
+    } catch (IOException e) {
+      logger.log(SentryLevel.ERROR, "Error processing envelope.", e);
+      return null;
+    }
   }
 
   @Override

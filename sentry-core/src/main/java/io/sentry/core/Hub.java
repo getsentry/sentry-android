@@ -16,7 +16,6 @@ public final class Hub implements IHub {
     private volatile @NotNull ISentryClient client;
     private volatile @NotNull Scope scope;
 
-    // TODO: should we use? client, scope, session instead of session in the scope
     StackItem(@NotNull ISentryClient client, @NotNull Scope scope) {
       this.client = client;
       this.scope = scope;

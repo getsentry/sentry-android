@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.protocol.User;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,26 +11,19 @@ public final class Session {
     Ok,
     Exited,
     Crashed,
-    Abnormal // ,
-    //    Degraded TODO: do we need it?
+    Abnormal
   }
 
-  private Date started; // TODO: maybe should be final and get it in the ctor
-  // NOTE: Serializes as 'timestamp'
-  private Date ended;
-  private final AtomicInteger errorCount;
-  // TODO: serializes as 'did'? Must be UUID?
-  private String deviceId; // did, distinctId, optional
-  // serializes as 'sid'?
+  private Date started;
+  private Date timestamp;
+  private final AtomicInteger errorCount = new AtomicInteger(0);
+  private String deviceId; // did, distinctId
   private UUID sessionId; // sid
   private Boolean init;
-  private State status; // if none, it should be State.Ok
-  private Integer sequence;
-  private Double duration; // maybe float?
-
-  // TODO: do we need user? if we have deviceId
-  // its only to set did properly, id, email or username
-  // but actually we'd like to go with a generated GUID
+  private State status; // if none, it should be State.Ok?
+  private Long sequence;
+  private Double duration;
+  private User user;
 
   // attrs
   private String ipAddress;
@@ -37,33 +31,17 @@ public final class Session {
   private String environment;
   private String release;
 
-  // TODO: started as non final and expose start() ?
-  public Session(final int errorCount) {
-    // TODO: No millisecond precision?
-    //    this.started = DateUtils.getCurrentDateTime();
-    this.errorCount = new AtomicInteger(errorCount);
-  }
-
-  // TODO: started as non final and expose start() ?
-  public Session() {
-    this(0);
-  }
-
-  public void addError() {
-    // TODO: Need to be synchronized anyway to mark Status as crashed or something?
-    // Discard result
-    errorCount.addAndGet(1);
-  }
-
   public synchronized void end() {
-    if (getEnded() != null) {
-      setEnded(DateUtils.getCurrentDateTime());
-    } else {
-      // TODO: take ILogger and log out a warn?
-    }
-    if (status == null || status == State.Ok) {
+    if (status == null && errorCount.get() > 0) {
+      status = State.Abnormal;
+    } else if (status == null || status == State.Ok) {
       status = State.Exited;
     }
+
+    timestamp = DateUtils.getCurrentDateTime();
+
+    long diff = Math.abs(timestamp.getTime() - started.getTime()); // we need to subtract idle time
+    duration = (double) diff;
   }
 
   public Date getStarted() {
@@ -134,7 +112,6 @@ public final class Session {
     return errorCount.get();
   }
 
-  // TODO: maybe this should be only in the ctor
   public void setErrorCount(int errorCount) {
     this.errorCount.set(errorCount);
   }
@@ -147,11 +124,11 @@ public final class Session {
     this.status = status;
   }
 
-  public Integer getSequence() {
+  public Long getSequence() {
     return sequence;
   }
 
-  public void setSequence(Integer sequence) {
+  public void setSequence(Long sequence) {
     this.sequence = sequence;
   }
 
@@ -163,28 +140,61 @@ public final class Session {
     this.duration = duration;
   }
 
-  public Date getEnded() {
-    return ended;
+  public Date getTimestamp() {
+    return timestamp;
   }
 
-  public void setEnded(Date ended) {
-    this.ended = ended;
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  public void setUser(User user) {
+    this.user = user;
   }
 
   public synchronized void start() {
+    init = true;
+    sequence = 0L;
+
     if (sessionId == null) {
       sessionId = UUID.randomUUID();
     }
+
     if (started == null) {
       started = DateUtils.getCurrentDateTime();
     }
-    if (status == null) {
-      status = State.Ok;
+    timestamp = DateUtils.getCurrentDateTime();
+
+    // this doesnt sound right
+    //    if (status == null) {
+    //      status = State.Ok;
+    //    }
+  }
+
+  public synchronized void update(
+      State status, User user, String userAgent, boolean addErrorsCount) {
+    if (State.Crashed == status) {
+      this.status = status;
     }
-    if (deviceId == null) {
-      // TODO: get as a param?
-      deviceId = UUID.randomUUID().toString();
+
+    if (user != null) {
+      this.user = user;
+
+      deviceId = this.user.getId(); // TODO: replace to generated GUID
+
+      if (this.user.getIpAddress() != null) {
+        ipAddress = this.user.getIpAddress();
+      }
     }
-    // ip address come from user
+    if (userAgent != null) {
+      this.userAgent = userAgent;
+    }
+    if (addErrorsCount) {
+      errorCount.addAndGet(1);
+    }
+
+    timestamp = DateUtils.getCurrentDateTime();
+
+    sequence = System.currentTimeMillis();
   }
 }

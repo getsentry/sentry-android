@@ -1,13 +1,15 @@
 package io.sentry.core;
 
 import java.util.concurrent.Callable;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+@ApiStatus.Internal
 public final class SentryEnvelopeItemHeader {
   private final String contentType;
   private final String fileName;
   private final String type;
-  private final int length; // I think it should be long
+  private final int length;
   @Nullable private final Callable<Integer> getLength;
 
   // TODO: Looks like a type here that defaults to String for unknown values would be ideal

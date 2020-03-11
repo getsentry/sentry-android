@@ -3,6 +3,7 @@ package io.sentry.core;
 import io.sentry.core.protocol.SentryId;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +44,7 @@ public final class SentryEnvelope {
   // Single item envelope with an envelope-allocated id
   public SentryEnvelope(SentryEnvelopeItem item) {
     header = new SentryEnvelopeHeader();
-    ArrayList<SentryEnvelopeItem> items = new ArrayList<>(1);
+    List<SentryEnvelopeItem> items = new ArrayList<>(1);
     items.add(item);
     this.items = items;
   }
