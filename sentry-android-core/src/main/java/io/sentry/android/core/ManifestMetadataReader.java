@@ -23,6 +23,7 @@ final class ManifestMetadataReader {
   static final String AUTO_INIT = "io.sentry.auto-init";
   static final String NDK_ENABLE = "io.sentry.ndk.enable";
   static final String RELEASE = "io.sentry.release";
+  static final String ENVIRONMENT = "io.sentry.environment";
   static final String SESSION_TRACKING_ENABLE = "io.sentry.session-tracking.enable";
 
   /** ManifestMetadataReader ctor */
@@ -104,6 +105,10 @@ final class ManifestMetadataReader {
         final String release = metadata.getString(RELEASE, options.getRelease());
         options.getLogger().log(SentryLevel.DEBUG, "release read: %s", release);
         options.setRelease(release);
+
+        final String environment = metadata.getString(ENVIRONMENT, options.getEnvironment());
+        options.getLogger().log(SentryLevel.DEBUG, "environment read: %s", environment);
+        options.setEnvironment(environment);
       }
       options
           .getLogger()

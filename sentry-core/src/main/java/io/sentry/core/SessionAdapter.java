@@ -11,6 +11,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
 public final class SessionAdapter extends TypeAdapter<Session> {
+
   @Override
   public void write(JsonWriter writer, Session value) throws IOException {
     if (value == null) {
@@ -56,9 +57,43 @@ public final class SessionAdapter extends TypeAdapter<Session> {
       writer.name("timestamp").value(DateUtils.getTimestamp(value.getTimestamp()));
     }
 
-    // TODO: attrs
+    boolean hasInitAttrs = false;
+    if (value.getRelease() != null) {
+      hasInitAttrs = initAttrs(writer, hasInitAttrs);
+
+      writer.name("release").value(value.getRelease());
+    }
+
+    if (value.getEnvironment() != null) {
+      hasInitAttrs = initAttrs(writer, hasInitAttrs);
+
+      writer.name("environment").value(value.getEnvironment());
+    }
+
+    if (value.getIpAddress() != null) {
+      hasInitAttrs = initAttrs(writer, hasInitAttrs);
+
+      writer.name("ip_address").value(value.getIpAddress());
+    }
+
+    if (value.getUserAgent() != null) {
+      hasInitAttrs = initAttrs(writer, hasInitAttrs);
+
+      writer.name("user_agent").value(value.getUserAgent());
+    }
+
+    if (hasInitAttrs) {
+      writer.endObject();
+    }
 
     writer.endObject();
+  }
+
+  private boolean initAttrs(JsonWriter writer, boolean hasInitAtts) throws IOException {
+    if (!hasInitAtts) {
+      writer.name("attrs").beginObject();
+    }
+    return true;
   }
 
   @Override
@@ -100,6 +135,32 @@ public final class SessionAdapter extends TypeAdapter<Session> {
         case "timestamp":
           session.setTimestamp(DateUtils.getDateTime(reader.nextString()));
           break;
+        case "attrs":
+          {
+            reader.beginObject();
+
+            while (reader.hasNext()) {
+              switch (reader.nextName()) {
+                case "release":
+                  session.setRelease(reader.nextString());
+                  break;
+                case "environment":
+                  session.setEnvironment(reader.nextString());
+                  break;
+                case "ip_address":
+                  session.setIpAddress(reader.nextString());
+                  break;
+                case "user_agent":
+                  session.setUserAgent(reader.nextString());
+                  break;
+                default:
+                  reader.skipValue();
+                  break;
+              }
+            }
+            reader.endObject();
+            break;
+          }
         default:
           reader.skipValue();
           break;

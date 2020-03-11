@@ -16,7 +16,7 @@ public final class Session {
 
   private Date started;
   private Date timestamp;
-  private AtomicInteger errorCount;
+  private final AtomicInteger errorCount = new AtomicInteger(0);
   private String deviceId; // did, distinctId
   private UUID sessionId; // sid
   private Boolean init;
@@ -115,11 +115,7 @@ public final class Session {
   }
 
   public void setErrorCount(int errorCount) {
-    if (this.errorCount == null) {
-      this.errorCount = new AtomicInteger(errorCount);
-    } else {
-      this.errorCount.set(errorCount);
-    }
+    this.errorCount.set(errorCount);
   }
 
   public State getStatus() {
@@ -161,7 +157,6 @@ public final class Session {
   public synchronized void start() {
     init = true;
     sequence = 0L;
-    errorCount = new AtomicInteger(0);
 
     if (sessionId == null) {
       sessionId = UUID.randomUUID();

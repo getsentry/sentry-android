@@ -53,5 +53,6 @@
 
     <meta-data android:name="io.sentry.release" android:value="io.sentry.android@1.0+1" />
     <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
+    <meta-data android:name="io.sentry.environment" android:value="debug" />
   </application>
 </manifest>
