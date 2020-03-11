@@ -14,14 +14,14 @@ public final class Session {
     Abnormal
   }
 
-  private Date started; // TODO: maybe should be final and get it in the ctor
-  private Date ended;
+  private Date started;
+  private Date timestamp;
   private AtomicInteger errorCount;
   private String deviceId; // did, distinctId
   private UUID sessionId; // sid
   private Boolean init;
   private State status; // if none, it should be State.Ok?
-  private Integer sequence;
+  private Long sequence;
   private Double duration;
   private User user;
 
@@ -34,17 +34,16 @@ public final class Session {
   // TODO: we might need a sessionLock like Scope.
 
   public synchronized void end() {
-    if (ended == null) {
-      ended = DateUtils.getCurrentDateTime();
-    } else {
-      // TODO: take ILogger and log out a warn?
-    }
-
     if (status == null && errorCount.get() > 0) {
       status = State.Abnormal;
     } else if (status == null || status == State.Ok) {
       status = State.Exited;
     }
+
+    timestamp = DateUtils.getCurrentDateTime();
+
+    long diff = Math.abs(timestamp.getTime() - started.getTime()); // we need to subtract idle time
+    duration = (double) diff;
   }
 
   public Date getStarted() {
@@ -131,11 +130,11 @@ public final class Session {
     this.status = status;
   }
 
-  public Integer getSequence() {
+  public Long getSequence() {
     return sequence;
   }
 
-  public void setSequence(Integer sequence) {
+  public void setSequence(Long sequence) {
     this.sequence = sequence;
   }
 
@@ -147,12 +146,12 @@ public final class Session {
     this.duration = duration;
   }
 
-  public Date getEnded() {
-    return ended;
+  public Date getTimestamp() {
+    return timestamp;
   }
 
-  public void setEnded(Date ended) {
-    this.ended = ended;
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
   }
 
   public void setUser(User user) {
@@ -161,16 +160,18 @@ public final class Session {
 
   public synchronized void start() {
     init = true;
-    sequence = 0;
+    sequence = 0L;
     errorCount = new AtomicInteger(0);
 
     if (sessionId == null) {
       sessionId = UUID.randomUUID();
     }
-    //    TODO: No millisecond precision?
+
     if (started == null) {
       started = DateUtils.getCurrentDateTime();
     }
+    timestamp = DateUtils.getCurrentDateTime();
+
     // this doesnt sound right
     //    if (status == null) {
     //      status = State.Ok;
@@ -181,9 +182,7 @@ public final class Session {
       State status, User user, String userAgent, boolean addErrorsCount) {
     if (State.Crashed == status) {
       this.status = status;
-    } // else {
-    //      this.status = null;
-    //    }
+    }
 
     if (user != null) {
       this.user = user;
@@ -201,6 +200,9 @@ public final class Session {
       errorCount.addAndGet(1);
     }
 
-    // sequence and duration?
+    timestamp = DateUtils.getCurrentDateTime();
+
+    // lets check how this works
+    sequence = System.currentTimeMillis();
   }
 }

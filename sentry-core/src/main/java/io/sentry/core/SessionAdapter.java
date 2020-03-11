@@ -52,8 +52,8 @@ public final class SessionAdapter extends TypeAdapter<Session> {
       writer.name("duration").value(value.getDuration());
     }
 
-    if (value.getEnded() != null) {
-      writer.name("timestamp").value(DateUtils.getTimestamp(value.getEnded()));
+    if (value.getTimestamp() != null) {
+      writer.name("timestamp").value(DateUtils.getTimestamp(value.getTimestamp()));
     }
 
     // TODO: attrs
@@ -92,13 +92,13 @@ public final class SessionAdapter extends TypeAdapter<Session> {
           session.setErrorCount(reader.nextInt());
           break;
         case "seq":
-          session.setSequence(reader.nextInt());
+          session.setSequence(reader.nextLong());
           break;
         case "duration":
           session.setDuration(reader.nextDouble());
           break;
         case "timestamp":
-          session.setEnded(DateUtils.getDateTime(reader.nextString()));
+          session.setTimestamp(DateUtils.getDateTime(reader.nextString()));
           break;
         default:
           reader.skipValue();
