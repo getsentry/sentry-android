@@ -135,7 +135,6 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                 item.getHeader().getType());
           } else {
             // capture 1 per 1 to be easier for now
-            // TODO: we generate a new envelopeId when we do that, is it a problem?
             hub.captureEnvelope(SentryEnvelope.fromSession(serializer, session), hint);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
             if (!hint.waitFlush()) {

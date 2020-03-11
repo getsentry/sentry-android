@@ -31,8 +31,6 @@ public final class Session {
   private String environment;
   private String release;
 
-  // TODO: we might need a sessionLock like Scope.
-
   public synchronized void end() {
     if (status == null && errorCount.get() > 0) {
       status = State.Abnormal;
@@ -197,7 +195,6 @@ public final class Session {
 
     timestamp = DateUtils.getCurrentDateTime();
 
-    // lets check how this works
     sequence = System.currentTimeMillis();
   }
 }
