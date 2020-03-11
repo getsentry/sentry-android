@@ -141,12 +141,15 @@ public interface ISentryClient {
     return captureException(throwable, scope, null);
   }
 
-  void captureSession(Session session);
+  void captureSession(Session session, @Nullable Object hint);
 
-  // TODO: ideally this returns a SentryId too
-  void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint);
+  default void captureSession(Session session) {
+    captureSession(session, null);
+  }
 
-  default void captureEnvelope(SentryEnvelope envelope) {
-    captureEnvelope(envelope, null);
+  SentryId captureEnvelope(SentryEnvelope envelope, @Nullable Object hint);
+
+  default SentryId captureEnvelope(SentryEnvelope envelope) {
+    return captureEnvelope(envelope, null);
   }
 }

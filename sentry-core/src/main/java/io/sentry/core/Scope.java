@@ -367,7 +367,7 @@ public final class Scope implements Cloneable {
     }
   }
 
-  public interface IWithSession {
+  interface IWithSession {
     // Called with a null Session if none exists
     void accept(@Nullable Session session);
   }
@@ -384,16 +384,19 @@ public final class Scope implements Cloneable {
       }
       previousSession = session;
 
-      // TODO: extract to a new method?! maybe into session.start()
       session = new Session();
-      session.setInit(true);
-      session.setSequence(0);
 
-      session.setRelease(options.getRelease());
-      session.setEnvironment(options.getEnvironment());
-      //      session.setUserAgent(options.getSentryClientName());
-      //      session.setIpAddress(); // do we get that?
-      //      session.user = scope.user
+      if (options.getRelease() != null) {
+        session.setRelease(options.getRelease());
+      }
+
+      if (options.getEnvironment() != null) {
+        session.setEnvironment(options.getEnvironment());
+      }
+
+      if (user != null) {
+        session.setUser(user);
+      }
 
       session.start();
 

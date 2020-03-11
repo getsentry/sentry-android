@@ -4,6 +4,7 @@ import io.sentry.core.cache.DiskCache;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.protocol.SentryId;
+import io.sentry.core.protocol.User;
 import io.sentry.core.transport.Connection;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
@@ -113,35 +114,43 @@ public final class SentryClient implements ISentryClient {
       return SentryId.EMPTY_ID;
     }
 
-    final SentryEvent finalEvent = event;
-    if (scope != null) {
-      scope.withSession(
-          session -> {
-            if (session != null) {
-              //              boolean crashed = false;
-              if (finalEvent.isCrashed()) {
-                session.setStatus(Session.State.Crashed);
-                //                crashed = true;
-              }
+    // safe guard
+    if (options.isEnableSessionTracking()) {
+      final SentryEvent finalEvent = event;
+      if (scope != null) {
+        scope.withSession(
+            session -> {
+              if (session != null) {
+                Session.State status = null;
+                if (finalEvent.isCrashed()) {
+                  status = Session.State.Crashed;
+                }
 
-              if (Session.State.Crashed == session.getStatus() || finalEvent.isErrored()) {
-                session.addError();
-              }
+                boolean crashedOrErrored = false;
+                if (Session.State.Crashed == session.getStatus() || finalEvent.isErrored()) {
+                  crashedOrErrored = true;
+                }
 
-              if (finalEvent.getEnvironment() != null) {
-                session.setEnvironment(finalEvent.getEnvironment());
-              }
-              if (finalEvent.getRelease() != null) {
-                session.setRelease(finalEvent.getRelease());
-              }
+                User user = null;
+                if (finalEvent.getUser() != null) {
+                  user = finalEvent.getUser();
+                }
 
-              // TODO: user, user agent
-            } else {
-              options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
-            }
-          });
-    } else {
-      options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
+                String userAgent = null;
+                if (finalEvent.getRequest() != null
+                    && finalEvent.getRequest().getHeaders() != null) {
+                  if (finalEvent.getRequest().getHeaders().containsKey("user-agent")) {
+                    userAgent = finalEvent.getRequest().getHeaders().get("user-agent");
+                  }
+                }
+                session.update(status, user, userAgent, crashedOrErrored);
+              } else {
+                options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
+              }
+            });
+      } else {
+        options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
+      }
     }
 
     try {
@@ -156,7 +165,7 @@ public final class SentryClient implements ISentryClient {
   }
 
   @Override
-  public void captureSession(@NotNull Session session) {
+  public void captureSession(@NotNull Session session, @Nullable Object hint) {
     if (session.getRelease() == null) {
       options
           .getLogger()
@@ -172,18 +181,18 @@ public final class SentryClient implements ISentryClient {
       return;
     }
 
-    // TODO: Do we want Hint here?
-    // TODO: do we want to cache it or send right away? lets send it for now
-    captureEnvelope(envelope);
+    captureEnvelope(envelope, hint);
   }
 
   @Override
-  public void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
+  public SentryId captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
     try {
       connection.send(envelope, hint);
     } catch (IOException e) {
       options.getLogger().log(SentryLevel.ERROR, "Failed to capture envelope.", e);
+      return SentryId.EMPTY_ID;
     }
+    return envelope.getHeader().getEventId();
   }
 
   private SentryEvent applyScope(SentryEvent event, @Nullable Scope scope, @Nullable Object hint) {

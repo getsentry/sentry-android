@@ -6,8 +6,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+@ApiStatus.Internal
 public final class SentryEnvelopeItem {
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
