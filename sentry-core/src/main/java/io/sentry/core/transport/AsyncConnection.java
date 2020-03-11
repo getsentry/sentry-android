@@ -10,6 +10,7 @@ import io.sentry.core.SentryOptions;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.hints.DiskFlushNotification;
+import io.sentry.core.hints.RetryableHint;
 import io.sentry.core.hints.SubmissionResult;
 import java.io.Closeable;
 import java.io.IOException;
@@ -30,7 +31,6 @@ public final class AsyncConnection implements Closeable, Connection {
   private final ITransport transport;
   private final ITransportGate transportGate;
   private final ExecutorService executor;
-  //  private final ExecutorService sessionExecutor;
   private final IEventCache eventCache;
   private final SentryOptions options;
 
@@ -227,15 +227,15 @@ public final class AsyncConnection implements Closeable, Connection {
           }
         } catch (IOException e) {
           // Failure due to IO is allowed to retry the event
-          if (hint instanceof io.sentry.core.hints.Retryable) {
-            ((io.sentry.core.hints.Retryable) hint).setRetry(true);
+          if (hint instanceof RetryableHint) {
+            ((RetryableHint) hint).setRetry(true);
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
       } else {
         // If transportGate is blocking from sending, allowed to retry
-        if (hint instanceof io.sentry.core.hints.Retryable) {
-          ((io.sentry.core.hints.Retryable) hint).setRetry(true);
+        if (hint instanceof RetryableHint) {
+          ((RetryableHint) hint).setRetry(true);
         }
       }
       return result;
@@ -330,15 +330,15 @@ public final class AsyncConnection implements Closeable, Connection {
           }
         } catch (IOException e) {
           // Failure due to IO is allowed to retry the event
-          if (hint instanceof io.sentry.core.hints.Retryable) {
-            ((io.sentry.core.hints.Retryable) hint).setRetry(true);
+          if (hint instanceof RetryableHint) {
+            ((RetryableHint) hint).setRetry(true);
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
       } else {
         // If transportGate is blocking from sending, allowed to retry
-        if (hint instanceof io.sentry.core.hints.Retryable) {
-          ((io.sentry.core.hints.Retryable) hint).setRetry(true);
+        if (hint instanceof RetryableHint) {
+          ((RetryableHint) hint).setRetry(true);
         }
       }
       return result;

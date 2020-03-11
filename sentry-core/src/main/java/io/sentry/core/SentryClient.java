@@ -113,21 +113,36 @@ public final class SentryClient implements ISentryClient {
       return SentryId.EMPTY_ID;
     }
 
-    SentryEvent finalEvent = event;
-    scope.withSession(
-        s -> {
-          if (finalEvent.isCrashed()) {
-            if (s != null) {
-              s.addError();
+    final SentryEvent finalEvent = event;
+    if (scope != null) {
+      scope.withSession(
+          session -> {
+            if (session != null) {
+              //              boolean crashed = false;
+              if (finalEvent.isCrashed()) {
+                session.setStatus(Session.State.Crashed);
+                //                crashed = true;
+              }
+
+              if (Session.State.Crashed == session.getStatus() || finalEvent.isErrored()) {
+                session.addError();
+              }
+
+              if (finalEvent.getEnvironment() != null) {
+                session.setEnvironment(finalEvent.getEnvironment());
+              }
+              if (finalEvent.getRelease() != null) {
+                session.setRelease(finalEvent.getRelease());
+              }
+
+              // TODO: user, user agent
+            } else {
+              options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
             }
-          }
-          if (finalEvent.getEnvironment() != null) {
-            s.setEnvironment(finalEvent.getEnvironment());
-          }
-          if (finalEvent.getRelease() != null) {
-            s.setRelease(finalEvent.getRelease());
-          }
-        });
+          });
+    } else {
+      options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
+    }
 
     try {
       connection.send(event, hint);
@@ -141,12 +156,7 @@ public final class SentryClient implements ISentryClient {
   }
 
   @Override
-  public void captureSession(@NotNull Session session) throws IOException {
-    if (!options.isEnableSessionTracking()) {
-      options.getLogger().log(SentryLevel.WARNING, "Session tracking is disabled in the options.");
-      return;
-    }
-
+  public void captureSession(@NotNull Session session) {
     if (session.getRelease() == null) {
       options
           .getLogger()
@@ -154,14 +164,26 @@ public final class SentryClient implements ISentryClient {
       return;
     }
 
+    SentryEnvelope envelope;
     try {
-      SentryEnvelope envelope = SentryEnvelope.fromSession(options.getSerializer(), session);
-      connection.send(envelope, null);
+      envelope = SentryEnvelope.fromSession(options.getSerializer(), session);
     } catch (IOException e) {
       options.getLogger().log(SentryLevel.ERROR, "Failed to capture session.", e);
+      return;
     }
+
     // TODO: Do we want Hint here?
-    connection.send(SentryEnvelope.fromSession(options.getSerializer(), session), null);
+    // TODO: do we want to cache it or send right away? lets send it for now
+    captureEnvelope(envelope);
+  }
+
+  @Override
+  public void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
+    try {
+      connection.send(envelope, hint);
+    } catch (IOException e) {
+      options.getLogger().log(SentryLevel.ERROR, "Failed to capture envelope.", e);
+    }
   }
 
   private SentryEvent applyScope(SentryEvent event, @Nullable Scope scope, @Nullable Object hint) {

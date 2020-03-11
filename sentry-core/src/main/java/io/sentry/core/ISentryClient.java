@@ -2,7 +2,6 @@ package io.sentry.core;
 
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SentryId;
-import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
 
 /** Sentry Client interface */
@@ -142,5 +141,12 @@ public interface ISentryClient {
     return captureException(throwable, scope, null);
   }
 
-  void captureSession(Session session) throws IOException;
+  void captureSession(Session session);
+
+  // TODO: ideally this returns a SentryId too
+  void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint);
+
+  default void captureEnvelope(SentryEnvelope envelope) {
+    captureEnvelope(envelope, null);
+  }
 }

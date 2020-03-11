@@ -46,7 +46,7 @@ class AsyncConnectionTest {
         // given
         val ev = mock<SentryEvent>()
         whenever(fixture.transportGate.isSendingAllowed).thenReturn(true)
-        whenever(fixture.transport.send(any())).thenReturn(TransportResult.success())
+        whenever(fixture.transport.send(any<SentryEvent>())).thenReturn(TransportResult.success())
 
         // when
         fixture.getSUT().send(ev)
@@ -80,7 +80,7 @@ class AsyncConnectionTest {
         // given
         val ev = mock<SentryEvent>()
         whenever(fixture.transportGate.isSendingAllowed).thenReturn(true)
-        whenever(fixture.transport.send(any())).thenReturn(TransportResult.error(4, 2))
+        whenever(fixture.transport.send(any<SentryEvent>())).thenReturn(TransportResult.error(4, 2))
 
         // when
         try {
@@ -104,7 +104,7 @@ class AsyncConnectionTest {
         // given
         val ev = mock<SentryEvent>()
         whenever(fixture.transportGate.isSendingAllowed).thenReturn(true)
-        whenever(fixture.transport.send(any())).thenThrow(IOException())
+        whenever(fixture.transport.send(any<SentryEvent>())).thenThrow(IOException())
 
         // when
         try {

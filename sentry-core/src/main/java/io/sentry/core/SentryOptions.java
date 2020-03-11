@@ -396,6 +396,13 @@ public class SentryOptions {
     return cacheDirPath + File.separator + "outbox";
   }
 
+  public @Nullable String getSessionsPath() {
+    if (cacheDirPath == null || cacheDirPath.isEmpty()) {
+      return null;
+    }
+    return cacheDirPath + File.separator + "sessions";
+  }
+
   /**
    * Sets the cache dir. path
    *
@@ -726,8 +733,7 @@ public class SentryOptions {
         new SendCachedEventFireAndForgetIntegration(
             (hub, options) -> {
               EnvelopeSender envelopeSender =
-                  new EnvelopeSender(
-                      hub, new io.sentry.core.EnvelopeReader(), options.getSerializer(), logger);
+                  new EnvelopeSender(hub, new EnvelopeReader(), options.getSerializer(), logger);
               if (options.getOutboxPath() != null) {
                 File outbox = new File(options.getOutboxPath());
                 return () -> envelopeSender.processDirectory(outbox);
@@ -740,6 +746,27 @@ public class SentryOptions {
                 return null;
               }
             }));
+
+    // send cached sessions
+    //    integrations.add(
+    //      new SendCachedEventFireAndForgetIntegration(
+    //        (hub, options) -> {
+    //          EnvelopeSender envelopeSender =
+    //            new EnvelopeSender(
+    //              hub, new EnvelopeReader(), options.getSerializer(), logger);
+    //          if (options.getSessionsPath() != null) {
+    //            File outbox = new File(options.getSessionsPath());
+    //            return () -> envelopeSender.processDirectory(outbox);
+    //          } else {
+    //            options
+    //              .getLogger()
+    //              .log(
+    //                SentryLevel.WARNING,
+    //                "No sessions dir path is defined in options, discarding EnvelopeSender.");
+    //            return null;
+    //          }
+    //        }));
+
     integrations.add(new UncaughtExceptionHandlerIntegration());
   }
 }

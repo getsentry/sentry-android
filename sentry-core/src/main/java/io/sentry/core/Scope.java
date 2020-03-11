@@ -361,7 +361,7 @@ public final class Scope implements Cloneable {
   }
 
   // Atomic operations on session
-  public void withSession(@NotNull IWithSession sessionCallback) {
+  void withSession(@NotNull IWithSession sessionCallback) {
     synchronized (sessionLock) {
       sessionCallback.accept(session);
     }
@@ -373,7 +373,8 @@ public final class Scope implements Cloneable {
   }
 
   // Returns a previous session (now closed) bound to this scope together with the newly created one
-  public @NotNull SessionPair startSession() {
+  @NotNull
+  SessionPair startSession() {
     Session previousSession;
     SessionPair pair;
     synchronized (sessionLock) {
@@ -382,13 +383,26 @@ public final class Scope implements Cloneable {
         session.end();
       }
       previousSession = session;
+
+      // TODO: extract to a new method?! maybe into session.start()
       session = new Session();
+      session.setInit(true);
+      session.setSequence(0);
+
+      session.setRelease(options.getRelease());
+      session.setEnvironment(options.getEnvironment());
+      //      session.setUserAgent(options.getSentryClientName());
+      //      session.setIpAddress(); // do we get that?
+      //      session.user = scope.user
+
+      session.start();
+
       pair = new SessionPair(session, previousSession);
     }
     return pair;
   }
 
-  public static final class SessionPair {
+  static final class SessionPair {
     private final Session previous;
     private final Session current;
 
@@ -407,7 +421,8 @@ public final class Scope implements Cloneable {
   }
 
   // ends a session, unbinds it from the scope and returns it.
-  public Session endSession() {
+  @Nullable
+  Session endSession() {
     Session previousSession = null;
     synchronized (sessionLock) {
       if (session != null) {
