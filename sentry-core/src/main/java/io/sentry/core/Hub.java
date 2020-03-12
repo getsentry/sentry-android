@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.SessionEnd;
 import io.sentry.core.hints.SessionStart;
 import io.sentry.core.hints.SessionUpdate;
@@ -95,8 +96,11 @@ public final class Hub implements IHub {
                   if (session != null) {
                     // if we do that on the client, session start will call also a session update
 
-                    // TODO: this should be sync if unhandled exception
-                    item.client.captureSession(session, new SessionUpdateHint());
+                    if (hint instanceof DiskFlushNotification) {
+                      item.client.captureSession(session, hint);
+                    } else {
+                      item.client.captureSession(session, new SessionUpdateHint());
+                    }
                   }
                 });
           }

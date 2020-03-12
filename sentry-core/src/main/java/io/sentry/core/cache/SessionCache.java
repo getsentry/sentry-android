@@ -258,7 +258,7 @@ public final class SessionCache implements ISessionCache {
 
   private File[] allEnvelopeFiles() {
     if (isDirectoryValid()) {
-      // lets not add the current.envelope here
+      // lets filter the current.envelope here
       return directory.listFiles(
           (__, fileName) ->
               fileName.endsWith(FILE_SUFFIX) && !fileName.startsWith(PREFIX_CURRENT_FILE));

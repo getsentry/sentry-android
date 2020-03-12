@@ -137,11 +137,6 @@ public final class SentryClient implements ISentryClient {
                     crashedOrErrored = true;
                   }
 
-                  //                  User user = null;
-                  //                  if (finalEvent.getUser() != null) {
-                  //                    user = finalEvent.getUser();
-                  //                  }
-
                   String userAgent = null;
                   if (finalEvent.getRequest() != null
                       && finalEvent.getRequest().getHeaders() != null) {
@@ -149,7 +144,7 @@ public final class SentryClient implements ISentryClient {
                       userAgent = finalEvent.getRequest().getHeaders().get("user-agent");
                     }
                   }
-                  //                  session.update(status, user, userAgent, crashedOrErrored);
+
                   session.update(status, userAgent, crashedOrErrored);
                 } else {
                   options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");

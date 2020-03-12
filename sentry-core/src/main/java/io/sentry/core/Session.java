@@ -163,7 +163,6 @@ public final class Session {
       if (started == null) {
         started = DateUtils.getCurrentDateTime();
       }
-      //      timestamp = DateUtils.getCurrentDateTime(); I guess we dont need this here
 
       if (release != null) {
         this.release = release;
@@ -212,18 +211,12 @@ public final class Session {
   }
 
   public void update(final State status, final String userAgent, boolean addErrorsCount) {
-    //    final State status, final User user, final String userAgent, boolean addErrorsCount) {
     synchronized (sessionLock) {
       init = null;
 
       if (status != null) {
         this.status = status;
       }
-
-      //      if (user != null) {
-      //        this.user = user;
-      //        updateUserData();
-      //      }
 
       if (userAgent != null) {
         this.userAgent = userAgent;
