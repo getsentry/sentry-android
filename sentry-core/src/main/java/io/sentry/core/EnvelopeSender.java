@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import static io.sentry.core.SentryLevel.ERROR;
+import static io.sentry.core.cache.SessionCache.PREFIX_CURRENT_FILE;
 
 import io.sentry.core.hints.Cached;
 import io.sentry.core.hints.RetryableHint;
@@ -71,7 +72,10 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
 
   @Override
   protected boolean isRelevantFileName(String fileName) {
-    return true; // TODO: Use an extension to filter out relevant files
+    // ignore current.envelope
+    // this is only important for SessionCache, but it doesn't harm SendCachedEvent as well
+    return !fileName.startsWith(PREFIX_CURRENT_FILE);
+    // TODO: Use an extension to filter out relevant files
   }
 
   @Override

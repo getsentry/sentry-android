@@ -184,18 +184,23 @@ public final class Session {
     }
   }
 
+  private void updateStatus() {
+    // at this state it might be Crashed already, so we don't check for it.
+    if (status == State.Ok && errorCount.get() > 0) {
+      status = State.Abnormal;
+    }
+
+    if (status == State.Ok) {
+      status = State.Exited;
+    }
+  }
+
   public void end() {
     synchronized (sessionLock) {
       init = null;
 
       // at this state it might be Crashed already, so we don't check for it.
-      if (status == State.Ok && errorCount.get() > 0) {
-        status = State.Abnormal;
-      }
-
-      if (status == State.Ok) {
-        status = State.Exited;
-      }
+      updateStatus();
 
       timestamp = DateUtils.getCurrentDateTime();
 
@@ -230,6 +235,18 @@ public final class Session {
       timestamp = DateUtils.getCurrentDateTime();
 
       sequence = System.currentTimeMillis();
+    }
+  }
+
+  public void endBrokenSession() {
+    synchronized (sessionLock) {
+      updateStatus();
+
+      timestamp = DateUtils.getCurrentDateTime();
+
+      if (!init) {
+        sequence = System.currentTimeMillis();
+      }
     }
   }
 }

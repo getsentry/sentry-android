@@ -45,7 +45,7 @@ public final class AsyncConnection implements Closeable, Connection {
         transportGate,
         eventCache,
         sessionCache,
-        initExecutor(maxQueueSize, eventCache),
+        initExecutor(maxQueueSize, eventCache, sessionCache),
         options);
   }
 
@@ -67,12 +67,15 @@ public final class AsyncConnection implements Closeable, Connection {
   }
 
   private static RetryingThreadPoolExecutor initExecutor(
-      final int maxQueueSize, final IEventCache eventCache) {
+      final int maxQueueSize, final IEventCache eventCache, final ISessionCache sessionCache) {
 
     final RejectedExecutionHandler storeEvents =
         (r, executor) -> {
           if (r instanceof EventSender) {
             eventCache.store(((EventSender) r).event);
+          }
+          if (r instanceof SessionSender) {
+            sessionCache.store(((SessionSender) r).envelope);
           }
         };
 
@@ -130,7 +133,7 @@ public final class AsyncConnection implements Closeable, Connection {
     //      envelope = new SentryEnvelope(envelope.getHeader(), toSend);
     //    }
 
-    executor.submit(new EnvelopeSender(envelope, hint, currentEventCache));
+    executor.submit(new SessionSender(envelope, hint, currentEventCache));
   }
 
   @Override
@@ -260,7 +263,7 @@ public final class AsyncConnection implements Closeable, Connection {
     }
   }
 
-  private final class EnvelopeSender implements Retryable {
+  private final class SessionSender implements Retryable {
     private final SentryEnvelope envelope;
     private final Object hint;
     private final ISessionCache sessionCache;
@@ -269,7 +272,7 @@ public final class AsyncConnection implements Closeable, Connection {
     private final TransportResult failedResult =
         TransportResult.error(HTTP_RETRY_AFTER_DEFAULT_DELAY_MS, -1);
 
-    EnvelopeSender(
+    SessionSender(
         final SentryEnvelope envelope, final Object hint, final ISessionCache sessionCache) {
       this.envelope = envelope;
       this.hint = hint;
