@@ -34,19 +34,13 @@ abstract class DirectoryProcessor {
 
       File[] filteredListFiles = directory.listFiles((d, name) -> isRelevantFileName(name));
 
-      if (filteredListFiles == null) {
-        logger.log(
-            SentryLevel.ERROR, "Filtered Cache dir %s is null.", directory.getAbsolutePath());
-        return;
-      }
-
       logger.log(
           SentryLevel.DEBUG,
           "Processing %d items from cache dir %s",
-          filteredListFiles.length,
+          filteredListFiles != null ? filteredListFiles.length : 0,
           directory.getAbsolutePath());
 
-      for (File file : filteredListFiles) {
+      for (File file : listFiles) {
         processFile(file);
       }
     } catch (Exception e) {

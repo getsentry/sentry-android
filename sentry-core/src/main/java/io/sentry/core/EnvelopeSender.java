@@ -45,6 +45,11 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
 
   @Override
   protected void processFile(@NotNull File file) {
+    if (!isRelevantFileName(file.getName())) {
+      logger.log(SentryLevel.DEBUG, "File '%s' should be ignored.", file.getName());
+      return;
+    }
+
     CachedEnvelopeHint hint =
         new CachedEnvelopeHint(15000, logger); // TODO: Take timeout from options
     try (InputStream stream = new FileInputStream(file)) {
@@ -73,7 +78,6 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
   @Override
   protected boolean isRelevantFileName(String fileName) {
     // ignore current.envelope
-    // this is only important for SessionCache, but it doesn't harm SendCachedEvent as well
     return !fileName.startsWith(PREFIX_CURRENT_FILE);
     // TODO: Use an extension to filter out relevant files
   }
