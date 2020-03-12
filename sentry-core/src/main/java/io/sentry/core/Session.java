@@ -197,10 +197,7 @@ public final class Session {
   public void end() {
     synchronized (sessionLock) {
       init = null;
-
-      // at this state it might be Crashed already, so we don't check for it.
       updateStatus();
-
       timestamp = DateUtils.getCurrentDateTime();
 
       long diff =

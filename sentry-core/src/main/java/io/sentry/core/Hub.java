@@ -95,12 +95,9 @@ public final class Hub implements IHub {
                 session -> {
                   if (session != null) {
                     // if we do that on the client, session start will call also a session update
-
-                    if (hint instanceof DiskFlushNotification) {
-                      item.client.captureSession(session, hint);
-                    } else {
-                      item.client.captureSession(session, new SessionUpdateHint());
-                    }
+                    item.client.captureSession(
+                        session,
+                        (hint instanceof DiskFlushNotification) ? hint : new SessionUpdateHint());
                   }
                 });
           }
