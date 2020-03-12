@@ -1,12 +1,11 @@
 package io.sentry.core;
 
 import io.sentry.core.cache.DiskCache;
-import io.sentry.core.cache.EnvelopeCache;
-import io.sentry.core.cache.IEnvelopeCache;
 import io.sentry.core.cache.IEventCache;
+import io.sentry.core.cache.ISessionCache;
+import io.sentry.core.cache.SessionCache;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.protocol.SentryId;
-import io.sentry.core.protocol.User;
 import io.sentry.core.transport.Connection;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
@@ -55,9 +54,9 @@ public final class SentryClient implements ISentryClient {
     if (connection == null) {
       // TODO this is obviously provisional and should be constructed based on the config in options
       IEventCache cache = new DiskCache(options);
-      IEnvelopeCache envelopeCache = new EnvelopeCache(options);
+      ISessionCache sessionCache = new SessionCache(options);
 
-      connection = AsyncConnectionFactory.create(options, cache, envelopeCache);
+      connection = AsyncConnectionFactory.create(options, cache, sessionCache);
     }
     this.connection = connection;
     random = options.getSampleRate() == null ? null : new Random();
@@ -138,10 +137,10 @@ public final class SentryClient implements ISentryClient {
                     crashedOrErrored = true;
                   }
 
-                  User user = null;
-                  if (finalEvent.getUser() != null) {
-                    user = finalEvent.getUser();
-                  }
+                  //                  User user = null;
+                  //                  if (finalEvent.getUser() != null) {
+                  //                    user = finalEvent.getUser();
+                  //                  }
 
                   String userAgent = null;
                   if (finalEvent.getRequest() != null
@@ -150,7 +149,8 @@ public final class SentryClient implements ISentryClient {
                       userAgent = finalEvent.getRequest().getHeaders().get("user-agent");
                     }
                   }
-                  session.update(status, user, userAgent, crashedOrErrored);
+                  //                  session.update(status, user, userAgent, crashedOrErrored);
+                  session.update(status, userAgent, crashedOrErrored);
                 } else {
                   options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
                 }

@@ -6,8 +6,8 @@ import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-import io.sentry.core.cache.IEnvelopeCache;
 import io.sentry.core.cache.IEventCache;
+import io.sentry.core.cache.ISessionCache;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.RetryableHint;
@@ -30,21 +30,21 @@ public final class AsyncConnection implements Closeable, Connection {
   private final ITransportGate transportGate;
   private final ExecutorService executor;
   private final IEventCache eventCache;
-  private final IEnvelopeCache envelopeCache;
+  private final ISessionCache sessionCache;
   private final SentryOptions options;
 
   public AsyncConnection(
       final ITransport transport,
       final ITransportGate transportGate,
       final IEventCache eventCache,
-      final IEnvelopeCache envelopeCache,
+      final ISessionCache sessionCache,
       final int maxQueueSize,
       final SentryOptions options) {
     this(
         transport,
         transportGate,
         eventCache,
-        envelopeCache,
+        sessionCache,
         initExecutor(maxQueueSize, eventCache),
         options);
   }
@@ -54,14 +54,14 @@ public final class AsyncConnection implements Closeable, Connection {
       final ITransport transport,
       final ITransportGate transportGate,
       final IEventCache eventCache,
-      final IEnvelopeCache envelopeCache,
+      final ISessionCache sessionCache,
       final ExecutorService executorService,
       final SentryOptions options) {
 
     this.transport = transport;
     this.transportGate = transportGate;
     this.eventCache = eventCache;
-    this.envelopeCache = envelopeCache;
+    this.sessionCache = sessionCache;
     this.options = options;
     this.executor = executorService;
   }
@@ -103,9 +103,9 @@ public final class AsyncConnection implements Closeable, Connection {
   public void send(@NotNull SentryEnvelope envelope, final @Nullable Object hint)
       throws IOException {
     // For now no caching on envelopes
-    IEnvelopeCache currentEventCache = envelopeCache;
+    ISessionCache currentEventCache = sessionCache;
     if (hint instanceof Cached) {
-      currentEventCache = NoOpEnvelopeCache.getInstance();
+      currentEventCache = NoOpSessionCache.getInstance();
     }
 
     // Optimize for/No allocations if no items are under 429
@@ -263,17 +263,17 @@ public final class AsyncConnection implements Closeable, Connection {
   private final class EnvelopeSender implements Retryable {
     private final SentryEnvelope envelope;
     private final Object hint;
-    private final IEnvelopeCache envelopeCache;
+    private final ISessionCache sessionCache;
     private long suggestedRetryDelay;
     private int responseCode;
     private final TransportResult failedResult =
         TransportResult.error(HTTP_RETRY_AFTER_DEFAULT_DELAY_MS, -1);
 
     EnvelopeSender(
-        final SentryEnvelope envelope, final Object hint, final IEnvelopeCache envelopeCache) {
+        final SentryEnvelope envelope, final Object hint, final ISessionCache sessionCache) {
       this.envelope = envelope;
       this.hint = hint;
-      this.envelopeCache = envelopeCache;
+      this.sessionCache = sessionCache;
     }
 
     @Override
@@ -308,7 +308,7 @@ public final class AsyncConnection implements Closeable, Connection {
     private TransportResult flush() {
       TransportResult result = this.failedResult;
       // TODO: Do we need special policies for caching envelopes?
-      envelopeCache.store(envelope);
+      sessionCache.store(envelope, hint);
       if (hint instanceof DiskFlushNotification) {
         ((DiskFlushNotification) hint).markFlushed();
         options
@@ -323,7 +323,7 @@ public final class AsyncConnection implements Closeable, Connection {
         try {
           result = transport.send(envelope);
           if (result.isSuccess()) {
-            envelopeCache.discard(envelope);
+            sessionCache.discard(envelope);
           } else {
             suggestedRetryDelay = result.getRetryMillis();
             responseCode = result.getResponseCode();

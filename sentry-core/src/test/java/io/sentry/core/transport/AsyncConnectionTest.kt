@@ -10,8 +10,8 @@ import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryOptions
-import io.sentry.core.cache.IEnvelopeCache
 import io.sentry.core.cache.IEventCache
+import io.sentry.core.cache.ISessionCache
 import io.sentry.core.dsnString
 import java.io.IOException
 import java.util.concurrent.ExecutorService
@@ -23,7 +23,7 @@ class AsyncConnectionTest {
         var transport = mock<ITransport>()
         var transportGate = mock<ITransportGate>()
         var eventCache = mock<IEventCache>()
-        var envelopeCache = mock<IEnvelopeCache>()
+        var sessionCache = mock<ISessionCache>()
         var executor = mock<ExecutorService>()
         var sentryOptions: SentryOptions = SentryOptions().apply {
             dsn = dsnString
@@ -37,7 +37,7 @@ class AsyncConnectionTest {
         }
 
         fun getSUT(): AsyncConnection {
-            return AsyncConnection(transport, transportGate, eventCache, envelopeCache, executor, sentryOptions)
+            return AsyncConnection(transport, transportGate, eventCache, sessionCache, executor, sentryOptions)
         }
     }
 

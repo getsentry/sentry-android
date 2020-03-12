@@ -385,20 +385,7 @@ public final class Scope implements Cloneable {
       previousSession = session;
 
       session = new Session();
-
-      if (options.getRelease() != null) {
-        session.setRelease(options.getRelease());
-      }
-
-      if (options.getEnvironment() != null) {
-        session.setEnvironment(options.getEnvironment());
-      }
-
-      if (user != null) {
-        session.setUser(user);
-      }
-
-      session.start();
+      session.start(options.getRelease(), options.getEnvironment(), user);
 
       pair = new SessionPair(session, previousSession);
     }

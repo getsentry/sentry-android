@@ -9,6 +9,9 @@ import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.hints.SessionEnd;
+import io.sentry.core.hints.SessionStart;
+import io.sentry.core.hints.SessionUpdate;
 import io.sentry.core.util.Objects;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -26,9 +29,10 @@ import java.util.Iterator;
 import java.util.List;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
-public final class EnvelopeCache implements IEnvelopeCache {
+public final class SessionCache implements ISessionCache {
 
   /** File suffix added to all serialized envelopes files. */
   public static final String FILE_SUFFIX = ".envelope";
@@ -41,7 +45,7 @@ public final class EnvelopeCache implements IEnvelopeCache {
   private final ISerializer serializer;
   private final SentryOptions options;
 
-  public EnvelopeCache(SentryOptions options) {
+  public SessionCache(SentryOptions options) {
     Objects.requireNonNull(options.getSessionsPath(), "sessions dir. path is required.");
     this.directory = new File(options.getSessionsPath());
     this.maxSize = options.getSessionsDirSize();
@@ -50,7 +54,7 @@ public final class EnvelopeCache implements IEnvelopeCache {
   }
 
   @Override
-  public void store(SentryEnvelope envelope) {
+  public void store(SentryEnvelope envelope, @Nullable Object hint) {
     if (getNumberOfStoredEnvelopes() >= maxSize) {
       options
           .getLogger()
@@ -59,6 +63,27 @@ public final class EnvelopeCache implements IEnvelopeCache {
               "Disk cache full (respecting maxSize). Not storing envelope {}",
               envelope);
       return;
+    }
+
+    File currentFile = getCurrentEnvelopeFile();
+
+    if (hint instanceof SessionEnd) {
+      if (!currentFile.delete()) {
+        options.getLogger().log(WARNING, "Current envelope doesn't exist.");
+      }
+    }
+
+    if (hint instanceof SessionStart) {
+      if (currentFile.exists()) {
+        options.getLogger().log(WARNING, "Current envelope is not ended, we'd need to end it.");
+
+        // TODO: read envelope and update state
+      }
+      writeEnvelopeToDisk(currentFile, envelope);
+    }
+
+    if (hint instanceof SessionUpdate) {
+      writeEnvelopeToDisk(currentFile, envelope);
     }
 
     File envelopeFile = getEnvelopeFile(envelope);
@@ -76,7 +101,21 @@ public final class EnvelopeCache implements IEnvelopeCache {
           .log(DEBUG, "Adding Envelope to offline storage: %s", envelopeFile.getAbsolutePath());
     }
 
-    try (OutputStream fileOutputStream = new FileOutputStream(envelopeFile);
+    writeEnvelopeToDisk(envelopeFile, envelope);
+  }
+
+  private void writeEnvelopeToDisk(File file, SentryEnvelope envelope) {
+    if (file.exists()) {
+      options
+          .getLogger()
+          .log(
+              DEBUG,
+              "Overwriting envelope to offline storage: %s",
+              envelope.getHeader().getEventId());
+      file.delete();
+    }
+
+    try (OutputStream fileOutputStream = new FileOutputStream(file);
         Writer wrt = new OutputStreamWriter(fileOutputStream, UTF8)) {
       serializer.serialize(envelope, wrt);
     } catch (Exception e) {
@@ -84,7 +123,7 @@ public final class EnvelopeCache implements IEnvelopeCache {
           .getLogger()
           .log(
               ERROR,
-              "Error writing Envelope to offline storage: %s",
+              "Error writing envelope to offline storage: %s",
               envelope.getHeader().getEventId());
     }
   }
@@ -127,6 +166,10 @@ public final class EnvelopeCache implements IEnvelopeCache {
   private File getEnvelopeFile(SentryEnvelope envelope) {
     return new File(
         directory.getAbsolutePath(), envelope.getHeader().getEventId().toString() + FILE_SUFFIX);
+  }
+
+  private File getCurrentEnvelopeFile() {
+    return new File(directory.getAbsolutePath(), "current" + FILE_SUFFIX);
   }
 
   @NotNull
