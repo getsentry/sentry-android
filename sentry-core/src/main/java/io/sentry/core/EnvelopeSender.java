@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import static io.sentry.core.SentryLevel.ERROR;
+import static io.sentry.core.cache.SessionCache.PREFIX_CURRENT_FILE;
 
 import io.sentry.core.hints.Cached;
 import io.sentry.core.hints.RetryableHint;
@@ -44,6 +45,11 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
 
   @Override
   protected void processFile(@NotNull File file) {
+    if (!isRelevantFileName(file.getName())) {
+      logger.log(SentryLevel.DEBUG, "File '%s' should be ignored.", file.getName());
+      return;
+    }
+
     CachedEnvelopeHint hint =
         new CachedEnvelopeHint(15000, logger); // TODO: Take timeout from options
     try (InputStream stream = new FileInputStream(file)) {
@@ -71,7 +77,9 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
 
   @Override
   protected boolean isRelevantFileName(String fileName) {
-    return true; // TODO: Use an extension to filter out relevant files
+    // ignore current.envelope
+    return !fileName.startsWith(PREFIX_CURRENT_FILE);
+    // TODO: Use an extension to filter out relevant files
   }
 
   @Override

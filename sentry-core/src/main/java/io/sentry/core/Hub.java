@@ -1,5 +1,9 @@
 package io.sentry.core;
 
+import io.sentry.core.hints.DiskFlushNotification;
+import io.sentry.core.hints.SessionEnd;
+import io.sentry.core.hints.SessionStart;
+import io.sentry.core.hints.SessionUpdate;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
 import io.sentry.core.util.Objects;
@@ -85,6 +89,18 @@ public final class Hub implements IHub {
         StackItem item = stack.peek();
         if (item != null) {
           sentryId = item.client.captureEvent(event, item.scope, hint);
+
+          if (options.isEnableSessionTracking()) {
+            item.scope.withSession(
+                session -> {
+                  if (session != null) {
+                    // if we do that on the client, session start will call also a session update
+                    item.client.captureSession(
+                        session,
+                        (hint instanceof DiskFlushNotification) ? hint : new SessionUpdateHint());
+                  }
+                });
+          }
         } else {
           options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when captureEvent");
         }
@@ -199,10 +215,10 @@ public final class Hub implements IHub {
         Scope.SessionPair pair = item.scope.startSession();
 
         if (pair.getPrevious() != null) {
-          item.client.captureSession(pair.getPrevious());
+          item.client.captureSession(pair.getPrevious(), new SessionEndHint());
         }
 
-        item.client.captureSession(pair.getCurrent());
+        item.client.captureSession(pair.getCurrent(), new SessionStartHint());
       } else {
         options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when startSession");
       }
@@ -226,7 +242,7 @@ public final class Hub implements IHub {
       if (item != null) {
         Session previousSession = item.scope.endSession();
         if (previousSession != null) {
-          item.client.captureSession(previousSession);
+          item.client.captureSession(previousSession, new SessionEndHint());
         }
       } else {
         options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when endSession");
@@ -599,4 +615,10 @@ public final class Hub implements IHub {
     }
     return clone;
   }
+
+  private static final class SessionStartHint implements SessionStart {}
+
+  private static final class SessionEndHint implements SessionEnd {}
+
+  private static final class SessionUpdateHint implements SessionUpdate {}
 }

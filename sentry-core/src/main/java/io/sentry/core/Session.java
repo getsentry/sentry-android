@@ -4,6 +4,7 @@ import io.sentry.core.protocol.User;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jetbrains.annotations.NotNull;
 
 public final class Session {
 
@@ -20,7 +21,7 @@ public final class Session {
   private String deviceId; // did, distinctId
   private UUID sessionId; // sid
   private Boolean init;
-  private State status; // if none, it should be State.Ok?
+  private State status;
   private Long sequence;
   private Double duration;
   private User user;
@@ -31,18 +32,7 @@ public final class Session {
   private String environment;
   private String release;
 
-  public synchronized void end() {
-    if (status == null && errorCount.get() > 0) {
-      status = State.Abnormal;
-    } else if (status == null || status == State.Ok) {
-      status = State.Exited;
-    }
-
-    timestamp = DateUtils.getCurrentDateTime();
-
-    long diff = Math.abs(timestamp.getTime() - started.getTime()); // we need to subtract idle time
-    duration = (double) diff;
-  }
+  private final @NotNull Object sessionLock = new Object();
 
   public Date getStarted() {
     return started;
@@ -152,49 +142,101 @@ public final class Session {
     this.user = user;
   }
 
-  public synchronized void start() {
-    init = true;
-    sequence = 0L;
-
-    if (sessionId == null) {
-      sessionId = UUID.randomUUID();
+  private void updateUserData() {
+    if (user.getIpAddress() != null) {
+      ipAddress = user.getIpAddress();
     }
-
-    if (started == null) {
-      started = DateUtils.getCurrentDateTime();
+    if (user.getId() != null) {
+      deviceId = user.getId(); // TODO: replace to generated GUID
     }
-    timestamp = DateUtils.getCurrentDateTime();
-
-    // this doesnt sound right
-    //    if (status == null) {
-    //      status = State.Ok;
-    //    }
   }
 
-  public synchronized void update(
-      State status, User user, String userAgent, boolean addErrorsCount) {
-    if (State.Crashed == status) {
-      this.status = status;
-    }
+  public synchronized void start(final String release, final String environment, final User user) {
+    synchronized (sessionLock) {
+      init = true;
+      sequence = 0L;
 
-    if (user != null) {
-      this.user = user;
+      if (sessionId == null) {
+        sessionId = UUID.randomUUID();
+      }
 
-      deviceId = this.user.getId(); // TODO: replace to generated GUID
+      if (started == null) {
+        started = DateUtils.getCurrentDateTime();
+      }
 
-      if (this.user.getIpAddress() != null) {
-        ipAddress = this.user.getIpAddress();
+      if (release != null) {
+        this.release = release;
+      }
+
+      if (environment != null) {
+        this.environment = environment;
+      }
+
+      if (user != null) {
+        this.user = user;
+        updateUserData();
+      }
+
+      if (status == null) {
+        status = State.Ok;
       }
     }
-    if (userAgent != null) {
-      this.userAgent = userAgent;
-    }
-    if (addErrorsCount) {
-      errorCount.addAndGet(1);
+  }
+
+  private void updateStatus() {
+    // at this state it might be Crashed already, so we don't check for it.
+    if (status == State.Ok && errorCount.get() > 0) {
+      status = State.Abnormal;
     }
 
-    timestamp = DateUtils.getCurrentDateTime();
+    if (status == State.Ok) {
+      status = State.Exited;
+    }
+  }
 
-    sequence = System.currentTimeMillis();
+  public void end() {
+    synchronized (sessionLock) {
+      init = null;
+      updateStatus();
+      timestamp = DateUtils.getCurrentDateTime();
+
+      long diff =
+          Math.abs(timestamp.getTime() - started.getTime()); // do we need to subtract idle time?
+      duration = (double) diff;
+      sequence = System.currentTimeMillis();
+    }
+  }
+
+  public void update(final State status, final String userAgent, boolean addErrorsCount) {
+    synchronized (sessionLock) {
+      init = null;
+
+      if (status != null) {
+        this.status = status;
+      }
+
+      if (userAgent != null) {
+        this.userAgent = userAgent;
+      }
+      if (addErrorsCount) {
+        errorCount.addAndGet(1);
+      }
+
+      timestamp = DateUtils.getCurrentDateTime();
+
+      sequence = System.currentTimeMillis();
+    }
+  }
+
+  public void endBrokenSession() {
+    synchronized (sessionLock) {
+      updateStatus();
+
+      timestamp = DateUtils.getCurrentDateTime();
+
+      if (!init) {
+        sequence = System.currentTimeMillis();
+      }
+    }
   }
 }
