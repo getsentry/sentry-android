@@ -49,8 +49,7 @@ class DefaultAndroidEventProcessorTest {
 
     @Test
     fun `when instance is created, application context reference is stored`() {
-        val mockContext = ContextUtils.createMockContext()
-        val sut = DefaultAndroidEventProcessor(mockContext, fixture.options)
+        val sut = DefaultAndroidEventProcessor(context, fixture.options)
 
         assertEquals(sut.context, context)
     }

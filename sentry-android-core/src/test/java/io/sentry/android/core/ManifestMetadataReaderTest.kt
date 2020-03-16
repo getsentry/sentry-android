@@ -44,7 +44,6 @@ class ManifestMetadataReaderTest {
     fun `applyMetadata reads sampleRate from metadata`() {
         // Arrange
         val options = SentryAndroidOptions()
-        val expectedPackageName = "io.sentry.test"
         val expectedSampleRate = 0.99
 
         val bundle = Bundle()
