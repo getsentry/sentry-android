@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 public final class SentryEnvelopeItem {
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
-  private static final Charset UTF8 = Charset.forName("UTF-8");
+  private static final Charset UTF_8 = Charset.forName("UTF-8");
 
   private final SentryEnvelopeItemHeader header;
   // Either dataFactory is set or data needs to be set.
@@ -51,7 +51,7 @@ public final class SentryEnvelopeItem {
         new CachedItem(
             () -> {
               try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                  Writer writer = new OutputStreamWriter(stream, UTF8)) {
+                  Writer writer = new OutputStreamWriter(stream, UTF_8)) {
                 serializer.serialize(session, writer);
                 stream.flush();
                 return stream.toByteArray();
