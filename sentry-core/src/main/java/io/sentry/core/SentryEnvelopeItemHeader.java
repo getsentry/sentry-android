@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public final class SentryEnvelopeItemHeader {
-  private final @NotNull String contentType;
+  private final @Nullable String contentType;
   private final @Nullable String fileName;
   private final @NotNull String type;
   private final int length;
@@ -30,7 +30,7 @@ public final class SentryEnvelopeItemHeader {
     return length;
   }
 
-  public @NotNull String getContentType() {
+  public @Nullable String getContentType() {
     return contentType;
   }
 
@@ -44,7 +44,7 @@ public final class SentryEnvelopeItemHeader {
       final @NotNull String contentType,
       final @Nullable String fileName) {
     this.type = Objects.requireNonNull(type, "type is required");
-    this.contentType = Objects.requireNonNull(contentType, "contentType is required");
+    this.contentType = contentType;
     this.length = length;
     this.fileName = fileName;
     this.getLength = null;
@@ -53,10 +53,10 @@ public final class SentryEnvelopeItemHeader {
   SentryEnvelopeItemHeader(
       final @NotNull String type,
       final @Nullable Callable<Integer> getLength,
-      final @NotNull String contentType,
+      final @Nullable String contentType,
       final @Nullable String fileName) {
     this.type = Objects.requireNonNull(type, "type is required");
-    this.contentType = Objects.requireNonNull(contentType, "contentType is required");
+    this.contentType = contentType;
     this.length = -1;
     this.fileName = fileName;
     this.getLength = getLength;

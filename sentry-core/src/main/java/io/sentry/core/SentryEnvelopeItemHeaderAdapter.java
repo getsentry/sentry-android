@@ -47,7 +47,7 @@ public final class SentryEnvelopeItemHeaderAdapter extends TypeAdapter<SentryEnv
 
     String contentType = null;
     String fileName = null;
-    String type = null;
+    String type = "";
     int length = 0;
 
     reader.beginObject();
