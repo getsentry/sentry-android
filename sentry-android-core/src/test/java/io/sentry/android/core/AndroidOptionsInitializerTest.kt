@@ -3,8 +3,6 @@ package io.sentry.android.core
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.MainEventProcessor
 import io.sentry.core.SentryOptions
@@ -104,9 +102,7 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `init should set context package name as appInclude`() {
         val sentryOptions = SentryAndroidOptions()
-        val mockContext = mock<ApplicationStub> {
-            on { applicationContext } doReturn context
-        }
+        val mockContext = ContextUtils.createMockContext()
         whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
         whenever(mockContext.packageName).thenReturn("io.sentry.app")
 
@@ -118,9 +114,7 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `init should not set context package name if it starts with android package`() {
         val sentryOptions = SentryAndroidOptions()
-        val mockContext = mock<ApplicationStub> {
-            on { applicationContext } doReturn context
-        }
+        val mockContext = ContextUtils.createMockContext()
         whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
         whenever(mockContext.packageName).thenReturn("android.context")
 
@@ -183,9 +177,7 @@ class AndroidOptionsInitializerTest {
     }
 
     private fun createMockContext(): Context {
-        val mockContext = mock<Context> {
-            on { applicationContext } doReturn context
-        }
+        val mockContext = ContextUtils.createMockContext()
         whenever(mockContext.cacheDir).thenReturn(file)
         return mockContext
     }

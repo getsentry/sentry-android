@@ -2,6 +2,7 @@ package io.sentry.android.core;
 
 import android.content.Context;
 import io.sentry.core.EnvelopeReader;
+import io.sentry.core.IEnvelopeReader;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -55,13 +56,14 @@ final class AndroidOptionsInitializer {
     initializeCacheDirs(context, options);
     setDefaultInApp(context, options);
 
+    final IEnvelopeReader envelopeReader = new EnvelopeReader();
     // Integrations are registered in the same order. Watch outbox before adding NDK:
-    options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
+    options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver(envelopeReader));
     options.addIntegration(new NdkIntegration());
     options.addIntegration(new AnrIntegration());
 
     options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
-    options.setSerializer(new AndroidSerializer(options.getLogger(), new EnvelopeReader()));
+    options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
 
     options.setTransportGate(new AndroidTransportGate(context, options.getLogger()));
   }

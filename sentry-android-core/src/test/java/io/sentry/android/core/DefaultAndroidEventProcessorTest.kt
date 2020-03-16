@@ -5,7 +5,6 @@ import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
@@ -50,9 +49,7 @@ class DefaultAndroidEventProcessorTest {
 
     @Test
     fun `when instance is created, application context reference is stored`() {
-        val mockContext = mock<Context> {
-            on { applicationContext } doReturn context
-        }
+        val mockContext = ContextUtils.createMockContext()
         val sut = DefaultAndroidEventProcessor(mockContext, fixture.options)
 
         assertEquals(sut.context, context)
