@@ -623,9 +623,9 @@ public final class Hub implements IHub {
     return clone;
   }
 
-  private static final class SessionStartHint implements SessionStart {}
+  static final class SessionStartHint implements SessionStart {}
 
-  private static final class SessionEndHint implements SessionEnd {}
+  static final class SessionEndHint implements SessionEnd {}
 
   static final class SessionUpdateHint implements SessionUpdate {}
 }
