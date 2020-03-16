@@ -1,5 +1,6 @@
 package io.sentry.core
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.isNull
@@ -8,12 +9,16 @@ import com.nhaarman.mockitokotlin2.mockingDetails
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.hints.Cached
+import io.sentry.core.protocol.SentryId
 import io.sentry.core.protocol.User
 import io.sentry.core.transport.AsyncConnection
 import io.sentry.core.transport.HttpTransport
 import io.sentry.core.transport.ITransportGate
+import java.io.IOException
 import java.net.URL
+import java.util.UUID
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -389,6 +394,40 @@ class SentryClientTest {
         fixture.getSut().captureEvent(event)
         verify(processor).process(eq(event), anyOrNull())
     }
+
+    @Test
+    fun `when captureSession and no release is set, do nothing`() {
+        fixture.getSut().captureSession(Session())
+        verify(fixture.connection, never()).send(any<SentryEnvelope>())
+    }
+
+    @Test
+    fun `when captureSession and release is set, send an envelope`() {
+        val session = Session().apply {
+            release = "test"
+        }
+        fixture.getSut().captureSession(session)
+        verify(fixture.connection).send(any<SentryEnvelope>(), anyOrNull())
+    }
+
+    @Test
+    fun `when captureEnvelope and thres an exception, returns empty sentryId`() {
+        whenever(fixture.connection.send(any<SentryEnvelope>(), anyOrNull())).thenThrow(IOException())
+
+        val envelope = SentryEnvelope(SentryId(UUID.randomUUID()), setOf())
+        val sentryId = fixture.getSut().captureEnvelope(envelope)
+        assertEquals(SentryId.EMPTY_ID, sentryId)
+    }
+
+    @Test
+    fun `when captureEnvelope and theres no exception, returns envelope header id`() {
+        val expectedSentryId = SentryId(UUID.randomUUID())
+        val envelope = SentryEnvelope(expectedSentryId, setOf())
+        val sentryId = fixture.getSut().captureEnvelope(envelope)
+        assertEquals(expectedSentryId, sentryId)
+    }
+
+    // TODO: missing tests for updateSessionData method
 
     private fun createScope(): Scope {
         return Scope(SentryOptions()).apply {
