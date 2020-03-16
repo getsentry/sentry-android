@@ -145,9 +145,11 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void captureEnvelope(final @NotNull SentryEnvelope envelope, final @Nullable Object hint) {
+  public SentryId captureEnvelope(
+      final @NotNull SentryEnvelope envelope, final @Nullable Object hint) {
     Objects.requireNonNull(envelope, "SentryEnvelope is required.");
 
+    SentryId sentryId = SentryId.EMPTY_ID;
     if (!isEnabled()) {
       options
           .getLogger()
@@ -158,7 +160,7 @@ public final class Hub implements IHub {
       try {
         final StackItem item = stack.peek();
         if (item != null) {
-          item.client.captureEnvelope(envelope, hint);
+          sentryId = item.client.captureEnvelope(envelope, hint);
         } else {
           options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when captureEnvelope");
         }
@@ -166,6 +168,8 @@ public final class Hub implements IHub {
         options.getLogger().log(SentryLevel.ERROR, "Error while capturing envelope.", e);
       }
     }
+    this.lastEventId = sentryId;
+    return sentryId;
   }
 
   @Override

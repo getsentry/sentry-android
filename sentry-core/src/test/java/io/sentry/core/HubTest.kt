@@ -1,6 +1,7 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.argWhere
 import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.eq
@@ -17,6 +18,7 @@ import io.sentry.core.protocol.User
 import java.io.File
 import java.nio.file.Files
 import java.util.Queue
+import java.util.UUID
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -862,6 +864,48 @@ class HubTest {
 
         hub.setExtra("test", "test")
         assertEquals(1, scope?.extras?.count())
+    }
+    //endregion
+
+    //region captureEnvelope tests
+    @Test
+    fun `when captureEnvelope is called and envelope is null, throws IllegalArgumentException`() {
+        val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
+        options.dsn = "https://key@sentry.io/proj"
+        options.setSerializer(mock())
+        val sut = Hub(options)
+        assertFailsWith<IllegalArgumentException> { sut.captureEnvelope(null) }
+    }
+
+    @Test
+    fun `when captureEnvelope is called on disabled client, do nothing`() {
+        val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
+        options.dsn = "https://key@sentry.io/proj"
+        options.setSerializer(mock())
+        val sut = Hub(options)
+        val mockClient = mock<ISentryClient>()
+        sut.bindClient(mockClient)
+        sut.close()
+
+        sut.captureEnvelope(SentryEnvelope(SentryId(UUID.randomUUID()), setOf()))
+        verify(mockClient, never()).captureEnvelope(any(), any())
+    }
+
+    @Test
+    fun `when captureEnvelope is called with a valid envelope, captureEnvelope on the client should be called`() {
+        val options = SentryOptions()
+        options.cacheDirPath = file.absolutePath
+        options.dsn = "https://key@sentry.io/proj"
+        options.setSerializer(mock())
+        val sut = Hub(options)
+        val mockClient = mock<ISentryClient>()
+        sut.bindClient(mockClient)
+
+        val envelope = SentryEnvelope(SentryId(UUID.randomUUID()), setOf())
+        sut.captureEnvelope(envelope)
+        verify(mockClient).captureEnvelope(any(), anyOrNull())
     }
     //endregion
 

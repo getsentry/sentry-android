@@ -31,9 +31,9 @@ public final class HubAdapter implements IHub {
   }
 
   @Override
-  public void captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
+  public SentryId captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
     // should we add to Sentry static method too?
-    Sentry.getCurrentHub().captureEnvelope(envelope, hint);
+    return Sentry.getCurrentHub().captureEnvelope(envelope, hint);
   }
 
   @Override
