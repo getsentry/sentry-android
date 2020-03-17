@@ -10,10 +10,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 public final class SessionTrackingIntegration implements Integration, Closeable {
 
-  private @Nullable LifecycleWatcher watcher;
+  @TestOnly @Nullable LifecycleWatcher watcher;
+
   private @Nullable SentryOptions options;
 
   @Override
@@ -40,6 +42,7 @@ public final class SessionTrackingIntegration implements Integration, Closeable 
   public void close() throws IOException {
     if (watcher != null) {
       ProcessLifecycleOwner.get().getLifecycle().removeObserver(watcher);
+      watcher = null;
       options.getLogger().log(SentryLevel.DEBUG, "SessionTrackingIntegration installed.");
     }
   }

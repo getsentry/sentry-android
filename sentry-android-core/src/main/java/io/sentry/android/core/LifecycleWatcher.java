@@ -8,11 +8,13 @@ import java.util.TimerTask;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 @ApiStatus.Internal
 final class LifecycleWatcher implements DefaultLifecycleObserver {
 
-  private static long lastStartedSession = 0L;
+  @TestOnly long lastStartedSession = 0L;
+
   private final long sessionIntervalMillis;
 
   private @Nullable TimerTask timerTask;
