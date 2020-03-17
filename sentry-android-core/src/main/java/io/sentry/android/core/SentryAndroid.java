@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import android.content.Context;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import io.sentry.core.ILogger;
 import io.sentry.core.OptionsContainer;
 import io.sentry.core.Sentry;
@@ -63,6 +64,7 @@ public final class SentryAndroid {
             configuration.configure(options);
           },
           true);
+      ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifecycleWatcher());
     } catch (IllegalAccessException e) {
       logger.log(SentryLevel.FATAL, "Fatal error during SentryAndroid.init(...)", e);
 
