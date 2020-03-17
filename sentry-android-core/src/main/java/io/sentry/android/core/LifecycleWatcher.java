@@ -2,33 +2,36 @@ package io.sentry.android.core;
 
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import io.sentry.core.Sentry;
+import io.sentry.core.IHub;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
-public final class LifecycleWatcher implements DefaultLifecycleObserver {
+final class LifecycleWatcher implements DefaultLifecycleObserver {
 
   private static long lastStartedSession = 0L;
   private final long sessionIntervalMillis;
 
-  private TimerTask timerTask;
-  private final Timer timer = new Timer(true);
+  private @Nullable TimerTask timerTask;
+  private final @NotNull Timer timer = new Timer(true);
+  private final @NotNull IHub hub;
 
-  LifecycleWatcher(final long sessionIntervalMillis) {
+  LifecycleWatcher(final @NotNull IHub hub, final long sessionIntervalMillis) {
     this.sessionIntervalMillis = sessionIntervalMillis;
+    this.hub = hub;
   }
 
   // App goes to foreground
   @Override
-  public void onStart(@NotNull LifecycleOwner owner) {
+  public void onStart(final @NotNull LifecycleOwner owner) {
     final long currentTimeMillis = System.currentTimeMillis();
     cancelTask();
     if (lastStartedSession == 0L
         || (lastStartedSession + sessionIntervalMillis) <= currentTimeMillis) {
-      Sentry.startSession();
+      hub.startSession();
     }
     lastStartedSession = currentTimeMillis;
   }
@@ -36,7 +39,7 @@ public final class LifecycleWatcher implements DefaultLifecycleObserver {
   // App went to background and triggered this callback after 700ms
   // as no new screen was shown
   @Override
-  public void onStop(@NotNull LifecycleOwner owner) {
+  public void onStop(final @NotNull LifecycleOwner owner) {
     scheduleEndSession();
   }
 
@@ -46,7 +49,7 @@ public final class LifecycleWatcher implements DefaultLifecycleObserver {
         new TimerTask() {
           @Override
           public void run() {
-            Sentry.endSession();
+            hub.endSession();
           }
         };
 

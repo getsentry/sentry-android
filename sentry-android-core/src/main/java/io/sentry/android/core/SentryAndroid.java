@@ -1,7 +1,6 @@
 package io.sentry.android.core;
 
 import android.content.Context;
-import androidx.lifecycle.ProcessLifecycleOwner;
 import io.sentry.core.ILogger;
 import io.sentry.core.OptionsContainer;
 import io.sentry.core.Sentry;
@@ -62,15 +61,6 @@ public final class SentryAndroid {
           options -> {
             AndroidOptionsInitializer.init(options, context, logger);
             configuration.configure(options);
-
-            // TODO: it could be an integration, but we need to set it up asap, as we depend on the
-            // foreground callback
-            // to start a session
-            if (options.isEnableSessionTracking()) {
-              ProcessLifecycleOwner.get()
-                  .getLifecycle()
-                  .addObserver(new LifecycleWatcher(options.getSessionTrackingIntervalMillis()));
-            }
           },
           true);
     } catch (IllegalAccessException e) {
