@@ -5,15 +5,12 @@ import androidx.lifecycle.LifecycleOwner;
 import io.sentry.core.IHub;
 import java.util.Timer;
 import java.util.TimerTask;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
 
-@ApiStatus.Internal
 final class LifecycleWatcher implements DefaultLifecycleObserver {
 
-  @TestOnly long lastStartedSession = 0L;
+  private long lastStartedSession = 0L;
 
   private final long sessionIntervalMillis;
 
