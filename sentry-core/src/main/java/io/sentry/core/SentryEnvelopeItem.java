@@ -60,7 +60,7 @@ public final class SentryEnvelopeItem {
               try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
                   Writer writer = new OutputStreamWriter(stream, UTF_8)) {
                 serializer.serialize(session, writer);
-                stream.flush();
+                //                stream.flush();
                 return stream.toByteArray();
               }
             });

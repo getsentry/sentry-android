@@ -115,7 +115,7 @@ public final class SessionCache implements ISessionCache {
                 } else {
                   // we're ending a left over session from other runs and writing a proper envelope
                   // for it.
-                  session.endBrokenSession();
+                  session.end();
                   SentryEnvelope fromSession = SentryEnvelope.fromSession(serializer, session);
                   File fileFromSession = getEnvelopeFile(fromSession);
                   writeEnvelopeToDisk(fileFromSession, fromSession);
