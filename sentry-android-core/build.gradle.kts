@@ -78,7 +78,7 @@ dependencies {
     // libs
     implementation(Config.Libs.gson)
     implementation("androidx.lifecycle:lifecycle-process:2.2.0")
-//    implementation("androidx.lifecycle:lifecycle-common-java8:2.2.0")
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.2.0")
 
     compileOnly(Config.CompileOnly.nopen)
     errorprone(Config.CompileOnly.nopenChecker)

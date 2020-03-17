@@ -1,15 +1,15 @@
 package io.sentry.android.core;
 
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import io.sentry.core.Sentry;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 @ApiStatus.Internal
-public final class LifecycleWatcher implements LifecycleObserver {
+public final class LifecycleWatcher implements DefaultLifecycleObserver {
 
   private static long lastStartedSession = 0L;
   private final long sessionIntervalMillis;
@@ -21,8 +21,9 @@ public final class LifecycleWatcher implements LifecycleObserver {
     this.sessionIntervalMillis = sessionIntervalMillis;
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_START)
-  public void foreground() {
+  // App goes to foreground
+  @Override
+  public void onStart(@NotNull LifecycleOwner owner) {
     final long currentTimeMillis = System.currentTimeMillis();
     cancelTask();
     if (lastStartedSession == 0L
@@ -32,8 +33,10 @@ public final class LifecycleWatcher implements LifecycleObserver {
     lastStartedSession = currentTimeMillis;
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-  public void background() {
+  // App went to background and triggered this callback after 700ms
+  // as no new screen was shown
+  @Override
+  public void onStop(@NotNull LifecycleOwner owner) {
     scheduleEndSession();
   }
 
