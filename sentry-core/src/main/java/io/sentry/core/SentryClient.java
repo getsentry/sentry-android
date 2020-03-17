@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Random;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 public final class SentryClient implements ISentryClient {
   static final String SENTRY_PROTOCOL_VERSION = "7";
@@ -134,7 +135,8 @@ public final class SentryClient implements ISentryClient {
     return event.getEventId();
   }
 
-  private void updateSessionData(
+  @TestOnly
+  void updateSessionData(
       final @NotNull SentryEvent event, final @Nullable Object hint, final @Nullable Scope scope) {
     // TODO: there's already this check above (if its cached), but it's before event processors and
     // we'd need to refactor
@@ -152,7 +154,7 @@ public final class SentryClient implements ISentryClient {
                   }
 
                   boolean crashedOrErrored = false;
-                  if (Session.State.Crashed == session.getStatus() || event.isErrored()) {
+                  if (Session.State.Crashed == status || event.isErrored()) {
                     crashedOrErrored = true;
                   }
 
