@@ -56,5 +56,6 @@
     <meta-data android:name="io.sentry.release" android:value="io.sentry.android@2.0.2+20018" />
     <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
     <meta-data android:name="io.sentry.environment" android:value="debug" />
+    <meta-data android:name="io.sentry.session-tracking.timeout-interval-millis" android:value="20000" />
   </application>
 </manifest>

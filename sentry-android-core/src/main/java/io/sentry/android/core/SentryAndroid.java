@@ -62,9 +62,17 @@ public final class SentryAndroid {
           options -> {
             AndroidOptionsInitializer.init(options, context, logger);
             configuration.configure(options);
+
+            // TODO: it could be an integration, but we need to set it up asap, as we depend on the
+            // foreground callback
+            // to start a session
+            if (options.isEnableSessionTracking()) {
+              ProcessLifecycleOwner.get()
+                  .getLifecycle()
+                  .addObserver(new LifecycleWatcher(options.getSessionTrackingIntervalMillis()));
+            }
           },
           true);
-      ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifecycleWatcher());
     } catch (IllegalAccessException e) {
       logger.log(SentryLevel.FATAL, "Fatal error during SentryAndroid.init(...)", e);
 
