@@ -51,17 +51,13 @@ public final class SessionCache implements ISessionCache {
   private final int maxSize;
   private final ISerializer serializer;
   private final SentryOptions options;
-  //  private final IEnvelopeReader envelopeReader;
 
-  //  public SessionCache(final SentryOptions options, final IEnvelopeReader envelopeReader) {
   public SessionCache(final SentryOptions options) {
     Objects.requireNonNull(options.getSessionsPath(), "sessions dir. path is required.");
-    //    Objects.requireNonNull(envelopeReader, "EnvelopeReader is required.");
     this.directory = new File(options.getSessionsPath());
     this.maxSize = options.getSessionsDirSize();
     this.serializer = options.getSerializer();
     this.options = options;
-    //    this.envelopeReader = envelopeReader;
   }
 
   @Override
