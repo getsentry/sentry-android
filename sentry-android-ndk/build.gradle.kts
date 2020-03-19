@@ -39,6 +39,8 @@ android {
             cmake {
                 arguments.add(0, "-DANDROID_STL=c++_static")
                 arguments.add(0, "-DSENTRY_NATIVE_SRC=$sentryNativeSrc")
+                arguments.add(0, "-DSENTRY_BUILD_TESTS=OFF")
+                arguments.add(0, "-DSENTRY_BUILD_EXAMPLES=OFF")
             }
         }
 
@@ -56,6 +58,7 @@ android {
 
     externalNativeBuild {
         cmake {
+            setVersion("3.10.2")
             setPath("CMakeLists.txt")
         }
     }

@@ -13,7 +13,8 @@ struct transport_options {
 
 struct transport_options g_transport_options;
 
-static void send_envelope(sentry_envelope_t *envelope, void *data) {
+static void send_envelope(sentry_envelope_t *envelope, void *unused_data) {
+    (void)unused_data;
     char envelope_id_str[40];
     char outbox_path[4096];
 
