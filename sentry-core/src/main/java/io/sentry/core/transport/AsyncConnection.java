@@ -239,7 +239,9 @@ public final class AsyncConnection implements Closeable, Connection {
           if (result.isSuccess()) {
             eventCache.discard(event);
           } else {
-            final String message = "The transport failed to send the event.";
+            final String message =
+                "The transport failed to send the event with response code "
+                    + result.getResponseCode();
 
             options.getLogger().log(SentryLevel.ERROR, message);
 
@@ -320,7 +322,9 @@ public final class AsyncConnection implements Closeable, Connection {
           if (result.isSuccess()) {
             sessionCache.discard(envelope);
           } else {
-            final String message = "The transport failed to send the event";
+            final String message =
+                "The transport failed to send the envelope with response code "
+                    + result.getResponseCode();
 
             options.getLogger().log(SentryLevel.ERROR, message);
 
