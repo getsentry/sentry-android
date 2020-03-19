@@ -6,8 +6,10 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.ISerializer
+import io.sentry.core.SentryEnvelope
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryOptions
+import io.sentry.core.Session
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.Proxy
@@ -63,11 +65,24 @@ class HttpTransportTest {
     }
 
     @Test
-    fun `uses Retry-After header`() {
+    fun `test serializes envelope`() {
+        val transport = fixture.getSUT()
+
+        val envelope = SentryEnvelope.fromSession(fixture.serializer, Session())
+
+        val result = transport.send(envelope)
+
+        verify(fixture.serializer).serialize(eq(envelope), any())
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun `uses Retry-After header if X-Sentry-Rate-Limit is not set when sending an event`() {
         val transport = fixture.getSUT()
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
-        whenever(fixture.connection.getHeaderField(eq("Retry-After"))).thenReturn("4.5")
+        whenever(fixture.connection.getHeaderField(eq("Retry-After"))).thenReturn("30")
+        whenever(fixture.connection.responseCode).thenReturn(429)
 
         val event = SentryEvent()
 
@@ -75,11 +90,28 @@ class HttpTransportTest {
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertFalse(result.isSuccess)
-//        assertEquals(4500, result.retryMillis)
+        assertTrue(transport.isRetryAfter("event"))
     }
 
     @Test
-    fun `passes on the response code on error`() {
+    fun `uses Retry-After header if X-Sentry-Rate-Limit is not set when sending an envelope`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("Retry-After"))).thenReturn("30")
+        whenever(fixture.connection.responseCode).thenReturn(429)
+
+        val envelope = SentryEnvelope.fromSession(fixture.serializer, Session())
+
+        val result = transport.send(envelope)
+
+        verify(fixture.serializer).serialize(eq(envelope), any())
+        assertFalse(result.isSuccess)
+        assertTrue(transport.isRetryAfter("session"))
+    }
+
+    @Test
+    fun `passes on the response code on error when sending an event`() {
         val transport = fixture.getSUT()
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
@@ -95,10 +127,27 @@ class HttpTransportTest {
     }
 
     @Test
-    fun `uses the default retry interval if there is no Retry-After header`() {
+    fun `passes on the response code on error when sending an envelope`() {
         val transport = fixture.getSUT()
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.responseCode).thenReturn(1234)
+
+        val envelope = SentryEnvelope.fromSession(fixture.serializer, Session())
+
+        val result = transport.send(envelope)
+
+        verify(fixture.serializer).serialize(eq(envelope), any())
+        assertFalse(result.isSuccess)
+        assertEquals(1234, result.responseCode)
+    }
+
+    @Test
+    fun `uses the default retry interval if there is no Retry-After header when sending an event`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.responseCode).thenReturn(429)
 
         val event = SentryEvent()
 
@@ -106,11 +155,27 @@ class HttpTransportTest {
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertFalse(result.isSuccess)
-//        assertEquals(RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY_MS, result.retryMillis)
+        assertTrue(transport.isRetryAfter("event"))
     }
 
     @Test
-    fun `failure to get response code doesn't break sending`() {
+    fun `uses the default retry interval if there is no Retry-After header when sending an envelope`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.responseCode).thenReturn(429)
+
+        val envelope = SentryEnvelope.fromSession(fixture.serializer, Session())
+
+        val result = transport.send(envelope)
+
+        verify(fixture.serializer).serialize(eq(envelope), any())
+        assertFalse(result.isSuccess)
+        assertTrue(transport.isRetryAfter("session"))
+    }
+
+    @Test
+    fun `failure to get response code doesn't break sending an event`() {
         val transport = fixture.getSUT()
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
@@ -122,66 +187,93 @@ class HttpTransportTest {
 
         verify(fixture.serializer).serialize(eq(event), any())
         assertFalse(result.isSuccess)
-//        assertEquals(RetryingThreadPoolExecutor.HTTP_RETRY_AFTER_DEFAULT_DELAY_MS, result.retryMillis)
         assertEquals(-1, result.responseCode)
     }
 
-//    @Test
-//    fun `reads 429 headers and returns accordingly if there are spaces in between`() {
-//        val transport = fixture.getSUT()
-//        val retryAfterLimits = transport.getRetryAfterLimits(
-//            "50:transaction:key, 2700:default;event;security:organization",
-//            "60"
-//        )
-//        assertEquals(50000L, retryAfterLimits["transaction"])
-//        assertEquals(2700000L, retryAfterLimits["default"])
-//        assertEquals(2700000L, retryAfterLimits["event"])
-//        assertEquals(2700000L, retryAfterLimits["security"])
-//    }
-//
-//    @Test
-//    fun `reads 429 headers and returns accordingly if there are no spaces`() {
-//        val transport = fixture.getSUT()
-//        val retryAfterLimits = transport.getRetryAfterLimits(
-//            "50:transaction:key,2700:default;event;security:organization",
-//            "60"
-//        )
-//        assertEquals(50000L, retryAfterLimits["transaction"])
-//        assertEquals(2700000L, retryAfterLimits["default"])
-//        assertEquals(2700000L, retryAfterLimits["event"])
-//        assertEquals(2700000L, retryAfterLimits["security"])
-//    }
-//
-//    @Test
-//    fun `reads 429 headers and returns accordingly, if there are a wrong interval, use retry after one`() {
-//        val transport = fixture.getSUT()
-//        val retryAfterLimits = transport.getRetryAfterLimits(
-//            "x:transaction:key,y:default;event;security:organization",
-//            "60"
-//        )
-//        assertEquals(60000L, retryAfterLimits["transaction"])
-//        assertEquals(60000L, retryAfterLimits["default"])
-//        assertEquals(60000L, retryAfterLimits["event"])
-//        assertEquals(60000L, retryAfterLimits["security"])
-//    }
-//
-//    @Test
-//    fun `reads 429 headers and returns retry after header if none is set`() {
-//        val transport = fixture.getSUT()
-//        val retryAfterLimits = transport.getRetryAfterLimits(
-//            null,
-//            "60"
-//        )
-//        assertEquals(60000L, retryAfterLimits["default"])
-//    }
-//
-//    @Test
-//    fun `reads 429 headers and returns default value if none is set`() {
-//        val transport = fixture.getSUT()
-//        val retryAfterLimits = transport.getRetryAfterLimits(
-//            null,
-//            null
-//        )
-//        assertEquals(60000L, retryAfterLimits["default"])
-//    }
+    @Test
+    fun `failure to get response code doesn't break sending an envelope`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.responseCode).thenThrow(IOException())
+
+        val envelope = SentryEnvelope.fromSession(fixture.serializer, Session())
+
+        val result = transport.send(envelope)
+
+        verify(fixture.serializer).serialize(eq(envelope), any())
+        assertFalse(result.isSuccess)
+        assertEquals(-1, result.responseCode)
+    }
+
+    @Test
+    fun `uses X-Sentry-Rate-Limit and returns accordingly`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limit")))
+            .thenReturn("50:transaction:key, 2700:default;event;security:organization")
+
+        val event = SentryEvent()
+
+        val result = transport.send(event)
+
+        verify(fixture.serializer).serialize(eq(event), any())
+        assertFalse(result.isSuccess)
+        assertTrue(transport.isRetryAfter("event"))
+    }
+
+    @Test
+    fun `uses X-Sentry-Rate-Limit and allows sending if time has passed`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limit")))
+            .thenReturn("50:transaction:key, 1:default;event;security:organization")
+
+        val event = SentryEvent()
+
+        val result = transport.send(event)
+
+        verify(fixture.serializer).serialize(eq(event), any())
+        assertFalse(result.isSuccess)
+        Thread.sleep(2000)
+        assertFalse(transport.isRetryAfter("event"))
+    }
+
+    @Test
+    fun `parse X-Sentry-Rate-Limit and set its values and retry after should be true`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limit")))
+            .thenReturn("50:transaction:key, 2700:default;event;security:organization")
+
+        val event = SentryEvent()
+
+        transport.send(event)
+
+        assertTrue(transport.isRetryAfter("transaction"))
+        assertTrue(transport.isRetryAfter("default"))
+        assertTrue(transport.isRetryAfter("event"))
+        assertTrue(transport.isRetryAfter("security"))
+    }
+
+    @Test
+    fun `parse X-Sentry-Rate-Limit and set its values and retry after should be false`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limit")))
+            .thenReturn("1:transaction:key, 1:default;event;security:organization")
+
+        val event = SentryEvent()
+
+        transport.send(event)
+        Thread.sleep(2000)
+        assertFalse(transport.isRetryAfter("transaction"))
+        assertFalse(transport.isRetryAfter("default"))
+        assertFalse(transport.isRetryAfter("event"))
+        assertFalse(transport.isRetryAfter("security"))
+    }
 }
