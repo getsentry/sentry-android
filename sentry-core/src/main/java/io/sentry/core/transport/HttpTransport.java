@@ -95,6 +95,8 @@ public class HttpTransport implements ITransport {
   public @NotNull TransportResult send(final @NotNull SentryEvent event) throws IOException {
     final HttpURLConnection connection = createConnection(false);
 
+    int responseCode = -1;
+
     try (final OutputStream outputStream = connection.getOutputStream();
         final Writer writer = new OutputStreamWriter(outputStream, UTF_8)) {
       serializer.serialize(event, writer);
@@ -104,10 +106,6 @@ public class HttpTransport implements ITransport {
       options.getLogger().log(DEBUG, "Event sent %s successfully.", event.getEventId());
       return TransportResult.success();
     } catch (IOException e) {
-      final String retryAfterHeader = connection.getHeaderField("Retry-After");
-      final String sentryRateLimitHeader = connection.getHeaderField("X-Sentry-Rate-Limit");
-
-      int responseCode = -1;
       try {
         responseCode = connection.getResponseCode();
 
@@ -127,13 +125,13 @@ public class HttpTransport implements ITransport {
         options
             .getLogger()
             .log(WARNING, "Failed to obtain response code while analyzing event send failure.", e);
-      } finally {
-        updateRetryAfterLimits(sentryRateLimitHeader, retryAfterHeader, responseCode);
       }
 
       logErrorInPayload(connection);
       return TransportResult.error(responseCode);
     } finally {
+      updateRetryAfterLimits(connection, responseCode);
+
       connection.disconnect();
     }
   }
@@ -186,6 +184,8 @@ public class HttpTransport implements ITransport {
   public @NotNull TransportResult send(final @NotNull SentryEnvelope envelope) throws IOException {
     final HttpURLConnection connection = createConnection(true);
 
+    int responseCode = -1;
+
     try (final OutputStream outputStream = connection.getOutputStream();
         final Writer writer = new OutputStreamWriter(outputStream, UTF_8)) {
       serializer.serialize(envelope, writer);
@@ -197,10 +197,6 @@ public class HttpTransport implements ITransport {
           .log(DEBUG, "Envelope sent %s successfully.", envelope.getHeader().getEventId());
       return TransportResult.success();
     } catch (IOException e) {
-      final String retryAfterHeader = connection.getHeaderField("Retry-After");
-      final String sentryRateLimitHeader = connection.getHeaderField("X-Sentry-Rate-Limit");
-
-      int responseCode = -1;
       try {
         responseCode = connection.getResponseCode();
 
@@ -221,8 +217,6 @@ public class HttpTransport implements ITransport {
         options
             .getLogger()
             .log(WARNING, "Failed to obtain response code while analyzing event send failure.", e);
-      } finally {
-        updateRetryAfterLimits(sentryRateLimitHeader, retryAfterHeader, responseCode);
       }
 
       logErrorInPayload(connection);
@@ -233,8 +227,17 @@ public class HttpTransport implements ITransport {
           .log(WARNING, "Failed to obtain error message while analyzing event send failure.", e);
       return TransportResult.error(-1);
     } finally {
+      updateRetryAfterLimits(connection, responseCode);
+
       connection.disconnect();
     }
+  }
+
+  private void updateRetryAfterLimits(
+      final @NotNull HttpURLConnection connection, final int responseCode) {
+    final String retryAfterHeader = connection.getHeaderField("Retry-After");
+    final String sentryRateLimitHeader = connection.getHeaderField("X-Sentry-Rate-Limit");
+    updateRetryAfterLimits(sentryRateLimitHeader, retryAfterHeader, responseCode);
   }
 
   private void updateRetryAfterLimits(
