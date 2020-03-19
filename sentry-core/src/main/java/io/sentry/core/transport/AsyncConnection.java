@@ -1,6 +1,7 @@
 package io.sentry.core.transport;
 
 import io.sentry.core.SentryEnvelope;
+import io.sentry.core.SentryEnvelopeItem;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -14,6 +15,8 @@ import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
@@ -99,17 +102,51 @@ public final class AsyncConnection implements Closeable, Connection {
     if (hint instanceof Cached) {
       currentEventCache = NoOpEventCache.getInstance();
     }
+
+    // no reason to continue
+    if (transport.isRetryAfter("event")) {
+      return;
+    }
+
     executor.submit(new EventSender(event, hint, currentEventCache));
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   @Override
-  public void send(final @NotNull SentryEnvelope envelope, final @Nullable Object hint)
+  public void send(@NotNull SentryEnvelope envelope, final @Nullable Object hint)
       throws IOException {
     // For now no caching on envelopes
     ISessionCache currentEventCache = sessionCache;
     if (hint instanceof Cached) {
       currentEventCache = NoOpSessionCache.getInstance();
+    }
+
+    // Optimize for/No allocations if no items are under 429
+    List<SentryEnvelopeItem> dropItems = null;
+    for (SentryEnvelopeItem item : envelope.getItems()) {
+      if (transport.isRetryAfter(item.getHeader().getType())) {
+        if (dropItems == null) {
+          dropItems = new ArrayList<>();
+        }
+        dropItems.add(item);
+      }
+    }
+
+    if (dropItems != null) {
+      // Need a new envelope
+      List<SentryEnvelopeItem> toSend = new ArrayList<>();
+      for (SentryEnvelopeItem item : envelope.getItems()) {
+        if (!dropItems.contains(item)) {
+          toSend.add(item);
+        }
+      }
+
+      // no reason to continue
+      if (toSend.isEmpty()) {
+        return;
+      }
+
+      envelope = new SentryEnvelope(envelope.getHeader(), toSend);
     }
 
     executor.submit(new SessionSender(envelope, hint, currentEventCache));

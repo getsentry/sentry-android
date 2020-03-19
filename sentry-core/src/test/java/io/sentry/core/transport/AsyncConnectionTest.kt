@@ -6,7 +6,6 @@ import com.nhaarman.mockitokotlin2.inOrder
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryOptions
@@ -74,7 +73,7 @@ class AsyncConnectionTest {
 
         // then
         verify(fixture.eventCache).store(eq(ev))
-        verifyZeroInteractions(fixture.transport)
+        verify(fixture.transport).isRetryAfter(any())
     }
 
     @Test

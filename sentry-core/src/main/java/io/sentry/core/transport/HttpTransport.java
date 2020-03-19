@@ -7,7 +7,6 @@ import static io.sentry.core.SentryLevel.WARNING;
 import com.jakewharton.nopen.annotation.Open;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
-import io.sentry.core.SentryEnvelopeItem;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryOptions;
 import java.io.BufferedReader;
@@ -94,10 +93,6 @@ public class HttpTransport implements ITransport {
 
   @Override
   public @NotNull TransportResult send(final @NotNull SentryEvent event) throws IOException {
-    if (isRetryAfter("event")) {
-      return TransportResult.error(429);
-    }
-
     final HttpURLConnection connection = createConnection(false);
 
     try (final OutputStream outputStream = connection.getOutputStream();
@@ -189,14 +184,6 @@ public class HttpTransport implements ITransport {
 
   @Override
   public @NotNull TransportResult send(final @NotNull SentryEnvelope envelope) throws IOException {
-    // we may do this even before calling send(T), does it make sense?
-    for (final SentryEnvelopeItem item : envelope.getItems()) {
-      String type = item.getHeader().getType();
-      if (isRetryAfter(type)) {
-        return TransportResult.error(429);
-      }
-    }
-
     final HttpURLConnection connection = createConnection(true);
 
     try (final OutputStream outputStream = connection.getOutputStream();
