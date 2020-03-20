@@ -53,6 +53,7 @@ import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
@@ -153,10 +154,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (packageInfo != null) {
       String versionCode = getVersionCode(packageInfo);
 
-      if (event.getRelease() == null) {
-        event.setRelease(
-            packageInfo.packageName + "@" + packageInfo.versionName + "+" + versionCode);
-      }
       if (event.getDist() == null) {
         event.setDist(versionCode);
       }
@@ -236,7 +233,8 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     return sdkVersion;
   }
 
-  private String getVersionCode(PackageInfo packageInfo) {
+  @NotNull
+  String getVersionCode(final @NotNull PackageInfo packageInfo) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       return Long.toString(packageInfo.getLongVersionCode());
     }
@@ -263,7 +261,8 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return the Application's PackageInfo if possible, or null
    */
-  private PackageInfo getPackageInfo() {
+  @Nullable
+  PackageInfo getPackageInfo() {
     try {
       return context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
     } catch (Exception e) {
