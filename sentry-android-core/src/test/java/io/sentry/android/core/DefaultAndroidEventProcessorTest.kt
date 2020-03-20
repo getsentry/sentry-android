@@ -75,7 +75,6 @@ class DefaultAndroidEventProcessorTest {
         assertNotNull(event.contexts.app)
         assertEquals("test", event.debugMeta.images[0].uuid)
         assertNotNull(event.sdk)
-        assertNotNull(event.release)
         assertNotNull(event.dist)
     }
 

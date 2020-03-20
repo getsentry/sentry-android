@@ -102,20 +102,38 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `init should set context package name as appInclude`() {
         val sentryOptions = SentryAndroidOptions()
-        val mockContext = ContextUtils.createMockContext()
-        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
-        whenever(mockContext.packageName).thenReturn("io.sentry.app")
 
-        AndroidOptionsInitializer.init(sentryOptions, mockContext)
+        AndroidOptionsInitializer.init(sentryOptions, context)
 
-        assertTrue(sentryOptions.inAppIncludes.contains("io.sentry.app"))
+        // cant mock PackageInfo, its buggy
+        assertTrue(sentryOptions.inAppIncludes.contains("io.sentry.android.core.test"))
+    }
+
+    @Test
+    fun `init should set release if empty`() {
+        val sentryOptions = SentryAndroidOptions()
+
+        AndroidOptionsInitializer.init(sentryOptions, context)
+
+        // cant mock PackageInfo, its buggy
+        assertTrue(sentryOptions.release!!.startsWith("io.sentry.android.core.test@null+0"))
+    }
+
+    @Test
+    fun `init should not replace options if set on manifest`() {
+        val sentryOptions = SentryAndroidOptions().apply {
+            release = "release"
+        }
+
+        AndroidOptionsInitializer.init(sentryOptions, context)
+
+        assertEquals("release", sentryOptions.release)
     }
 
     @Test
     fun `init should not set context package name if it starts with android package`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = ContextUtils.createMockContext()
-        whenever(mockContext.cacheDir).thenReturn(File("${File.separator}cache"))
         whenever(mockContext.packageName).thenReturn("android.context")
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
