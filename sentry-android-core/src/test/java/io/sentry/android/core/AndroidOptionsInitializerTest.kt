@@ -116,7 +116,7 @@ class AndroidOptionsInitializerTest {
         AndroidOptionsInitializer.init(sentryOptions, context)
 
         // cant mock PackageInfo, its buggy
-        assertTrue(sentryOptions.release!!.startsWith("io.sentry.android.core.test@null+0"))
+        assertTrue(sentryOptions.release!!.startsWith("io.sentry.android.core.test@"))
     }
 
     @Test
