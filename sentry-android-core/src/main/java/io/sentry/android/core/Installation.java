@@ -14,7 +14,7 @@ import org.jetbrains.annotations.TestOnly;
 final class Installation {
   @TestOnly static String deviceId = null;
 
-  private static final String INSTALLATION = "INSTALLATION";
+  @TestOnly static final String INSTALLATION = "INSTALLATION";
   private static final Charset UTF_8 = Charset.forName("UTF-8");
 
   private Installation() {}
