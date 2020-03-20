@@ -83,4 +83,15 @@ public final class DateUtils {
     DateFormat df = new SimpleDateFormat(ISO_FORMAT, Locale.US);
     return df.format(date);
   }
+
+  /**
+   * Get the given date and time UTC timezone
+   *
+   * @param date the Date with local timezone
+   * @return the date and time UTC timezone
+   */
+  public static Date getDateTime(Date date) {
+    String timestampIsoFormat = getTimestampIsoFormat(date);
+    return getDateTime(timestampIsoFormat);
+  }
 }
