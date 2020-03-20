@@ -7,6 +7,7 @@ import java.io.File;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -152,6 +153,8 @@ public class SentryOptions {
   private boolean enableSessionTracking;
 
   private long sessionTrackingIntervalMillis = 30000; // 30s
+
+  private String distinctId;
 
   /** The server name used in the Sentry messages. */
   private String serverName;
@@ -689,6 +692,16 @@ public class SentryOptions {
 
   public void setSessionTrackingIntervalMillis(long sessionTrackingIntervalMillis) {
     this.sessionTrackingIntervalMillis = sessionTrackingIntervalMillis;
+  }
+
+  @ApiStatus.Internal
+  public String getDistinctId() {
+    return distinctId;
+  }
+
+  @ApiStatus.Internal
+  public void setDistinctId(String distinctId) {
+    this.distinctId = distinctId;
   }
 
   /** The BeforeSend callback */

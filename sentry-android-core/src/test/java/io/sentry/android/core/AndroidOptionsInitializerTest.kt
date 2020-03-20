@@ -133,12 +133,22 @@ class AndroidOptionsInitializerTest {
     @Test
     fun `init should not set context package name if it starts with android package`() {
         val sentryOptions = SentryAndroidOptions()
-        val mockContext = ContextUtils.createMockContext()
+        val mockContext = ContextUtilsTest.createMockContext()
         whenever(mockContext.packageName).thenReturn("android.context")
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
         assertFalse(sentryOptions.inAppIncludes.contains("android.context"))
+    }
+
+    @Test
+    fun `init should set distinct id on start`() {
+        val sentryOptions = SentryAndroidOptions()
+        val mockContext = ContextUtilsTest.createMockContext()
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext)
+
+        assertTrue(sentryOptions.distinctId.isNotEmpty())
     }
 
     @Test
@@ -195,7 +205,7 @@ class AndroidOptionsInitializerTest {
     }
 
     private fun createMockContext(): Context {
-        val mockContext = ContextUtils.createMockContext()
+        val mockContext = ContextUtilsTest.createMockContext()
         whenever(mockContext.cacheDir).thenReturn(file)
         return mockContext
     }

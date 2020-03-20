@@ -42,9 +42,12 @@ final class AndroidOptionsInitializer {
    */
   static void init(
       final @NotNull SentryAndroidOptions options,
-      final @NotNull Context context,
+      @NotNull Context context,
       final @NotNull ILogger logger) {
-    Objects.requireNonNull(context, "The application context is required.");
+    Objects.requireNonNull(context, "The context is required.");
+    context =
+        Objects.requireNonNull(
+            context.getApplicationContext(), "The application context is required.");
     Objects.requireNonNull(options, "The options object is required.");
     Objects.requireNonNull(logger, "The ILogger object is required.");
 
@@ -63,11 +66,9 @@ final class AndroidOptionsInitializer {
     options.addIntegration(new AnrIntegration());
     options.addIntegration(new SessionTrackingIntegration());
 
-    DefaultAndroidEventProcessor androidEventProcessor =
-        new DefaultAndroidEventProcessor(context, options);
-    readDefaultOptionValues(options, androidEventProcessor);
+    readDefaultOptionValues(options, context);
 
-    options.addEventProcessor(androidEventProcessor);
+    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
 
     options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
 
@@ -78,25 +79,30 @@ final class AndroidOptionsInitializer {
    * Reads and sets default option values that are Android specific like release and inApp
    *
    * @param options the SentryOptions
-   * @param androidEventProcessor the DefaultAndroidEventProcessor as it already has those util
-   *     methods
+   * @param context the Android context methods
    */
   private static void readDefaultOptionValues(
-      final @NotNull SentryAndroidOptions options,
-      final @NotNull DefaultAndroidEventProcessor androidEventProcessor) {
-    final PackageInfo packageInfo = androidEventProcessor.getPackageInfo();
+      final @NotNull SentryAndroidOptions options, final @NotNull Context context) {
+    final PackageInfo packageInfo = ContextUtils.getPackageInfo(context, options.getLogger());
     if (packageInfo != null) {
       // Sets App's release if not set by Manifest
       if (options.getRelease() == null) {
         options.setRelease(
-            getSentryReleaseVersion(
-                packageInfo, androidEventProcessor.getVersionCode(packageInfo)));
+            getSentryReleaseVersion(packageInfo, ContextUtils.getVersionCode(packageInfo)));
       }
 
       // Sets the App's package name as InApp
       final String packageName = packageInfo.packageName;
       if (packageName != null && !packageName.startsWith("android.")) {
         options.addInAppInclude(packageName);
+      }
+    }
+
+    if (options.getDistinctId() == null) {
+      try {
+        options.setDistinctId(Installation.id(context));
+      } catch (RuntimeException e) {
+        options.getLogger().log(SentryLevel.ERROR, "Could not generate device Id.", e);
       }
     }
   }

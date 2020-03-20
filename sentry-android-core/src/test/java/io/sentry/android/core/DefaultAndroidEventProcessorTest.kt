@@ -56,12 +56,18 @@ class DefaultAndroidEventProcessorTest {
 
     @Test
     fun `when null context is provided, invalid argument is thrown`() {
-        assertFailsWith<IllegalArgumentException> { DefaultAndroidEventProcessor(null, fixture.options) }
+        val clazz = Class.forName("io.sentry.android.core.DefaultAndroidEventProcessor")
+        val ctor = clazz.getConstructor(Context::class.java, SentryOptions::class.java)
+        val params = arrayOf(null, mock<SentryOptions>())
+        assertFailsWith<IllegalArgumentException> { ctor.newInstance(params) }
     }
 
     @Test
     fun `when null options is provided, invalid argument is thrown`() {
-        assertFailsWith<IllegalArgumentException> { DefaultAndroidEventProcessor(context, null) }
+        val clazz = Class.forName("io.sentry.android.core.DefaultAndroidEventProcessor")
+        val ctor = clazz.getConstructor(Context::class.java, SentryOptions::class.java)
+        val params = arrayOf(mock<Context>(), null)
+        assertFailsWith<IllegalArgumentException> { ctor.newInstance(params) }
     }
 
     @Test
