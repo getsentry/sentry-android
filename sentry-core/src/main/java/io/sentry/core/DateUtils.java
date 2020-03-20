@@ -85,10 +85,10 @@ public final class DateUtils {
   }
 
   /**
-   * Get the given date and time UTC timezone
+   * Converts the given Date and time to UTC timezone
    *
    * @param date the Date with local timezone
-   * @return the date and time UTC timezone
+   * @return the Date UTC timezone
    */
   public static Date getDateTime(Date date) {
     String timestampIsoFormat = getTimestampIsoFormat(date);
