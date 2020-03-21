@@ -33,17 +33,20 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
   private final @NotNull IEnvelopeReader envelopeReader;
   private final @NotNull ISerializer serializer;
   private final @NotNull ILogger logger;
+  private final long timeout;
 
   public EnvelopeSender(
       final @NotNull IHub hub,
       final @NotNull IEnvelopeReader envelopeReader,
       final @NotNull ISerializer serializer,
-      final @NotNull ILogger logger) {
+      final @NotNull ILogger logger,
+      final long timeout) {
     super(logger);
     this.hub = Objects.requireNonNull(hub, "Hub is required.");
     this.envelopeReader = Objects.requireNonNull(envelopeReader, "Envelope reader is required.");
     this.serializer = Objects.requireNonNull(serializer, "Serializer is required.");
     this.logger = Objects.requireNonNull(logger, "Logger is required.");
+    this.timeout = timeout;
   }
 
   @Override
@@ -55,8 +58,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       return;
     }
 
-    final CachedEnvelopeHint hint =
-        new CachedEnvelopeHint(15000, logger); // TODO: Take timeout from options
+    final CachedEnvelopeHint hint = new CachedEnvelopeHint(timeout, logger);
     try (final InputStream stream = new BufferedInputStream(new FileInputStream(file))) {
       final SentryEnvelope envelope = envelopeReader.read(stream);
       if (envelope == null) {
