@@ -182,7 +182,6 @@ final class AndroidSerializer implements ISerializer {
       gson.toJson(item.getHeader(), SentryEnvelopeItemHeader.class, writer);
       writer.write("\n");
 
-      // TODO: fix it
       String data = new String(item.getData(), UTF_8);
       // writer.write(item.getData(), 0, item.getData().length);
       writer.write(data);
