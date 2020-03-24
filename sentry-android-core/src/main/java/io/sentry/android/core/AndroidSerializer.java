@@ -141,7 +141,7 @@ final class AndroidSerializer implements ISerializer {
     try {
       return envelopeReader.read(inputStream);
     } catch (IOException e) {
-      logger.log(SentryLevel.ERROR, "Error processing envelope.", e);
+      logger.log(SentryLevel.ERROR, "Error deserializing envelope.", e);
       return null;
     }
   }
