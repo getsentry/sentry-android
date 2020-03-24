@@ -269,8 +269,8 @@ public final class SessionCache implements IEnvelopeCache {
   }
 
   /**
-   * Returns the envelope's file path. It envelope has no eventId header, it generates a random file
-   * name to it.
+   * Returns the envelope's file path. If the envelope has no eventId header, it generates a random
+   * file name to it.
    *
    * @param envelope the SentryEnvelope object
    * @return the file
