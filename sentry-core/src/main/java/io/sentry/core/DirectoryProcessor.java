@@ -1,14 +1,18 @@
 package io.sentry.core;
 
+import io.sentry.core.hints.SendCachedEventHint;
 import java.io.File;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 abstract class DirectoryProcessor {
 
   private final @NotNull ILogger logger;
+  private final long timeout;
 
-  DirectoryProcessor(final @NotNull ILogger logger) {
+  DirectoryProcessor(final @NotNull ILogger logger, final long timeout) {
     this.logger = logger;
+    this.timeout = timeout;
   }
 
   void processDirectory(@NotNull File directory) {
@@ -41,14 +45,15 @@ abstract class DirectoryProcessor {
           directory.getAbsolutePath());
 
       for (File file : listFiles) {
-        processFile(file);
+        final SendCachedEventHint hint = new SendCachedEventHint(timeout, logger);
+        processFile(file, hint);
       }
     } catch (Exception e) {
       logger.log(SentryLevel.ERROR, e, "Failed processing '%s'", directory.getAbsolutePath());
     }
   }
 
-  protected abstract void processFile(File file);
+  protected abstract void processFile(File file, @Nullable Object hint);
 
   protected abstract boolean isRelevantFileName(String fileName);
 }

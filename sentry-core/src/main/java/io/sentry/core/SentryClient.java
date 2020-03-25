@@ -4,6 +4,7 @@ import io.sentry.core.cache.DiskCache;
 import io.sentry.core.cache.IEnvelopeCache;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.cache.SessionCache;
+import io.sentry.core.hints.ApplyScopeData;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.hints.SessionUpdateHint;
 import io.sentry.core.protocol.SentryId;
@@ -65,6 +66,10 @@ public final class SentryClient implements ISentryClient {
     random = options.getSampleRate() == null ? null : new Random();
   }
 
+  private boolean shouldApplyScopeData(final @Nullable Object hint) {
+    return (!(hint instanceof Cached) || (hint instanceof ApplyScopeData));
+  }
+
   @Override
   public @NotNull SentryId captureEvent(
       @NotNull SentryEvent event, final @Nullable Scope scope, final @Nullable Object hint) {
@@ -72,7 +77,7 @@ public final class SentryClient implements ISentryClient {
 
     options.getLogger().log(SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
-    if (!(hint instanceof Cached)) {
+    if (shouldApplyScopeData(hint)) {
       // Event has already passed through here before it was cached
       // Going through again could be reading data that is no longer relevant
       // i.e proguard id, app version, threads
@@ -146,7 +151,7 @@ public final class SentryClient implements ISentryClient {
   @TestOnly
   void updateSessionData(
       final @NotNull SentryEvent event, final @Nullable Object hint, final @Nullable Scope scope) {
-    if (!(hint instanceof Cached)) {
+    if (shouldApplyScopeData(hint)) {
       // safe guard
       if (options.isEnableSessionTracking()) {
         if (scope != null) {

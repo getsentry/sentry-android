@@ -4,6 +4,7 @@ import static io.sentry.core.SentryLevel.ERROR;
 
 import io.sentry.core.exception.ExceptionMechanismException;
 import io.sentry.core.hints.DiskFlushNotification;
+import io.sentry.core.hints.Flushable;
 import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
@@ -114,7 +115,7 @@ public final class UncaughtExceptionHandlerIntegration
     }
   }
 
-  private static final class UncaughtExceptionHint implements DiskFlushNotification {
+  private static final class UncaughtExceptionHint implements DiskFlushNotification, Flushable {
 
     private final CountDownLatch latch;
     private final long timeoutMillis;
@@ -126,7 +127,8 @@ public final class UncaughtExceptionHandlerIntegration
       this.logger = logger;
     }
 
-    boolean waitFlush() {
+    @Override
+    public boolean waitFlush() {
       try {
         return latch.await(timeoutMillis, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
