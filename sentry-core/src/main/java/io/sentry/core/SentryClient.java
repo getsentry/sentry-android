@@ -7,6 +7,7 @@ import io.sentry.core.cache.SessionCache;
 import io.sentry.core.hints.SessionUpdateHint;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.transport.Connection;
+import io.sentry.core.transport.FakeHttpTransport;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import io.sentry.core.util.ApplyScopeUtils;
@@ -44,7 +45,9 @@ public final class SentryClient implements ISentryClient {
 
     ITransport transport = options.getTransport();
     if (transport == null) {
-      transport = HttpTransportFactory.create(options);
+      // Canva interview change
+      // transport = HttpTransportFactory.create(options);
+      transport = new FakeHttpTransport(options);
       options.setTransport(transport);
     }
 

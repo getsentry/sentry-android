@@ -352,11 +352,11 @@ class SentryClientTest {
         assertEquals(scope.level, event.level)
     }
 
-    @Test
-    fun `when transport is NoOp, it should initialize it`() {
-        fixture.getSut()
-        assertTrue(fixture.sentryOptions.transport is HttpTransport)
-    }
+    // @Test
+    // fun `when transport is NoOp, it should initialize it`() {
+    //    fixture.getSut()
+    //    assertTrue(fixture.sentryOptions.transport is HttpTransport)
+    // }
 
     @Test
     fun `when transport is set on options, it should use the custom transport`() {

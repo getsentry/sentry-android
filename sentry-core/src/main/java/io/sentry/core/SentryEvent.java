@@ -31,8 +31,8 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
   private Contexts contexts = new Contexts();
   private List<String> fingerprint;
   private List<Breadcrumb> breadcrumbs;
-  private Map<String, String> tags;
-  private Map<String, Object> extra;
+  public Map<String, String> tags;
+  public Map<String, Object> extra;
   private Map<String, Object> unknown;
   private Map<String, String> modules;
   private DebugMeta debugMeta;
