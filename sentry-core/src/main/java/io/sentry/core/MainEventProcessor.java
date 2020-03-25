@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.hints.ApplyScopeData;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.util.Objects;
 import org.jetbrains.annotations.ApiStatus;
@@ -46,7 +47,7 @@ public final class MainEventProcessor implements EventProcessor {
       event.setExceptions(sentryExceptionFactory.getSentryExceptions(throwable));
     }
 
-    if (!(hint instanceof Cached)) {
+    if (shouldApplyScopeData(hint)) {
       processNonCachedEvent(event);
     } else {
       options
@@ -77,5 +78,9 @@ public final class MainEventProcessor implements EventProcessor {
     if (event.getThreads() == null && options.isAttachThreads()) {
       event.setThreads(sentryThreadFactory.getCurrentThreads());
     }
+  }
+
+  private boolean shouldApplyScopeData(final @Nullable Object hint) {
+    return (!(hint instanceof Cached) || (hint instanceof ApplyScopeData));
   }
 }
