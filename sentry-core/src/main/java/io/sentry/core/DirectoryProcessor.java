@@ -1,7 +1,14 @@
 package io.sentry.core;
 
-import io.sentry.core.hints.SendCachedEventHint;
+import static io.sentry.core.SentryLevel.ERROR;
+
+import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.Flushable;
+import io.sentry.core.hints.Retryable;
+import io.sentry.core.hints.SubmissionResult;
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,4 +63,52 @@ abstract class DirectoryProcessor {
   protected abstract void processFile(File file, @Nullable Object hint);
 
   protected abstract boolean isRelevantFileName(String fileName);
+
+  private static final class SendCachedEventHint
+      implements Cached, Retryable, SubmissionResult, Flushable {
+    boolean retry = false;
+    boolean succeeded = false;
+
+    private final CountDownLatch latch;
+    private final long flushTimeoutMillis;
+    private final @NotNull ILogger logger;
+
+    public SendCachedEventHint(final long flushTimeoutMillis, final @NotNull ILogger logger) {
+      this.flushTimeoutMillis = flushTimeoutMillis;
+      this.latch = new CountDownLatch(1);
+      this.logger = logger;
+    }
+
+    @Override
+    public boolean isRetry() {
+      return retry;
+    }
+
+    @Override
+    public void setRetry(boolean retry) {
+      this.retry = retry;
+    }
+
+    @Override
+    public boolean waitFlush() {
+      try {
+        return latch.await(flushTimeoutMillis, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        logger.log(ERROR, "Exception while awaiting on lock.", e);
+      }
+      return false;
+    }
+
+    @Override
+    public void setResult(boolean succeeded) {
+      this.succeeded = succeeded;
+      latch.countDown();
+    }
+
+    @Override
+    public boolean isSuccess() {
+      return succeeded;
+    }
+  }
 }

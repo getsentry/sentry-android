@@ -4,7 +4,6 @@ import static io.sentry.core.SentryLevel.ERROR;
 import static io.sentry.core.cache.SessionCache.PREFIX_CURRENT_SESSION_FILE;
 
 import io.sentry.core.hints.Flushable;
-import io.sentry.core.hints.Resettable;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
@@ -92,7 +91,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     processFile(new File(path), hint);
   }
 
-  private void processEnvelope(final @NotNull SentryEnvelope envelope, final @NotNull Object hint)
+  private void processEnvelope(final @NotNull SentryEnvelope envelope, final @Nullable Object hint)
       throws IOException {
     logger.log(SentryLevel.DEBUG, "Envelope for event Id: %s", envelope.getHeader().getEventId());
     int items = 0;
@@ -179,9 +178,6 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             envelope.getHeader().getEventId(),
             items);
         break;
-      }
-      if (hint instanceof Resettable) {
-        ((Resettable) hint).reset();
       }
     }
   }
