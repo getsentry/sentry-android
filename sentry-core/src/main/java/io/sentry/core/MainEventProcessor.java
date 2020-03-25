@@ -1,7 +1,10 @@
 package io.sentry.core;
 
 import io.sentry.core.hints.Cached;
+import io.sentry.core.protocol.SentryException;
 import io.sentry.core.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +78,19 @@ public final class MainEventProcessor implements EventProcessor {
     }
 
     if (event.getThreads() == null && options.isAttachThreads()) {
-      event.setThreads(sentryThreadFactory.getCurrentThreads());
+      List<Long> mechanismThreadIds = null;
+      if (event.getExceptions() != null) {
+        for (SentryException item : event.getExceptions()) {
+          if (item.getMechanism() != null && item.getThreadId() != null) {
+            if (mechanismThreadIds == null) {
+              mechanismThreadIds = new ArrayList<>();
+            }
+            mechanismThreadIds.add(item.getThreadId());
+          }
+        }
+      }
+
+      event.setThreads(sentryThreadFactory.getCurrentThreads(mechanismThreadIds));
     }
   }
 }

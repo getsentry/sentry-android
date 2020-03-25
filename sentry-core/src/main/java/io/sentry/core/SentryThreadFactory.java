@@ -49,11 +49,12 @@ final class SentryThreadFactory {
    * Converts a list of all current threads to a list of SentryThread Assumes its being called from
    * the crashed thread.
    *
+   * @param mechanismThreadIds list of threadIds that came from exception mechanism
    * @return a list of SentryThread
    */
   @Nullable
-  List<SentryThread> getCurrentThreads() {
-    return getCurrentThreads(Thread.getAllStackTraces());
+  List<SentryThread> getCurrentThreads(final @Nullable List<Long> mechanismThreadIds) {
+    return getCurrentThreads(Thread.getAllStackTraces(), mechanismThreadIds);
   }
 
   /**
@@ -65,7 +66,9 @@ final class SentryThreadFactory {
    */
   @TestOnly
   @Nullable
-  List<SentryThread> getCurrentThreads(final @NotNull Map<Thread, StackTraceElement[]> threads) {
+  List<SentryThread> getCurrentThreads(
+      final @NotNull Map<Thread, StackTraceElement[]> threads,
+      final @Nullable List<Long> mechanismThreadIds) {
     List<SentryThread> result = null;
 
     final Thread currentThread = Thread.currentThread();
@@ -79,7 +82,8 @@ final class SentryThreadFactory {
       }
 
       for (Map.Entry<Thread, StackTraceElement[]> item : threads.entrySet()) {
-        result.add(getSentryThread(currentThread, item.getValue(), item.getKey()));
+        result.add(
+            getSentryThread(currentThread, item.getValue(), item.getKey(), mechanismThreadIds));
       }
     }
 
@@ -97,7 +101,8 @@ final class SentryThreadFactory {
   private @NotNull SentryThread getSentryThread(
       final @NotNull Thread currentThread,
       final @NotNull StackTraceElement[] stackFramesElements,
-      final @NotNull Thread thread) {
+      final @NotNull Thread thread,
+      final @Nullable List<Long> mechanismThreadIds) {
     final SentryThread sentryThread = new SentryThread();
 
     sentryThread.setName(thread.getName());
@@ -105,7 +110,10 @@ final class SentryThreadFactory {
     sentryThread.setId(thread.getId());
     sentryThread.setDaemon(thread.isDaemon());
     sentryThread.setState(thread.getState().name());
-    sentryThread.setCrashed(thread == currentThread);
+
+    sentryThread.setCrashed(
+        (thread == currentThread)
+            || (mechanismThreadIds != null && mechanismThreadIds.contains(thread.getId())));
 
     final List<SentryStackFrame> frames =
         sentryStackTraceFactory.getStackFrames(stackFramesElements);
