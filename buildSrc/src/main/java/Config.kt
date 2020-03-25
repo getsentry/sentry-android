@@ -1,5 +1,5 @@
 object Config {
-    val kotlinVersion = "1.3.70"
+    val kotlinVersion = "1.3.71"
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
@@ -23,6 +23,10 @@ object Config {
         // only bump gson if https://github.com/google/gson/issues/1597 is fixed
         val gson = "com.google.code.gson:gson:2.8.5"
         val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.1"
+
+        val lifecycleVersion = "2.2.0"
+        val lifecycleProcessor = "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
+        val lifecycleCommonJava8 = "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
     }
 
     object TestLibs {
