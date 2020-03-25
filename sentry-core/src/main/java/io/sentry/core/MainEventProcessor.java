@@ -1,7 +1,7 @@
 package io.sentry.core;
 
-import io.sentry.core.hints.Cached;
 import io.sentry.core.protocol.SentryException;
+import io.sentry.core.util.ApplyScopeUtils;
 import io.sentry.core.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,7 @@ public final class MainEventProcessor implements EventProcessor {
       event.setExceptions(sentryExceptionFactory.getSentryExceptions(throwable));
     }
 
-    if (!(hint instanceof Cached)) {
+    if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       processNonCachedEvent(event);
     } else {
       options
