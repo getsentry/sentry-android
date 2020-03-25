@@ -38,8 +38,8 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       final @NotNull IEnvelopeReader envelopeReader,
       final @NotNull ISerializer serializer,
       final @NotNull ILogger logger,
-      final long timeout) {
-    super(logger, timeout);
+      final long flushTimeoutMillis) {
+    super(logger, flushTimeoutMillis);
     this.hub = Objects.requireNonNull(hub, "Hub is required.");
     this.envelopeReader = Objects.requireNonNull(envelopeReader, "Envelope reader is required.");
     this.serializer = Objects.requireNonNull(serializer, "Serializer is required.");

@@ -15,17 +15,20 @@ final class EnvelopeFileObserver extends FileObserver {
   private final String rootPath;
   private final IEnvelopeSender envelopeSender;
   private @NotNull final ILogger logger;
-  private final long timeout;
+  private final long flushTimeoutMillis;
 
   // The preferred overload (Taking File instead of String) is only available from API 29
   @SuppressWarnings("deprecation")
   EnvelopeFileObserver(
-      String path, IEnvelopeSender envelopeSender, @NotNull ILogger logger, final long timeout) {
+      String path,
+      IEnvelopeSender envelopeSender,
+      @NotNull ILogger logger,
+      final long flushTimeoutMillis) {
     super(path);
     this.rootPath = Objects.requireNonNull(path, "File path is required.");
     this.envelopeSender = Objects.requireNonNull(envelopeSender, "Envelope sender is required.");
     this.logger = Objects.requireNonNull(logger, "Logger is required.");
-    this.timeout = timeout;
+    this.flushTimeoutMillis = flushTimeoutMillis;
   }
 
   @Override
@@ -43,7 +46,7 @@ final class EnvelopeFileObserver extends FileObserver {
 
     // TODO: Only some event types should be pass through?
 
-    final CachedEnvelopeHint hint = new CachedEnvelopeHint(timeout, logger);
+    final CachedEnvelopeHint hint = new CachedEnvelopeHint(flushTimeoutMillis, logger);
     envelopeSender.processEnvelopeFile(this.rootPath + File.separator + relativePath, hint);
   }
 }

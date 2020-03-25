@@ -16,11 +16,11 @@ public final class CachedEnvelopeHint
   boolean succeeded = false;
 
   private @NotNull CountDownLatch latch;
-  private final long timeoutMillis;
+  private final long flushTimeoutMillis;
   private final @NotNull ILogger logger;
 
-  public CachedEnvelopeHint(final long timeoutMillis, final @NotNull ILogger logger) {
-    this.timeoutMillis = timeoutMillis;
+  public CachedEnvelopeHint(final long flushTimeoutMillis, final @NotNull ILogger logger) {
+    this.flushTimeoutMillis = flushTimeoutMillis;
     this.latch = new CountDownLatch(1);
     this.logger = Objects.requireNonNull(logger, "ILogger is required.");
   }
@@ -28,7 +28,7 @@ public final class CachedEnvelopeHint
   @Override
   public boolean waitFlush() {
     try {
-      return latch.await(timeoutMillis, TimeUnit.MILLISECONDS);
+      return latch.await(flushTimeoutMillis, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       logger.log(ERROR, "Exception while awaiting on lock.", e);

@@ -25,8 +25,8 @@ final class SendCachedEvent extends DirectoryProcessor {
       @NotNull ISerializer serializer,
       @NotNull IHub hub,
       final @NotNull ILogger logger,
-      final long timeoutMillis) {
-    super(logger, timeoutMillis);
+      final long flushTimeoutMillis) {
+    super(logger, flushTimeoutMillis);
     this.serializer = Objects.requireNonNull(serializer, "Serializer is required.");
     this.hub = Objects.requireNonNull(hub, "Hub is required.");
     this.logger = Objects.requireNonNull(logger, "Logger is required.");

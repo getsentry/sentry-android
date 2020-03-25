@@ -8,11 +8,11 @@ import org.jetbrains.annotations.Nullable;
 abstract class DirectoryProcessor {
 
   private final @NotNull ILogger logger;
-  private final long timeout;
+  private final long flushTimeoutMillis;
 
-  DirectoryProcessor(final @NotNull ILogger logger, final long timeout) {
+  DirectoryProcessor(final @NotNull ILogger logger, final long flushTimeoutMillis) {
     this.logger = logger;
-    this.timeout = timeout;
+    this.flushTimeoutMillis = flushTimeoutMillis;
   }
 
   void processDirectory(@NotNull File directory) {
@@ -45,7 +45,7 @@ abstract class DirectoryProcessor {
           directory.getAbsolutePath());
 
       for (File file : listFiles) {
-        final SendCachedEventHint hint = new SendCachedEventHint(timeout, logger);
+        final SendCachedEventHint hint = new SendCachedEventHint(flushTimeoutMillis, logger);
         processFile(file, hint);
       }
     } catch (Exception e) {

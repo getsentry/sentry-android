@@ -118,11 +118,11 @@ public final class UncaughtExceptionHandlerIntegration
   private static final class UncaughtExceptionHint implements DiskFlushNotification, Flushable {
 
     private final CountDownLatch latch;
-    private final long timeoutMillis;
+    private final long flushTimeoutMillis;
     private final @NotNull ILogger logger;
 
-    UncaughtExceptionHint(final long timeoutMillis, final @NotNull ILogger logger) {
-      this.timeoutMillis = timeoutMillis;
+    UncaughtExceptionHint(final long flushTimeoutMillis, final @NotNull ILogger logger) {
+      this.flushTimeoutMillis = flushTimeoutMillis;
       this.latch = new CountDownLatch(1);
       this.logger = logger;
     }
@@ -130,7 +130,7 @@ public final class UncaughtExceptionHandlerIntegration
     @Override
     public boolean waitFlush() {
       try {
-        return latch.await(timeoutMillis, TimeUnit.MILLISECONDS);
+        return latch.await(flushTimeoutMillis, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         logger.log(ERROR, "Exception while awaiting for flush in UncaughtExceptionHint", e);
