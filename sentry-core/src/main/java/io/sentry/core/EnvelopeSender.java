@@ -3,7 +3,6 @@ package io.sentry.core;
 import static io.sentry.core.SentryLevel.ERROR;
 import static io.sentry.core.cache.SessionCache.PREFIX_CURRENT_SESSION_FILE;
 
-import io.sentry.core.hints.CachedEnvelopeHint;
 import io.sentry.core.hints.Flushable;
 import io.sentry.core.hints.Resettable;
 import io.sentry.core.hints.Retryable;
@@ -154,7 +153,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             // TODO: Bundle all session in a single envelope
             hub.captureEnvelope(SentryEnvelope.fromSession(serializer, session), hint);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
-            if ((hint instanceof CachedEnvelopeHint) && !((CachedEnvelopeHint) hint).waitFlush()) {
+            if ((hint instanceof Flushable) && !((Flushable) hint).waitFlush()) {
               logger.log(
                   SentryLevel.WARNING,
                   "Timed out waiting for item submission: %s",
