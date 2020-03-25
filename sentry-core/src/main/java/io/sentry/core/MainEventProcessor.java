@@ -80,6 +80,8 @@ public final class MainEventProcessor implements EventProcessor {
     if (event.getThreads() == null && options.isAttachThreads()) {
       List<Long> mechanismThreadIds = null;
       if (event.getExceptions() != null) {
+        // collecting threadIds that came from the exception mechanism, so we can mark threads as
+        // crashed properly
         for (SentryException item : event.getExceptions()) {
           if (item.getMechanism() != null && item.getThreadId() != null) {
             if (mechanismThreadIds == null) {

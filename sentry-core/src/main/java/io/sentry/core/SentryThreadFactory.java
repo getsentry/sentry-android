@@ -62,6 +62,7 @@ final class SentryThreadFactory {
    * the crashed thread.
    *
    * @param threads a map with all the current threads and stacktraces
+   * @param mechanismThreadIds list of threadIds that came from exception mechanism
    * @return a list of SentryThread or null if none
    */
   @TestOnly
@@ -98,7 +99,7 @@ final class SentryThreadFactory {
   /**
    * Converts a current thread to a SentryThread
    *
-   * @param crashed the currentThread
+   * @param crashed if its the thread that has crashed or not
    * @param stackFramesElements the stack traces of the current thread
    * @param thread the thread to be converted
    * @return a SentryThread
