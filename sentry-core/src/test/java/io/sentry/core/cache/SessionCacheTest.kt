@@ -167,6 +167,10 @@ class SessionCacheTest {
 
         val session = fixture.serializer.deserializeSession(currentFile.bufferedReader(Charsets.UTF_8))
         assertNotNull(session)
+
+        cache.store(envelope, SessionEndHint())
+        assertFalse(currentFile.exists())
+
         deleteFiles(file)
     }
 
