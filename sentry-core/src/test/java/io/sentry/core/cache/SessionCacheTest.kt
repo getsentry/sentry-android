@@ -67,7 +67,7 @@ class SessionCacheTest {
 
         assertEquals(1, nofFiles())
 
-        deleteFiles(file)
+        file.deleteRecursively()
     }
 
     @Test
@@ -85,7 +85,7 @@ class SessionCacheTest {
 
         assertEquals(fixture.maxSize, nofFiles())
 
-        deleteFiles(file)
+        file.deleteRecursively()
     }
 
     @Test
@@ -109,7 +109,7 @@ class SessionCacheTest {
         val currentFile = File(fixture.options.sessionsPath!!, "$PREFIX_CURRENT_SESSION_FILE$SUFFIX_CURRENT_SESSION_FILE")
         assertTrue(currentFile.exists())
 
-        deleteFiles(file)
+        file.deleteRecursively()
     }
 
     @Test
@@ -127,7 +127,7 @@ class SessionCacheTest {
         cache.store(envelope, SessionEndHint())
         assertFalse(currentFile.exists())
 
-        deleteFiles(file)
+        file.deleteRecursively()
     }
 
     @Test
@@ -150,7 +150,7 @@ class SessionCacheTest {
         val newFile = File(file.absolutePath, "${newEnvelope.header.eventId}$SUFFIX_ENVELOPE_FILE")
         assertFalse(newFile.exists())
 
-        deleteFiles(file)
+        file.deleteRecursively()
     }
 
     @Test
@@ -168,10 +168,9 @@ class SessionCacheTest {
         val session = fixture.serializer.deserializeSession(currentFile.bufferedReader(Charsets.UTF_8))
         assertNotNull(session)
 
-        cache.store(envelope, SessionEndHint())
-        assertFalse(currentFile.exists())
+        currentFile.delete()
 
-        deleteFiles(file)
+        file.deleteRecursively()
     }
 
     @Test
@@ -187,13 +186,6 @@ class SessionCacheTest {
 
         cache.store(newEnvelope, SessionStartHint())
         verify(fixture.logger).log(eq(SentryLevel.INFO), eq("There's a left over session, it's gonna be ended and cached to be sent."))
-
-        deleteFiles(file)
-    }
-
-    private fun deleteFiles(file: File) {
-        file.listFiles()?.forEach { it.delete() }
-        Files.delete(file.toPath())
     }
 
     private fun createSession(): Session {
