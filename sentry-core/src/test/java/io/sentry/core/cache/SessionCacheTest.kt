@@ -24,6 +24,7 @@ import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class SessionCacheTest {
@@ -149,6 +150,23 @@ class SessionCacheTest {
         val newFile = File(file.absolutePath, "${newEnvelope.header.eventId}$SUFFIX_ENVELOPE_FILE")
         assertFalse(newFile.exists())
 
+        deleteFiles(file)
+    }
+
+    @Test
+    fun `updates current file on session update and read it back`() {
+        val cache = fixture.getSUT()
+
+        val file = File(fixture.options.sessionsPath!!)
+
+        val envelope = SentryEnvelope.fromSession(fixture.serializer, createSession())
+        cache.store(envelope, SessionStartHint())
+
+        val currentFile = File(fixture.options.sessionsPath!!, "$PREFIX_CURRENT_SESSION_FILE$SUFFIX_CURRENT_SESSION_FILE")
+        assertTrue(currentFile.exists())
+
+        val session = fixture.serializer.deserializeSession(currentFile.bufferedReader(Charsets.UTF_8))
+        assertNotNull(session)
         deleteFiles(file)
     }
 
