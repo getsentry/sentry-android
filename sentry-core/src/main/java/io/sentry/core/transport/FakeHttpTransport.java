@@ -49,6 +49,9 @@ public class FakeHttpTransport implements ITransport {
 
     System.out.println(
         "Sentry: request status_code=200, data={"
+            + "\"throwable\": \""
+            + (event.getThrowable() != null ? event.getThrowable().getMessage() : "null")
+            + "\","
             + "\"message\": \""
             + (event.getMessage() != null ? event.getMessage().getMessage() : "null")
             + "\","
