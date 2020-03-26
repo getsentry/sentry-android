@@ -1,26 +1,24 @@
 package io.sentry.core;
 
 import io.sentry.core.protocol.SentryId;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-final class SentryEnvelopeHeader {
-  private final SentryId eventId;
-  private final String auth;
+@ApiStatus.Internal
+public final class SentryEnvelopeHeader {
+  // Event Id must be set if the envelope holds an event, or an item that is related to the event
+  // (e.g: attachments, user feedback)
+  private final @Nullable SentryId eventId;
 
-  SentryEnvelopeHeader(SentryId sentryId, @Nullable String auth) {
-    this.eventId = sentryId;
-    this.auth = auth;
+  public SentryEnvelopeHeader(final @Nullable SentryId eventId) {
+    this.eventId = eventId;
   }
 
-  public SentryEnvelopeHeader(SentryId sentryId) {
-    this(sentryId, null);
+  public SentryEnvelopeHeader() {
+    this(new SentryId());
   }
 
-  public SentryId getEventId() {
+  public @Nullable SentryId getEventId() {
     return eventId;
-  }
-
-  public String getAuth() {
-    return auth;
   }
 }

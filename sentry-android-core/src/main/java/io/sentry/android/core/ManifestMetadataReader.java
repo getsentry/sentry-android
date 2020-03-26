@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
+import io.sentry.core.util.Objects;
 import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,10 +19,19 @@ final class ManifestMetadataReader {
   static final String SAMPLE_RATE = "io.sentry.sample-rate";
   static final String ANR_ENABLE = "io.sentry.anr.enable";
   static final String ANR_REPORT_DEBUG = "io.sentry.anr.report-debug";
+
+  @Deprecated
   static final String ANR_TIMEOUT_INTERVAL_MILLS = "io.sentry.anr.timeout-interval-mills";
+
+  static final String ANR_TIMEOUT_INTERVAL_MILLIS = "io.sentry.anr.timeout-interval-millis";
+
   static final String AUTO_INIT = "io.sentry.auto-init";
   static final String NDK_ENABLE = "io.sentry.ndk.enable";
   static final String RELEASE = "io.sentry.release";
+  static final String ENVIRONMENT = "io.sentry.environment";
+  static final String SESSION_TRACKING_ENABLE = "io.sentry.session-tracking.enable";
+  static final String SESSION_TRACKING_TIMEOUT_INTERVAL_MILLIS =
+      "io.sentry.session-tracking.timeout-interval-millis";
 
   /** ManifestMetadataReader ctor */
   private ManifestMetadataReader() {}
@@ -34,8 +44,8 @@ final class ManifestMetadataReader {
    */
   static void applyMetadata(
       final @NotNull Context context, final @NotNull SentryAndroidOptions options) {
-    if (context == null) throw new IllegalArgumentException("The application context is required.");
-    if (options == null) throw new IllegalArgumentException("The options object is required.");
+    Objects.requireNonNull(context, "The application context is required.");
+    Objects.requireNonNull(options, "The options object is required.");
 
     try {
       final Bundle metadata = getMetadata(context);
@@ -56,6 +66,13 @@ final class ManifestMetadataReader {
         options.getLogger().log(SentryLevel.DEBUG, "anrEnabled read: %s", anrEnabled);
         options.setAnrEnabled(anrEnabled);
 
+        final boolean sessionTrackingEnabled =
+            metadata.getBoolean(SESSION_TRACKING_ENABLE, options.isEnableSessionTracking());
+        options
+            .getLogger()
+            .log(SentryLevel.DEBUG, "sessionTrackingEnabled read: %s", sessionTrackingEnabled);
+        options.setEnableSessionTracking(sessionTrackingEnabled);
+
         if (options.getSampleRate() == null) {
           Double sampleRate = metadata.getDouble(SAMPLE_RATE, -1);
           options.getLogger().log(SentryLevel.DEBUG, "sampleRate read: %s", sampleRate);
@@ -69,12 +86,19 @@ final class ManifestMetadataReader {
         options.getLogger().log(SentryLevel.DEBUG, "anrReportInDebug read: %s", anrReportInDebug);
         options.setAnrReportInDebug(anrReportInDebug);
 
+        // deprecated
         final long anrTimeoutIntervalMills =
-            metadata.getInt(ANR_TIMEOUT_INTERVAL_MILLS, (int) options.getAnrTimeoutIntervalMills());
+            metadata.getInt(
+                ANR_TIMEOUT_INTERVAL_MILLS, (int) options.getAnrTimeoutIntervalMillis());
+
+        // reading new values, but deprecated one as fallback
+        final long anrTimeoutIntervalMillis =
+            metadata.getInt(ANR_TIMEOUT_INTERVAL_MILLIS, (int) anrTimeoutIntervalMills);
+
         options
             .getLogger()
-            .log(SentryLevel.DEBUG, "anrTimeoutIntervalMills read: %d", anrTimeoutIntervalMills);
-        options.setAnrTimeoutIntervalMills(anrTimeoutIntervalMills);
+            .log(SentryLevel.DEBUG, "anrTimeoutIntervalMillis read: %d", anrTimeoutIntervalMillis);
+        options.setAnrTimeoutIntervalMillis(anrTimeoutIntervalMillis);
 
         final String dsn = metadata.getString(DSN, null);
         if (dsn == null) {
@@ -95,6 +119,22 @@ final class ManifestMetadataReader {
         final String release = metadata.getString(RELEASE, options.getRelease());
         options.getLogger().log(SentryLevel.DEBUG, "release read: %s", release);
         options.setRelease(release);
+
+        final String environment = metadata.getString(ENVIRONMENT, options.getEnvironment());
+        options.getLogger().log(SentryLevel.DEBUG, "environment read: %s", environment);
+        options.setEnvironment(environment);
+
+        final long sessionTrackingTimeoutIntervalMillis =
+            metadata.getInt(
+                SESSION_TRACKING_TIMEOUT_INTERVAL_MILLIS,
+                (int) options.getSessionTrackingIntervalMillis());
+        options
+            .getLogger()
+            .log(
+                SentryLevel.DEBUG,
+                "sessionTrackingTimeoutIntervalMillis read: %d",
+                sessionTrackingTimeoutIntervalMillis);
+        options.setSessionTrackingIntervalMillis(sessionTrackingTimeoutIntervalMillis);
       }
       options
           .getLogger()
@@ -114,8 +154,8 @@ final class ManifestMetadataReader {
    * @param logger the Logger interface
    * @return true if auto init is enabled or false otherwise
    */
-  static boolean isAutoInit(final Context context, final @NotNull ILogger logger) {
-    if (context == null) throw new IllegalArgumentException("The application context is required.");
+  static boolean isAutoInit(final @NotNull Context context, final @NotNull ILogger logger) {
+    Objects.requireNonNull(context, "The application context is required.");
 
     boolean autoInit = true;
     try {
@@ -138,7 +178,7 @@ final class ManifestMetadataReader {
    * @return the Bundle attached to the PackageManager
    * @throws PackageManager.NameNotFoundException if the package name is non-existent
    */
-  private static Bundle getMetadata(final Context context)
+  private static Bundle getMetadata(final @NotNull Context context)
       throws PackageManager.NameNotFoundException {
     final ApplicationInfo app =
         context

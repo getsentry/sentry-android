@@ -1,5 +1,5 @@
 object Config {
-    val kotlinVersion = "1.3.70"
+    val kotlinVersion = "1.3.71"
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
@@ -23,6 +23,10 @@ object Config {
         // only bump gson if https://github.com/google/gson/issues/1597 is fixed
         val gson = "com.google.code.gson:gson:2.8.5"
         val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.1"
+
+        val lifecycleVersion = "2.2.0"
+        val lifecycleProcessor = "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
+        val lifecycleCommonJava8 = "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
     }
 
     object TestLibs {
@@ -49,11 +53,7 @@ object Config {
     object Sentry {
         val SENTRY_CLIENT_NAME = "sentry.java.android"
         val group = "io.sentry"
-//        TODO: change version to publish new version
-        val version = "2.0.2"
         val description = "SDK for sentry.io"
-//        TODO: change version code to publish new version, follow the pattern of `version`
-        val buildVersionCode = 20018
         val website = "https://sentry.io"
         val userOrg = "getsentry"
         val repoName = "sentry-android"
@@ -66,6 +66,8 @@ object Config {
         val scmConnection = "scm:git:git://github.com/getsentry/sentry-android.git"
         val scmDevConnection = "scm:git:ssh://github.com:getsentry/sentry-android.git"
         val scmUrl = "https://github.com/getsentry/sentry-android/tree/master"
+        val versionNameProp = "versionName"
+        val buildVersionCodeProp = "buildVersionCode"
     }
 
     object CompileOnly {

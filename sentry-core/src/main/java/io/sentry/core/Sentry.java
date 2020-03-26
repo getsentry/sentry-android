@@ -391,10 +391,20 @@ public final class Sentry {
   /**
    * Flushes events queued up to the current hub. Not implemented yet.
    *
-   * @param timeoutMills time in milliseconds
+   * @param timeoutMillis time in milliseconds
    */
-  public static void flush(long timeoutMills) {
-    getCurrentHub().flush(timeoutMills);
+  public static void flush(long timeoutMillis) {
+    getCurrentHub().flush(timeoutMillis);
+  }
+
+  /** Starts a new session. If there's a running session, it ends it before starting the new one. */
+  public static void startSession() {
+    getCurrentHub().startSession();
+  }
+
+  /** Ends the current session */
+  public static void endSession() {
+    getCurrentHub().endSession();
   }
 
   /**
