@@ -51,6 +51,7 @@ public final class DateUtils {
       return new SimpleDateFormat(ISO_FORMAT_WITH_MILLIS, Locale.US).parse(timestamp);
     } catch (ParseException e) {
       try {
+        // to keep compatibility with older envelopes
         return new SimpleDateFormat(ISO_FORMAT, Locale.US).parse(timestamp);
       } catch (ParseException ignored) {
       }

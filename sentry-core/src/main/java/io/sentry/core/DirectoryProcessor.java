@@ -52,6 +52,7 @@ abstract class DirectoryProcessor {
           directory.getAbsolutePath());
 
       for (File file : listFiles) {
+        // it ignores .sentry-native database folder and new ones that might come up
         if (!file.isFile()) {
           logger.log(SentryLevel.DEBUG, "File %s is not a File.", file.getAbsolutePath());
           continue;

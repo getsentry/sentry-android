@@ -183,17 +183,27 @@ public final class Session {
 
   /** Ends a session and update its values */
   public void end() {
+    end(DateUtils.getCurrentDateTime());
+  }
+
+  /** Ends a session and update its values */
+  public void end(final @Nullable Date timestamp) {
     synchronized (sessionLock) {
       init = null;
       updateStatus();
-      timestamp = DateUtils.getCurrentDateTime();
+
+      if (timestamp != null) {
+        this.timestamp = timestamp;
+      } else {
+        this.timestamp = DateUtils.getCurrentDateTime();
+      }
 
       // fallback if started is null
       if (started == null) {
         started = timestamp;
       }
 
-      duration = calculateDurationTime(timestamp, started);
+      duration = calculateDurationTime(this.timestamp, started);
       sequence = getSequenceTimestamp();
     }
   }
@@ -219,23 +229,6 @@ public final class Session {
    * @return if the session has been updated
    */
   public boolean update(final State status, final String userAgent, boolean addErrorsCount) {
-    return update(status, userAgent, addErrorsCount, DateUtils.getCurrentDateTime());
-  }
-
-  /**
-   * Updates the current session and set its values
-   *
-   * @param status the status
-   * @param userAgent the userAgent
-   * @param addErrorsCount true if should increase error count or not
-   * @param timestamp the timestamp
-   * @return if the session has been updated
-   */
-  public boolean update(
-      final State status,
-      final String userAgent,
-      boolean addErrorsCount,
-      final @Nullable Date timestamp) {
     synchronized (sessionLock) {
       boolean sessionHasBeenUpdated = false;
       if (status != null) {
@@ -254,11 +247,7 @@ public final class Session {
 
       if (sessionHasBeenUpdated) {
         init = null;
-
-        if (timestamp != null) {
-          this.timestamp = timestamp;
-        }
-
+        timestamp = DateUtils.getCurrentDateTime();
         sequence = getSequenceTimestamp();
       }
       return sessionHasBeenUpdated;

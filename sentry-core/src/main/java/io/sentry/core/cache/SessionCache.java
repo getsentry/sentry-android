@@ -53,7 +53,7 @@ public final class SessionCache implements IEnvelopeCache {
 
   public static final String PREFIX_CURRENT_SESSION_FILE = "session";
   static final String SUFFIX_CURRENT_SESSION_FILE = ".json";
-  private static final String CRASH_MARKER_FILE = ".sentry-native/last_crash";
+  static final String CRASH_MARKER_FILE = ".sentry-native/last_crash";
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");
@@ -119,12 +119,13 @@ public final class SessionCache implements IEnvelopeCache {
                     "There's a left over session, it's gonna be ended and cached to be sent.");
 
             final File crashMarkerFile = new File(options.getCacheDirPath(), CRASH_MARKER_FILE);
+            Date timestamp = null;
             if (crashMarkerFile.exists()) {
               options
                   .getLogger()
                   .log(INFO, "Crash marker file exists, last Session is gonna be Crashed.");
 
-              final Date timestamp = getTimestampFromCrashMarkerFile(crashMarkerFile);
+              timestamp = getTimestampFromCrashMarkerFile(crashMarkerFile);
               if (!crashMarkerFile.delete()) {
                 options
                     .getLogger()
@@ -133,9 +134,9 @@ public final class SessionCache implements IEnvelopeCache {
                         "Failed to delete the crash marker file. %s.",
                         crashMarkerFile.getAbsolutePath());
               }
-              session.update(Session.State.Crashed, null, true, timestamp);
+              session.update(Session.State.Crashed, null, true);
             }
-            session.end();
+            session.end(timestamp);
             final SentryEnvelope fromSession = SentryEnvelope.fromSession(serializer, session);
             final File fileFromSession = getEnvelopeFile(fromSession);
             writeEnvelopeToDisk(fileFromSession, fromSession);
@@ -174,7 +175,9 @@ public final class SessionCache implements IEnvelopeCache {
   private Date getTimestampFromCrashMarkerFile(final File markerFile) {
     try (final BufferedReader reader =
         new BufferedReader(new InputStreamReader(new FileInputStream(markerFile), UTF_8))) {
-      return DateUtils.getDateTime(reader.readLine());
+      final String timestamp = reader.readLine();
+      options.getLogger().log(DEBUG, "Crash marker file has %s timestamp.", timestamp);
+      return DateUtils.getDateTime(timestamp);
     } catch (IOException e) {
       options.getLogger().log(ERROR, "Error reading the crash marker file.", e);
     }
