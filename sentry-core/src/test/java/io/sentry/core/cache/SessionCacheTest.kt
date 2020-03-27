@@ -223,8 +223,6 @@ class SessionCacheTest {
         val newEnvelope = SentryEnvelope.fromSession(fixture.serializer, createSession())
 
         cache.store(newEnvelope, SessionStartHint())
-        // for some reason this fail, but it works
-//        verify(fixture.logger).log(eq(SentryLevel.DEBUG), eq("Crash marker file has $date timestamp."))
         assertFalse(markerFile.exists())
         file.deleteRecursively()
         File(fixture.options.cacheDirPath!!).deleteRecursively()
