@@ -172,7 +172,13 @@ public final class SessionCache implements IEnvelopeCache {
     writeEnvelopeToDisk(envelopeFile, envelope);
   }
 
-  private Date getTimestampFromCrashMarkerFile(final File markerFile) {
+  /**
+   * Reads the crash marker file and returns the timestamp as Date written in there
+   *
+   * @param markerFile the marker file
+   * @return the timestamp as Date
+   */
+  private Date getTimestampFromCrashMarkerFile(final @NotNull File markerFile) {
     try (final BufferedReader reader =
         new BufferedReader(new InputStreamReader(new FileInputStream(markerFile), UTF_8))) {
       final String timestamp = reader.readLine();

@@ -186,7 +186,11 @@ public final class Session {
     end(DateUtils.getCurrentDateTime());
   }
 
-  /** Ends a session and update its values */
+  /**
+   * Ends a session and update its values
+   *
+   * @param timestamp the timestamp or null
+   */
   public void end(final @Nullable Date timestamp) {
     synchronized (sessionLock) {
       init = null;
