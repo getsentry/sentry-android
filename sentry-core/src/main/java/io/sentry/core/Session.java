@@ -219,6 +219,23 @@ public final class Session {
    * @return if the session has been updated
    */
   public boolean update(final State status, final String userAgent, boolean addErrorsCount) {
+    return update(status, userAgent, addErrorsCount, DateUtils.getCurrentDateTime());
+  }
+
+  /**
+   * Updates the current session and set its values
+   *
+   * @param status the status
+   * @param userAgent the userAgent
+   * @param addErrorsCount true if should increase error count or not
+   * @param timestamp the timestamp
+   * @return if the session has been updated
+   */
+  public boolean update(
+      final State status,
+      final String userAgent,
+      boolean addErrorsCount,
+      final @Nullable Date timestamp) {
     synchronized (sessionLock) {
       boolean sessionHasBeenUpdated = false;
       if (status != null) {
@@ -237,7 +254,11 @@ public final class Session {
 
       if (sessionHasBeenUpdated) {
         init = null;
-        timestamp = DateUtils.getCurrentDateTime();
+
+        if (timestamp != null) {
+          this.timestamp = timestamp;
+        }
+
         sequence = getSequenceTimestamp();
       }
       return sessionHasBeenUpdated;

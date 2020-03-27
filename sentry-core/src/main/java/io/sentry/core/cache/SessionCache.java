@@ -6,6 +6,7 @@ import static io.sentry.core.SentryLevel.INFO;
 import static io.sentry.core.SentryLevel.WARNING;
 import static java.lang.String.format;
 
+import io.sentry.core.DateUtils;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEnvelopeItem;
@@ -34,6 +35,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,7 @@ public final class SessionCache implements IEnvelopeCache {
 
   public static final String PREFIX_CURRENT_SESSION_FILE = "session";
   static final String SUFFIX_CURRENT_SESSION_FILE = ".json";
+  private static final String CRASH_MARKER_FILE = ".sentry-native/last_crash";
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");
@@ -114,6 +117,24 @@ public final class SessionCache implements IEnvelopeCache {
                 .log(
                     INFO,
                     "There's a left over session, it's gonna be ended and cached to be sent.");
+
+            final File crashMarkerFile = new File(options.getCacheDirPath(), CRASH_MARKER_FILE);
+            if (crashMarkerFile.exists()) {
+              options
+                  .getLogger()
+                  .log(INFO, "Crash marker file exists, last Session is gonna be Crashed.");
+
+              final Date timestamp = getTimestampFromCrashMarkerFile(crashMarkerFile);
+              if (!crashMarkerFile.delete()) {
+                options
+                    .getLogger()
+                    .log(
+                        ERROR,
+                        "Failed to delete the crash marker file. %s.",
+                        crashMarkerFile.getAbsolutePath());
+              }
+              session.update(Session.State.Crashed, null, true, timestamp);
+            }
             session.end();
             final SentryEnvelope fromSession = SentryEnvelope.fromSession(serializer, session);
             final File fileFromSession = getEnvelopeFile(fromSession);
@@ -148,6 +169,16 @@ public final class SessionCache implements IEnvelopeCache {
     }
 
     writeEnvelopeToDisk(envelopeFile, envelope);
+  }
+
+  private Date getTimestampFromCrashMarkerFile(final File markerFile) {
+    try (final BufferedReader reader =
+        new BufferedReader(new InputStreamReader(new FileInputStream(markerFile), UTF_8))) {
+      return DateUtils.getDateTime(reader.readLine());
+    } catch (IOException e) {
+      options.getLogger().log(ERROR, "Error reading the crash marker file.", e);
+    }
+    return null;
   }
 
   private void updateCurrentSession(
