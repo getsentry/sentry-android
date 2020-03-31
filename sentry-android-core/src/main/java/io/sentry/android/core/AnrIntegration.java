@@ -28,7 +28,7 @@ public final class AnrIntegration implements Integration, Closeable {
 
   private @Nullable SentryOptions options;
 
-  private static final @NotNull Object sessionLock = new Object();
+  private static final @NotNull Object watchDogLock = new Object();
 
   @Override
   public final void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
@@ -42,7 +42,7 @@ public final class AnrIntegration implements Integration, Closeable {
         .log(SentryLevel.DEBUG, "AnrIntegration enabled: %s", options.isAnrEnabled());
 
     if (options.isAnrEnabled()) {
-      synchronized (sessionLock) {
+      synchronized (watchDogLock) {
         if (anrWatchDog == null) {
           options
               .getLogger()
@@ -88,7 +88,7 @@ public final class AnrIntegration implements Integration, Closeable {
 
   @Override
   public void close() throws IOException {
-    synchronized (sessionLock) {
+    synchronized (watchDogLock) {
       if (anrWatchDog != null) {
         anrWatchDog.interrupt();
         anrWatchDog = null;
