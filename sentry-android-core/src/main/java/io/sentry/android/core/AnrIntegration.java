@@ -23,6 +23,8 @@ public final class AnrIntegration implements Integration, Closeable {
   private static ANRWatchDog anrWatchDog;
   private @Nullable SentryOptions options;
 
+  private static final @NotNull Object sessionLock = new Object();
+
   @Override
   public final void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
     this.options = Objects.requireNonNull(options, "SentryOptions is required");
@@ -34,23 +36,27 @@ public final class AnrIntegration implements Integration, Closeable {
         .getLogger()
         .log(SentryLevel.DEBUG, "AnrIntegration enabled: %s", options.isAnrEnabled());
 
-    if (options.isAnrEnabled() && anrWatchDog == null) {
-      options
-          .getLogger()
-          .log(
-              SentryLevel.DEBUG,
-              "ANR timeout in milliseconds: %d",
-              options.getAnrTimeoutIntervalMillis());
+    if (options.isAnrEnabled()) {
+      synchronized (sessionLock) {
+        if (anrWatchDog == null) {
+          options
+              .getLogger()
+              .log(
+                  SentryLevel.DEBUG,
+                  "ANR timeout in milliseconds: %d",
+                  options.getAnrTimeoutIntervalMillis());
 
-      anrWatchDog =
-          new ANRWatchDog(
-              options.getAnrTimeoutIntervalMillis(),
-              options.isAnrReportInDebug(),
-              error -> reportANR(hub, options.getLogger(), error),
-              options.getLogger());
-      anrWatchDog.start();
+          anrWatchDog =
+              new ANRWatchDog(
+                  options.getAnrTimeoutIntervalMillis(),
+                  options.isAnrReportInDebug(),
+                  error -> reportANR(hub, options.getLogger(), error),
+                  options.getLogger());
+          anrWatchDog.start();
 
-      options.getLogger().log(SentryLevel.DEBUG, "AnrIntegration installed.");
+          options.getLogger().log(SentryLevel.DEBUG, "AnrIntegration installed.");
+        }
+      }
     }
   }
 
@@ -73,11 +79,13 @@ public final class AnrIntegration implements Integration, Closeable {
 
   @Override
   public void close() throws IOException {
-    if (anrWatchDog != null) {
-      anrWatchDog.interrupt();
-      anrWatchDog = null;
-      if (options != null) {
-        options.getLogger().log(SentryLevel.DEBUG, "AnrIntegration removed.");
+    synchronized (sessionLock) {
+      if (anrWatchDog != null) {
+        anrWatchDog.interrupt();
+        anrWatchDog = null;
+        if (options != null) {
+          options.getLogger().log(SentryLevel.DEBUG, "AnrIntegration removed.");
+        }
       }
     }
   }
