@@ -6,7 +6,7 @@
 <!--  extra recommended permission, we'd be able to check network status-->
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-  <!-- if your minSdkVersion < 16, this would make usable on minSdkVersion >= 14 -->
+<!--  if your minSdkVersion < 16, this would make usable on minSdkVersion >= 14-->
   <uses-sdk
     tools:overrideLibrary="io.sentry.android"/>
 
@@ -30,7 +30,6 @@
 
 <!--    NOTE: Replace the test DSN below with YOUR OWN DSN to see the events from this app in your Sentry project/dashboard-->
     <meta-data android:name="io.sentry.dsn" android:value="https://f7f320d5c3a54709be7b28e0f2ca7081@sentry.io/1808954" />
-
 
 <!--    how to enable Sentry's debug mode-->
     <meta-data android:name="io.sentry.debug" android:value="true" />
@@ -65,7 +64,7 @@
 <!--    how to change the session tracking interval-->
     <meta-data android:name="io.sentry.session-tracking.timeout-interval-millis" android:value="10000" />
 
-<!--    how to set a sampleRate (anything between 0.01 and 1.0), it's disabled by default-->
+<!--    how to enable and set a sampleRate (anything between 0.01 and 1.0), it's disabled by default-->
 <!--    <meta-data android:name="io.sentry.sample-rate" android:value="0.5" />-->
 
   </application>
