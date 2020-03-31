@@ -20,7 +20,12 @@ import org.jetbrains.annotations.TestOnly;
  */
 public final class AnrIntegration implements Integration, Closeable {
 
-  private static ANRWatchDog anrWatchDog;
+  /**
+   * Responsible for watching UI thread. being static to avoid multiple instances running at the
+   * same time.
+   */
+  private static @Nullable ANRWatchDog anrWatchDog;
+
   private @Nullable SentryOptions options;
 
   private static final @NotNull Object sessionLock = new Object();
@@ -61,7 +66,10 @@ public final class AnrIntegration implements Integration, Closeable {
   }
 
   @TestOnly
-  void reportANR(IHub hub, final @NotNull ILogger logger, ApplicationNotResponding error) {
+  void reportANR(
+      final @NotNull IHub hub,
+      final @NotNull ILogger logger,
+      final @NotNull ApplicationNotResponding error) {
     logger.log(SentryLevel.INFO, "ANR triggered with message: %s", error.getMessage());
 
     Mechanism mechanism = new Mechanism();
@@ -73,6 +81,7 @@ public final class AnrIntegration implements Integration, Closeable {
   }
 
   @TestOnly
+  @Nullable
   ANRWatchDog getANRWatchDog() {
     return anrWatchDog;
   }
