@@ -66,7 +66,7 @@ final class AndroidOptionsInitializer {
     options.addIntegration(new NdkIntegration());
     options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver(envelopeReader));
     options.addIntegration(new AnrIntegration());
-    options.addIntegration(new SessionTrackingIntegration());
+    options.addIntegration(new AutoSessionTrackingIntegration());
 
     readDefaultOptionValues(options, context);
 

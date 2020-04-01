@@ -157,8 +157,14 @@ public class SentryOptions {
    */
   private boolean attachStacktrace;
 
-  /** Whether to enable automatic session tracking. */
+  /** Whether to enable session tracking. */
   private boolean enableSessionTracking;
+
+  /**
+   * Whether to enable automatic session tracking. enableAutoSessionTracking overwrites
+   * enableSessionTracking.
+   */
+  private boolean enableAutoSessionTracking;
 
   /**
    * The session tracking interval in millis. This is the interval to end a session if the App goes
@@ -673,7 +679,7 @@ public class SentryOptions {
   /**
    * Returns if the session tracking is enabled or not
    *
-   * @return trye if enabled or false otherwise
+   * @return true if enabled or false otherwise
    */
   public boolean isEnableSessionTracking() {
     return enableSessionTracking;
@@ -778,6 +784,24 @@ public class SentryOptions {
    */
   public void setFlushTimeoutMillis(long flushTimeoutMillis) {
     this.flushTimeoutMillis = flushTimeoutMillis;
+  }
+
+  /**
+   * Returns if the automatic session tracking is enabled or not
+   *
+   * @return true if enabled or false otherwise
+   */
+  public boolean isEnableAutoSessionTracking() {
+    return enableAutoSessionTracking;
+  }
+
+  /**
+   * Enable or disable the automatic session tracking
+   *
+   * @param enableAutoSessionTracking true if enabled or false otherwise
+   */
+  public void setEnableAutoSessionTracking(boolean enableAutoSessionTracking) {
+    this.enableAutoSessionTracking = enableAutoSessionTracking;
   }
 
   /** The BeforeSend callback */

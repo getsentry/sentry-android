@@ -30,6 +30,8 @@ final class ManifestMetadataReader {
   static final String RELEASE = "io.sentry.release";
   static final String ENVIRONMENT = "io.sentry.environment";
   static final String SESSION_TRACKING_ENABLE = "io.sentry.session-tracking.enable";
+  static final String AUTO_SESSION_TRACKING_ENABLE = "io.sentry.session-tracking.auto.enable";
+
   static final String SESSION_TRACKING_TIMEOUT_INTERVAL_MILLIS =
       "io.sentry.session-tracking.timeout-interval-millis";
 
@@ -72,6 +74,21 @@ final class ManifestMetadataReader {
             .getLogger()
             .log(SentryLevel.DEBUG, "sessionTrackingEnabled read: %s", sessionTrackingEnabled);
         options.setEnableSessionTracking(sessionTrackingEnabled);
+
+        final boolean autoSessionTrackingEnabled =
+            metadata.getBoolean(
+                AUTO_SESSION_TRACKING_ENABLE, options.isEnableAutoSessionTracking());
+        options
+            .getLogger()
+            .log(
+                SentryLevel.DEBUG,
+                "autoSessionTrackingEnabled read: %s",
+                autoSessionTrackingEnabled);
+        options.setEnableAutoSessionTracking(autoSessionTrackingEnabled);
+
+        if (options.isEnableAutoSessionTracking()) {
+          options.setEnableSessionTracking(true);
+        }
 
         if (options.getSampleRate() == null) {
           Double sampleRate = metadata.getDouble(SAMPLE_RATE, -1);

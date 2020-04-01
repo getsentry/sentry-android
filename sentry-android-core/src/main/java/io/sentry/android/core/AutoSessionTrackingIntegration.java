@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
-public final class SessionTrackingIntegration implements Integration, Closeable {
+public final class AutoSessionTrackingIntegration implements Integration, Closeable {
 
   @TestOnly @Nullable LifecycleWatcher watcher;
 
@@ -27,14 +27,14 @@ public final class SessionTrackingIntegration implements Integration, Closeable 
         .getLogger()
         .log(
             SentryLevel.DEBUG,
-            "SessionTrackingIntegration enabled: %s",
-            options.isEnableSessionTracking());
+            "AutoSessionTrackingIntegration enabled: %s",
+            options.isEnableAutoSessionTracking());
 
-    if (options.isEnableSessionTracking()) {
+    if (options.isEnableAutoSessionTracking()) {
       watcher = new LifecycleWatcher(hub, options.getSessionTrackingIntervalMillis());
       ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
 
-      options.getLogger().log(SentryLevel.DEBUG, "SessionTrackingIntegration installed.");
+      options.getLogger().log(SentryLevel.DEBUG, "AutoSessionTrackingIntegration installed.");
     }
   }
 
@@ -44,7 +44,7 @@ public final class SessionTrackingIntegration implements Integration, Closeable 
       ProcessLifecycleOwner.get().getLifecycle().removeObserver(watcher);
       watcher = null;
       if (options != null) {
-        options.getLogger().log(SentryLevel.DEBUG, "SessionTrackingIntegration removed.");
+        options.getLogger().log(SentryLevel.DEBUG, "AutoSessionTrackingIntegration removed.");
       }
     }
   }

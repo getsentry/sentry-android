@@ -6,9 +6,9 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class SessionTrackingIntegrationTest {
+class AutoSessionTrackingIntegrationTest {
 
-    private val integration = SessionTrackingIntegration()
+    private val integration = AutoSessionTrackingIntegration()
 
     @Test
     fun `When SessionTracking is enabled, lifecycle watcher should be started`() {
