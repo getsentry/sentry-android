@@ -58,8 +58,8 @@
 <!--    how to enable session tracking-->
     <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
 
-<!--    how to disable auto session tracking-->
-    <meta-data android:name="io.sentry.session-tracking.auto.enable" android:value="false" />
+<!--    how to enable auto session tracking integration-->
+    <meta-data android:name="io.sentry.session-tracking.auto.enable" android:value="true" />
 
 <!--    how to set an environment-->
 <!--    <meta-data android:name="io.sentry.environment" android:value="debug" />-->
