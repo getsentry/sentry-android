@@ -166,11 +166,23 @@ public class SentryOptions {
    */
   private long sessionTrackingIntervalMillis = 30000; // 30s
 
-  /** The distinct Id (generated Guid) used for session tracking */
+  /** The distinct Id used for session tracking if no user is set */
   private String distinctId;
 
   /** The server name used in the Sentry messages. */
   private String serverName;
+
+  /**
+   * If this flag is enabled, an User set into the Scope will be cached and reused in the next App's
+   * run.
+   */
+  private boolean cacheUserForSessions;
+
+  /**
+   * The UserCache is responsible of caching/cleaning User's data if the flag cacheUserForSessions
+   * is enabled
+   */
+  private @NotNull IUserCache userCache = NoOpUserCache.getInstance();
 
   /**
    * Adds an event processor
@@ -778,6 +790,42 @@ public class SentryOptions {
    */
   public void setFlushTimeoutMillis(long flushTimeoutMillis) {
     this.flushTimeoutMillis = flushTimeoutMillis;
+  }
+
+  /**
+   * Returns if CacheUserForSessions is enabled
+   *
+   * @return true if enabled or false otherwise
+   */
+  public boolean isCacheUserForSessions() {
+    return cacheUserForSessions;
+  }
+
+  /**
+   * Sets the cacheUserForSessions flag
+   *
+   * @param cacheUserForSessions true if enabled or false otherwise
+   */
+  public void setCacheUserForSessions(boolean cacheUserForSessions) {
+    this.cacheUserForSessions = cacheUserForSessions;
+  }
+
+  /**
+   * Returns the UserCache interface
+   *
+   * @return the UserCache interface
+   */
+  public @NotNull IUserCache getUserCache() {
+    return userCache;
+  }
+
+  /**
+   * Sets the UserCache interface
+   *
+   * @param userCache the UserCache implementation
+   */
+  public void setUserCache(final @Nullable IUserCache userCache) {
+    this.userCache = (userCache == null) ? NoOpUserCache.getInstance() : userCache;
   }
 
   /** The BeforeSend callback */

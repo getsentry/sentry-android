@@ -24,7 +24,6 @@ import io.sentry.core.DateUtils;
 import io.sentry.core.EventProcessor;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
-import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.App;
 import io.sentry.core.protocol.DebugImage;
 import io.sentry.core.protocol.DebugMeta;
@@ -61,7 +60,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @TestOnly static final String PROGUARD_UUID = "proGuardUuids";
   @TestOnly static final String ROOTED = "rooted";
-  @TestOnly static final String ANDROID_ID = "androidId";
   @TestOnly static final String KERNEL_VERSION = "kernelVersion";
   @TestOnly static final String EMULATOR = "emulator";
 
@@ -70,14 +68,19 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @TestOnly final Context context;
 
-  private final SentryOptions options;
+  private final SentryAndroidOptions options;
 
   @TestOnly final Future<Map<String, Object>> contextData;
 
+  private final @Nullable String sentryDeviceId;
+
   public DefaultAndroidEventProcessor(
-      final @NotNull Context context, final @NotNull SentryOptions options) {
+      final @NotNull Context context,
+      final @NotNull SentryAndroidOptions options,
+      final @Nullable String sentryDeviceId) {
     this.context = Objects.requireNonNull(context, "The application context is required.");
-    this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
+    this.options = Objects.requireNonNull(options, "The SentryAndroidOptions is required.");
+    this.sentryDeviceId = sentryDeviceId;
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     // dont ref. to method reference, theres a bug on it
@@ -94,11 +97,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     }
 
     map.put(ROOTED, isRooted());
-
-    String androidId = getAndroidId();
-    if (androidId != null) {
-      map.put(ANDROID_ID, androidId);
-    }
 
     String kernelVersion = getKernelVersion();
     if (kernelVersion != null) {
@@ -137,8 +135,14 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   // Data to be applied to events that was created in the running process
   private void processNonCachedEvent(final @NotNull SentryEvent event) {
-    if (event.getUser() == null) {
-      event.setUser(getUser());
+    User user = event.getUser();
+    if (user == null) {
+      user = new User();
+    }
+    event.setUser(user);
+
+    if (user.getId() == null) {
+      user.setId(getDeviceId());
     }
 
     App app = event.getContexts().getApp();
@@ -839,47 +843,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     return null;
   }
 
-  public @NotNull User getUser() {
-    User user = new User();
-    user.setId(getDeviceId());
-
-    return user;
-  }
-
-  private @Nullable String getDeviceId() {
-    try {
-      Object androidId = contextData.get().get(ANDROID_ID);
-
-      if (androidId != null) {
-        return (String) androidId;
-      }
-    } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting androidId.", e);
+  public @Nullable String getDeviceId() {
+    if (options.isEnableSecureAndroidId()) {
+      return ContextUtils.getAndroidId(context, sentryDeviceId);
+    } else {
+      return sentryDeviceId;
     }
-    return null;
-  }
-
-  @SuppressWarnings("HardwareIds")
-  private @Nullable String getAndroidId() {
-    // Android 29 has changed and -> Avoid using hardware identifiers, find another way in the
-    // future
-    String androidId =
-        Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-    //    https://android-developers.googleblog.com/2011/03/identifying-app-installations.html
-    if (androidId == null
-        || androidId.isEmpty()
-        || androidId.toLowerCase(Locale.ROOT).contentEquals("9774d56d682e549c")) {
-      try {
-        androidId = Installation.id(context);
-      } catch (RuntimeException e) {
-        options.getLogger().log(SentryLevel.ERROR, "Could not generate device Id.", e);
-
-        return null;
-      }
-    }
-
-    return androidId;
   }
 
   private @Nullable String[] getProGuardUuids() {
