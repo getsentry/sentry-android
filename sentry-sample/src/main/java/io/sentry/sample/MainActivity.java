@@ -3,6 +3,7 @@ package io.sentry.sample;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import io.sentry.core.Sentry;
+import io.sentry.core.SentryLevel;
 import io.sentry.core.protocol.User;
 import java.util.Collections;
 import timber.log.Timber;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
               Sentry.addBreadcrumb("Breadcrumb");
               Sentry.setExtra("extra", "extra");
               Sentry.setFingerprint(Collections.singletonList("fingerprint"));
+              Sentry.setLevel(SentryLevel.INFO);
               Sentry.setTransaction("transaction");
               User user = new User();
               user.setUsername("username");

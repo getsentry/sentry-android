@@ -14,7 +14,7 @@ public final class SentryAndroidOptions extends SentryOptions {
   private long anrTimeoutIntervalMillis = 4000;
 
   /** Enable or disable ANR on Debug mode Default is disabled Used by AnrIntegration */
-  private boolean anrReportInDebug;
+  private boolean anrReportInDebug = false;
 
   /**
    * enable the usage of Settings.Secure.ANDROID_ID to keep retro compatible with older SDK versions
