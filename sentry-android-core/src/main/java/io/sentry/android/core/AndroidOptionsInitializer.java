@@ -95,7 +95,10 @@ final class AndroidOptionsInitializer {
             }));
 
     options.addIntegration(new AnrIntegration());
-    options.addIntegration(new SessionTrackingIntegration());
+    options.addIntegration(new AppLifecycleIntegration());
+    options.addIntegration(new ActivityBreadcrumbsIntegration(context));
+    options.addIntegration(new AppComponentsBreadcrumbsIntegration(context));
+    options.addIntegration(new SystemEventsIntegration(context));
 
     readDefaultOptionValues(options, context);
 
