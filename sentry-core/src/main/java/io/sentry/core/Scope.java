@@ -50,6 +50,9 @@ public final class Scope implements Cloneable {
   /** Session lock, Ops should be atomic */
   private final @NotNull Object sessionLock = new Object();
 
+  /** User lock, Ops should be atomic */
+  private final @NotNull Object userLock = new Object();
+
   /**
    * Scope's ctor
    *
@@ -102,7 +105,12 @@ public final class Scope implements Cloneable {
    * @return the user
    */
   public @Nullable User getUser() {
-    return user;
+    synchronized (userLock) {
+      if (user == null) {
+        user = options.getUserCache().getUser();
+      }
+      return user;
+    }
   }
 
   /**
@@ -110,8 +118,11 @@ public final class Scope implements Cloneable {
    *
    * @param user the user
    */
-  public void setUser(@Nullable User user) {
-    this.user = user;
+  public void setUser(final @Nullable User user) {
+    synchronized (userLock) {
+      this.user = user;
+      options.getUserCache().setUser(user);
+    }
   }
 
   /**
@@ -402,9 +413,30 @@ public final class Scope implements Cloneable {
       }
       previousSession = session;
 
-      session =
-          new Session(
-              options.getDistinctId(), user, options.getEnvironment(), options.getRelease());
+      String distinctId = null;
+
+      final User finalUser = getUser();
+      //      synchronized (userLock) {
+      if (finalUser != null) {
+        if (finalUser.getId() != null && !finalUser.getId().isEmpty()) {
+          distinctId = finalUser.getId();
+        } else if (finalUser.getEmail() != null && !finalUser.getEmail().isEmpty()) {
+          distinctId = finalUser.getEmail();
+        } else if (finalUser.getUsername() != null && !finalUser.getUsername().isEmpty()) {
+          distinctId = finalUser.getUsername();
+        }
+      }
+
+      // fallback to sentryDeviceId
+      if (distinctId == null) {
+        // if I add a transient field (not serializable) to the User object, I can get rid of the
+        // distinctId on options
+        // I cannot simply set on user.Id cus its gonna be a breaking change
+        distinctId = options.getDistinctId();
+      }
+
+      session = new Session(distinctId, user, options.getEnvironment(), options.getRelease());
+      //      }
 
       pair = new SessionPair(session, previousSession);
     }

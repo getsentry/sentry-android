@@ -17,6 +17,11 @@ public final class SentryAndroidOptions extends SentryOptions {
   private boolean anrReportInDebug = false;
 
   /**
+   * enable the usage of Settings.Secure.ANDROID_ID to keep retro compatible with older SDK versions
+   */
+  private boolean enableSecureAndroidId;
+
+  /**
    * Checks if ANR (Application Not Responding) is enabled or disabled Default is enabled
    *
    * @return true if enabled or false otherwise
@@ -85,5 +90,23 @@ public final class SentryAndroidOptions extends SentryOptions {
    */
   public void setAnrReportInDebug(boolean anrReportInDebug) {
     this.anrReportInDebug = anrReportInDebug;
+  }
+
+  /**
+   * Returns if the enableSecureAndroidId flag is enabled
+   *
+   * @return true if enabled or false otherwise
+   */
+  public boolean isEnableSecureAndroidId() {
+    return enableSecureAndroidId;
+  }
+
+  /**
+   * Sets the enableSecureAndroidId flag
+   *
+   * @param enableSecureAndroidId true if enabled or false otherwise
+   */
+  public void setEnableSecureAndroidId(boolean enableSecureAndroidId) {
+    this.enableSecureAndroidId = enableSecureAndroidId;
   }
 }

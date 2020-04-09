@@ -67,5 +67,11 @@
 <!--    how to enable and set a sampleRate (anything between 0.01 and 1.0), it's disabled by default-->
 <!--    <meta-data android:name="io.sentry.sample-rate" android:value="0.5" />-->
 
+<!--    how to enable secure android id retro compatibility-->
+    <meta-data android:name="io.sentry.secure-android-id.enable" android:value="true" />
+
+<!--    how to enable caching users for sessions-->
+    <meta-data android:name="io.sentry.session-tracking.cache-user.enable" android:value="true" />
+
   </application>
 </manifest>

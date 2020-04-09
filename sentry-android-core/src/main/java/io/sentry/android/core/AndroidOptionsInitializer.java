@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import io.sentry.core.EnvelopeReader;
 import io.sentry.core.EnvelopeSender;
@@ -11,13 +12,17 @@ import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Objects;
 import java.io.File;
+import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Android Options initializer, it reads configurations from AndroidManifest and sets to the
  * SentryOptions. It also adds default values for some fields.
  */
 final class AndroidOptionsInitializer {
+
+  private static final String SENTRY_DEVICE_ID = "sentry_device_id";
 
   /** private ctor */
   private AndroidOptionsInitializer() {}
@@ -97,9 +102,24 @@ final class AndroidOptionsInitializer {
     options.addIntegration(new AnrIntegration());
     options.addIntegration(new SessionTrackingIntegration());
 
-    readDefaultOptionValues(options, context);
+    final SharedPreferences sharedPreferences =
+        context.getSharedPreferences(BuildConfig.LIBRARY_PACKAGE_NAME, Context.MODE_PRIVATE);
 
-    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
+    String sentryDeviceId;
+    // cache it if not set
+    if (!sharedPreferences.contains(SENTRY_DEVICE_ID)) {
+      sentryDeviceId = UUID.randomUUID().toString();
+      // set default sentry device id
+      sharedPreferences.edit().putString(SENTRY_DEVICE_ID, sentryDeviceId).apply();
+    } else {
+      sentryDeviceId = sharedPreferences.getString(SENTRY_DEVICE_ID, null);
+    }
+
+    options.setUserCache(new AndroidUserCache(options, sharedPreferences, sentryDeviceId));
+
+    readDefaultOptionValues(options, context, sentryDeviceId);
+
+    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options, sentryDeviceId));
 
     options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
 
@@ -113,7 +133,9 @@ final class AndroidOptionsInitializer {
    * @param context the Android context methods
    */
   private static void readDefaultOptionValues(
-      final @NotNull SentryAndroidOptions options, final @NotNull Context context) {
+      final @NotNull SentryAndroidOptions options,
+      final @NotNull Context context,
+      final @Nullable String sentryDeviceId) {
     final PackageInfo packageInfo = ContextUtils.getPackageInfo(context, options.getLogger());
     if (packageInfo != null) {
       // Sets App's release if not set by Manifest
@@ -130,11 +152,7 @@ final class AndroidOptionsInitializer {
     }
 
     if (options.getDistinctId() == null) {
-      try {
-        options.setDistinctId(Installation.id(context));
-      } catch (RuntimeException e) {
-        options.getLogger().log(SentryLevel.ERROR, "Could not generate distinct Id.", e);
-      }
+      options.setDistinctId(sentryDeviceId);
     }
   }
 

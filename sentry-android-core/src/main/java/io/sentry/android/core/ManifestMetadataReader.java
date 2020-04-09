@@ -32,6 +32,8 @@ final class ManifestMetadataReader {
   static final String SESSION_TRACKING_ENABLE = "io.sentry.session-tracking.enable";
   static final String SESSION_TRACKING_TIMEOUT_INTERVAL_MILLIS =
       "io.sentry.session-tracking.timeout-interval-millis";
+  static final String SECURE_ANDROID_ID_ENABLE = "io.sentry.secure-android-id.enable";
+  static final String CACHE_USER_SESSIONS_ENABLE = "io.sentry.session-tracking.cache-user.enable";
 
   /** ManifestMetadataReader ctor */
   private ManifestMetadataReader() {}
@@ -135,6 +137,18 @@ final class ManifestMetadataReader {
                 "sessionTrackingTimeoutIntervalMillis read: %d",
                 sessionTrackingTimeoutIntervalMillis);
         options.setSessionTrackingIntervalMillis(sessionTrackingTimeoutIntervalMillis);
+
+        final boolean secureAndroidIdEnabled =
+            metadata.getBoolean(SECURE_ANDROID_ID_ENABLE, options.isEnableSecureAndroidId());
+        options
+            .getLogger()
+            .log(SentryLevel.DEBUG, "enableAndroidId read: %s", secureAndroidIdEnabled);
+        options.setEnableSecureAndroidId(secureAndroidIdEnabled);
+
+        final boolean cacheUserEnabled =
+            metadata.getBoolean(CACHE_USER_SESSIONS_ENABLE, options.isCacheUserForSessions());
+        options.getLogger().log(SentryLevel.DEBUG, "cacheUserEnabled read: %s", cacheUserEnabled);
+        options.setCacheUserForSessions(cacheUserEnabled);
       }
       options
           .getLogger()
