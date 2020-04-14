@@ -20,18 +20,27 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
   private final @NotNull Timer timer = new Timer(true);
   private final @NotNull IHub hub;
   private final boolean enableSessionTracking;
+  private final boolean enableAppLifecycleBreadcrumbs;
 
   LifecycleWatcher(
-      final @NotNull IHub hub, final long sessionIntervalMillis, boolean enableSessionTracking) {
+      final @NotNull IHub hub,
+      final long sessionIntervalMillis,
+      boolean enableSessionTracking,
+      boolean enableAppLifecycleBreadcrumbs) {
     this.sessionIntervalMillis = sessionIntervalMillis;
     this.enableSessionTracking = enableSessionTracking;
+    this.enableAppLifecycleBreadcrumbs = enableAppLifecycleBreadcrumbs;
     this.hub = hub;
   }
 
   // App goes to foreground
   @Override
   public void onStart(final @NotNull LifecycleOwner owner) {
+    startSession();
     addAppBreadcrumb("foreground");
+  }
+
+  private void startSession() {
     if (enableSessionTracking) {
       final long currentTimeMillis = System.currentTimeMillis();
       cancelTask();
@@ -48,10 +57,11 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
   // as no new screen was shown
   @Override
   public void onStop(final @NotNull LifecycleOwner owner) {
-    addAppBreadcrumb("background");
     if (enableSessionTracking) {
       scheduleEndSession();
     }
+
+    addAppBreadcrumb("background");
   }
 
   private void scheduleEndSession() {
@@ -75,20 +85,24 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
   }
 
   private void addAppBreadcrumb(final @NotNull String state) {
-    final Breadcrumb breadcrumb = new Breadcrumb();
-    breadcrumb.setType("navigation");
-    breadcrumb.setData("state", state);
-    breadcrumb.setCategory("ui.lifecycle");
-    breadcrumb.setLevel(SentryLevel.DEBUG);
-    hub.addBreadcrumb(breadcrumb);
+    if (enableAppLifecycleBreadcrumbs) {
+      final Breadcrumb breadcrumb = new Breadcrumb();
+      breadcrumb.setType("navigation");
+      breadcrumb.setData("state", state);
+      breadcrumb.setCategory("ui.lifecycle");
+      breadcrumb.setLevel(SentryLevel.DEBUG);
+      hub.addBreadcrumb(breadcrumb);
+    }
   }
 
   private void addSessionBreadcrumb(final @NotNull String state) {
-    final Breadcrumb breadcrumb = new Breadcrumb();
-    breadcrumb.setType("session");
-    breadcrumb.setData("state", state);
-    breadcrumb.setCategory("session.lifecycle");
-    breadcrumb.setLevel(SentryLevel.DEBUG);
-    hub.addBreadcrumb(breadcrumb);
+    if (enableSessionTracking) {
+      final Breadcrumb breadcrumb = new Breadcrumb();
+      breadcrumb.setType("session");
+      breadcrumb.setData("state", state);
+      breadcrumb.setCategory("session.lifecycle");
+      breadcrumb.setLevel(SentryLevel.DEBUG);
+      hub.addBreadcrumb(breadcrumb);
+    }
   }
 }

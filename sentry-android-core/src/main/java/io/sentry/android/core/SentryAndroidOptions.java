@@ -17,6 +17,21 @@ public final class SentryAndroidOptions extends SentryOptions {
   private boolean anrReportInDebug = false;
 
   /**
+   * Enable or disable automatic breadcrumbs for Activity lifecycle. Using
+   * Application.ActivityLifecycleCallbacks
+   */
+  private boolean enableActivityLifecycleBreadcrumbs = true;
+
+  /** Enable or disable automatic breadcrumbs for App's lifecycle Using ProcessLifecycleOwner */
+  private boolean enableAppLifecycleBreadcrumbs = true;
+
+  /** Enable or disable automatic breadcrumbs for SystemEvents Registering a BroadcastReceiver */
+  private boolean enableSystemEventsBreadcrumbs = true;
+
+  /** Enable or disable automatic breadcrumbs for App Components Using ComponentCallbacks */
+  private boolean enableAppComponentsBreadcrumbs = true;
+
+  /**
    * Checks if ANR (Application Not Responding) is enabled or disabled Default is enabled
    *
    * @return true if enabled or false otherwise
@@ -85,5 +100,49 @@ public final class SentryAndroidOptions extends SentryOptions {
    */
   public void setAnrReportInDebug(boolean anrReportInDebug) {
     this.anrReportInDebug = anrReportInDebug;
+  }
+
+  public boolean isEnableActivityLifecycleBreadcrumbs() {
+    return enableActivityLifecycleBreadcrumbs;
+  }
+
+  public void setEnableActivityLifecycleBreadcrumbs(boolean enableActivityLifecycleBreadcrumbs) {
+    this.enableActivityLifecycleBreadcrumbs = enableActivityLifecycleBreadcrumbs;
+  }
+
+  public boolean isEnableAppLifecycleBreadcrumbs() {
+    return enableAppLifecycleBreadcrumbs;
+  }
+
+  public void setEnableAppLifecycleBreadcrumbs(boolean enableAppLifecycleBreadcrumbs) {
+    this.enableAppLifecycleBreadcrumbs = enableAppLifecycleBreadcrumbs;
+  }
+
+  public boolean isEnableSystemEventsBreadcrumbs() {
+    return enableSystemEventsBreadcrumbs;
+  }
+
+  public void setEnableSystemEventsBreadcrumbs(boolean enableSystemEventsBreadcrumbs) {
+    this.enableSystemEventsBreadcrumbs = enableSystemEventsBreadcrumbs;
+  }
+
+  public boolean isEnableAppComponentsBreadcrumbs() {
+    return enableAppComponentsBreadcrumbs;
+  }
+
+  public void setEnableAppComponentsBreadcrumbs(boolean enableAppComponentsBreadcrumbs) {
+    this.enableAppComponentsBreadcrumbs = enableAppComponentsBreadcrumbs;
+  }
+
+  /**
+   * Enable or disable all the automatic breadcrumbs
+   *
+   * @param enable true if enable or false otherwise
+   */
+  public void enableAllAutoBreadcrumbs(boolean enable) {
+    enableActivityLifecycleBreadcrumbs = enable;
+    enableAppComponentsBreadcrumbs = enable;
+    enableSystemEventsBreadcrumbs = enable;
+    enableAppLifecycleBreadcrumbs = enable;
   }
 }

@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
-import android.content.res.Configuration;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
@@ -20,6 +19,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import io.sentry.android.core.util.ConnectivityChecker;
+import io.sentry.android.core.util.DeviceOrientations;
 import io.sentry.core.DateUtils;
 import io.sentry.core.EventProcessor;
 import io.sentry.core.SentryEvent;
@@ -472,26 +472,22 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    */
   @SuppressWarnings("deprecation")
   private @Nullable Device.DeviceOrientation getOrientation() {
+    Device.DeviceOrientation deviceOrientation = null;
     try {
-      switch (context.getResources().getConfiguration().orientation) {
-        case Configuration.ORIENTATION_LANDSCAPE:
-          return Device.DeviceOrientation.LANDSCAPE;
-        case Configuration.ORIENTATION_PORTRAIT:
-          return Device.DeviceOrientation.PORTRAIT;
-        case Configuration.ORIENTATION_SQUARE:
-        case Configuration.ORIENTATION_UNDEFINED:
-        default:
-          options
-              .getLogger()
-              .log(
-                  SentryLevel.INFO,
-                  "No device orientation available (ORIENTATION_SQUARE|ORIENTATION_UNDEFINED)");
-          return null;
+      deviceOrientation =
+          DeviceOrientations.getOrientation(context.getResources().getConfiguration().orientation);
+      if (deviceOrientation == null) {
+        options
+            .getLogger()
+            .log(
+                SentryLevel.INFO,
+                "No device orientation available (ORIENTATION_SQUARE|ORIENTATION_UNDEFINED)");
+        return null;
       }
     } catch (Exception e) {
       options.getLogger().log(SentryLevel.ERROR, "Error getting device orientation.", e);
-      return null;
     }
+    return deviceOrientation;
   }
 
   /**

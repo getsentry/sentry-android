@@ -16,28 +16,41 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
 
   @TestOnly @Nullable LifecycleWatcher watcher;
 
-  private @Nullable SentryOptions options;
+  private @Nullable SentryAndroidOptions options;
 
   @Override
   public void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
-    this.options = Objects.requireNonNull(options, "SentryOptions is required");
     Objects.requireNonNull(hub, "Hub is required");
+    this.options =
+        Objects.requireNonNull(
+            (options instanceof SentryAndroidOptions) ? (SentryAndroidOptions) options : null,
+            "SentryAndroidOptions is required");
 
-    options
+    this.options
         .getLogger()
         .log(
             SentryLevel.DEBUG,
-            "SessionTrackingIntegration enabled: %s",
-            options.isEnableSessionTracking());
+            "enableSessionTracking enabled: %s",
+            this.options.isEnableSessionTracking());
 
-    //    if (options.isEnableSessionTracking()) {
-    watcher =
-        new LifecycleWatcher(
-            hub, options.getSessionTrackingIntervalMillis(), options.isEnableSessionTracking());
-    ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
+    this.options
+        .getLogger()
+        .log(
+            SentryLevel.DEBUG,
+            "enableAppLifecycleBreadcrumbs enabled: %s",
+            this.options.isEnableAppLifecycleBreadcrumbs());
 
-    options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
-    //    }
+    if (this.options.isEnableSessionTracking() || this.options.isEnableAppLifecycleBreadcrumbs()) {
+      watcher =
+          new LifecycleWatcher(
+              hub,
+              this.options.getSessionTrackingIntervalMillis(),
+              options.isEnableSessionTracking(),
+              this.options.isEnableAppLifecycleBreadcrumbs());
+      ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
+
+      options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
+    }
   }
 
   @Override

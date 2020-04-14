@@ -5,77 +5,87 @@ import android.content.Context;
 import android.content.res.Configuration;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.sentry.android.core.util.DeviceOrientations;
 import io.sentry.core.Breadcrumb;
 import io.sentry.core.IHub;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.protocol.Device;
+import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 
-public final class AppComponentsBreadcrumbsIntegration implements Integration, Closeable {
+public final class AppComponentsBreadcrumbsIntegration
+    implements Integration, Closeable, ComponentCallbacks {
 
   private final @NotNull Context context;
   private @Nullable IHub hub;
+  private @Nullable SentryAndroidOptions options;
 
   public AppComponentsBreadcrumbsIntegration(final @NotNull Context context) {
-    this.context = context;
+    this.context = Objects.requireNonNull(context, "Context is required");
   }
 
   @Override
   public void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
-    this.hub = hub;
-    context.registerComponentCallbacks(callbacks);
+    this.hub = Objects.requireNonNull(hub, "Hub is required");
+    this.options =
+        Objects.requireNonNull(
+            (options instanceof SentryAndroidOptions) ? (SentryAndroidOptions) options : null,
+            "SentryAndroidOptions is required");
+
+    this.options
+        .getLogger()
+        .log(
+            SentryLevel.DEBUG,
+            "AppComponentsBreadcrumbsIntegration enabled: %s",
+            this.options.isEnableAppComponentsBreadcrumbs());
+
+    if (this.options.isEnableAppComponentsBreadcrumbs()) {
+      context.registerComponentCallbacks(this);
+      options.getLogger().log(SentryLevel.DEBUG, "AppComponentsBreadcrumbsIntegration installed.");
+    }
   }
 
   @Override
   public void close() throws IOException {
-    context.unregisterComponentCallbacks(callbacks);
+    context.unregisterComponentCallbacks(this);
+
+    if (options != null) {
+      options.getLogger().log(SentryLevel.DEBUG, "AppComponentsBreadcrumbsIntegration removed.");
+    }
   }
 
-  private final ComponentCallbacks callbacks =
-      new ComponentCallbacks() {
-        //  private final ComponentCallbacks2 callbacks2 = new ComponentCallbacks2() {
-        //    @Override
-        //    public void onTrimMemory(int level) {
-        //
-        //    }
+  @SuppressWarnings("deprecation")
+  @Override
+  public void onConfigurationChanged(@NonNull Configuration newConfig) {
+    final Device.DeviceOrientation deviceOrientation =
+        DeviceOrientations.getOrientation(context.getResources().getConfiguration().orientation);
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void onConfigurationChanged(@NonNull Configuration newConfig) {
-          // TODO: reuse from DefaultAndroidEventProcessor
-          String position;
-          switch (context.getResources().getConfiguration().orientation) {
-            case Configuration.ORIENTATION_LANDSCAPE:
-              position = "land";
-              break;
-            case Configuration.ORIENTATION_PORTRAIT:
-              position = "port";
-              break;
-            case Configuration.ORIENTATION_SQUARE:
-            case Configuration.ORIENTATION_UNDEFINED:
-            default:
-              position = "undefined";
-              break;
-          }
+    String orientation;
+    if (deviceOrientation != null) {
+      orientation = deviceOrientation.name().toLowerCase(Locale.ROOT);
+    } else {
+      orientation = "undefined";
+    }
 
-          final Breadcrumb breadcrumb = new Breadcrumb();
-          breadcrumb.setType("navigation");
-          breadcrumb.setCategory("ui.orientation");
-          breadcrumb.setData("position", position);
-          breadcrumb.setLevel(SentryLevel.DEBUG);
-          hub.addBreadcrumb(breadcrumb);
-        }
+    final Breadcrumb breadcrumb = new Breadcrumb();
+    breadcrumb.setType("navigation");
+    breadcrumb.setCategory("ui.deviceOrientation");
+    breadcrumb.setData("position", orientation);
+    breadcrumb.setLevel(SentryLevel.DEBUG);
+    hub.addBreadcrumb(breadcrumb);
+  }
 
-        @Override
-        public void onLowMemory() {
-          final Breadcrumb breadcrumb = new Breadcrumb();
-          breadcrumb.setType("info");
-          breadcrumb.setCategory("app.memory");
-          breadcrumb.setLevel(SentryLevel.WARNING);
-          hub.addBreadcrumb(breadcrumb);
-        }
-      };
+  @Override
+  public void onLowMemory() {
+    final Breadcrumb breadcrumb = new Breadcrumb();
+    breadcrumb.setType("info");
+    breadcrumb.setCategory("app.memory");
+    breadcrumb.setLevel(SentryLevel.WARNING);
+    hub.addBreadcrumb(breadcrumb);
+  }
 }
