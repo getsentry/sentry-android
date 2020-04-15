@@ -70,6 +70,11 @@ dependencies {
 
     implementation(project(":sentry-android"))
 
+//    how to exclude androidx if release health feature is disabled
+//    implementation(project(":sentry-android")) {
+//        exclude(group = "androidx.lifecycle")
+//    }
+
     implementation(Config.Libs.appCompat)
 
     // debugging purpose
