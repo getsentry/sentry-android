@@ -137,8 +137,7 @@ public final class SessionCache implements IEnvelopeCache {
               session.update(Session.State.Crashed, null, true);
             } else {
               // We don't know what happened, it's not a NDK crash nor a normal crashed shutdown,
-              // let's mark
-              // it as Abnormal
+              // let's mark it as Abnormal
               Session.State state = Session.State.Abnormal;
               if (session.getStatus() != null
                   && Session.State.Crashed.equals(session.getStatus())) {
