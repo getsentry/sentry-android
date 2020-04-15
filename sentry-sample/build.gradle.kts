@@ -72,7 +72,8 @@ dependencies {
 
 //    how to exclude androidx if release health feature is disabled
 //    implementation(project(":sentry-android")) {
-//        exclude(group = "androidx.lifecycle")
+//        exclude(group = "androidx.lifecycle", module = "lifecycle-process")
+//        exclude(group = "androidx.lifecycle", module = "lifecycle-common-java8")
 //    }
 
     implementation(Config.Libs.appCompat)
