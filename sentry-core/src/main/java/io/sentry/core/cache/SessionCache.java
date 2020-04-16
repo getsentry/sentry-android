@@ -153,9 +153,8 @@ public final class SessionCache implements IEnvelopeCache {
         } catch (IOException e) {
           options.getLogger().log(SentryLevel.ERROR, "Error processing session.", e);
         }
-      } else {
-        updateCurrentSession(currentSessionFile, envelope);
       }
+      updateCurrentSession(currentSessionFile, envelope);
     }
 
     if (hint instanceof SessionUpdate) {
