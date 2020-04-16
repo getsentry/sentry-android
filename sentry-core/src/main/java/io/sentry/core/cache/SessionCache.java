@@ -153,6 +153,10 @@ public final class SessionCache implements IEnvelopeCache {
         } catch (IOException e) {
           options.getLogger().log(SentryLevel.ERROR, "Error processing session.", e);
         }
+
+        if (!currentSessionFile.delete()) {
+          options.getLogger().log(WARNING, "Failed to delete the current session file.");
+        }
       }
       updateCurrentSession(currentSessionFile, envelope);
     }
