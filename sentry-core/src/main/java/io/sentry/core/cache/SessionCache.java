@@ -135,6 +135,15 @@ public final class SessionCache implements IEnvelopeCache {
                         crashMarkerFile.getAbsolutePath());
               }
               session.update(Session.State.Crashed, null, true);
+            } else {
+              // We don't know what happened, it's not a NDK crash nor a normal crashed shutdown,
+              // let's mark it as Abnormal
+              Session.State state = Session.State.Abnormal;
+              if (session.getStatus() != null
+                  && Session.State.Crashed.equals(session.getStatus())) {
+                state = null; // keep as it is
+              }
+              session.update(state, null, false);
             }
             session.end(timestamp);
             final SentryEnvelope fromSession = SentryEnvelope.fromSession(serializer, session);
@@ -144,9 +153,15 @@ public final class SessionCache implements IEnvelopeCache {
         } catch (IOException e) {
           options.getLogger().log(SentryLevel.ERROR, "Error processing session.", e);
         }
-      } else {
-        updateCurrentSession(currentSessionFile, envelope);
+
+        // at this point the leftover session and its current session file already became a new
+        // envelope file to be sent
+        // so deleting it as the new session will take place.
+        if (!currentSessionFile.delete()) {
+          options.getLogger().log(WARNING, "Failed to delete the current session file.");
+        }
       }
+      updateCurrentSession(currentSessionFile, envelope);
     }
 
     if (hint instanceof SessionUpdate) {

@@ -1,5 +1,5 @@
 object Config {
-    val kotlinVersion = "1.3.71"
+    val kotlinVersion = "1.3.72"
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
@@ -84,7 +84,6 @@ object Config {
         val novodaBintrayPlugin = "com.novoda:bintray-release:1.0.3"
         val novodaBintray = "com.novoda.bintray-release"
         val sign = true
-        val mavenCentralSync = true
     }
 
     object NativePlugins {

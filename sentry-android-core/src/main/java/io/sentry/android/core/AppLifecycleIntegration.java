@@ -41,15 +41,26 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
             this.options.isEnableAppLifecycleBreadcrumbs());
 
     if (this.options.isEnableSessionTracking() || this.options.isEnableAppLifecycleBreadcrumbs()) {
-      watcher =
-          new LifecycleWatcher(
-              hub,
-              this.options.getSessionTrackingIntervalMillis(),
-              options.isEnableSessionTracking(),
-              this.options.isEnableAppLifecycleBreadcrumbs());
-      ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
+      try {
+        Class.forName("androidx.lifecycle.DefaultLifecycleObserver");
+        Class.forName("androidx.lifecycle.ProcessLifecycleOwner");
+        watcher =
+            new LifecycleWatcher(
+                hub,
+                this.options.getSessionTrackingIntervalMillis(),
+                options.isEnableSessionTracking(),
+                this.options.isEnableAppLifecycleBreadcrumbs());
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
 
-      options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
+        options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
+      } catch (ClassNotFoundException e) {
+        options
+            .getLogger()
+            .log(
+                SentryLevel.INFO,
+                "androidx.lifecycle is not available, SessionTrackingIntegration won't be installed",
+                e);
+      }
     }
   }
 
