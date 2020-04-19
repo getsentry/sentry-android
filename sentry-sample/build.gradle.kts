@@ -67,7 +67,6 @@ android {
     buildTypes {
         getByName("debug") {
             manifestPlaceholders = mapOf(
-                "sentryDSN" to "https://f7f320d5c3a54709be7b28e0f2ca7081@sentry.io/1808954",
                 "sentryDebug" to true
             )
         }
@@ -78,7 +77,6 @@ android {
             isShrinkResources = true
 
             manifestPlaceholders = mapOf(
-                "sentryDSN" to "https://f7f320d5c3a54709be7b28e0f2ca7081@sentry.io/1808954",
                 "sentryDebug" to false
             )
         }
