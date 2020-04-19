@@ -50,7 +50,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            setVersion("3.10.2")
+            version = "3.10.2"
             setPath("CMakeLists.txt")
         }
     }
