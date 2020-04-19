@@ -675,8 +675,9 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   private boolean isExternalStorageMounted() {
-    return (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
-            || Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState()))
+    final String storageState = Environment.getExternalStorageState();
+    return (Environment.MEDIA_MOUNTED.equals(storageState)
+            || Environment.MEDIA_MOUNTED_READ_ONLY.equals(storageState))
         && !Environment.isExternalStorageEmulated();
   }
 
