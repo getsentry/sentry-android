@@ -24,12 +24,6 @@ android {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersionNdk) // NDK requires a higher API level than core.
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                includeCompileClasspath = true
-            }
-        }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = project.version.toString()
@@ -45,13 +39,13 @@ android {
         ndk {
             abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
         }
+    }
 
-        // replace with https://issuetracker.google.com/issues/72050365 once released.
-        libraryVariants.all {
-            generateBuildConfigProvider?.configure {
-                enabled = false
-            }
-        }
+    buildFeatures {
+        // Determines whether to generate a BuildConfig class.
+        buildConfig = false
+        // Determines whether to support injecting custom variables into the module's R class.
+        resValues = false
     }
 
     externalNativeBuild {
@@ -99,8 +93,6 @@ android {
         // We run a full lint analysis as build part in CI, so skip vital checks for assemble tasks.
         isCheckReleaseBuilds = false
     }
-
-//    ndkVersion = "21.0.6113669" while https://discuss.lgtm.com/t/android-project-build-is-not-working/2587/4 is not fixed.
 
     nativeBundleExport {
         headerDir = "${project.projectDir}/$sentryNativeSrc/include"

@@ -18,12 +18,6 @@ android {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersion)
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                includeCompileClasspath = true
-            }
-        }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = project.version.toString()
@@ -70,6 +64,8 @@ android {
         // We run a full lint analysis as build part in CI, so skip vital checks for assemble tasks.
         isCheckReleaseBuilds = false
     }
+
+    // check dependenciesInfo
 }
 
 dependencies {
