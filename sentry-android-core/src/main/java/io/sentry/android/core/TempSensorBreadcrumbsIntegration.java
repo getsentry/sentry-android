@@ -50,12 +50,7 @@ public final class TempSensorBreadcrumbsIntegration
     if (this.options.isEnableSystemEventsBreadcrumbs())
       sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
     if (sensorManager == null) {
-      this.options
-          .getLogger()
-          .log(
-              SentryLevel.INFO,
-              "SENSOR_SERVICE is not available.",
-              this.options.isEnableSystemEventsBreadcrumbs());
+      this.options.getLogger().log(SentryLevel.INFO, "SENSOR_SERVICE is not available.");
       return;
     }
     // some people do cat sys/class/thermal/thermal_zone0/temp
@@ -68,12 +63,7 @@ public final class TempSensorBreadcrumbsIntegration
 
       options.getLogger().log(SentryLevel.DEBUG, "TempSensorBreadcrumbsIntegration installed.");
     } else {
-      this.options
-          .getLogger()
-          .log(
-              SentryLevel.INFO,
-              "TYPE_AMBIENT_TEMPERATURE is not available.",
-              this.options.isEnableSystemEventsBreadcrumbs());
+      this.options.getLogger().log(SentryLevel.INFO, "TYPE_AMBIENT_TEMPERATURE is not available.");
     }
   }
 

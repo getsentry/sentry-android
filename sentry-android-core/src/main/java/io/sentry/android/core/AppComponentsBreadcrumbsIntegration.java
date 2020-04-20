@@ -62,30 +62,34 @@ public final class AppComponentsBreadcrumbsIntegration
   @SuppressWarnings("deprecation")
   @Override
   public void onConfigurationChanged(@NonNull Configuration newConfig) {
-    final Device.DeviceOrientation deviceOrientation =
-        DeviceOrientations.getOrientation(context.getResources().getConfiguration().orientation);
+    if (hub != null) {
+      final Device.DeviceOrientation deviceOrientation =
+          DeviceOrientations.getOrientation(context.getResources().getConfiguration().orientation);
 
-    String orientation;
-    if (deviceOrientation != null) {
-      orientation = deviceOrientation.name().toLowerCase(Locale.ROOT);
-    } else {
-      orientation = "undefined";
+      String orientation;
+      if (deviceOrientation != null) {
+        orientation = deviceOrientation.name().toLowerCase(Locale.ROOT);
+      } else {
+        orientation = "undefined";
+      }
+
+      final Breadcrumb breadcrumb = new Breadcrumb();
+      breadcrumb.setType("navigation");
+      breadcrumb.setCategory("ui.deviceOrientation");
+      breadcrumb.setData("position", orientation);
+      breadcrumb.setLevel(SentryLevel.DEBUG);
+      hub.addBreadcrumb(breadcrumb);
     }
-
-    final Breadcrumb breadcrumb = new Breadcrumb();
-    breadcrumb.setType("navigation");
-    breadcrumb.setCategory("ui.deviceOrientation");
-    breadcrumb.setData("position", orientation);
-    breadcrumb.setLevel(SentryLevel.DEBUG);
-    hub.addBreadcrumb(breadcrumb);
   }
 
   @Override
   public void onLowMemory() {
-    final Breadcrumb breadcrumb = new Breadcrumb();
-    breadcrumb.setType("info");
-    breadcrumb.setCategory("app.memory");
-    breadcrumb.setLevel(SentryLevel.WARNING);
-    hub.addBreadcrumb(breadcrumb);
+    if (hub != null) {
+      final Breadcrumb breadcrumb = new Breadcrumb();
+      breadcrumb.setType("info");
+      breadcrumb.setCategory("app.memory");
+      breadcrumb.setLevel(SentryLevel.WARNING);
+      hub.addBreadcrumb(breadcrumb);
+    }
   }
 }

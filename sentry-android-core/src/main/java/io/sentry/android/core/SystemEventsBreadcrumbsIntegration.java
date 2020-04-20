@@ -1,5 +1,37 @@
 package io.sentry.android.core;
 
+import static android.appwidget.AppWidgetManager.ACTION_APPWIDGET_DELETED;
+import static android.appwidget.AppWidgetManager.ACTION_APPWIDGET_DISABLED;
+import static android.appwidget.AppWidgetManager.ACTION_APPWIDGET_ENABLED;
+import static android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE;
+import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
+import static android.content.Intent.ACTION_APP_ERROR;
+import static android.content.Intent.ACTION_BATTERY_LOW;
+import static android.content.Intent.ACTION_BATTERY_OKAY;
+import static android.content.Intent.ACTION_BOOT_COMPLETED;
+import static android.content.Intent.ACTION_BUG_REPORT;
+import static android.content.Intent.ACTION_CAMERA_BUTTON;
+import static android.content.Intent.ACTION_CONFIGURATION_CHANGED;
+import static android.content.Intent.ACTION_DATE_CHANGED;
+import static android.content.Intent.ACTION_DEVICE_STORAGE_LOW;
+import static android.content.Intent.ACTION_DEVICE_STORAGE_OK;
+import static android.content.Intent.ACTION_DOCK_EVENT;
+import static android.content.Intent.ACTION_INPUT_METHOD_CHANGED;
+import static android.content.Intent.ACTION_LOCALE_CHANGED;
+import static android.content.Intent.ACTION_MEDIA_BAD_REMOVAL;
+import static android.content.Intent.ACTION_MEDIA_MOUNTED;
+import static android.content.Intent.ACTION_MEDIA_UNMOUNTABLE;
+import static android.content.Intent.ACTION_MEDIA_UNMOUNTED;
+import static android.content.Intent.ACTION_NEW_OUTGOING_CALL;
+import static android.content.Intent.ACTION_POWER_CONNECTED;
+import static android.content.Intent.ACTION_POWER_DISCONNECTED;
+import static android.content.Intent.ACTION_REBOOT;
+import static android.content.Intent.ACTION_SCREEN_OFF;
+import static android.content.Intent.ACTION_SCREEN_ON;
+import static android.content.Intent.ACTION_SHUTDOWN;
+import static android.content.Intent.ACTION_TIMEZONE_CHANGED;
+import static android.content.Intent.ACTION_TIME_CHANGED;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,8 +60,16 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
 
   private @Nullable SentryAndroidOptions options;
 
+  private final @NotNull List<String> actions;
+
   public SystemEventsBreadcrumbsIntegration(final @NotNull Context context) {
+    this(context, getDefaultActions());
+  }
+
+  public SystemEventsBreadcrumbsIntegration(
+      final @NotNull Context context, final @NotNull List<String> actions) {
     this.context = Objects.requireNonNull(context, "Context is required");
+    this.actions = Objects.requireNonNull(actions, "Actions list is required");
   }
 
   @Override
@@ -50,7 +90,7 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
     if (this.options.isEnableSystemEventsBreadcrumbs()) {
       receiver = new SystemEventsBroadcastReceiver(hub);
       final IntentFilter filter = new IntentFilter();
-      for (String item : getActions()) {
+      for (String item : actions) {
         filter.addAction(item);
       }
       context.registerReceiver(receiver, filter);
@@ -58,45 +98,58 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
     }
   }
 
-  private List<String> getActions() {
+  @SuppressWarnings("deprecation")
+  private static List<String> getDefaultActions() {
     final List<String> actions = new ArrayList<>();
-    actions.add("android.appwidget.action.APPWIDGET_DELETED");
-    actions.add("android.appwidget.action.APPWIDGET_DISABLED");
-    actions.add("android.appwidget.action.APPWIDGET_ENABLED");
+    actions.add(ACTION_APPWIDGET_DELETED);
+    actions.add(ACTION_APPWIDGET_DISABLED);
+    actions.add(ACTION_APPWIDGET_ENABLED);
     actions.add("android.appwidget.action.APPWIDGET_HOST_RESTORED");
     actions.add("android.appwidget.action.APPWIDGET_RESTORED");
-    actions.add("android.appwidget.action.APPWIDGET_UPDATE");
+    actions.add(ACTION_APPWIDGET_UPDATE);
     actions.add("android.appwidget.action.APPWIDGET_UPDATE_OPTIONS");
-    actions.add("android.intent.action.ACTION_POWER_CONNECTED");
-    actions.add("android.intent.action.ACTION_POWER_DISCONNECTED");
-    actions.add("android.intent.action.ACTION_SHUTDOWN");
-    actions.add("android.intent.action.AIRPLANE_MODE");
-    actions.add("android.intent.action.BATTERY_LOW");
-    actions.add("android.intent.action.BATTERY_OKAY");
-    actions.add("android.intent.action.BOOT_COMPLETED");
-    actions.add("android.intent.action.CAMERA_BUTTON");
-    actions.add("android.intent.action.CLOSE_SYSTEM_DIALOGS");
-    actions.add("android.intent.action.CONFIGURATION_CHANGED");
+    actions.add(ACTION_POWER_CONNECTED);
+    actions.add(ACTION_POWER_DISCONNECTED);
+    actions.add(ACTION_SHUTDOWN);
+    actions.add(ACTION_AIRPLANE_MODE_CHANGED);
+    actions.add(ACTION_BATTERY_LOW);
+    actions.add(ACTION_BATTERY_OKAY);
+    actions.add(ACTION_BOOT_COMPLETED);
+    actions.add(ACTION_CAMERA_BUTTON);
+    //    actions.add("android.intent.action.CLOSE_SYSTEM_DIALOGS");
+    actions.add(ACTION_CONFIGURATION_CHANGED);
     actions.add("android.intent.action.CONTENT_CHANGED");
-    actions.add("android.intent.action.DATE_CHANGED");
-    actions.add("android.intent.action.DEVICE_STORAGE_LOW");
-    actions.add("android.intent.action.DEVICE_STORAGE_OK");
-    actions.add("android.intent.action.DOCK_EVENT");
+    actions.add(ACTION_DATE_CHANGED);
+    actions.add(ACTION_DEVICE_STORAGE_LOW);
+    actions.add(ACTION_DEVICE_STORAGE_OK);
+    actions.add(ACTION_DOCK_EVENT);
     actions.add("android.intent.action.DREAMING_STARTED");
     actions.add("android.intent.action.DREAMING_STOPPED");
-    actions.add("android.intent.action.INPUT_METHOD_CHANGED");
-    actions.add("android.intent.action.LOCALE_CHANGED");
-    actions.add("android.intent.action.REBOOT");
-    actions.add("android.intent.action.SCREEN_OFF");
-    actions.add("android.intent.action.SCREEN_ON");
-    actions.add("android.intent.action.TIMEZONE_CHANGED");
-    actions.add("android.intent.action.TIME_SET");
+    actions.add(ACTION_INPUT_METHOD_CHANGED);
+    actions.add(ACTION_LOCALE_CHANGED);
+    actions.add(ACTION_REBOOT);
+    actions.add(ACTION_SCREEN_OFF);
+    actions.add(ACTION_SCREEN_ON);
+    actions.add(ACTION_TIMEZONE_CHANGED);
+    actions.add(ACTION_TIME_CHANGED);
     actions.add("android.os.action.DEVICE_IDLE_MODE_CHANGED");
     actions.add("android.os.action.POWER_SAVE_MODE_CHANGED");
+    // The user pressed the "Report" button in the crash/ANR dialog.
+    actions.add(ACTION_APP_ERROR);
+    // Show activity for reporting a bug.
+    actions.add(ACTION_BUG_REPORT);
+
+    // consider if somebody mounted or ejected a sdcard
+    actions.add(ACTION_MEDIA_BAD_REMOVAL);
+    actions.add(ACTION_MEDIA_MOUNTED);
+    actions.add(ACTION_MEDIA_UNMOUNTABLE);
+    actions.add(ACTION_MEDIA_UNMOUNTED);
 
     // might require android.permission.READ_PHONE_STATE/android.permission.PROCESS_OUTGOING_CALLS
-    // permissions
-    actions.add("android.intent.action.NEW_OUTGOING_CALL"); // also consider
+    // permissions, cant test with a sim card
+    //
+    // https://developer.android.com/reference/android/telephony/PhoneStateListener#onCallStateChanged(int,%20java.lang.String)
+    actions.add(ACTION_NEW_OUTGOING_CALL); // also consider
     // android.intent.action.PHONE_STATE
     return actions;
   }
@@ -129,6 +182,7 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
         final int lastDotIndex = intent.getAction().lastIndexOf(".");
         breadcrumb.setData("action", intent.getAction().substring(lastDotIndex + 1));
       }
+      // TODO: is there a way of filter only by my own package?
 
       //      TODO: should we log the params?
       final Bundle extras = intent.getExtras();
