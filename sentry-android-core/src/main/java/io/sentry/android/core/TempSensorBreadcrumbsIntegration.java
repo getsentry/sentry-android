@@ -53,13 +53,10 @@ public final class TempSensorBreadcrumbsIntegration
       this.options.getLogger().log(SentryLevel.INFO, "SENSOR_SERVICE is not available.");
       return;
     }
-    // some people do cat sys/class/thermal/thermal_zone0/temp
-    // or ACTION_BATTERY_CHANGED
-    // also https://developer.android.com/reference/android/os/HardwarePropertiesManager API 24
+
     final Sensor defaultSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
-    if (defaultSensor != null) { // probably not available
-      sensorManager.registerListener(
-          this, defaultSensor, SensorManager.SENSOR_DELAY_NORMAL); // this can be custom
+    if (defaultSensor != null) {
+      sensorManager.registerListener(this, defaultSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
       options.getLogger().log(SentryLevel.DEBUG, "TempSensorBreadcrumbsIntegration installed.");
     } else {
@@ -83,7 +80,7 @@ public final class TempSensorBreadcrumbsIntegration
       final Breadcrumb breadcrumb = new Breadcrumb();
       breadcrumb.setType("info");
       breadcrumb.setCategory("app.broadcast");
-      breadcrumb.setData("action", "temperature");
+      breadcrumb.setData("action", "TYPE_AMBIENT_TEMPERATURE");
       breadcrumb.setData("accuracy", event.accuracy);
       breadcrumb.setData("timestamp", event.timestamp);
       breadcrumb.setData("values", event.values);

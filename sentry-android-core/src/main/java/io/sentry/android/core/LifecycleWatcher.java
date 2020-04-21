@@ -89,7 +89,7 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
       final Breadcrumb breadcrumb = new Breadcrumb();
       breadcrumb.setType("navigation");
       breadcrumb.setData("state", state);
-      breadcrumb.setCategory("ui.lifecycle");
+      breadcrumb.setCategory("app.lifecycle");
       breadcrumb.setLevel(SentryLevel.DEBUG);
       hub.addBreadcrumb(breadcrumb);
     }

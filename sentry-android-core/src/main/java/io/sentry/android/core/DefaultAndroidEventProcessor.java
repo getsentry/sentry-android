@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import static android.content.Context.ACTIVITY_SERVICE;
+import static android.os.BatteryManager.EXTRA_TEMPERATURE;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -284,6 +285,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (batteryIntent != null) {
       device.setBatteryLevel(getBatteryLevel(batteryIntent));
       device.setCharging(isCharging(batteryIntent));
+      device.setBatteryTemperature(getBatteryTemperature(batteryIntent));
     }
     device.setOnline(ConnectivityChecker.isConnected(context, options.getLogger()));
     device.setOrientation(getOrientation());
@@ -463,6 +465,18 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       options.getLogger().log(SentryLevel.ERROR, "Error getting device charging state.", e);
       return null;
     }
+  }
+
+  private @Nullable Float getBatteryTemperature(final @NotNull Intent batteryIntent) {
+    try {
+      int temperature = batteryIntent.getIntExtra(EXTRA_TEMPERATURE, -1);
+      if (temperature != -1) {
+        return ((float) temperature) / 10; // celsius
+      }
+    } catch (Exception e) {
+      options.getLogger().log(SentryLevel.ERROR, "Error getting battery temperature.", e);
+    }
+    return null;
   }
 
   /**

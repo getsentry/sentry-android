@@ -22,7 +22,6 @@ import static android.content.Intent.ACTION_MEDIA_BAD_REMOVAL;
 import static android.content.Intent.ACTION_MEDIA_MOUNTED;
 import static android.content.Intent.ACTION_MEDIA_UNMOUNTABLE;
 import static android.content.Intent.ACTION_MEDIA_UNMOUNTED;
-import static android.content.Intent.ACTION_NEW_OUTGOING_CALL;
 import static android.content.Intent.ACTION_POWER_CONNECTED;
 import static android.content.Intent.ACTION_POWER_DISCONNECTED;
 import static android.content.Intent.ACTION_REBOOT;
@@ -145,12 +144,6 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
     actions.add(ACTION_MEDIA_UNMOUNTABLE);
     actions.add(ACTION_MEDIA_UNMOUNTED);
 
-    // might require android.permission.READ_PHONE_STATE/android.permission.PROCESS_OUTGOING_CALLS
-    // permissions, cant test with a sim card
-    //
-    // https://developer.android.com/reference/android/telephony/PhoneStateListener#onCallStateChanged(int,%20java.lang.String)
-    actions.add(ACTION_NEW_OUTGOING_CALL); // also consider
-    // android.intent.action.PHONE_STATE
     return actions;
   }
 
@@ -182,9 +175,10 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
         final int lastDotIndex = intent.getAction().lastIndexOf(".");
         breadcrumb.setData("action", intent.getAction().substring(lastDotIndex + 1));
       }
-      // TODO: is there a way of filter only by my own package?
 
-      //      TODO: should we log the params?
+      //      TODO: should we log the params? sometimes its necessary eg
+      // ACTION_AIRPLANE_MODE_CHANGED
+      // its a single action with 2 states that differs on extras
       final Bundle extras = intent.getExtras();
       final Map<String, String> newExtras = new HashMap<>();
       if (extras != null && !extras.isEmpty()) {
