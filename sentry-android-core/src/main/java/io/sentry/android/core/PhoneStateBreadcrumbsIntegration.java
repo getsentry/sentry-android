@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
+import static android.telephony.PhoneStateListener.LISTEN_NONE;
 
 import android.content.Context;
 import android.telephony.PhoneStateListener;
@@ -39,10 +40,10 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
         .getLogger()
         .log(
             SentryLevel.DEBUG,
-            "enableSystemEventsBreadcrumbs enabled: %s",
-            this.options.isEnableSystemEventsBreadcrumbs());
+            "enableRingingPhoneBreadcrumb enabled: %s",
+            this.options.isEnableRingingPhoneBreadcrumb());
 
-    if (this.options.isEnableSystemEventsBreadcrumbs()) {
+    if (this.options.isEnableRingingPhoneBreadcrumb()) {
       telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
       if (telephonyManager != null) {
         listener = new PhoneStateChangeListener(hub);
@@ -58,11 +59,11 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
   @Override
   public void close() throws IOException {
     if (telephonyManager != null && listener != null) {
-      telephonyManager.listen(listener, LISTEN_CALL_STATE);
-    }
+      telephonyManager.listen(listener, LISTEN_NONE);
 
-    if (options != null) {
-      options.getLogger().log(SentryLevel.DEBUG, "PhoneStateBreadcrumbsIntegration removed.");
+      if (options != null) {
+        options.getLogger().log(SentryLevel.DEBUG, "PhoneStateBreadcrumbsIntegration removed.");
+      }
     }
   }
 

@@ -84,9 +84,9 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
         .log(
             SentryLevel.DEBUG,
             "SystemEventsBreadcrumbsIntegration enabled: %s",
-            this.options.isEnableSystemEventsBreadcrumbs());
+            this.options.isEnableSystemEventBreadcrumbs());
 
-    if (this.options.isEnableSystemEventsBreadcrumbs()) {
+    if (this.options.isEnableSystemEventBreadcrumbs()) {
       receiver = new SystemEventsBroadcastReceiver(hub);
       final IntentFilter filter = new IntentFilter();
       for (String item : actions) {
@@ -115,7 +115,6 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
     actions.add(ACTION_BATTERY_OKAY);
     actions.add(ACTION_BOOT_COMPLETED);
     actions.add(ACTION_CAMERA_BUTTON);
-    //    actions.add("android.intent.action.CLOSE_SYSTEM_DIALOGS");
     actions.add(ACTION_CONFIGURATION_CHANGED);
     actions.add("android.intent.action.CONTENT_CHANGED");
     actions.add(ACTION_DATE_CHANGED);
@@ -176,7 +175,7 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
         breadcrumb.setData("action", intent.getAction().substring(lastDotIndex + 1));
       }
 
-      //      TODO: should we log the params? sometimes its necessary eg
+      // TODO: should we log the params? sometimes its necessary eg
       // ACTION_AIRPLANE_MODE_CHANGED
       // its a single action with 2 states that differs on extras
       final Bundle extras = intent.getExtras();

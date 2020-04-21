@@ -26,10 +26,13 @@ public final class SentryAndroidOptions extends SentryOptions {
   private boolean enableAppLifecycleBreadcrumbs = true;
 
   /** Enable or disable automatic breadcrumbs for SystemEvents Registering a BroadcastReceiver */
-  private boolean enableSystemEventsBreadcrumbs = true;
+  private boolean enableSystemEventBreadcrumbs = true;
 
   /** Enable or disable automatic breadcrumbs for App Components Using ComponentCallbacks */
-  private boolean enableAppComponentsBreadcrumbs = true;
+  private boolean enableAppComponentBreadcrumbs = true;
+
+  /** Enable or disable Phone ringing breadcrumb. Using PhoneStateListener */
+  private boolean enableRingingPhoneBreadcrumb = false;
 
   /**
    * Checks if ANR (Application Not Responding) is enabled or disabled Default is enabled
@@ -118,20 +121,20 @@ public final class SentryAndroidOptions extends SentryOptions {
     this.enableAppLifecycleBreadcrumbs = enableAppLifecycleBreadcrumbs;
   }
 
-  public boolean isEnableSystemEventsBreadcrumbs() {
-    return enableSystemEventsBreadcrumbs;
+  public boolean isEnableSystemEventBreadcrumbs() {
+    return enableSystemEventBreadcrumbs;
   }
 
-  public void setEnableSystemEventsBreadcrumbs(boolean enableSystemEventsBreadcrumbs) {
-    this.enableSystemEventsBreadcrumbs = enableSystemEventsBreadcrumbs;
+  public void setEnableSystemEventBreadcrumbs(boolean enableSystemEventBreadcrumbs) {
+    this.enableSystemEventBreadcrumbs = enableSystemEventBreadcrumbs;
   }
 
-  public boolean isEnableAppComponentsBreadcrumbs() {
-    return enableAppComponentsBreadcrumbs;
+  public boolean isEnableAppComponentBreadcrumbs() {
+    return enableAppComponentBreadcrumbs;
   }
 
-  public void setEnableAppComponentsBreadcrumbs(boolean enableAppComponentsBreadcrumbs) {
-    this.enableAppComponentsBreadcrumbs = enableAppComponentsBreadcrumbs;
+  public void setEnableAppComponentBreadcrumbs(boolean enableAppComponentBreadcrumbs) {
+    this.enableAppComponentBreadcrumbs = enableAppComponentBreadcrumbs;
   }
 
   /**
@@ -141,8 +144,17 @@ public final class SentryAndroidOptions extends SentryOptions {
    */
   public void enableAllAutoBreadcrumbs(boolean enable) {
     enableActivityLifecycleBreadcrumbs = enable;
-    enableAppComponentsBreadcrumbs = enable;
-    enableSystemEventsBreadcrumbs = enable;
+    enableAppComponentBreadcrumbs = enable;
+    enableSystemEventBreadcrumbs = enable;
     enableAppLifecycleBreadcrumbs = enable;
+    enableRingingPhoneBreadcrumb = enable;
+  }
+
+  public boolean isEnableRingingPhoneBreadcrumb() {
+    return enableRingingPhoneBreadcrumb;
+  }
+
+  public void setEnableRingingPhoneBreadcrumb(boolean enableRingingPhoneBreadcrumb) {
+    this.enableRingingPhoneBreadcrumb = enableRingingPhoneBreadcrumb;
   }
 }

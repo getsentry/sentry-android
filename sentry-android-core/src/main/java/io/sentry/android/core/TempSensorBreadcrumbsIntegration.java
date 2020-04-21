@@ -45,9 +45,9 @@ public final class TempSensorBreadcrumbsIntegration
         .log(
             SentryLevel.DEBUG,
             "enableSystemEventsBreadcrumbs enabled: %s",
-            this.options.isEnableSystemEventsBreadcrumbs());
+            this.options.isEnableSystemEventBreadcrumbs());
 
-    if (this.options.isEnableSystemEventsBreadcrumbs())
+    if (this.options.isEnableSystemEventBreadcrumbs())
       sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
     if (sensorManager == null) {
       this.options.getLogger().log(SentryLevel.INFO, "SENSOR_SERVICE is not available.");
@@ -68,9 +68,10 @@ public final class TempSensorBreadcrumbsIntegration
   public void close() throws IOException {
     if (sensorManager != null) {
       sensorManager.unregisterListener(this);
-    }
-    if (options != null) {
-      options.getLogger().log(SentryLevel.DEBUG, "TempSensorBreadcrumbsIntegration removed.");
+
+      if (options != null) {
+        options.getLogger().log(SentryLevel.DEBUG, "TempSensorBreadcrumbsIntegration removed.");
+      }
     }
   }
 

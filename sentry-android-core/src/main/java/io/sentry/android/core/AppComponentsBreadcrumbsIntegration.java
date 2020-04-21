@@ -42,9 +42,9 @@ public final class AppComponentsBreadcrumbsIntegration
         .log(
             SentryLevel.DEBUG,
             "AppComponentsBreadcrumbsIntegration enabled: %s",
-            this.options.isEnableAppComponentsBreadcrumbs());
+            this.options.isEnableAppComponentBreadcrumbs());
 
-    if (this.options.isEnableAppComponentsBreadcrumbs()) {
+    if (this.options.isEnableAppComponentBreadcrumbs()) {
       context.registerComponentCallbacks(this);
       options.getLogger().log(SentryLevel.DEBUG, "AppComponentsBreadcrumbsIntegration installed.");
     }
@@ -75,7 +75,7 @@ public final class AppComponentsBreadcrumbsIntegration
 
       final Breadcrumb breadcrumb = new Breadcrumb();
       breadcrumb.setType("navigation");
-      breadcrumb.setCategory("ui.deviceOrientation");
+      breadcrumb.setCategory("app.deviceOrientation");
       breadcrumb.setData("position", orientation);
       breadcrumb.setLevel(SentryLevel.DEBUG);
       hub.addBreadcrumb(breadcrumb);
