@@ -6,6 +6,8 @@ public class NativeSample {
   public static native void message();
 
   static {
+    System.loadLibrary("log");
+    System.loadLibrary("sentry");
     System.loadLibrary("native-sample");
   }
 }
