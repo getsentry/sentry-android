@@ -52,7 +52,6 @@ class SentryExceptionFactoryTest {
     @Test
     fun `when getSentryExceptions is called passing an Inner exception, not empty result`() {
         val exception = InnerClassThrowable(InnerClassThrowable())
-
         val queue = sut.extractExceptionQueue(exception)
         assertEquals("SentryExceptionFactoryTest\$InnerClassThrowable", queue.first.type)
     }
