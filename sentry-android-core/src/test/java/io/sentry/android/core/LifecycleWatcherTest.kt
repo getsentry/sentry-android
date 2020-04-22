@@ -85,6 +85,7 @@ class LifecycleWatcherTest {
         val hub = mock<IHub>()
         val watcher = LifecycleWatcher(hub, 0L, true, false)
         watcher.onStart(mock())
+        Thread.sleep(150)
         verify(hub).addBreadcrumb(check<Breadcrumb> {
             assertEquals("session.lifecycle", it.category)
             assertEquals("info", it.type)
@@ -97,6 +98,7 @@ class LifecycleWatcherTest {
         val hub = mock<IHub>()
         val watcher = LifecycleWatcher(hub, 0L, true, false)
         watcher.onStop(mock())
+        Thread.sleep(150)
         verify(hub).addBreadcrumb(check<Breadcrumb> {
             assertEquals("session.lifecycle", it.category)
             assertEquals("info", it.type)
