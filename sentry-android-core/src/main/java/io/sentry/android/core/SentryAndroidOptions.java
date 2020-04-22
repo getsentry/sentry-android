@@ -31,9 +31,6 @@ public final class SentryAndroidOptions extends SentryOptions {
   /** Enable or disable automatic breadcrumbs for App Components Using ComponentCallbacks */
   private boolean enableAppComponentBreadcrumbs = true;
 
-  /** Enable or disable Phone ringing breadcrumb. Using PhoneStateListener */
-  private boolean enableRingingPhoneBreadcrumb = false;
-
   /**
    * Checks if ANR (Application Not Responding) is enabled or disabled Default is enabled
    *
@@ -147,14 +144,5 @@ public final class SentryAndroidOptions extends SentryOptions {
     enableAppComponentBreadcrumbs = enable;
     enableSystemEventBreadcrumbs = enable;
     enableAppLifecycleBreadcrumbs = enable;
-    enableRingingPhoneBreadcrumb = enable;
-  }
-
-  public boolean isEnableRingingPhoneBreadcrumb() {
-    return enableRingingPhoneBreadcrumb;
-  }
-
-  public void setEnableRingingPhoneBreadcrumb(boolean enableRingingPhoneBreadcrumb) {
-    this.enableRingingPhoneBreadcrumb = enableRingingPhoneBreadcrumb;
   }
 }

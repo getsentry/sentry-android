@@ -75,7 +75,7 @@ public final class AppComponentsBreadcrumbsIntegration
 
       final Breadcrumb breadcrumb = new Breadcrumb();
       breadcrumb.setType("navigation");
-      breadcrumb.setCategory("app.deviceOrientation");
+      breadcrumb.setCategory("device.orientation");
       breadcrumb.setData("position", orientation);
       breadcrumb.setLevel(SentryLevel.DEBUG);
       hub.addBreadcrumb(breadcrumb);
@@ -87,7 +87,7 @@ public final class AppComponentsBreadcrumbsIntegration
     if (hub != null) {
       final Breadcrumb breadcrumb = new Breadcrumb();
       breadcrumb.setType("info");
-      breadcrumb.setCategory("app.memory");
+      breadcrumb.setCategory("device.memory");
       breadcrumb.setLevel(SentryLevel.WARNING);
       hub.addBreadcrumb(breadcrumb);
     }

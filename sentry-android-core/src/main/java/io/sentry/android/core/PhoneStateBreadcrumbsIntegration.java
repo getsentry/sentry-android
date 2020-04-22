@@ -40,10 +40,10 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
         .getLogger()
         .log(
             SentryLevel.DEBUG,
-            "enableRingingPhoneBreadcrumb enabled: %s",
-            this.options.isEnableRingingPhoneBreadcrumb());
+            "enableSystemEventBreadcrumbs enabled: %s",
+            this.options.isEnableSystemEventBreadcrumbs());
 
-    if (this.options.isEnableRingingPhoneBreadcrumb()) {
+    if (this.options.isEnableSystemEventBreadcrumbs()) {
       telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
       if (telephonyManager != null) {
         listener = new PhoneStateChangeListener(hub);
@@ -77,19 +77,17 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
 
     @Override
     public void onCallStateChanged(int state, String incomingNumber) {
+      // incomingNumber is never used and it's always empty if you don't have permission:
+      // android.permission.READ_CALL_LOG
       if (state == TelephonyManager.CALL_STATE_RINGING) {
-        addBreadcrumb("CALL_STATE_RINGING");
+        final Breadcrumb breadcrumb = new Breadcrumb();
+        breadcrumb.setType("info");
+        breadcrumb.setCategory("app.broadcast");
+        breadcrumb.setData("action", "CALL_STATE_RINGING");
+
+        breadcrumb.setLevel(SentryLevel.DEBUG);
+        hub.addBreadcrumb(breadcrumb);
       }
-    }
-
-    private void addBreadcrumb(final @NotNull String action) {
-      final Breadcrumb breadcrumb = new Breadcrumb();
-      breadcrumb.setType("info");
-      breadcrumb.setCategory("app.broadcast");
-      breadcrumb.setData("action", action);
-
-      breadcrumb.setLevel(SentryLevel.DEBUG);
-      hub.addBreadcrumb(breadcrumb);
     }
   }
 }
