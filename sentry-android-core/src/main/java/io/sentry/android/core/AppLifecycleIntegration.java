@@ -48,7 +48,7 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
             new LifecycleWatcher(
                 hub,
                 this.options.getSessionTrackingIntervalMillis(),
-                options.isEnableSessionTracking(),
+                this.options.isEnableSessionTracking(),
                 this.options.isEnableAppLifecycleBreadcrumbs());
         ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
 
@@ -58,7 +58,7 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
             .getLogger()
             .log(
                 SentryLevel.INFO,
-                "androidx.lifecycle is not available, SessionTrackingIntegration won't be installed",
+                "androidx.lifecycle is not available, AppLifecycleIntegration won't be installed",
                 e);
       }
     }
