@@ -12,7 +12,8 @@ public final class SentryNdk {
     // On older Android versions, it was necessary to manually call "`System.loadLibrary` on all
     // transitive dependencies before loading [the] main library."
     // The dependencies of `libsentry.so` are currently `lib{c,m,dl,log}.so`.
-    // See https://android.googlesource.com/platform/bionic/+/master/android-changes-for-ndk-developers.md#changes-to-library-dependency-resolution
+    // See
+    // https://android.googlesource.com/platform/bionic/+/master/android-changes-for-ndk-developers.md#changes-to-library-dependency-resolution
     System.loadLibrary("log");
     System.loadLibrary("sentry");
     System.loadLibrary("sentry-android");
@@ -20,13 +21,7 @@ public final class SentryNdk {
 
   private static native void initSentryNative(SentryOptions options);
 
-  private static native void verificationEventNative();
-
   public static void init(SentryOptions options) {
     initSentryNative(options);
-  }
-
-  public static void verificationEvent() {
-    verificationEventNative();
   }
 }
