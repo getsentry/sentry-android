@@ -77,7 +77,6 @@ public final class AppComponentsBreadcrumbsIntegration
       breadcrumb.setType("navigation");
       breadcrumb.setCategory("device.orientation");
       breadcrumb.setData("position", orientation);
-      breadcrumb.setLevel(SentryLevel.DEBUG);
       hub.addBreadcrumb(breadcrumb);
     }
   }

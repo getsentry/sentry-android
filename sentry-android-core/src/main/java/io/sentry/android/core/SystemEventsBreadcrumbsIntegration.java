@@ -50,12 +50,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 public final class SystemEventsBreadcrumbsIntegration implements Integration, Closeable {
 
   private final @NotNull Context context;
 
-  private SystemEventsBroadcastReceiver receiver;
+  @TestOnly @Nullable SystemEventsBroadcastReceiver receiver;
 
   private @Nullable SentryAndroidOptions options;
 
@@ -150,6 +151,7 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
   public void close() throws IOException {
     if (receiver != null) {
       context.unregisterReceiver(receiver);
+      receiver = null;
 
       if (options != null) {
         options.getLogger().log(SentryLevel.DEBUG, "SystemEventsBreadcrumbsIntegration remove.");
@@ -157,7 +159,7 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
     }
   }
 
-  private static final class SystemEventsBroadcastReceiver extends BroadcastReceiver {
+  static final class SystemEventsBroadcastReceiver extends BroadcastReceiver {
 
     private final @NotNull IHub hub;
 
@@ -189,8 +191,6 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
         }
       }
       breadcrumb.setData("extras", newExtras);
-
-      breadcrumb.setLevel(SentryLevel.DEBUG);
       hub.addBreadcrumb(breadcrumb);
     }
   }

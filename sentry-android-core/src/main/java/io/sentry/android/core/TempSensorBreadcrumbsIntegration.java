@@ -17,6 +17,7 @@ import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 public final class TempSensorBreadcrumbsIntegration
     implements Integration, Closeable, SensorEventListener {
@@ -25,7 +26,7 @@ public final class TempSensorBreadcrumbsIntegration
   private @Nullable IHub hub;
   private @Nullable SentryAndroidOptions options;
 
-  private @Nullable SensorManager sensorManager;
+  @TestOnly @Nullable SensorManager sensorManager;
 
   public TempSensorBreadcrumbsIntegration(final @NotNull Context context) {
     this.context = Objects.requireNonNull(context, "Context is required");
@@ -68,6 +69,7 @@ public final class TempSensorBreadcrumbsIntegration
   public void close() throws IOException {
     if (sensorManager != null) {
       sensorManager.unregisterListener(this);
+      sensorManager = null;
 
       if (options != null) {
         options.getLogger().log(SentryLevel.DEBUG, "TempSensorBreadcrumbsIntegration removed.");
@@ -84,9 +86,9 @@ public final class TempSensorBreadcrumbsIntegration
       breadcrumb.setData("action", "TYPE_AMBIENT_TEMPERATURE");
       breadcrumb.setData("accuracy", event.accuracy);
       breadcrumb.setData("timestamp", event.timestamp);
-      breadcrumb.setData("values", event.values);
-
-      breadcrumb.setLevel(SentryLevel.DEBUG);
+      if (event.values != null) {
+        breadcrumb.setData("values", event.values);
+      }
       hub.addBreadcrumb(breadcrumb);
     }
   }

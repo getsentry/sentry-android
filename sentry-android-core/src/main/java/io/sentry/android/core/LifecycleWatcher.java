@@ -90,7 +90,6 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
       breadcrumb.setType("navigation");
       breadcrumb.setData("state", state);
       breadcrumb.setCategory("app.lifecycle");
-      breadcrumb.setLevel(SentryLevel.DEBUG);
       hub.addBreadcrumb(breadcrumb);
     }
   }
@@ -98,7 +97,7 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
   private void addSessionBreadcrumb(final @NotNull String state) {
     if (enableSessionTracking) {
       final Breadcrumb breadcrumb = new Breadcrumb();
-      breadcrumb.setType("session");
+      breadcrumb.setType("info");
       breadcrumb.setData("state", state);
       breadcrumb.setCategory("session.lifecycle");
       breadcrumb.setLevel(SentryLevel.DEBUG);

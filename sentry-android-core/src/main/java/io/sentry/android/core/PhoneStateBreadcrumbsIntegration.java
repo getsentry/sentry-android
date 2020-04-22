@@ -16,12 +16,13 @@ import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 public final class PhoneStateBreadcrumbsIntegration implements Integration, Closeable {
 
   private final @NotNull Context context;
   private @Nullable SentryAndroidOptions options;
-  private @Nullable PhoneStateChangeListener listener;
+  @TestOnly @Nullable PhoneStateChangeListener listener;
   private @Nullable TelephonyManager telephonyManager;
 
   public PhoneStateBreadcrumbsIntegration(final @NotNull Context context) {
@@ -60,6 +61,7 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
   public void close() throws IOException {
     if (telephonyManager != null && listener != null) {
       telephonyManager.listen(listener, LISTEN_NONE);
+      listener = null;
 
       if (options != null) {
         options.getLogger().log(SentryLevel.DEBUG, "PhoneStateBreadcrumbsIntegration removed.");
@@ -67,7 +69,7 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
     }
   }
 
-  private static final class PhoneStateChangeListener extends PhoneStateListener {
+  static final class PhoneStateChangeListener extends PhoneStateListener {
 
     private final @NotNull IHub hub;
 
@@ -84,8 +86,6 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
         breadcrumb.setType("info");
         breadcrumb.setCategory("app.broadcast");
         breadcrumb.setData("action", "CALL_STATE_RINGING");
-
-        breadcrumb.setLevel(SentryLevel.DEBUG);
         hub.addBreadcrumb(breadcrumb);
       }
     }
