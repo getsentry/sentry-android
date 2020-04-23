@@ -25,8 +25,8 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
   LifecycleWatcher(
       final @NotNull IHub hub,
       final long sessionIntervalMillis,
-      boolean enableSessionTracking,
-      boolean enableAppLifecycleBreadcrumbs) {
+      final boolean enableSessionTracking,
+      final boolean enableAppLifecycleBreadcrumbs) {
     this.sessionIntervalMillis = sessionIntervalMillis;
     this.enableSessionTracking = enableSessionTracking;
     this.enableAppLifecycleBreadcrumbs = enableAppLifecycleBreadcrumbs;

@@ -39,6 +39,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import io.sentry.core.Breadcrumb;
 import io.sentry.core.IHub;
+import io.sentry.core.ILogger;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -88,7 +89,7 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
             this.options.isEnableSystemEventBreadcrumbs());
 
     if (this.options.isEnableSystemEventBreadcrumbs()) {
-      receiver = new SystemEventsBroadcastReceiver(hub);
+      receiver = new SystemEventsBroadcastReceiver(hub, this.options.getLogger());
       final IntentFilter filter = new IntentFilter();
       for (String item : actions) {
         filter.addAction(item);
@@ -162,9 +163,11 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
   static final class SystemEventsBroadcastReceiver extends BroadcastReceiver {
 
     private final @NotNull IHub hub;
+    private final @NotNull ILogger logger;
 
-    SystemEventsBroadcastReceiver(final @NotNull IHub hub) {
+    SystemEventsBroadcastReceiver(final @NotNull IHub hub, final @NotNull ILogger logger) {
       this.hub = hub;
+      this.logger = logger;
     }
 
     @Override
@@ -177,16 +180,22 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
         breadcrumb.setData("action", intent.getAction().substring(lastDotIndex + 1));
       }
 
-      // TODO: should we log the params? sometimes its necessary eg
-      // ACTION_AIRPLANE_MODE_CHANGED
-      // its a single action with 2 states that differs on extras
       final Bundle extras = intent.getExtras();
       final Map<String, String> newExtras = new HashMap<>();
       if (extras != null && !extras.isEmpty()) {
         for (String item : extras.keySet()) {
           try {
-            newExtras.put(item, extras.get(item).toString());
-          } catch (Exception ignored) {
+            Object value = extras.get(item);
+            if (value != null) {
+              newExtras.put(item, value.toString());
+            }
+          } catch (Exception exception) {
+            logger.log(
+                SentryLevel.ERROR,
+                exception,
+                "%s key of the %s action is not Serializable",
+                item,
+                intent.getAction());
           }
         }
       }
