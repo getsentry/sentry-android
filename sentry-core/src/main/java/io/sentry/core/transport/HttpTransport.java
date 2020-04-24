@@ -267,7 +267,9 @@ public class HttpTransport implements ITransport {
     // X-Sentry-Rate-Limits looks like: seconds:categories:scope
     // it could have more than one scope so it looks like:
     // quota_limit, quota_limit, quota_limit
+
     // a real example: 50:transaction:key, 2700:default;event;security:organization
+    // 50::key is also a valid case, it means no categories and it should apply to all of them
     final String sentryRateLimitHeader = connection.getHeaderField("X-Sentry-Rate-Limits");
     updateRetryAfterLimits(sentryRateLimitHeader, retryAfterHeader, responseCode);
   }
