@@ -44,6 +44,7 @@ import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Objects;
+import io.sentry.core.util.StringUtils;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -175,9 +176,10 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
       final Breadcrumb breadcrumb = new Breadcrumb();
       breadcrumb.setType("info");
       breadcrumb.setCategory("app.broadcast");
-      if (intent.getAction() != null) {
-        final int lastDotIndex = intent.getAction().lastIndexOf(".");
-        breadcrumb.setData("action", intent.getAction().substring(lastDotIndex + 1));
+      final String action = intent.getAction();
+      String shortAction = StringUtils.getStringAfterDot(action);
+      if (shortAction != null) {
+        breadcrumb.setData("action", shortAction);
       }
 
       final Bundle extras = intent.getExtras();
@@ -193,9 +195,9 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
             logger.log(
                 SentryLevel.ERROR,
                 exception,
-                "%s key of the %s action is not Serializable",
+                "%s key of the %s action threw an error.",
                 item,
-                intent.getAction());
+                action);
           }
         }
       }
