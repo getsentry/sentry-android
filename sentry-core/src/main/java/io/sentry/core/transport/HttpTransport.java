@@ -301,20 +301,25 @@ public class HttpTransport implements ITransport {
           if (retryAfterAndCategories.length > 1) {
             final String allCategories = retryAfterAndCategories[1];
 
+            // we dont care if Date is UTC as we just add the relative seconds
+            final Date date = new Date(System.currentTimeMillis() + retryAfterMillis);
+
             if (allCategories != null && !allCategories.isEmpty()) {
               final String[] categories = allCategories.split(";", -1);
 
               for (final String catItem : categories) {
-                // we dont care if Date is UTC as we just add the relative seconds
-                sentryRetryAfterLimit.put(
-                    catItem, new Date(System.currentTimeMillis() + retryAfterMillis));
+                sentryRetryAfterLimit.put(catItem, date);
               }
             } else {
               // if categories are empty, we should apply to all the categories.
               // we do that using a `default` category as the fallback
-              sentryRetryAfterLimit.clear();
-              final Date date = new Date(System.currentTimeMillis() + retryAfterMillis);
-              sentryRetryAfterLimit.put(HTTP_RETRY_DEFAULT_CATEGORY, date);
+              for (final String catItem : sentryRetryAfterLimit.keySet()) {
+                sentryRetryAfterLimit.put(catItem, date);
+              }
+              // if 'default' category is not added yet, we add it now as a fallback
+              if (!sentryRetryAfterLimit.containsKey(HTTP_RETRY_DEFAULT_CATEGORY)) {
+                sentryRetryAfterLimit.put(HTTP_RETRY_DEFAULT_CATEGORY, date);
+              }
             }
           }
         }
