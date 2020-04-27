@@ -261,7 +261,7 @@ public class HttpTransport implements ITransport {
 
   private void updateRetryAfterLimits(
       final @NotNull HttpURLConnection connection, final int responseCode) {
-    // milliseconds
+    // seconds
     final String retryAfterHeader = connection.getHeaderField("Retry-After");
 
     // X-Sentry-Rate-Limits looks like: seconds:categories:scope
@@ -312,11 +312,10 @@ public class HttpTransport implements ITransport {
               }
             } else {
               // if categories are empty, we should apply to all the categories.
-              // we do that using a `default` category as the fallback
               for (final String catItem : sentryRetryAfterLimit.keySet()) {
                 sentryRetryAfterLimit.put(catItem, date);
               }
-              // if 'default' category is not added yet, we add it now as a fallback
+              // if 'default' category is not added yet, we add it as a fallback
               if (!sentryRetryAfterLimit.containsKey(HTTP_RETRY_DEFAULT_CATEGORY)) {
                 sentryRetryAfterLimit.put(HTTP_RETRY_DEFAULT_CATEGORY, date);
               }
