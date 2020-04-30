@@ -165,16 +165,17 @@ public class HttpTransport implements ITransport {
     final Date currentDate = new Date();
 
     // check all categories
-    if (sentryRetryAfterLimit.containsKey(HTTP_RETRY_ALL_CATEGORIES)) {
-      final Date date = sentryRetryAfterLimit.get(HTTP_RETRY_ALL_CATEGORIES);
-      if (!currentDate.after(date)) {
+
+    final Date dateAllCategories = sentryRetryAfterLimit.get(HTTP_RETRY_ALL_CATEGORIES);
+    if (dateAllCategories != null) {
+      if (!currentDate.after(dateAllCategories)) {
         return true;
       }
     }
     // check for specific category
-    if (sentryRetryAfterLimit.containsKey(category)) {
-      final Date date = sentryRetryAfterLimit.get(category);
-      return !currentDate.after(date);
+    final Date dateCategory = sentryRetryAfterLimit.get(category);
+    if (dateCategory != null) {
+      return !currentDate.after(dateCategory);
     }
 
     return false;
