@@ -57,7 +57,6 @@ public class HttpTransport implements ITransport {
   private final @NotNull Map<String, Date> sentryRetryAfterLimit = new ConcurrentHashMap<>();
 
   private static final int HTTP_RETRY_AFTER_DEFAULT_DELAY_MILLIS = 60000;
-  private static final String HTTP_RETRY_DEFAULT_CATEGORY = "default";
 
   /**
    * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set
@@ -161,16 +160,47 @@ public class HttpTransport implements ITransport {
    */
   @Override
   public boolean isRetryAfter(final @NotNull String type) {
-    if (sentryRetryAfterLimit.containsKey(type)) {
-      final Date date = sentryRetryAfterLimit.get(type);
+    final String category = getCategoryFromType(type);
 
-      return !new Date().after(date);
-    } else if (sentryRetryAfterLimit.containsKey(HTTP_RETRY_DEFAULT_CATEGORY)) {
-      final Date date = sentryRetryAfterLimit.get(HTTP_RETRY_DEFAULT_CATEGORY);
-
+    // check all categories
+    if (sentryRetryAfterLimit.containsKey("")) {
+      final Date date = sentryRetryAfterLimit.get("");
+      if (!new Date().after(date)) {
+        return true;
+      }
+    }
+    // check for specific category
+    if (sentryRetryAfterLimit.containsKey(category)) {
+      final Date date = sentryRetryAfterLimit.get(category);
       return !new Date().after(date);
     }
+
     return false;
+  }
+
+  /**
+   * Returns a rate limiting category from type
+   * @param type the type (eg event, session, attachment, ...)
+   * @return the category eg (error, session, attachment)
+   */
+  private @NotNull String getCategoryFromType(final @NotNull String type) {
+    // fallback everything else to 'default' category
+    String category = "default";
+
+    if ("event".equals(type)) {
+      return "error";
+    }
+    if ("session".equals(type)) {
+      return type;
+    }
+    if ("attachment".equals(type)) {
+      return type;
+    }
+    if ("transaction".equals(type)) {
+      return type;
+    }
+
+    return category;
   }
 
   /**
@@ -268,7 +298,7 @@ public class HttpTransport implements ITransport {
     // it could have more than one scope so it looks like:
     // quota_limit, quota_limit, quota_limit
 
-    // a real example: 50:transaction:key, 2700:default;event;security:organization
+    // a real example: 50:transaction:key, 2700:default;error;security:organization
     // 50::key is also a valid case, it means no categories and it should apply to all of them
     final String sentryRateLimitHeader = connection.getHeaderField("X-Sentry-Rate-Limits");
     updateRetryAfterLimits(sentryRateLimitHeader, retryAfterHeader, responseCode);
@@ -312,13 +342,7 @@ public class HttpTransport implements ITransport {
               }
             } else {
               // if categories are empty, we should apply to all the categories.
-              for (final String catItem : sentryRetryAfterLimit.keySet()) {
-                sentryRetryAfterLimit.put(catItem, date);
-              }
-              // if 'default' category is not added yet, we add it as a fallback
-              if (!sentryRetryAfterLimit.containsKey(HTTP_RETRY_DEFAULT_CATEGORY)) {
-                sentryRetryAfterLimit.put(HTTP_RETRY_DEFAULT_CATEGORY, date);
-              }
+              sentryRetryAfterLimit.put(allCategories, date);
             }
           }
         }
@@ -327,7 +351,7 @@ public class HttpTransport implements ITransport {
       final long retryAfterMillis = parseRetryAfterOrDefault(retryAfterHeader);
       // we dont care if Date is UTC as we just add the relative seconds
       final Date date = new Date(System.currentTimeMillis() + retryAfterMillis);
-      sentryRetryAfterLimit.put(HTTP_RETRY_DEFAULT_CATEGORY, date);
+      sentryRetryAfterLimit.put("", date);
     }
   }
 
