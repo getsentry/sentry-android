@@ -57,6 +57,7 @@ public class HttpTransport implements ITransport {
   private final @NotNull Map<String, Date> sentryRetryAfterLimit = new ConcurrentHashMap<>();
 
   private static final int HTTP_RETRY_AFTER_DEFAULT_DELAY_MILLIS = 60000;
+  private static final String HTTP_RETRY_ALL_CATEGORIES = "";
 
   /**
    * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set
@@ -164,8 +165,8 @@ public class HttpTransport implements ITransport {
     final Date currentDate = new Date();
 
     // check all categories
-    if (sentryRetryAfterLimit.containsKey("")) {
-      final Date date = sentryRetryAfterLimit.get("");
+    if (sentryRetryAfterLimit.containsKey(HTTP_RETRY_ALL_CATEGORIES)) {
+      final Date date = sentryRetryAfterLimit.get(HTTP_RETRY_ALL_CATEGORIES);
       if (!currentDate.after(date)) {
         return true;
       }
@@ -344,7 +345,7 @@ public class HttpTransport implements ITransport {
               }
             } else {
               // if categories are empty, we should apply to all the categories.
-              sentryRetryAfterLimit.put(allCategories, date);
+              sentryRetryAfterLimit.put(HTTP_RETRY_ALL_CATEGORIES, date);
             }
           }
         }
@@ -353,7 +354,7 @@ public class HttpTransport implements ITransport {
       final long retryAfterMillis = parseRetryAfterOrDefault(retryAfterHeader);
       // we dont care if Date is UTC as we just add the relative seconds
       final Date date = new Date(System.currentTimeMillis() + retryAfterMillis);
-      sentryRetryAfterLimit.put("", date);
+      sentryRetryAfterLimit.put(HTTP_RETRY_ALL_CATEGORIES, date);
     }
   }
 
