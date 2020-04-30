@@ -161,18 +161,19 @@ public class HttpTransport implements ITransport {
   @Override
   public boolean isRetryAfter(final @NotNull String type) {
     final String category = getCategoryFromType(type);
+    final Date currentDate = new Date();
 
     // check all categories
     if (sentryRetryAfterLimit.containsKey("")) {
       final Date date = sentryRetryAfterLimit.get("");
-      if (!new Date().after(date)) {
+      if (!currentDate.after(date)) {
         return true;
       }
     }
     // check for specific category
     if (sentryRetryAfterLimit.containsKey(category)) {
       final Date date = sentryRetryAfterLimit.get(category);
-      return !new Date().after(date);
+      return !currentDate.after(date);
     }
 
     return false;
