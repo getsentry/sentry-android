@@ -16,7 +16,7 @@ public final class Device implements IUnknownPropertiesConsumer {
   private String model;
   private String modelId;
 
-  @Deprecated private String arch;
+  @ApiStatus.ScheduledForRemoval @Deprecated private String arch;
 
   private String[] archs;
   private Float batteryLevel;
@@ -33,7 +33,7 @@ public final class Device implements IUnknownPropertiesConsumer {
   private Long externalStorageSize;
   private Long externalFreeStorage;
 
-  @Deprecated private String screenResolution;
+  @ApiStatus.ScheduledForRemoval @Deprecated private String screenResolution;
 
   private Integer screenWidthPixels;
   private Integer screenHeightPixels;
@@ -104,6 +104,7 @@ public final class Device implements IUnknownPropertiesConsumer {
    * @deprecated use {@link #getArchs} instead.
    * @return device architecture
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public String getArch() {
     return arch;
@@ -113,6 +114,7 @@ public final class Device implements IUnknownPropertiesConsumer {
    * @deprecated use {@link #setArchs} instead.
    * @param arch device architecture
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public void setArch(String arch) {
     this.arch = arch;
@@ -226,6 +228,7 @@ public final class Device implements IUnknownPropertiesConsumer {
    * @deprecated use {@link #getScreenWidthPixels , #getScreenHeightPixels} instead.
    * @return screen resolution largest + smallest
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public String getScreenResolution() {
     return screenResolution;
@@ -235,6 +238,7 @@ public final class Device implements IUnknownPropertiesConsumer {
    * @deprecated use {@link #setScreenWidthPixels} , #getScreenHeightPixels} instead.
    * @param screenResolution screen resolution largest + smallest
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public void setScreenResolution(String screenResolution) {
     this.screenResolution = screenResolution;
