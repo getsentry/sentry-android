@@ -174,8 +174,8 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
     @Override
     public void onReceive(Context context, Intent intent) {
       final Breadcrumb breadcrumb = new Breadcrumb();
-      breadcrumb.setType("info");
-      breadcrumb.setCategory("app.broadcast");
+      breadcrumb.setType("system");
+      breadcrumb.setCategory("device.event");
       final String action = intent.getAction();
       String shortAction = StringUtils.getStringAfterDot(action);
       if (shortAction != null) {
@@ -202,6 +202,7 @@ public final class SystemEventsBreadcrumbsIntegration implements Integration, Cl
         }
       }
       breadcrumb.setData("extras", newExtras);
+      breadcrumb.setLevel(SentryLevel.INFO);
       hub.addBreadcrumb(breadcrumb);
     }
   }

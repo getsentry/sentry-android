@@ -64,6 +64,7 @@ public final class ActivityBreadcrumbsIntegration
       breadcrumb.setData("state", state);
       breadcrumb.setData("screen", activity.getClass().getSimpleName());
       breadcrumb.setCategory("ui.lifecycle");
+      breadcrumb.setLevel(SentryLevel.INFO);
       hub.addBreadcrumb(breadcrumb);
     }
   }

@@ -83,9 +83,11 @@ public final class PhoneStateBreadcrumbsIntegration implements Integration, Clos
       // android.permission.READ_CALL_LOG
       if (state == TelephonyManager.CALL_STATE_RINGING) {
         final Breadcrumb breadcrumb = new Breadcrumb();
-        breadcrumb.setType("info");
-        breadcrumb.setCategory("app.broadcast");
+        breadcrumb.setType("system");
+        breadcrumb.setCategory("device.event");
         breadcrumb.setData("action", "CALL_STATE_RINGING");
+        breadcrumb.setMessage("Device ringing");
+        breadcrumb.setLevel(SentryLevel.INFO);
         hub.addBreadcrumb(breadcrumb);
       }
     }

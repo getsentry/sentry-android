@@ -84,11 +84,12 @@ public final class TempSensorBreadcrumbsIntegration
   public void onSensorChanged(SensorEvent event) {
     if (hub != null) {
       final Breadcrumb breadcrumb = new Breadcrumb();
-      breadcrumb.setType("info");
-      breadcrumb.setCategory("app.broadcast");
+      breadcrumb.setType("system");
+      breadcrumb.setCategory("device.event");
       breadcrumb.setData("action", "TYPE_AMBIENT_TEMPERATURE");
       breadcrumb.setData("accuracy", event.accuracy);
       breadcrumb.setData("timestamp", event.timestamp);
+      breadcrumb.setLevel(SentryLevel.INFO);
       if (event.values != null) {
         breadcrumb.setData("values", event.values);
       }

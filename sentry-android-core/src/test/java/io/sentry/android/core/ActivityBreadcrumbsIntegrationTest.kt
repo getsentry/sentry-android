@@ -8,6 +8,7 @@ import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.Breadcrumb
 import io.sentry.core.IHub
+import io.sentry.core.SentryLevel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -63,6 +64,7 @@ class ActivityBreadcrumbsIntegrationTest {
         verify(hub).addBreadcrumb(check<Breadcrumb> {
             assertEquals("ui.lifecycle", it.category)
             assertEquals("navigation", it.type)
+            assertEquals(SentryLevel.INFO, it.level)
             // cant assert data, its not a public API
         })
     }

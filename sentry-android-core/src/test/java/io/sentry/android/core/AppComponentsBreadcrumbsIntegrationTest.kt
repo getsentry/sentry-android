@@ -66,8 +66,8 @@ class AppComponentsBreadcrumbsIntegrationTest {
         sut.register(hub, options)
         sut.onLowMemory()
         verify(hub).addBreadcrumb(check<Breadcrumb> {
-            assertEquals("device.memory", it.category)
-            assertEquals("info", it.type)
+            assertEquals("device.event", it.category)
+            assertEquals("system", it.type)
             assertEquals(SentryLevel.WARNING, it.level)
         })
     }
@@ -82,6 +82,7 @@ class AppComponentsBreadcrumbsIntegrationTest {
         verify(hub).addBreadcrumb(check<Breadcrumb> {
             assertEquals("device.orientation", it.category)
             assertEquals("navigation", it.type)
+            assertEquals(SentryLevel.INFO, it.level)
             // cant assert data, its not a public API
         })
     }

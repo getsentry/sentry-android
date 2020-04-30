@@ -12,6 +12,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.Breadcrumb
 import io.sentry.core.IHub
+import io.sentry.core.SentryLevel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -74,8 +75,9 @@ class PhoneStateBreadcrumbsIntegrationTest {
         sut.listener!!.onCallStateChanged(TelephonyManager.CALL_STATE_RINGING, null)
 
         verify(hub).addBreadcrumb(check<Breadcrumb> {
-            assertEquals("app.broadcast", it.category)
-            assertEquals("info", it.type)
+            assertEquals("device.event", it.category)
+            assertEquals("system", it.type)
+            assertEquals(SentryLevel.INFO, it.level)
             // cant assert data, its not a public API
         })
     }

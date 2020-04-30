@@ -77,6 +77,7 @@ public final class AppComponentsBreadcrumbsIntegration
       breadcrumb.setType("navigation");
       breadcrumb.setCategory("device.orientation");
       breadcrumb.setData("position", orientation);
+      breadcrumb.setLevel(SentryLevel.INFO);
       hub.addBreadcrumb(breadcrumb);
     }
   }
@@ -85,8 +86,10 @@ public final class AppComponentsBreadcrumbsIntegration
   public void onLowMemory() {
     if (hub != null) {
       final Breadcrumb breadcrumb = new Breadcrumb();
-      breadcrumb.setType("info");
-      breadcrumb.setCategory("device.memory");
+      breadcrumb.setType("system");
+      breadcrumb.setCategory("device.event");
+      breadcrumb.setMessage("Low memory");
+      breadcrumb.setData("action", "LOW_MEMORY");
       breadcrumb.setLevel(SentryLevel.WARNING);
       hub.addBreadcrumb(breadcrumb);
     }

@@ -8,6 +8,7 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.Breadcrumb
 import io.sentry.core.IHub
+import io.sentry.core.SentryLevel
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -87,8 +88,9 @@ class LifecycleWatcherTest {
         watcher.onStart(mock())
         Thread.sleep(150)
         verify(hub).addBreadcrumb(check<Breadcrumb> {
-            assertEquals("session.lifecycle", it.category)
-            assertEquals("info", it.type)
+            assertEquals("app.lifecycle", it.category)
+            assertEquals("session", it.type)
+            assertEquals(SentryLevel.INFO, it.level)
             // cant assert data, its not a public API
         })
     }
@@ -100,8 +102,9 @@ class LifecycleWatcherTest {
         watcher.onStop(mock())
         Thread.sleep(150)
         verify(hub).addBreadcrumb(check<Breadcrumb> {
-            assertEquals("session.lifecycle", it.category)
-            assertEquals("info", it.type)
+            assertEquals("app.lifecycle", it.category)
+            assertEquals("session", it.type)
+            assertEquals(SentryLevel.INFO, it.level)
             // cant assert data, its not a public API
         })
     }
@@ -130,6 +133,7 @@ class LifecycleWatcherTest {
         verify(hub).addBreadcrumb(check<Breadcrumb> {
             assertEquals("app.lifecycle", it.category)
             assertEquals("navigation", it.type)
+            assertEquals(SentryLevel.INFO, it.level)
             // cant assert data, its not a public API
         })
     }
@@ -150,6 +154,7 @@ class LifecycleWatcherTest {
         verify(hub).addBreadcrumb(check<Breadcrumb> {
             assertEquals("app.lifecycle", it.category)
             assertEquals("navigation", it.type)
+            assertEquals(SentryLevel.INFO, it.level)
             // cant assert data, its not a public API
         })
     }
