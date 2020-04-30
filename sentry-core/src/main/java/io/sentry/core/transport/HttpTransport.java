@@ -180,6 +180,7 @@ public class HttpTransport implements ITransport {
 
   /**
    * Returns a rate limiting category from type
+   *
    * @param type the type (eg event, session, attachment, ...)
    * @return the category eg (error, session, attachment)
    */
