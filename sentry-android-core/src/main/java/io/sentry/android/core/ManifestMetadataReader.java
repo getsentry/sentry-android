@@ -34,6 +34,9 @@ final class ManifestMetadataReader {
   static final String SESSION_TRACKING_TIMEOUT_INTERVAL_MILLIS =
       "io.sentry.session-tracking.timeout-interval-millis";
 
+  static final String UNCAUGHT_EXCEPTION_HANDLER_ENABLE =
+      "io.sentry.uncaught-exception-handler.enable";
+
   /** ManifestMetadataReader ctor */
   private ManifestMetadataReader() {}
 
@@ -136,6 +139,12 @@ final class ManifestMetadataReader {
                 "sessionTrackingTimeoutIntervalMillis read: %d",
                 sessionTrackingTimeoutIntervalMillis);
         options.setSessionTrackingIntervalMillis(sessionTrackingTimeoutIntervalMillis);
+
+        final boolean enableUncaughtExceptionHandler =
+            metadata.getBoolean(
+                UNCAUGHT_EXCEPTION_HANDLER_ENABLE, options.isEnableUncaughtExceptionHandler());
+        options.getLogger().log(SentryLevel.DEBUG, "enableUncaughtExceptionHandler read: %s", ndk);
+        options.setEnableUncaughtExceptionHandler(enableUncaughtExceptionHandler);
       }
       options
           .getLogger()

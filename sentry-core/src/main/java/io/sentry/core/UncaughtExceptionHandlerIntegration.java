@@ -11,6 +11,7 @@ import java.io.Closeable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 /**
@@ -20,24 +21,24 @@ import org.jetbrains.annotations.TestOnly;
 public final class UncaughtExceptionHandlerIntegration
     implements Integration, Thread.UncaughtExceptionHandler, Closeable {
   /** Reference to the pre-existing uncaught exception handler. */
-  private Thread.UncaughtExceptionHandler defaultExceptionHandler;
+  private @Nullable Thread.UncaughtExceptionHandler defaultExceptionHandler;
 
-  private IHub hub;
-  private SentryOptions options;
+  private @NotNull IHub hub;
+  private @NotNull SentryOptions options;
 
   private boolean registered = false;
-  private final UncaughtExceptionHandler threadAdapter;
+  private final @NotNull UncaughtExceptionHandler threadAdapter;
 
   UncaughtExceptionHandlerIntegration() {
     this(UncaughtExceptionHandler.Adapter.getInstance());
   }
 
-  UncaughtExceptionHandlerIntegration(UncaughtExceptionHandler threadAdapter) {
+  UncaughtExceptionHandlerIntegration(final @NotNull UncaughtExceptionHandler threadAdapter) {
     this.threadAdapter = Objects.requireNonNull(threadAdapter, "threadAdapter is required.");
   }
 
   @Override
-  public final void register(IHub hub, SentryOptions options) {
+  public final void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
     if (registered) {
       options
           .getLogger()
@@ -48,24 +49,36 @@ public final class UncaughtExceptionHandlerIntegration
     }
     registered = true;
 
-    this.hub = hub;
-    this.options = options;
-    Thread.UncaughtExceptionHandler currentHandler =
-        threadAdapter.getDefaultUncaughtExceptionHandler();
-    if (currentHandler != null) {
-      options
+    this.hub = Objects.requireNonNull(hub, "Hub is required");
+    this.options = Objects.requireNonNull(options, "SentryOptions is required");
+
+    this.options
+        .getLogger()
+        .log(
+            SentryLevel.DEBUG,
+            "UncaughtExceptionHandlerIntegration enabled: %s",
+            this.options.isEnableUncaughtExceptionHandler());
+
+    if (this.options.isEnableUncaughtExceptionHandler()) {
+      final Thread.UncaughtExceptionHandler currentHandler =
+          threadAdapter.getDefaultUncaughtExceptionHandler();
+      if (currentHandler != null) {
+        this.options
+            .getLogger()
+            .log(
+                SentryLevel.DEBUG,
+                "default UncaughtExceptionHandler class='"
+                    + currentHandler.getClass().getName()
+                    + "'");
+        defaultExceptionHandler = currentHandler;
+      }
+
+      threadAdapter.setDefaultUncaughtExceptionHandler(this);
+
+      this.options
           .getLogger()
-          .log(
-              SentryLevel.DEBUG,
-              "default UncaughtExceptionHandler class='"
-                  + currentHandler.getClass().getName()
-                  + "'");
-      defaultExceptionHandler = currentHandler;
+          .log(SentryLevel.DEBUG, "UncaughtExceptionHandlerIntegration installed.");
     }
-
-    threadAdapter.setDefaultUncaughtExceptionHandler(this);
-
-    options.getLogger().log(SentryLevel.DEBUG, "UncaughtExceptionHandlerIntegration installed.");
   }
 
   @Override
@@ -100,7 +113,8 @@ public final class UncaughtExceptionHandlerIntegration
 
   @TestOnly
   @NotNull
-  static Throwable getUnhandledThrowable(Thread thread, Throwable thrown) {
+  static Throwable getUnhandledThrowable(
+      final @NotNull Thread thread, final @NotNull Throwable thrown) {
     Mechanism mechanism = new Mechanism();
     mechanism.setHandled(false);
     mechanism.setType("UncaughtExceptionHandler");
@@ -112,6 +126,10 @@ public final class UncaughtExceptionHandlerIntegration
     if (defaultExceptionHandler != null
         && this == threadAdapter.getDefaultUncaughtExceptionHandler()) {
       threadAdapter.setDefaultUncaughtExceptionHandler(defaultExceptionHandler);
+
+      if (options != null) {
+        options.getLogger().log(SentryLevel.DEBUG, "UncaughtExceptionHandlerIntegration removed.");
+      }
     }
   }
 
