@@ -236,9 +236,6 @@ public class HttpTransport implements ITransport {
       default:
         return DataCategory.Unknown;
     }
-    // unknown category should be ignored
-    // if 2 categories come in different scopes, get the highest number always
-    // default and error should be the same
   }
 
   /**
@@ -380,7 +377,7 @@ public class HttpTransport implements ITransport {
                 try {
                   dataCategory = DataCategory.valueOf(StringUtils.capitalize(catItem));
                 } catch (IllegalArgumentException e) {
-                  options.getLogger().log(INFO, "Unknown category: %s", catItem);
+                  options.getLogger().log(INFO, e, "Unknown category: %s", catItem);
                 }
                 // we dont apply rate limiting for unknown categories
                 if (DataCategory.Unknown.equals(dataCategory)) {

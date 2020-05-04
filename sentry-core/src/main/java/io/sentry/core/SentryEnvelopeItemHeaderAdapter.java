@@ -62,7 +62,10 @@ public final class SentryEnvelopeItemHeaderAdapter extends TypeAdapter<SentryEnv
           fileName = reader.nextString();
           break;
         case "type":
-          type = SentryEnvelopeItemType.valueOf(StringUtils.capitalize(reader.nextString()));
+          try {
+            type = SentryEnvelopeItemType.valueOf(StringUtils.capitalize(reader.nextString()));
+          } catch (IllegalArgumentException ignored) {
+          }
           break;
         case "length":
           length = reader.nextInt();
