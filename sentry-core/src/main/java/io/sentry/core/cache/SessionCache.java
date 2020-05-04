@@ -213,7 +213,7 @@ public final class SessionCache implements IEnvelopeCache {
     if (items.iterator().hasNext()) {
       final SentryEnvelopeItem item = items.iterator().next();
 
-      if (SentryEnvelopeItemType.Session.getType().equals(item.getHeader().getType())) {
+      if (SentryEnvelopeItemType.Session.equals(item.getHeader().getType())) {
         try (final Reader reader =
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8))) {

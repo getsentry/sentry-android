@@ -132,7 +132,8 @@ public final class AsyncConnection implements Closeable, Connection {
     // Optimize for/No allocations if no items are under 429
     List<SentryEnvelopeItem> dropItems = null;
     for (SentryEnvelopeItem item : envelope.getItems()) {
-      if (transport.isRetryAfter(item.getHeader().getType())) {
+      // using the raw value of the enum to not expose SentryEnvelopeItemType
+      if (transport.isRetryAfter(item.getHeader().getType().getType())) {
         if (dropItems == null) {
           dropItems = new ArrayList<>();
         }

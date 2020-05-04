@@ -2,6 +2,7 @@ package io.sentry.core.transport;
 
 import static io.sentry.core.SentryLevel.DEBUG;
 import static io.sentry.core.SentryLevel.ERROR;
+import static io.sentry.core.SentryLevel.INFO;
 import static io.sentry.core.SentryLevel.WARNING;
 
 import com.jakewharton.nopen.annotation.Open;
@@ -9,6 +10,7 @@ import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -41,6 +43,27 @@ import org.jetbrains.annotations.Nullable;
 @ApiStatus.Internal
 public class HttpTransport implements ITransport {
 
+  enum DataCategory {
+    All("__all__"),
+    Default("default"), // same as Error
+    Error("error"),
+    Session("session"),
+    Attachment("attachment"),
+    Transaction("transaction"),
+    Security("security"),
+    Unknown("unknown");
+
+    private final String category;
+
+    DataCategory(final @NotNull String category) {
+      this.category = category;
+    }
+
+    public String getCategory() {
+      return category;
+    }
+  }
+
   @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");
 
@@ -54,10 +77,9 @@ public class HttpTransport implements ITransport {
   private final @NotNull URL envelopeUrl;
   private final @NotNull SentryOptions options;
 
-  private final @NotNull Map<String, Date> sentryRetryAfterLimit = new ConcurrentHashMap<>();
+  private final @NotNull Map<DataCategory, Date> sentryRetryAfterLimit = new ConcurrentHashMap<>();
 
   private static final int HTTP_RETRY_AFTER_DEFAULT_DELAY_MILLIS = 60000;
-  private static final String HTTP_RETRY_ALL_CATEGORIES = "";
 
   /**
    * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set
@@ -161,18 +183,24 @@ public class HttpTransport implements ITransport {
    */
   @Override
   public boolean isRetryAfter(final @NotNull String type) {
-    final String category = getCategoryFromType(type);
+    final DataCategory dataCategory = getCategoryFromType(type);
+
+    // Unknown should not be rate limited
+    if (DataCategory.Unknown.equals(dataCategory)) {
+      return false;
+    }
+
     final Date currentDate = new Date();
 
     // check all categories
-    final Date dateAllCategories = sentryRetryAfterLimit.get(HTTP_RETRY_ALL_CATEGORIES);
+    final Date dateAllCategories = sentryRetryAfterLimit.get(DataCategory.All);
     if (dateAllCategories != null) {
       if (!currentDate.after(dateAllCategories)) {
         return true;
       }
     }
-    // check for specific category
-    final Date dateCategory = sentryRetryAfterLimit.get(category);
+    // check for specific dataCategory
+    final Date dateCategory = sentryRetryAfterLimit.get(dataCategory);
     if (dateCategory != null) {
       return !currentDate.after(dateCategory);
     }
@@ -184,32 +212,33 @@ public class HttpTransport implements ITransport {
    * Returns a rate limiting category from type
    *
    * @param type the type (eg event, session, attachment, ...)
-   * @return the category eg (error, session, attachment)
+   * @return the DataCategory eg (DataCategory.Error, DataCategory.Session, DataCategory.Attachment)
    */
-  private @NotNull String getCategoryFromType(final @NotNull String type) {
-    // fallback everything else to 'default' category
-    String category = "default";
-
-    if ("event".equals(type)) {
-      return "error";
+  private @NotNull DataCategory getCategoryFromType(final @NotNull String type) {
+    switch (type) {
+      case "":
+        return DataCategory.All;
+        // default and error are the same, soon to be merged.
+      case "default":
+      case "event":
+        return DataCategory.Error;
+      case "session":
+        return DataCategory.Session;
+      case "attachment":
+        return DataCategory.Attachment;
+      case "transaction":
+        return DataCategory.Transaction;
+      case "csp":
+      case "hpkp":
+      case "expectct":
+      case "expectstaple":
+        return DataCategory.Security;
+      default:
+        return DataCategory.Unknown;
     }
-    if ("session".equals(type)) {
-      return type;
-    }
-    if ("attachment".equals(type)) {
-      return type;
-    }
-    if ("transaction".equals(type)) {
-      return type;
-    }
-    if ("csp".equals(type)
-        || "hpkp".equals(type)
-        || "expectct".equals(type)
-        || "expectstaple".equals(type)) {
-      return "security";
-    }
-
-    return category;
+    // unknown category should be ignored
+    // if 2 categories come in different scopes, get the highest number always
+    // default and error should be the same
   }
 
   /**
@@ -347,11 +376,30 @@ public class HttpTransport implements ITransport {
               final String[] categories = allCategories.split(";", -1);
 
               for (final String catItem : categories) {
-                sentryRetryAfterLimit.put(catItem, date);
+                DataCategory dataCategory = DataCategory.Unknown;
+                try {
+                  dataCategory = DataCategory.valueOf(StringUtils.capitalize(catItem));
+                } catch (IllegalArgumentException e) {
+                  options.getLogger().log(INFO, "Unknown category: %s", catItem);
+                }
+                // we dont apply rate limiting for unknown categories
+                if (DataCategory.Unknown.equals(dataCategory)) {
+                  continue;
+                }
+                // if DataCategory.Default make it as DataCategory.Error, they will be soon merged.
+                if (DataCategory.Default.equals(dataCategory)) {
+                  dataCategory = DataCategory.Error;
+                }
+                final Date oldDate = sentryRetryAfterLimit.get(dataCategory);
+
+                // only overwrite its previous date if the limit is even longer
+                if (oldDate == null || date.after(oldDate)) {
+                  sentryRetryAfterLimit.put(dataCategory, date);
+                }
               }
             } else {
               // if categories are empty, we should apply to all the categories.
-              sentryRetryAfterLimit.put(HTTP_RETRY_ALL_CATEGORIES, date);
+              sentryRetryAfterLimit.put(DataCategory.All, date);
             }
           }
         }
@@ -360,7 +408,7 @@ public class HttpTransport implements ITransport {
       final long retryAfterMillis = parseRetryAfterOrDefault(retryAfterHeader);
       // we dont care if Date is UTC as we just add the relative seconds
       final Date date = new Date(System.currentTimeMillis() + retryAfterMillis);
-      sentryRetryAfterLimit.put(HTTP_RETRY_ALL_CATEGORIES, date);
+      sentryRetryAfterLimit.put(DataCategory.All, date);
     }
   }
 

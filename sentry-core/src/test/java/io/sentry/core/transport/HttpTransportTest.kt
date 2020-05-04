@@ -262,7 +262,6 @@ class HttpTransportTest {
         assertTrue(transport.isRetryAfter("default"))
         assertTrue(transport.isRetryAfter("event"))
         assertTrue(transport.isRetryAfter("csp"))
-        assertTrue(transport.isRetryAfter("unknown"))
     }
 
     @Test
@@ -299,12 +298,57 @@ class HttpTransportTest {
     }
 
     @Test
+    fun `parse X-Sentry-Rate-Limit and ignore unknown categories`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
+            .thenReturn("60:default;wtf;error;security:organization")
+
+        val event = SentryEvent()
+
+        transport.send(event)
+        Thread.sleep(2000)
+        assertFalse(transport.isRetryAfter("wtf"))
+    }
+
+    @Test
     fun `When all categories is set but expired, applies only for specific category`() {
         val transport = fixture.getSUT()
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("1::key, 60:default;error;security:organization")
+
+        val event = SentryEvent()
+
+        transport.send(event)
+        Thread.sleep(2000)
+        assertTrue(transport.isRetryAfter("event"))
+    }
+
+    @Test
+    fun `When default category is present, apply for error category`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
+            .thenReturn("60:default;security:organization")
+
+        val event = SentryEvent()
+
+        transport.send(event)
+        Thread.sleep(2000)
+        assertTrue(transport.isRetryAfter("event"))
+    }
+
+    @Test
+    fun `When category has shorter rate limiting, do not apply new timestamp`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
+            .thenReturn("60:error:key, 1:error:organization")
 
         val event = SentryEvent()
 
