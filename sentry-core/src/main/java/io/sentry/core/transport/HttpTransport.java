@@ -387,16 +387,11 @@ public class HttpTransport implements ITransport {
                 if (DataCategory.Default.equals(dataCategory)) {
                   dataCategory = DataCategory.Error;
                 }
-                final Date oldDate = sentryRetryAfterLimit.get(dataCategory);
-
-                // only overwrite its previous date if the limit is even longer
-                if (oldDate == null || date.after(oldDate)) {
-                  sentryRetryAfterLimit.put(dataCategory, date);
-                }
+                applyRetryAfterOnlyIfLonger(dataCategory, date);
               }
             } else {
-              // if categories are empty, we should apply to all the categories.
-              sentryRetryAfterLimit.put(DataCategory.All, date);
+              // if categories are empty, we should apply to "all" categories.
+              applyRetryAfterOnlyIfLonger(DataCategory.All, date);
             }
           }
         }
@@ -405,7 +400,23 @@ public class HttpTransport implements ITransport {
       final long retryAfterMillis = parseRetryAfterOrDefault(retryAfterHeader);
       // we dont care if Date is UTC as we just add the relative seconds
       final Date date = new Date(System.currentTimeMillis() + retryAfterMillis);
-      sentryRetryAfterLimit.put(DataCategory.All, date);
+      applyRetryAfterOnlyIfLonger(DataCategory.All, date);
+    }
+  }
+
+  /**
+   * apply new timestamp for rate limiting only if its longer than the previous one
+   *
+   * @param dataCategory the DataCategory
+   * @param date the Date to be applied
+   */
+  private void applyRetryAfterOnlyIfLonger(
+      final @NotNull DataCategory dataCategory, final @NotNull Date date) {
+    final Date oldDate = sentryRetryAfterLimit.get(dataCategory);
+
+    // only overwrite its previous date if the limit is even longer
+    if (oldDate == null || date.after(oldDate)) {
+      sentryRetryAfterLimit.put(dataCategory, date);
     }
   }
 
