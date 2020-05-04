@@ -165,7 +165,6 @@ public class HttpTransport implements ITransport {
     final Date currentDate = new Date();
 
     // check all categories
-
     final Date dateAllCategories = sentryRetryAfterLimit.get(HTTP_RETRY_ALL_CATEGORIES);
     if (dateAllCategories != null) {
       if (!currentDate.after(dateAllCategories)) {
@@ -202,6 +201,12 @@ public class HttpTransport implements ITransport {
     }
     if ("transaction".equals(type)) {
       return type;
+    }
+    if ("csp".equals(type)
+        || "hpkp".equals(type)
+        || "expectct".equals(type)
+        || "expectstaple".equals(type)) {
+      return "security";
     }
 
     return category;
