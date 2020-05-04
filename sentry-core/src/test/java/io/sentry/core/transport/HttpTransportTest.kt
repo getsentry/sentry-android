@@ -261,7 +261,7 @@ class HttpTransportTest {
         assertTrue(transport.isRetryAfter("transaction"))
         assertTrue(transport.isRetryAfter("default"))
         assertTrue(transport.isRetryAfter("event"))
-        assertTrue(transport.isRetryAfter("security"))
+        assertTrue(transport.isRetryAfter("csp"))
         assertTrue(transport.isRetryAfter("unknown"))
     }
 
@@ -280,7 +280,7 @@ class HttpTransportTest {
         assertFalse(transport.isRetryAfter("transaction"))
         assertFalse(transport.isRetryAfter("default"))
         assertFalse(transport.isRetryAfter("event"))
-        assertFalse(transport.isRetryAfter("security"))
+        assertFalse(transport.isRetryAfter("csp"))
     }
 
     @Test
@@ -295,6 +295,21 @@ class HttpTransportTest {
 
         transport.send(event)
 
+        assertTrue(transport.isRetryAfter("event"))
+    }
+
+    @Test
+    fun `When all categories is set but expired, applies only for specific category`() {
+        val transport = fixture.getSUT()
+
+        whenever(fixture.connection.inputStream).thenThrow(IOException())
+        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
+            .thenReturn("1::key, 60:default;error;security:organization")
+
+        val event = SentryEvent()
+
+        transport.send(event)
+        Thread.sleep(2000)
         assertTrue(transport.isRetryAfter("event"))
     }
 
