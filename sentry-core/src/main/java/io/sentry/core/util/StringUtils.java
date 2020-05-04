@@ -22,10 +22,10 @@ public final class StringUtils {
   }
 
   /**
-   * Returns a Capitalized String eg session -> Session
+   * Returns a Capitalized String eg session = Session
    *
-   * @param str the string to capitalize
-   * @return tje capitalized String or itself if empty or null
+   * @param str the String to capitalize
+   * @return the capitalized String or itself if empty or null
    */
   public static @Nullable String capitalize(final @Nullable String str) {
     if (str == null || str.isEmpty()) {
