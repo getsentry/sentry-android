@@ -22,7 +22,7 @@ public final class StringUtils {
   }
 
   /**
-   * Returns a Capitalized String eg session = Session
+   * Returns a Capitalized String and all remaining chars to lower case. eg seSSioN = Session
    *
    * @param str the String to capitalize
    * @return the capitalized String or itself if empty or null

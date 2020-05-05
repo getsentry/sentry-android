@@ -29,7 +29,7 @@ public final class SentryEnvelopeItemHeaderAdapter extends TypeAdapter<SentryEnv
       writer.value(value.getFileName());
     }
 
-    if (!SentryEnvelopeItemType.Unknown.equals(value.getType())) {
+    if (!SentryItemType.Unknown.equals(value.getType())) {
       writer.name("type");
       writer.value(value.getType().name().toLowerCase(Locale.ROOT));
     }
@@ -49,7 +49,7 @@ public final class SentryEnvelopeItemHeaderAdapter extends TypeAdapter<SentryEnv
 
     String contentType = null;
     String fileName = null;
-    SentryEnvelopeItemType type = SentryEnvelopeItemType.Unknown;
+    SentryItemType type = SentryItemType.Unknown;
     int length = 0;
 
     reader.beginObject();
@@ -63,7 +63,7 @@ public final class SentryEnvelopeItemHeaderAdapter extends TypeAdapter<SentryEnv
           break;
         case "type":
           try {
-            type = SentryEnvelopeItemType.valueOf(StringUtils.capitalize(reader.nextString()));
+            type = SentryItemType.valueOf(StringUtils.capitalize(reader.nextString()));
           } catch (IllegalArgumentException ignored) {
           }
           break;

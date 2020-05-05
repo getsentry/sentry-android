@@ -259,9 +259,7 @@ class HttpTransportTest {
         transport.send(event)
 
         assertTrue(transport.isRetryAfter("transaction"))
-        assertTrue(transport.isRetryAfter("default"))
         assertTrue(transport.isRetryAfter("event"))
-        assertTrue(transport.isRetryAfter("csp"))
     }
 
     @Test
@@ -277,9 +275,7 @@ class HttpTransportTest {
         transport.send(event)
         Thread.sleep(2000)
         assertFalse(transport.isRetryAfter("transaction"))
-        assertFalse(transport.isRetryAfter("default"))
         assertFalse(transport.isRetryAfter("event"))
-        assertFalse(transport.isRetryAfter("csp"))
     }
 
     @Test
@@ -303,13 +299,12 @@ class HttpTransportTest {
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
-            .thenReturn("60:default;wtf;error;security:organization")
+            .thenReturn("60:default;foobar;error;security:organization")
 
         val event = SentryEvent()
 
         transport.send(event)
-        Thread.sleep(2000)
-        assertFalse(transport.isRetryAfter("wtf"))
+        assertFalse(transport.isRetryAfter("foobar"))
     }
 
     @Test
@@ -319,21 +314,6 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("1::key, 60:default;error;security:organization")
-
-        val event = SentryEvent()
-
-        transport.send(event)
-        Thread.sleep(2000)
-        assertTrue(transport.isRetryAfter("event"))
-    }
-
-    @Test
-    fun `When default category is present, apply for error category`() {
-        val transport = fixture.getSUT()
-
-        whenever(fixture.connection.inputStream).thenThrow(IOException())
-        whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
-            .thenReturn("60:default;security:organization")
 
         val event = SentryEvent()
 

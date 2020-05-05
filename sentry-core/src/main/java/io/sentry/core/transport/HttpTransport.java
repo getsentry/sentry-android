@@ -43,7 +43,7 @@ import org.jetbrains.annotations.Nullable;
 @ApiStatus.Internal
 public class HttpTransport implements ITransport {
 
-  enum DataCategory {
+  private enum DataCategory {
     All("__all__"),
     Default("default"), // same as Error
     Error("error"),
@@ -126,7 +126,6 @@ public class HttpTransport implements ITransport {
 
   protected @NotNull HttpURLConnection open(final @NotNull URL url, final @Nullable Proxy proxy)
       throws IOException {
-    // why do we need url here? its not used
     return (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
   }
 
@@ -176,20 +175,14 @@ public class HttpTransport implements ITransport {
   }
 
   /**
-   * Check if a type is retry after or not
+   * Check if an itemType is retry after or not
    *
-   * @param type the type (eg event, session, etc...)
+   * @param itemType the itemType (eg event, session, etc...)
    * @return true if retry after or false otherwise
    */
   @Override
-  public boolean isRetryAfter(final @NotNull String type) {
-    final DataCategory dataCategory = getCategoryFromType(type);
-
-    // Unknown should not be rate limited
-    if (DataCategory.Unknown.equals(dataCategory)) {
-      return false;
-    }
-
+  public boolean isRetryAfter(final @NotNull String itemType) {
+    final DataCategory dataCategory = getCategoryFromItemType(itemType);
     final Date currentDate = new Date();
 
     // check all categories
@@ -199,6 +192,12 @@ public class HttpTransport implements ITransport {
         return true;
       }
     }
+
+    // Unknown should not be rate limited
+    if (DataCategory.Unknown.equals(dataCategory)) {
+      return false;
+    }
+
     // check for specific dataCategory
     final Date dateCategory = sentryRetryAfterLimit.get(dataCategory);
     if (dateCategory != null) {
@@ -209,17 +208,13 @@ public class HttpTransport implements ITransport {
   }
 
   /**
-   * Returns a rate limiting category from type
+   * Returns a rate limiting category from item itemType
    *
-   * @param type the type (eg event, session, attachment, ...)
+   * @param itemType the item itemType (eg event, session, attachment, ...)
    * @return the DataCategory eg (DataCategory.Error, DataCategory.Session, DataCategory.Attachment)
    */
-  private @NotNull DataCategory getCategoryFromType(final @NotNull String type) {
-    switch (type) {
-      case "":
-        return DataCategory.All;
-        // default and error are the same, soon to be merged.
-      case "default":
+  private @NotNull DataCategory getCategoryFromItemType(final @NotNull String itemType) {
+    switch (itemType) {
       case "event":
         return DataCategory.Error;
       case "session":
@@ -228,11 +223,6 @@ public class HttpTransport implements ITransport {
         return DataCategory.Attachment;
       case "transaction":
         return DataCategory.Transaction;
-      case "csp":
-      case "hpkp":
-      case "expectct":
-      case "expectstaple":
-        return DataCategory.Security;
       default:
         return DataCategory.Unknown;
     }
@@ -382,10 +372,6 @@ public class HttpTransport implements ITransport {
                 // we dont apply rate limiting for unknown categories
                 if (DataCategory.Unknown.equals(dataCategory)) {
                   continue;
-                }
-                // if DataCategory.Default make it as DataCategory.Error, they will be soon merged.
-                if (DataCategory.Default.equals(dataCategory)) {
-                  dataCategory = DataCategory.Error;
                 }
                 applyRetryAfterOnlyIfLonger(dataCategory, date);
               }

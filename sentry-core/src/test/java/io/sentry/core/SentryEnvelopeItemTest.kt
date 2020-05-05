@@ -14,7 +14,7 @@ class SentryEnvelopeItemTest {
         val envelope = SentryEnvelope.fromSession(mock(), createSession())
         envelope.items.forEach {
             assertEquals("application/json", it.header.contentType)
-            assertEquals(SentryEnvelopeItemType.Session, it.header.type)
+            assertEquals(SentryItemType.Session, it.header.type)
             assertNull(it.header.fileName)
             assertNotNull(it.data)
         }
