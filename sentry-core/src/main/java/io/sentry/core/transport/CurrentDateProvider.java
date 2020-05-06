@@ -3,7 +3,6 @@ package io.sentry.core.transport;
 import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 
-/** Date Provider to make the Transport unit testable */
 final class CurrentDateProvider implements ICurrentDateProvider {
 
   @Override
@@ -12,7 +11,7 @@ final class CurrentDateProvider implements ICurrentDateProvider {
   }
 
   @Override
-  public final @NotNull Date getDate(long timeMillis) {
+  public final @NotNull Date getDate(final long timeMillis) {
     return new Date(timeMillis);
   }
 }

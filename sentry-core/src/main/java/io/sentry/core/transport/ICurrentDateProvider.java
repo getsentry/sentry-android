@@ -2,6 +2,7 @@ package io.sentry.core.transport;
 
 import java.util.Date;
 
+/** Date Provider to make the Transport unit testable */
 interface ICurrentDateProvider {
 
   /**
