@@ -25,7 +25,7 @@ final class LifecycleWatcher implements DefaultLifecycleObserver {
   private final @NotNull IHub hub;
   private final boolean enableSessionTracking;
   private final boolean enableAppLifecycleBreadcrumbs;
-  private final AtomicBoolean runningSession = new AtomicBoolean();
+  private final @NotNull AtomicBoolean runningSession = new AtomicBoolean();
 
   private final @NotNull ICurrentDateProvider currentDateProvider;
 
