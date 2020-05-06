@@ -206,7 +206,7 @@ public class HttpTransport implements ITransport {
   @Override
   public boolean isRetryAfter(final @NotNull String itemType) {
     final DataCategory dataCategory = getCategoryFromItemType(itemType);
-    final Date currentDate = currentDateProvider.getCurrentDate();
+    final Date currentDate = new Date(currentDateProvider.getCurrentTimeMillis());
 
     // check all categories
     final Date dateAllCategories = sentryRetryAfterLimit.get(DataCategory.All);
@@ -381,7 +381,7 @@ public class HttpTransport implements ITransport {
 
             // we dont care if Date is UTC as we just add the relative seconds
             final Date date =
-                currentDateProvider.getDate(System.currentTimeMillis() + retryAfterMillis);
+                new Date(currentDateProvider.getCurrentTimeMillis() + retryAfterMillis);
 
             if (allCategories != null && !allCategories.isEmpty()) {
               final String[] categories = allCategories.split(";", -1);
@@ -409,7 +409,7 @@ public class HttpTransport implements ITransport {
     } else if (errorCode == 429) {
       final long retryAfterMillis = parseRetryAfterOrDefault(retryAfterHeader);
       // we dont care if Date is UTC as we just add the relative seconds
-      final Date date = currentDateProvider.getDate(System.currentTimeMillis() + retryAfterMillis);
+      final Date date = new Date(currentDateProvider.getCurrentTimeMillis() + retryAfterMillis);
       applyRetryAfterOnlyIfLonger(DataCategory.All, date);
     }
   }

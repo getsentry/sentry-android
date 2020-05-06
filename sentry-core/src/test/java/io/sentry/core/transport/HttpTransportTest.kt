@@ -16,7 +16,6 @@ import java.net.HttpURLConnection
 import java.net.Proxy
 import java.net.URI
 import java.net.URL
-import java.util.Date
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -90,8 +89,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("Retry-After"))).thenReturn("30")
         whenever(fixture.connection.responseCode).thenReturn(429)
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 30000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val event = SentryEvent()
 
@@ -109,8 +107,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("Retry-After"))).thenReturn("30")
         whenever(fixture.connection.responseCode).thenReturn(429)
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 30000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val envelope = SentryEnvelope.fromSession(fixture.serializer, createSession())
 
@@ -159,8 +156,7 @@ class HttpTransportTest {
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.responseCode).thenReturn(429)
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 60000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val event = SentryEvent()
 
@@ -177,8 +173,7 @@ class HttpTransportTest {
 
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.responseCode).thenReturn(429)
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 60000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val envelope = SentryEnvelope.fromSession(fixture.serializer, createSession())
 
@@ -229,8 +224,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("50:transaction:key, 2700:default;error;security:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 50000), Date(System.currentTimeMillis() + 2700000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val event = SentryEvent()
 
@@ -248,8 +242,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("50:transaction:key, 1:default;error;security:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date(System.currentTimeMillis() + 2000))
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 50000), Date(System.currentTimeMillis() + 1000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0, 0, 1001)
 
         val event = SentryEvent()
 
@@ -267,8 +260,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("50:transaction:key, 2700:default;error;security:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 50000), Date(System.currentTimeMillis() + 2700000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val event = SentryEvent()
 
@@ -285,8 +277,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("1:transaction:key, 1:default;error;security:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date(System.currentTimeMillis() + 2000))
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 1000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0, 0, 1001)
 
         val event = SentryEvent()
 
@@ -302,8 +293,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("50::key")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date(System.currentTimeMillis()))
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 50000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val event = SentryEvent()
 
@@ -319,8 +309,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("60:default;foobar;error;security:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 60000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0)
 
         val event = SentryEvent()
 
@@ -335,8 +324,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("1::key, 60:default;error;security:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date(System.currentTimeMillis() + 2000), Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 1000), Date(System.currentTimeMillis() + 60000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0, 0, 1001)
 
         val event = SentryEvent()
 
@@ -351,8 +339,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("60:error:key, 1:error:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date(System.currentTimeMillis() + 2000), Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 60000), Date(System.currentTimeMillis() + 1000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0, 0, 1001)
 
         val event = SentryEvent()
 
@@ -367,8 +354,7 @@ class HttpTransportTest {
         whenever(fixture.connection.inputStream).thenThrow(IOException())
         whenever(fixture.connection.getHeaderField(eq("X-Sentry-Rate-Limits")))
             .thenReturn("1:error:key, 5:error:organization")
-        whenever(fixture.currentDateProvider.currentDate).thenReturn(Date(System.currentTimeMillis() + 2000), Date())
-        whenever(fixture.currentDateProvider.getDate(any())).thenReturn(Date(System.currentTimeMillis() + 1000), Date(System.currentTimeMillis() + 5000))
+        whenever(fixture.currentDateProvider.currentTimeMillis).thenReturn(0, 0, 1001)
 
         val event = SentryEvent()
 
