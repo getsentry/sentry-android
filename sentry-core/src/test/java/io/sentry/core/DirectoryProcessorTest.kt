@@ -24,7 +24,9 @@ class DirectoryProcessorTest {
         var envelopeReader: IEnvelopeReader = mock()
         var serializer: ISerializer = mock()
         var logger: ILogger = mock()
-        var options: SentryOptions = SentryOptions()
+        var options = SentryOptions().apply {
+            flushTimeoutMillis = 0L
+        }
 
         init {
             options.isDebug = true

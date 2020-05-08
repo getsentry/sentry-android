@@ -22,7 +22,9 @@ class SendCachedEventTest {
         var hub: IHub? = mock()
         var logger: ILogger? = mock()
         var serializer: ISerializer? = mock()
-        var options = SentryOptions()
+        var options = SentryOptions().apply {
+            flushTimeoutMillis = 0L
+        }
 
         init {
             options.isDebug = true

@@ -44,7 +44,9 @@ class UncaughtExceptionHandlerIntegrationTest {
         val threadMock = mock<Thread>()
         val throwableMock = mock<Throwable>()
         val hubMock = mock<IHub>()
-        val options = SentryOptions()
+        val options = SentryOptions().apply {
+            flushTimeoutMillis = 0L
+        }
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
@@ -59,7 +61,9 @@ class UncaughtExceptionHandlerIntegrationTest {
         val defaultHandlerMock = mock<Thread.UncaughtExceptionHandler>()
         whenever(handlerMock.defaultUncaughtExceptionHandler).thenReturn(defaultHandlerMock)
         val hubMock = mock<IHub>()
-        val options = SentryOptions()
+        val options = SentryOptions().apply {
+            flushTimeoutMillis = 0L
+        }
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
@@ -79,7 +83,9 @@ class UncaughtExceptionHandlerIntegrationTest {
             assertTrue(e.exceptionMechanism.isHandled)
             SentryId.EMPTY_ID
         }
-        val options = SentryOptions()
+        val options = SentryOptions().apply {
+            flushTimeoutMillis = 0L
+        }
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
