@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 public final class SentryEvent implements IUnknownPropertiesConsumer {
@@ -196,6 +197,13 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     return fingerprint;
   }
 
+  public boolean hasFingerprint(final @NotNull String fingerprint) {
+    if (this.fingerprint != null) {
+      return this.fingerprint.contains(fingerprint);
+    }
+    return false;
+  }
+
   public void setFingerprints(List<String> fingerprint) {
     this.fingerprint = fingerprint;
   }
@@ -229,6 +237,13 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     }
   }
 
+  public @Nullable String getTag(final @NotNull String key) {
+    if (tags != null) {
+      return tags.get(key);
+    }
+    return null;
+  }
+
   public void setTag(String key, String value) {
     if (tags == null) {
       tags = new HashMap<>();
@@ -255,6 +270,13 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     if (extra != null) {
       extra.remove(key);
     }
+  }
+
+  public @Nullable Object getExtra(final @NotNull String key) {
+    if (extra != null) {
+      return extra.get(key);
+    }
+    return null;
   }
 
   public Contexts getContexts() {
@@ -295,6 +317,13 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     if (modules != null) {
       modules.remove(key);
     }
+  }
+
+  public @Nullable String getModule(final @NotNull String key) {
+    if (modules != null) {
+      return modules.get(key);
+    }
+    return null;
   }
 
   public DebugMeta getDebugMeta() {
