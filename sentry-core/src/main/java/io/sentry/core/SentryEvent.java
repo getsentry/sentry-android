@@ -193,15 +193,8 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     this.sdk = sdk;
   }
 
-  List<String> getFingerprints() {
+  public List<String> getFingerprints() {
     return fingerprint;
-  }
-
-  public boolean hasFingerprint(final @NotNull String fingerprint) {
-    if (this.fingerprint != null) {
-      return this.fingerprint.contains(fingerprint);
-    }
-    return false;
   }
 
   public void setFingerprints(List<String> fingerprint) {
