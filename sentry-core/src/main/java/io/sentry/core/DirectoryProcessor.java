@@ -8,7 +8,6 @@ import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SubmissionResult;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,11 +75,11 @@ abstract class DirectoryProcessor {
     boolean succeeded = false;
 
     private final CountDownLatch latch;
-    private final long flushTimeoutMillis;
+    //    private final long flushTimeoutMillis;
     private final @NotNull ILogger logger;
 
     public SendCachedEventHint(final long flushTimeoutMillis, final @NotNull ILogger logger) {
-      this.flushTimeoutMillis = flushTimeoutMillis;
+      //      this.flushTimeoutMillis = flushTimeoutMillis;
       this.latch = new CountDownLatch(1);
       this.logger = logger;
     }
@@ -98,7 +97,9 @@ abstract class DirectoryProcessor {
     @Override
     public boolean waitFlush() {
       try {
-        return latch.await(flushTimeoutMillis, TimeUnit.MILLISECONDS);
+        //        return latch.await(flushTimeoutMillis, TimeUnit.MILLISECONDS);
+        latch.await();
+        return true;
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         logger.log(ERROR, "Exception while awaiting on lock.", e);
