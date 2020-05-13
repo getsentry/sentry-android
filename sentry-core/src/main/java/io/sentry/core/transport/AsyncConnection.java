@@ -127,6 +127,7 @@ public final class AsyncConnection implements Closeable, Connection {
     if (hint instanceof Cached) {
       currentEnvelopeCache = NoOpEnvelopeCache.getInstance();
       cached = true;
+      options.getLogger().log(SentryLevel.DEBUG, "Captured Envelope is already cached");
     }
 
     // Optimize for/No allocations if no items are under 429
@@ -138,6 +139,11 @@ public final class AsyncConnection implements Closeable, Connection {
           dropItems = new ArrayList<>();
         }
         dropItems.add(item);
+      }
+      if (dropItems != null) {
+        options
+            .getLogger()
+            .log(SentryLevel.INFO, "%d items will be dropped due rate limiting.", dropItems.size());
       }
     }
 
@@ -155,6 +161,7 @@ public final class AsyncConnection implements Closeable, Connection {
         if (cached) {
           sessionCache.discard(envelope);
         }
+        options.getLogger().log(SentryLevel.INFO, "Envelope discarded due all items rate limited.");
         return;
       }
 
@@ -230,6 +237,10 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
+        } else {
+          options
+              .getLogger()
+              .log(SentryLevel.DEBUG, "Event %s is not SubmissionResult", event.getEventId());
         }
       }
     }
@@ -263,6 +274,10 @@ public final class AsyncConnection implements Closeable, Connection {
           // Failure due to IO is allowed to retry the event
           if (hint instanceof Retryable) {
             ((Retryable) hint).setRetry(true);
+          } else {
+            options
+                .getLogger()
+                .log(SentryLevel.DEBUG, "Event %s is not Retryable", event.getEventId());
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -270,6 +285,10 @@ public final class AsyncConnection implements Closeable, Connection {
         // If transportGate is blocking from sending, allowed to retry
         if (hint instanceof Retryable) {
           ((Retryable) hint).setRetry(true);
+        } else {
+          options
+              .getLogger()
+              .log(SentryLevel.DEBUG, "Event %s is not Retryable", event.getEventId());
         }
       }
       return result;
@@ -306,6 +325,13 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(SentryLevel.DEBUG, "Marking envelope submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
+        } else {
+          options
+              .getLogger()
+              .log(
+                  SentryLevel.DEBUG,
+                  "Envelope %s doesn't require a SubmissionResult",
+                  envelope.getHeader().getEventId());
         }
       }
     }
@@ -317,6 +343,9 @@ public final class AsyncConnection implements Closeable, Connection {
 
       // we only flush a session update to the disk, but not to the network
       if (hint instanceof SessionUpdate) {
+        options
+            .getLogger()
+            .log(SentryLevel.DEBUG, "SessionUpdate event, leaving after event being cached.");
         return TransportResult.success();
       }
 
@@ -338,6 +367,13 @@ public final class AsyncConnection implements Closeable, Connection {
           // Failure due to IO is allowed to retry the event
           if (hint instanceof Retryable) {
             ((Retryable) hint).setRetry(true);
+          } else {
+            options
+                .getLogger()
+                .log(
+                    SentryLevel.DEBUG,
+                    "Envelope %s is not Retryable",
+                    envelope.getHeader().getEventId());
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -345,6 +381,13 @@ public final class AsyncConnection implements Closeable, Connection {
         // If transportGate is blocking from sending, allowed to retry
         if (hint instanceof Retryable) {
           ((Retryable) hint).setRetry(true);
+        } else {
+          options
+              .getLogger()
+              .log(
+                  SentryLevel.DEBUG,
+                  "Envelope %s is not Retryable",
+                  envelope.getHeader().getEventId());
         }
       }
       return result;

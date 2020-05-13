@@ -253,7 +253,9 @@ public final class SessionCache implements IEnvelopeCache {
       options
           .getLogger()
           .log(DEBUG, "Overwriting envelope to offline storage: %s", file.getAbsolutePath());
-      file.delete();
+      if (!file.delete()) {
+        options.getLogger().log(SentryLevel.ERROR, "Failed to delete: %s", file.getAbsolutePath());
+      }
     }
 
     try (final OutputStream outputStream = new FileOutputStream(file);
@@ -262,7 +264,7 @@ public final class SessionCache implements IEnvelopeCache {
     } catch (Exception e) {
       options
           .getLogger()
-          .log(ERROR, "Error writing Envelope %s to offline storage", file.getAbsolutePath());
+          .log(ERROR, e, "Error writing Envelope %s to offline storage", file.getAbsolutePath());
     }
   }
 
@@ -271,7 +273,9 @@ public final class SessionCache implements IEnvelopeCache {
       options
           .getLogger()
           .log(DEBUG, "Overwriting session to offline storage: %s", session.getSessionId());
-      file.delete();
+      if (!file.delete()) {
+        options.getLogger().log(SentryLevel.ERROR, "Failed to delete: %s", file.getAbsolutePath());
+      }
     }
 
     try (final OutputStream outputStream = new FileOutputStream(file);
@@ -280,7 +284,7 @@ public final class SessionCache implements IEnvelopeCache {
     } catch (Exception e) {
       options
           .getLogger()
-          .log(ERROR, "Error writing Session to offline storage: %s", session.getSessionId());
+          .log(ERROR, e, "Error writing Session to offline storage: %s", session.getSessionId());
     }
   }
 
