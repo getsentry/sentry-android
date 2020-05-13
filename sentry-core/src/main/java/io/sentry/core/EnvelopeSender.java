@@ -65,6 +65,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             file.getAbsolutePath());
       } else {
         processEnvelope(envelope, hint);
+        logger.log(SentryLevel.DEBUG, "File '%s' is done.", file.getAbsolutePath());
       }
     } catch (IOException e) {
       logger.log(SentryLevel.ERROR, "Error processing envelope.", e);
@@ -172,6 +173,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
 
             if (hint instanceof Flushable) {
+              logger.log(SentryLevel.DEBUG, "Gonna wait flush %d item.", items);
               if (!((Flushable) hint).waitFlush()) {
                 logger.log(
                     SentryLevel.WARNING,
@@ -179,6 +181,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                     session.getSessionId());
                 break;
               }
+              logger.log(SentryLevel.DEBUG, "Flushed %d item.", items);
             } else {
               logger.log(DEBUG, "Envelope %s is not Flushable.", envelope.getHeader().getEventId());
             }
