@@ -148,7 +148,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             } else {
               logger.log(
                   SentryLevel.DEBUG,
-                  "Envelope %s doesn't require a SubmissionResult",
+                  "Envelope's Hint is not Flushable",
                   envelope.getHeader().getEventId());
             }
           }
@@ -205,7 +205,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       } else {
         logger.log(
             SentryLevel.DEBUG,
-            "Envelope %s doesn't require a SubmissionResult",
+            "Envelope's Hint %s is not SubmissionResult",
             envelope.getHeader().getEventId());
       }
     }

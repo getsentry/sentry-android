@@ -330,7 +330,7 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(
                   SentryLevel.DEBUG,
-                  "Envelope %s doesn't require a SubmissionResult",
+                  "Envelope's Hint is not SubmissionResult",
                   envelope.getHeader().getEventId());
         }
       }
