@@ -847,7 +847,17 @@ public class SentryOptions {
                       options.getFlushTimeoutMillis());
               if (options.getCacheDirPath() != null) {
                 File cacheDir = new File(options.getCacheDirPath());
-                return () -> sender.processDirectory(cacheDir);
+                return () -> {
+                  options
+                      .getLogger()
+                      .log(SentryLevel.DEBUG, "Started processing cached files from %s", cacheDir);
+
+                  sender.processDirectory(cacheDir);
+
+                  options
+                      .getLogger()
+                      .log(SentryLevel.DEBUG, "Finished processing cached files from %s", cacheDir);
+                };
               } else {
                 options
                     .getLogger()
@@ -870,8 +880,22 @@ public class SentryOptions {
                       logger,
                       options.getFlushTimeoutMillis());
               if (options.getSessionsPath() != null) {
-                File outbox = new File(options.getSessionsPath());
-                return () -> envelopeSender.processDirectory(outbox);
+                File sessionsPath = new File(options.getSessionsPath());
+                return () -> {
+                  options
+                      .getLogger()
+                      .log(
+                          SentryLevel.DEBUG,
+                          "Started processing cached files from %s",
+                          sessionsPath);
+                  envelopeSender.processDirectory(sessionsPath);
+                  options
+                      .getLogger()
+                      .log(
+                          SentryLevel.DEBUG,
+                          "Finished processing cached files from %s",
+                          sessionsPath);
+                };
               } else {
                 options
                     .getLogger()

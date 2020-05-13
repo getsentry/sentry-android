@@ -112,11 +112,12 @@ public final class SessionCache implements IEnvelopeCache {
                     "Stream from path %s resulted in a null envelope.",
                     currentSessionFile.getAbsolutePath());
           } else {
-            options
-                .getLogger()
-                .log(
-                    INFO,
-                    "There's a left over session, it's gonna be ended and cached to be sent.");
+            //            options
+            //                .getLogger()
+            //                .log(
+            //                    INFO,
+            //                    "There's a left over session, it's gonna be ended and cached to be
+            // sent.");
 
             final File crashMarkerFile = new File(options.getCacheDirPath(), CRASH_MARKER_FILE);
             Date timestamp = null;

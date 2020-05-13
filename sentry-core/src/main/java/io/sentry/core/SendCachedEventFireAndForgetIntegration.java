@@ -23,8 +23,8 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
 
   @SuppressWarnings("FutureReturnValueIgnored")
   @Override
-  public final void register(@NotNull IHub hub, @NotNull SentryOptions options) {
-    String cachedDir = options.getCacheDirPath();
+  public final void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
+    final String cachedDir = options.getCacheDirPath();
     if (cachedDir == null) {
       options
           .getLogger()
@@ -34,25 +34,24 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
       return;
     }
 
-    SendFireAndForget sender = factory.create(hub, options);
+    final SendFireAndForget sender = factory.create(hub, options);
 
     try {
-      ExecutorService es = Executors.newSingleThreadExecutor();
+      final ExecutorService es = Executors.newSingleThreadExecutor();
       es.submit(
           () -> {
             try {
               sender.send();
-              options
-                  .getLogger()
-                  .log(SentryLevel.DEBUG, "Finished processing cached files from %s", cachedDir);
             } catch (Exception e) {
               options.getLogger().log(SentryLevel.ERROR, "Failed trying to send cached events.", e);
+            } finally {
+              es.shutdown();
             }
           });
       options
           .getLogger()
           .log(SentryLevel.DEBUG, "Scheduled sending cached files from %s", cachedDir);
-      es.shutdown();
+      //      es.shutdown();
 
       options
           .getLogger()

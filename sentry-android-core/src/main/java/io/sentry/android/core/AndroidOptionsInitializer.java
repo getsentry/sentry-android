@@ -100,7 +100,23 @@ final class AndroidOptionsInitializer {
                       sentryOptions.getFlushTimeoutMillis());
               if (sentryOptions.getOutboxPath() != null) {
                 final File outbox = new File(sentryOptions.getOutboxPath());
-                return () -> envelopeSender.processDirectory(outbox);
+                return () -> {
+                  options
+                      .getLogger()
+                      .log(
+                          SentryLevel.DEBUG,
+                          "Started processing cached files from %s",
+                          outbox.getAbsolutePath());
+
+                  envelopeSender.processDirectory(outbox);
+
+                  options
+                      .getLogger()
+                      .log(
+                          SentryLevel.DEBUG,
+                          "Finished processing cached files from %s",
+                          outbox.getAbsolutePath());
+                };
               } else {
                 sentryOptions
                     .getLogger()
