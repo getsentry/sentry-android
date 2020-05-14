@@ -34,13 +34,8 @@ public final class SessionAdapter extends TypeAdapter<Session> {
       writer.name("init").value(value.getInit());
     }
 
-    if (value.getStarted() != null) {
-      writer.name("started").value(DateUtils.getTimestamp(value.getStarted()));
-    }
-
-    if (value.getStatus() != null) {
-      writer.name("status").value(value.getStatus().name().toLowerCase(Locale.ROOT));
-    }
+    writer.name("started").value(DateUtils.getTimestamp(value.getStarted()));
+    writer.name("status").value(value.getStatus().name().toLowerCase(Locale.ROOT));
 
     if (value.getSequence() != null) {
       writer.name("seq").value(value.getSequence());
@@ -60,11 +55,9 @@ public final class SessionAdapter extends TypeAdapter<Session> {
     }
 
     boolean hasInitAttrs = false;
-    if (value.getRelease() != null) {
-      hasInitAttrs = initAttrs(writer, hasInitAttrs);
+    hasInitAttrs = initAttrs(writer, hasInitAttrs);
 
-      writer.name("release").value(value.getRelease());
-    }
+    writer.name("release").value(value.getRelease());
 
     if (value.getEnvironment() != null) {
       hasInitAttrs = initAttrs(writer, hasInitAttrs);
@@ -181,6 +174,10 @@ public final class SessionAdapter extends TypeAdapter<Session> {
       }
     }
     reader.endObject();
+
+    if (status == null || started == null || release == null || release.isEmpty()) {
+      return null;
+    }
 
     return new Session(
         status,
