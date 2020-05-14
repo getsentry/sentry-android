@@ -1,8 +1,10 @@
 package io.sentry.android.core
 
+import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.MainEventProcessor
 import io.sentry.core.SentryOptions
@@ -205,6 +207,26 @@ class AndroidOptionsInitializerTest {
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
         val actual = sentryOptions.integrations.firstOrNull { it is EnvelopeFileObserverIntegration }
         assertNotNull(actual)
+    }
+
+    @Test
+    fun `When given Context is not an Application class, get and set ApplicationContext`() {
+        val sentryOptions = SentryAndroidOptions()
+        val mockApp = mock<Application>()
+        val mockContext = mock<Context>()
+        whenever(mockContext.applicationContext).thenReturn(mockApp)
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext)
+        assertNotNull(mockContext)
+    }
+
+    @Test
+    fun `When given Context is not an Application class and ApplicationContext is null, throw IllegalArgumentException`() {
+        val sentryOptions = SentryAndroidOptions()
+        val mockContext = mock<Context>()
+        whenever(mockContext.applicationContext).thenReturn(null)
+
+        assertFailsWith<IllegalArgumentException> { AndroidOptionsInitializer.init(sentryOptions, mockContext) }
     }
 
     private fun createMockContext(): Context {
