@@ -49,12 +49,9 @@ final class AndroidOptionsInitializer {
       final @NotNull ILogger logger) {
     Objects.requireNonNull(context, "The context is required.");
 
-    if (!(context instanceof Application)) {
-      // if context is not an AppContext, let's try to get from getApplicationContext
-      // it returns null if ContextImpl, so let's check for nullability
-      if (context.getApplicationContext() != null) {
-        context = context.getApplicationContext();
-      }
+    // it returns null if ContextImpl, so let's check for nullability
+    if (context.getApplicationContext() != null) {
+      context = context.getApplicationContext();
     }
 
     Objects.requireNonNull(options, "The options object is required.");

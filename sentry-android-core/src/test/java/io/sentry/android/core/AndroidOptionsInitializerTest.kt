@@ -211,7 +211,7 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `When given Context is not an Application class, get and set ApplicationContext`() {
+    fun `When given Context returns a non null ApplicationContext, uses it`() {
         val sentryOptions = SentryAndroidOptions()
         val mockApp = mock<Application>()
         val mockContext = mock<Context>()
@@ -222,7 +222,7 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `When given Context is not an Application class and ApplicationContext is null, keep given Context`() {
+    fun `When given Context returns a null ApplicationContext is null, keep given Context`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = mock<Context>()
         whenever(mockContext.applicationContext).thenReturn(null)
