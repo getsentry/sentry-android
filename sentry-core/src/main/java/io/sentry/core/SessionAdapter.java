@@ -4,15 +4,23 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+import io.sentry.core.util.Objects;
 import io.sentry.core.util.StringUtils;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 @ApiStatus.Internal
 public final class SessionAdapter extends TypeAdapter<Session> {
+
+  private final @NotNull ILogger logger;
+
+  public SessionAdapter(final @NotNull ILogger logger) {
+    this.logger = Objects.requireNonNull(logger, "The Logger is required.");
+  }
 
   @Override
   public void write(JsonWriter writer, Session value) throws IOException {
@@ -176,6 +184,7 @@ public final class SessionAdapter extends TypeAdapter<Session> {
     reader.endObject();
 
     if (status == null || started == null || release == null || release.isEmpty()) {
+      logger.log(SentryLevel.ERROR, "Session is gonna be dropped due to invalid fields.");
       return null;
     }
 
