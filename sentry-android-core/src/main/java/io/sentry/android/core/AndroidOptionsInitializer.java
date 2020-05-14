@@ -50,9 +50,11 @@ final class AndroidOptionsInitializer {
     Objects.requireNonNull(context, "The context is required.");
 
     if (!(context instanceof Application)) {
-      context =
-          Objects.requireNonNull(
-              context.getApplicationContext(), "The application context is required.");
+      // if context is not an AppContext, let's try to get from getApplicationContext
+      // it returns null if ContextImpl, so let's check for nullability
+      if (context.getApplicationContext() != null) {
+        context = context.getApplicationContext();
+      }
     }
 
     Objects.requireNonNull(options, "The options object is required.");
@@ -117,7 +119,9 @@ final class AndroidOptionsInitializer {
 
     options.addIntegration(new AnrIntegration());
     options.addIntegration(new AppLifecycleIntegration());
-    if (context instanceof Application) { // just a guard check, it should be an Application
+
+    // registerActivityLifecycleCallbacks is only available if Context is an AppContext
+    if (context instanceof Application) {
       options.addIntegration(new ActivityBreadcrumbsIntegration((Application) context));
     } else {
       options

@@ -12,9 +12,9 @@ import java.io.File
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.runner.RunWith
 
@@ -222,12 +222,24 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `When given Context is not an Application class and ApplicationContext is null, throw IllegalArgumentException`() {
+    fun `When given Context is not an Application class and ApplicationContext is null, keep given Context`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = mock<Context>()
         whenever(mockContext.applicationContext).thenReturn(null)
 
-        assertFailsWith<IllegalArgumentException> { AndroidOptionsInitializer.init(sentryOptions, mockContext) }
+        AndroidOptionsInitializer.init(sentryOptions, mockContext)
+        assertNotNull(mockContext)
+    }
+
+    @Test
+    fun `When given Context is not an Application class, do not add ActivityBreadcrumbsIntegration`() {
+        val sentryOptions = SentryAndroidOptions()
+        val mockContext = mock<Context>()
+        whenever(mockContext.applicationContext).thenReturn(null)
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext)
+        val actual = sentryOptions.integrations.firstOrNull { it is ActivityBreadcrumbsIntegration }
+        assertNull(actual)
     }
 
     private fun createMockContext(): Context {
