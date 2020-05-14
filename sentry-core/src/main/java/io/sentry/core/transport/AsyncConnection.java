@@ -77,7 +77,8 @@ public final class AsyncConnection implements Closeable, Connection {
     final RejectedExecutionHandler storeEvents =
         (r, executor) -> {
           if (r instanceof EventSender) {
-            EventSender eventSender = (EventSender) r;
+            final EventSender eventSender = (EventSender) r;
+
             if (!(eventSender.hint instanceof Cached)) {
               eventCache.store(eventSender.event);
             }
@@ -86,6 +87,7 @@ public final class AsyncConnection implements Closeable, Connection {
           }
           if (r instanceof SessionSender) {
             final SessionSender sessionSender = (SessionSender) r;
+
             if (!(sessionSender.hint instanceof Cached)) {
               sessionCache.store(sessionSender.envelope, sessionSender.hint);
             }
@@ -104,7 +106,7 @@ public final class AsyncConnection implements Closeable, Connection {
    * @param hint the Hint
    * @param retry if event should be retried or not
    */
-  private static void markHintWhenSendingFailed(final @Nullable Object hint, boolean retry) {
+  private static void markHintWhenSendingFailed(final @Nullable Object hint, final boolean retry) {
     if (hint instanceof SubmissionResult) {
       ((SubmissionResult) hint).setResult(false);
     }
@@ -136,7 +138,6 @@ public final class AsyncConnection implements Closeable, Connection {
         eventCache.discard(event);
       }
       markHintWhenSendingFailed(hint, false);
-
       return;
     }
 
@@ -190,7 +191,6 @@ public final class AsyncConnection implements Closeable, Connection {
         options.getLogger().log(SentryLevel.INFO, "Envelope discarded due all items rate limited.");
 
         markHintWhenSendingFailed(hint, false);
-
         return;
       }
 
