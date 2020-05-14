@@ -78,13 +78,17 @@ public final class AsyncConnection implements Closeable, Connection {
         (r, executor) -> {
           if (r instanceof EventSender) {
             EventSender eventSender = (EventSender) r;
-            eventCache.store(((EventSender) r).event);
+            if (!(eventSender.hint instanceof Cached)) {
+              eventCache.store(eventSender.event);
+            }
 
             markHintWhenSendingFailed(eventSender.hint, true);
           }
           if (r instanceof SessionSender) {
             final SessionSender sessionSender = (SessionSender) r;
-            sessionCache.store(sessionSender.envelope, sessionSender.hint);
+            if (!(sessionSender.hint instanceof Cached)) {
+              sessionCache.store(sessionSender.envelope, sessionSender.hint);
+            }
 
             markHintWhenSendingFailed(sessionSender.hint, true);
           }
