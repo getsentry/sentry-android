@@ -77,16 +77,36 @@ public final class AsyncConnection implements Closeable, Connection {
     final RejectedExecutionHandler storeEvents =
         (r, executor) -> {
           if (r instanceof EventSender) {
+            EventSender eventSender = (EventSender) r;
             eventCache.store(((EventSender) r).event);
+
+            markHintWhenSendingFailed(eventSender.hint, true);
           }
           if (r instanceof SessionSender) {
-            final SessionSender sessionSender = ((SessionSender) r);
+            final SessionSender sessionSender = (SessionSender) r;
             sessionCache.store(sessionSender.envelope, sessionSender.hint);
+
+            markHintWhenSendingFailed(sessionSender.hint, true);
           }
         };
 
     return new RetryingThreadPoolExecutor(
         1, maxQueueSize, new AsyncConnectionThreadFactory(), storeEvents);
+  }
+
+  /**
+   * It marks the hints when sending has failed, so it's not necessary to wait the timeout
+   *
+   * @param hint the Hint
+   * @param retry if event should be retried or not
+   */
+  private static void markHintWhenSendingFailed(final @Nullable Object hint, boolean retry) {
+    if (hint instanceof SubmissionResult) {
+      ((SubmissionResult) hint).setResult(false);
+    }
+    if (hint instanceof Retryable) {
+      ((Retryable) hint).setRetry(retry);
+    }
   }
 
   /**
@@ -111,6 +131,8 @@ public final class AsyncConnection implements Closeable, Connection {
       if (cached) {
         eventCache.discard(event);
       }
+      markHintWhenSendingFailed(hint, false);
+
       return;
     }
 
@@ -162,6 +184,9 @@ public final class AsyncConnection implements Closeable, Connection {
           sessionCache.discard(envelope);
         }
         options.getLogger().log(SentryLevel.INFO, "Envelope discarded due all items rate limited.");
+
+        markHintWhenSendingFailed(hint, false);
+
         return;
       }
 
