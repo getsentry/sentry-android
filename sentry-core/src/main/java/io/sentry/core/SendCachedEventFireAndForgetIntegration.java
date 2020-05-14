@@ -1,7 +1,5 @@
 package io.sentry.core;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.jetbrains.annotations.NotNull;
 
 /** Sends cached events over when your App. is starting. */
@@ -11,6 +9,10 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
 
   public interface SendFireAndForget {
     void send();
+  }
+
+  public interface SendFireAndForgetDirPath {
+    String getDirPath();
   }
 
   public interface SendFireAndForgetFactory {
@@ -37,21 +39,18 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
     final SendFireAndForget sender = factory.create(hub, options);
 
     try {
-      final ExecutorService es = Executors.newSingleThreadExecutor();
-      es.submit(
-          () -> {
-            try {
-              sender.send();
-            } catch (Exception e) {
-              options.getLogger().log(SentryLevel.ERROR, "Failed trying to send cached events.", e);
-            } finally {
-              es.shutdown();
-            }
-          });
       options
-          .getLogger()
-          .log(SentryLevel.DEBUG, "Scheduled sending cached files from %s", cachedDir);
-      //      es.shutdown();
+          .getExecutorService()
+          .submit(
+              () -> {
+                try {
+                  sender.send();
+                } catch (Exception e) {
+                  options
+                      .getLogger()
+                      .log(SentryLevel.ERROR, "Failed trying to send cached events.", e);
+                }
+              });
 
       options
           .getLogger()

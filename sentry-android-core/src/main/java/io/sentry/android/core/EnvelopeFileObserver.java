@@ -14,6 +14,7 @@ import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.Objects;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,11 +64,11 @@ final class EnvelopeFileObserver extends FileObserver {
     boolean succeeded = false;
 
     private @NotNull final CountDownLatch latch;
-    //    private final long flushTimeoutMillis;
+    private final long flushTimeoutMillis;
     private final @NotNull ILogger logger;
 
     public CachedEnvelopeHint(final long flushTimeoutMillis, final @NotNull ILogger logger) {
-      //      this.flushTimeoutMillis = flushTimeoutMillis;
+      this.flushTimeoutMillis = flushTimeoutMillis;
       this.latch = new CountDownLatch(1);
       this.logger = Objects.requireNonNull(logger, "ILogger is required.");
     }
@@ -75,11 +76,7 @@ final class EnvelopeFileObserver extends FileObserver {
     @Override
     public boolean waitFlush() {
       try {
-        latch.await();
-        // TODO: or even removing the marker interface Flushable
-        // as the file is already written in the disk, just need to be sure that file
-        // should be deleted after sending it, which is being done by the EnvelopeSender right now
-        return true;
+        return latch.await(flushTimeoutMillis, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         logger.log(ERROR, "Exception while awaiting on lock.", e);

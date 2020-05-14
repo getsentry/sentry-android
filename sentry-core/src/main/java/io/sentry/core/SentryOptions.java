@@ -7,6 +7,8 @@ import java.io.File;
 import java.net.Proxy;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -176,6 +178,8 @@ public class SentryOptions {
   When enabled, Sentry installs UncaughtExceptionHandlerIntegration.
    */
   private boolean enableUncaughtExceptionHandler = true;
+
+  private final @NotNull ExecutorService executorService;
 
   /**
    * Adds an event processor
@@ -803,6 +807,11 @@ public class SentryOptions {
     this.enableUncaughtExceptionHandler = enableUncaughtExceptionHandler;
   }
 
+  @ApiStatus.Internal
+  public @NotNull ExecutorService getExecutorService() {
+    return executorService;
+  }
+
   /** The BeforeSend callback */
   public interface BeforeSendCallback {
 
@@ -833,78 +842,17 @@ public class SentryOptions {
 
   /** SentryOptions ctor It adds and set default things */
   public SentryOptions() {
+    executorService = Executors.newSingleThreadExecutor();
+
     eventProcessors.add(new MainEventProcessor(this));
 
-    // Start off sending any cached event.
     integrations.add(
         new SendCachedEventFireAndForgetIntegration(
-            (hub, options) -> {
-              SendCachedEvent sender =
-                  new SendCachedEvent(
-                      options.getSerializer(),
-                      hub,
-                      options.getLogger(),
-                      options.getFlushTimeoutMillis());
-              if (options.getCacheDirPath() != null) {
-                File cacheDir = new File(options.getCacheDirPath());
-                return () -> {
-                  options
-                      .getLogger()
-                      .log(SentryLevel.DEBUG, "Started processing cached files from %s", cacheDir);
+            new SendFireAndForgetEventSender(() -> getCacheDirPath())));
 
-                  sender.processDirectory(cacheDir);
-
-                  options
-                      .getLogger()
-                      .log(SentryLevel.DEBUG, "Finished processing cached files from %s", cacheDir);
-                };
-              } else {
-                options
-                    .getLogger()
-                    .log(
-                        SentryLevel.WARNING,
-                        "No cache dir path is defined in options, discarding SendCachedEvent.");
-                return null;
-              }
-            }));
-
-    //     send cached sessions
     integrations.add(
         new SendCachedEventFireAndForgetIntegration(
-            (hub, options) -> {
-              EnvelopeSender envelopeSender =
-                  new EnvelopeSender(
-                      hub,
-                      new EnvelopeReader(),
-                      options.getSerializer(),
-                      logger,
-                      options.getFlushTimeoutMillis());
-              if (options.getSessionsPath() != null) {
-                File sessionsPath = new File(options.getSessionsPath());
-                return () -> {
-                  options
-                      .getLogger()
-                      .log(
-                          SentryLevel.DEBUG,
-                          "Started processing cached files from %s",
-                          sessionsPath);
-                  envelopeSender.processDirectory(sessionsPath);
-                  options
-                      .getLogger()
-                      .log(
-                          SentryLevel.DEBUG,
-                          "Finished processing cached files from %s",
-                          sessionsPath);
-                };
-              } else {
-                options
-                    .getLogger()
-                    .log(
-                        SentryLevel.WARNING,
-                        "No sessions dir path is defined in options, discarding EnvelopeSender.");
-                return null;
-              }
-            }));
+            new SendFireAndForgetEnvelopeSender(() -> getSessionsPath())));
 
     integrations.add(new UncaughtExceptionHandlerIntegration());
   }

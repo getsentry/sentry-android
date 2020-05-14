@@ -249,6 +249,9 @@ public final class Hub implements IHub {
             ((Closeable) integration).close();
           }
         }
+        if (!options.getExecutorService().isShutdown()) {
+          options.getExecutorService().shutdown();
+        }
 
         // Close the top-most client
         final StackItem item = stack.peek();
