@@ -638,8 +638,6 @@ class SentryClientTest {
     internal class CustomCachedApplyScopeDataHint : Cached, ApplyScopeData
 
     internal class DiskFlushNotificationHint : DiskFlushNotification {
-        override fun markFlushed() {
-            TODO("Not yet implemented")
-        }
+        override fun markFlushed() {}
     }
 }
