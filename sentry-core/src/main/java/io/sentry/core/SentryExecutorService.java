@@ -31,7 +31,9 @@ final class SentryExecutorService implements ISentryExecutorService {
       if (!executorService.isShutdown()) {
         executorService.shutdown();
         try {
-          executorService.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS);
+          if (!executorService.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)) {
+            executorService.shutdownNow();
+          }
         } catch (InterruptedException e) {
           executorService.shutdownNow();
           Thread.currentThread().interrupt();
