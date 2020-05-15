@@ -27,7 +27,6 @@ final class ANRWatchDog extends Thread {
   private AtomicLong tick = new AtomicLong(0);
   private AtomicBoolean reported = new AtomicBoolean(false);
 
-  @SuppressWarnings("UnusedVariable")
   private final @NotNull Context context;
 
   @SuppressWarnings("UnnecessaryLambda")
@@ -100,7 +99,7 @@ final class ANRWatchDog extends Thread {
         if (am != null) {
           final List<ActivityManager.ProcessErrorStateInfo> processesInErrorState =
               am.getProcessesInErrorState();
-          // if list is null, there are no process in ANR state.
+          // if list is null, there's no process in ANR state.
           if (processesInErrorState == null) {
             continue;
           }
