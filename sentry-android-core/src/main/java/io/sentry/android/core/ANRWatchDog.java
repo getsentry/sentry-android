@@ -92,7 +92,8 @@ final class ANRWatchDog extends Thread {
           continue;
         }
 
-        // we only raise an ANR if the process is in ANR state.
+        // we only raise an ANR event if the process is in ANR state.
+        // if ActivityManager is not available, we'll still be able to send ANRs
         final ActivityManager am =
             (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 
