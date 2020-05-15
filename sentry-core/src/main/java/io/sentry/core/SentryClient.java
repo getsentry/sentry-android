@@ -179,6 +179,7 @@ public final class SentryClient implements ISentryClient {
                   // and we can end the session.
                   if (hint instanceof DiskFlushNotification) {
                     sessionHint = new SessionEndHint();
+                    session.end();
                   } else {
                     // otherwise we just cache in the disk but do not flush to the network.
                     sessionHint = new SessionUpdateHint();

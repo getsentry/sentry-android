@@ -177,7 +177,7 @@ public class SentryOptions {
    */
   private boolean enableUncaughtExceptionHandler = true;
 
-  private final @NotNull ISentryExecutorService executorService;
+  private @NotNull ISentryExecutorService executorService;
 
   /**
    * Adds an event processor
@@ -808,6 +808,12 @@ public class SentryOptions {
   @NotNull
   ISentryExecutorService getExecutorService() {
     return executorService;
+  }
+
+  void setExecutorService(final @NotNull ISentryExecutorService executorService) {
+    if (executorService != null) {
+      this.executorService = executorService;
+    }
   }
 
   /** The BeforeSend callback */
