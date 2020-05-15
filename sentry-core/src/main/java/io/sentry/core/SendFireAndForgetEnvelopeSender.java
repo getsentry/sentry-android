@@ -26,7 +26,7 @@ public final class SendFireAndForgetEnvelopeSender
           .getLogger()
           .log(
               SentryLevel.WARNING,
-              "No cache dir path is defined in options, discarding EnvelopeSender.");
+              "No envelope dir path is defined in options, discarding EnvelopeSender.");
       return null;
     }
 
@@ -37,15 +37,15 @@ public final class SendFireAndForgetEnvelopeSender
             options.getSerializer(),
             options.getLogger(),
             options.getFlushTimeoutMillis());
-    final File sessionsPath = new File(dirPath);
+    final File dirFile = new File(dirPath);
     return () -> {
       options
           .getLogger()
-          .log(SentryLevel.DEBUG, "Started processing cached files from %s", sessionsPath);
-      envelopeSender.processDirectory(sessionsPath);
+          .log(SentryLevel.DEBUG, "Started processing cached files from %s", dirPath);
+      envelopeSender.processDirectory(dirFile);
       options
           .getLogger()
-          .log(SentryLevel.DEBUG, "Finished processing cached files from %s", sessionsPath);
+          .log(SentryLevel.DEBUG, "Finished processing cached files from %s", dirPath);
     };
   }
 }

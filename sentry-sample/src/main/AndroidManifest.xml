@@ -53,7 +53,7 @@
     <!--    <meta-data android:name="io.sentry.ndk.enable" android:value="false" />-->
 
     <!--    how to set a custom release-->
-    <!--    <meta-data android:name="io.sentry.release" android:value="io.sentry.sample@1.0.0+10001" />-->
+        <meta-data android:name="io.sentry.release" android:value="io.sentry.todaystest@1.0.0+10001" />
 
     <!--    how to enable automatic session tracking-->
     <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
@@ -62,7 +62,7 @@
     <!--    <meta-data android:name="io.sentry.environment" android:value="debug" />-->
 
     <!--    how to change the session tracking interval-->
-    <meta-data android:name="io.sentry.session-tracking.timeout-interval-millis" android:value="10000" />
+    <meta-data android:name="io.sentry.session-tracking.timeout-interval-millis" android:value="3000" />
 
     <!--    how to enable and set a sampleRate (anything between 0.01 and 1.0), it's disabled by default-->
     <!--    <meta-data android:name="io.sentry.sample-rate" android:value="0.5" />-->

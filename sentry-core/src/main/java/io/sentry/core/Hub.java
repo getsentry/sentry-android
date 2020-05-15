@@ -8,7 +8,6 @@ import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.util.Deque;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -250,10 +249,7 @@ public final class Hub implements IHub {
             ((Closeable) integration).close();
           }
         }
-        final ExecutorService executorService = options.getExecutorService();
-        if (!executorService.isShutdown()) {
-          executorService.shutdown();
-        }
+        options.getExecutorService().close(options.getShutdownTimeout());
 
         // Close the top-most client
         final StackItem item = stack.peek();

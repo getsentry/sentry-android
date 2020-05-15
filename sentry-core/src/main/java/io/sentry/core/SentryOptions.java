@@ -7,8 +7,6 @@ import java.io.File;
 import java.net.Proxy;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -179,7 +177,7 @@ public class SentryOptions {
    */
   private boolean enableUncaughtExceptionHandler = true;
 
-  private final @NotNull ExecutorService executorService;
+  private final @NotNull ISentryExecutorService executorService;
 
   /**
    * Adds an event processor
@@ -807,8 +805,8 @@ public class SentryOptions {
     this.enableUncaughtExceptionHandler = enableUncaughtExceptionHandler;
   }
 
-  @ApiStatus.Internal
-  public @NotNull ExecutorService getExecutorService() {
+  @NotNull
+  ISentryExecutorService getExecutorService() {
     return executorService;
   }
 
@@ -842,7 +840,7 @@ public class SentryOptions {
 
   /** SentryOptions ctor It adds and set default things */
   public SentryOptions() {
-    executorService = Executors.newSingleThreadExecutor();
+    executorService = new SentryExecutorService();
 
     eventProcessors.add(new MainEventProcessor(this));
 

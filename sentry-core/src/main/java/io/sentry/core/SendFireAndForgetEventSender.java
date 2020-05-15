@@ -32,17 +32,17 @@ final class SendFireAndForgetEventSender
         new SendCachedEvent(
             options.getSerializer(), hub, options.getLogger(), options.getFlushTimeoutMillis());
 
-    final File cacheDir = new File(dirPath);
+    final File dirFile = new File(dirPath);
     return () -> {
       options
           .getLogger()
-          .log(SentryLevel.DEBUG, "Started processing cached files from %s", cacheDir);
+          .log(SentryLevel.DEBUG, "Started processing cached files from %s", dirPath);
 
-      sender.processDirectory(cacheDir);
+      sender.processDirectory(dirFile);
 
       options
           .getLogger()
-          .log(SentryLevel.DEBUG, "Finished processing cached files from %s", cacheDir);
+          .log(SentryLevel.DEBUG, "Finished processing cached files from %s", dirPath);
     };
   }
 }
