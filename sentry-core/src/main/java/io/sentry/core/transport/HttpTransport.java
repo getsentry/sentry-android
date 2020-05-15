@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -163,11 +162,6 @@ public class HttpTransport implements ITransport {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8))) {
       serializer.serialize(event, writer);
 
-      // TODO: remove this, just logging
-      StringWriter wrt = new StringWriter();
-      serializer.serialize(event, wrt);
-      options.getLogger().log(INFO, "event: %s", wrt.toString());
-
       // need to also close the input stream of the connection
       connection.getInputStream().close();
       options.getLogger().log(DEBUG, "Event sent %s successfully.", event.getEventId());
@@ -305,14 +299,6 @@ public class HttpTransport implements ITransport {
     try (final OutputStream outputStream = connection.getOutputStream();
         final Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8))) {
       serializer.serialize(envelope, writer);
-
-      // TODO: remove this, just logging
-      options
-          .getLogger()
-          .log(
-              INFO,
-              "session: %s",
-              new String(envelope.getItems().iterator().next().getData(), UTF_8));
 
       // need to also close the input stream of the connection
       connection.getInputStream().close();
