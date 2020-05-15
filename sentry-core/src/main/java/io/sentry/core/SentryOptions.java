@@ -179,6 +179,15 @@ public class SentryOptions {
 
   private @NotNull ISentryExecutorService executorService;
 
+  /** connection timeout in milliseconds. */
+  private int connectionTimeoutMillis = 5000;
+
+  /** read timeout in milliseconds */
+  private int readTimeoutMillis = 5000;
+
+  /** whether to ignore TLS errors */
+  private boolean bypassSecurity = false;
+
   /**
    * Adds an event processor
    *
@@ -814,6 +823,56 @@ public class SentryOptions {
     if (executorService != null) {
       this.executorService = executorService;
     }
+  }
+
+  /**
+   * Returns the connection timeout in milliseconds.
+   *
+   * @return the connectionTimeoutMillis
+   */
+  public int getConnectionTimeoutMillis() {
+    return connectionTimeoutMillis;
+  }
+
+  /**
+   * Sets the connection timeout in milliseconds.
+   *
+   * @param connectionTimeoutMillis the connectionTimeoutMillis
+   */
+  public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+    this.connectionTimeoutMillis = connectionTimeoutMillis;
+  }
+
+  /** Returns the read timeout in milliseconds */
+  public int getReadTimeoutMillis() {
+    return readTimeoutMillis;
+  }
+
+  /**
+   * Sets the read timeout in milliseconds
+   *
+   * @param readTimeoutMillis the readTimeoutMillis
+   */
+  public void setReadTimeoutMillis(int readTimeoutMillis) {
+    this.readTimeoutMillis = readTimeoutMillis;
+  }
+
+  /**
+   * Returns whether to ignore TLS errors
+   *
+   * @return the bypassSecurity
+   */
+  public boolean isBypassSecurity() {
+    return bypassSecurity;
+  }
+
+  /**
+   * Sets whether to ignore TLS errors
+   *
+   * @param bypassSecurity the bypassSecurity
+   */
+  public void setBypassSecurity(boolean bypassSecurity) {
+    this.bypassSecurity = bypassSecurity;
   }
 
   /** The BeforeSend callback */
