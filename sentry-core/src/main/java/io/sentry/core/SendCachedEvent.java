@@ -73,7 +73,7 @@ final class SendCachedEvent extends DirectoryProcessor {
     } catch (IOException e) {
       logger.log(SentryLevel.ERROR, e, "I/O on file '%s' failed.", file.getAbsolutePath());
     } catch (Exception e) {
-      logger.log(SentryLevel.ERROR, e, "Failed to capture cached event.", file.getAbsolutePath());
+      logger.log(SentryLevel.ERROR, e, "Failed to capture cached event %s", file.getAbsolutePath());
       if (hint instanceof Retryable) {
         ((Retryable) hint).setRetry(false);
         logger.log(SentryLevel.INFO, e, "File '%s' won't retry.", file.getAbsolutePath());
