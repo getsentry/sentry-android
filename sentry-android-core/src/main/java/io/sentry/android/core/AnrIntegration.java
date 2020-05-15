@@ -1,5 +1,6 @@
 package io.sentry.android.core;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import io.sentry.core.IHub;
 import io.sentry.core.ILogger;
@@ -31,6 +32,7 @@ public final class AnrIntegration implements Integration, Closeable {
    * Responsible for watching UI thread. being static to avoid multiple instances running at the
    * same time.
    */
+  @SuppressLint("StaticFieldLeak") // we have watchDogLock to avoid those leaks
   private static @Nullable ANRWatchDog anrWatchDog;
 
   private @Nullable SentryOptions options;
