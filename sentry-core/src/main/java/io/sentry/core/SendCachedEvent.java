@@ -106,15 +106,17 @@ final class SendCachedEvent extends DirectoryProcessor {
       if (!file.delete()) {
         logger.log(
             SentryLevel.ERROR,
-            "Failed to delete '%s' " + errorMessageSuffix,
-            file.getAbsolutePath());
+            "Failed to delete '%s' %s",
+            file.getAbsolutePath(),
+            errorMessageSuffix);
       }
     } catch (Exception e) {
       logger.log(
           SentryLevel.ERROR,
-          "Failed to delete '%s' " + errorMessageSuffix,
+          e,
+          "Failed to delete '%s' %s",
           file.getAbsolutePath(),
-          e);
+          errorMessageSuffix);
     }
   }
 }

@@ -19,7 +19,7 @@ class SendCachedEventFireAndForgetIntegrationTest {
         }
 
         fun getSut(): SendCachedEventFireAndForgetIntegration {
-            return SendCachedEventFireAndForgetIntegration(callback, mock())
+            return SendCachedEventFireAndForgetIntegration(callback)
         }
     }
 

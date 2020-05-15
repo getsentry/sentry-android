@@ -173,7 +173,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
 
             if (hint instanceof Flushable) {
-              logger.log(SentryLevel.DEBUG, "Gonna wait flush %d item.", items);
+              logger.log(SentryLevel.DEBUG, "Going to wait flush %d item.", items);
               if (!((Flushable) hint).waitFlush()) {
                 logger.log(
                     SentryLevel.WARNING,

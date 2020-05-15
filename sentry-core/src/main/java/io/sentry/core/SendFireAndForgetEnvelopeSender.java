@@ -26,7 +26,7 @@ public final class SendFireAndForgetEnvelopeSender
           .getLogger()
           .log(
               SentryLevel.WARNING,
-              "No cache dir path is defined in options, discarding SendCachedEvent.");
+              "No cache dir path is defined in options, discarding EnvelopeSender.");
       return null;
     }
 
