@@ -177,6 +177,7 @@ public class SentryOptions {
    */
   private boolean enableUncaughtExceptionHandler = true;
 
+  /** Sentry Executor Service that sends cached events and envelopes on App. start. */
   private @NotNull ISentryExecutorService executorService;
 
   /** connection timeout in milliseconds. */
@@ -814,11 +815,21 @@ public class SentryOptions {
     this.enableUncaughtExceptionHandler = enableUncaughtExceptionHandler;
   }
 
+  /**
+   * Returns the SentryExecutorService
+   *
+   * @return the SentryExecutorService
+   */
   @NotNull
   ISentryExecutorService getExecutorService() {
     return executorService;
   }
 
+  /**
+   * Sets the SentryExecutorService
+   *
+   * @param executorService the SentryExecutorService
+   */
   void setExecutorService(final @NotNull ISentryExecutorService executorService) {
     if (executorService != null) {
       this.executorService = executorService;
