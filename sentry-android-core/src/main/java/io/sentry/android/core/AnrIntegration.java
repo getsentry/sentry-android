@@ -1,5 +1,6 @@
 package io.sentry.android.core;
 
+import android.content.Context;
 import io.sentry.core.IHub;
 import io.sentry.core.ILogger;
 import io.sentry.core.Integration;
@@ -19,6 +20,12 @@ import org.jetbrains.annotations.TestOnly;
  * (ANR) error is triggered. Sends an event if an ANR happens
  */
 public final class AnrIntegration implements Integration, Closeable {
+
+  private final @NotNull Context context;
+
+  public AnrIntegration(final @NotNull Context context) {
+    this.context = context;
+  }
 
   /**
    * Responsible for watching UI thread. being static to avoid multiple instances running at the
@@ -56,7 +63,8 @@ public final class AnrIntegration implements Integration, Closeable {
                   options.getAnrTimeoutIntervalMillis(),
                   options.isAnrReportInDebug(),
                   error -> reportANR(hub, options.getLogger(), error),
-                  options.getLogger());
+                  options.getLogger(),
+                  context);
           anrWatchDog.start();
 
           options.getLogger().log(SentryLevel.DEBUG, "AnrIntegration installed.");

@@ -27,7 +27,7 @@ class ANRWatchDogTest {
         whenever(handler.post(any())).then { latch.countDown() }
         whenever(handler.thread).thenReturn(thread)
         val interval = 1L
-        val sut = ANRWatchDog(interval, true, ANRListener { a -> anr = a }, mock(), handler)
+        val sut = ANRWatchDog(interval, true, ANRListener { a -> anr = a }, mock(), handler, mock())
         val es = Executors.newSingleThreadExecutor()
         try {
             es.submit { sut.run() }
@@ -59,7 +59,7 @@ class ANRWatchDogTest {
         }
         whenever(handler.thread).thenReturn(thread)
         val interval = 1L
-        val sut = ANRWatchDog(interval, true, ANRListener { a -> anr = a }, mock(), handler)
+        val sut = ANRWatchDog(interval, true, ANRListener { a -> anr = a }, mock(), handler, mock())
         val es = Executors.newSingleThreadExecutor()
         try {
             es.submit { sut.run() }
