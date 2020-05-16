@@ -11,6 +11,7 @@ import io.sentry.core.SendCachedEventFireAndForgetIntegration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Objects;
+import io.sentry.android.core.util.Permissions
 import java.io.File;
 import org.jetbrains.annotations.NotNull;
 
@@ -130,7 +131,10 @@ final class AndroidOptionsInitializer {
     options.addIntegration(new AppComponentsBreadcrumbsIntegration(context));
     options.addIntegration(new SystemEventsBreadcrumbsIntegration(context));
     options.addIntegration(new TempSensorBreadcrumbsIntegration(context));
-    options.addIntegration(new PhoneStateBreadcrumbsIntegration(context));
+    
+    if (Permissions.hasPermission(context, android.permission.READ_PHONE_STATE)) {
+      options.addIntegration(new PhoneStateBreadcrumbsIntegration(context));
+    }
   }
 
   /**
