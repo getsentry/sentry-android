@@ -83,7 +83,7 @@ class ANRWatchDogTest {
     }
 
     @Test
-    fun `when ANR is detected and ActivityManager has ANR process, callback not invoked`() {
+    fun `when ANR is detected and ActivityManager has ANR process, callback is invoked`() {
         var anr: ApplicationNotResponding? = null
         val handler = mock<IHandler>()
         val thread = mock<Thread>()
@@ -124,7 +124,7 @@ class ANRWatchDogTest {
     }
 
     @Test
-    fun `when ANR is detected and ActivityManager has not ANR process, callback is not invoked`() {
+    fun `when ANR is detected and ActivityManager has no ANR process, callback is not invoked`() {
         var anr: ApplicationNotResponding? = null
         val handler = mock<IHandler>()
         val thread = mock<Thread>()
