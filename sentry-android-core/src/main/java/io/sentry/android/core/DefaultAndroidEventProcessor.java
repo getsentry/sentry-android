@@ -21,6 +21,7 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import io.sentry.android.core.util.ConnectivityChecker;
 import io.sentry.android.core.util.DeviceOrientations;
+import io.sentry.android.core.util.RootChecker;
 import io.sentry.core.DateUtils;
 import io.sentry.core.EventProcessor;
 import io.sentry.core.SentryEvent;
@@ -94,7 +95,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       map.put(PROGUARD_UUID, proGuardUuids);
     }
 
-    map.put(ROOTED, isRooted());
+    map.put(ROOTED, RootChecker.isDeviceRooted(context, options.getLogger()));
 
     String androidId = getAndroidId();
     if (androidId != null) {
@@ -777,54 +778,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     }
 
     return defaultVersion;
-  }
-
-  /**
-   * Attempt to discover if this device is currently rooted. From:
-   * https://stackoverflow.com/questions/1101380/determine-if-running-on-a-rooted-device
-   *
-   * @return true if heuristics show the device is probably rooted, otherwise false
-   */
-  private boolean isRooted() {
-    // we could get some inspiration from https://github.com/scottyab/rootbeer
-    if (Build.TAGS != null && Build.TAGS.contains("test-keys")) {
-      return true;
-    }
-
-    String[] probableRootPaths = {
-      "/data/local/bin/su",
-      "/data/local/su",
-      "/data/local/xbin/su",
-      "/sbin/su",
-      "/su/bin",
-      "/su/bin/su",
-      "/system/app/SuperSU",
-      "/system/app/SuperSU.apk",
-      "/system/app/Superuser",
-      "/system/app/Superuser.apk",
-      "/system/bin/failsafe/su",
-      "/system/bin/su",
-      "/system/sd/xbin/su",
-      "/system/xbin/daemonsu",
-      "/system/xbin/su"
-    };
-
-    for (String probableRootPath : probableRootPaths) {
-      try {
-        if (new File(probableRootPath).exists()) {
-          return true;
-        }
-      } catch (Exception e) {
-        options
-            .getLogger()
-            .log(
-                SentryLevel.ERROR,
-                "Exception while attempting to detect whether the device is rooted",
-                e);
-      }
-    }
-
-    return false;
   }
 
   /**
