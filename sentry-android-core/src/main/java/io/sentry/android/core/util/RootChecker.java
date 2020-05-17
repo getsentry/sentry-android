@@ -54,7 +54,7 @@ public final class RootChecker {
   }
 
   /**
-   * Often the rooted device have the following files . THis method will check whether the device is
+   * Often the rooted device have the following files . This method will check whether the device is
    * having these files or not
    *
    * @param logger the Logger
@@ -90,10 +90,10 @@ public final class RootChecker {
   }
 
   /**
-   * this will check if SU(Super User) exist or not)
+   * this will check if SU(Super User) exist or not
    *
    * @param logger the Logger
-   * @return thether su exists or not
+   * @return whether su exists or not
    */
   private static boolean checkSUExist(final @NotNull ILogger logger) {
     Process process = null;
@@ -117,7 +117,7 @@ public final class RootChecker {
   }
 
   /**
-   * some application hide the root status of the android device . This will check for those files
+   * some application hide the root status of the android device. This will check for those files
    *
    * @param context the Context
    * @return whether the root packages exist or not
