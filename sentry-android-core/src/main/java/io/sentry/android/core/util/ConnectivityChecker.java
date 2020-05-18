@@ -23,12 +23,18 @@ public final class ConnectivityChecker {
    *
    * @return true if the application has internet access
    */
-  public static @Nullable Boolean isConnected(@NotNull Context context, @NotNull ILogger logger) {
-    ConnectivityManager connectivityManager = getConnectivityManager(context, logger);
+  public static @Nullable Boolean isConnected(
+      final @NotNull Context context, final @NotNull ILogger logger) {
+    final ConnectivityManager connectivityManager = getConnectivityManager(context, logger);
     if (connectivityManager == null) {
       return null;
     }
-    return isConnected(context, connectivityManager, logger);
+    try {
+      return isConnected(context, connectivityManager, logger);
+    } catch (SecurityException ignored) {
+      // if no permission, we assume its connected.
+      return true;
+    }
     // getActiveNetworkInfo might return null if VPN doesn't specify its
     // underlying network
 
@@ -37,26 +43,29 @@ public final class ConnectivityChecker {
   }
 
   @SuppressWarnings({"deprecation", "MissingPermission"})
-  private static Boolean isConnected(
-      Context context, ConnectivityManager connectivityManager, ILogger logger) {
-    android.net.NetworkInfo activeNetwork =
+  private static boolean isConnected(
+      final @NotNull Context context,
+      final @NotNull ConnectivityManager connectivityManager,
+      final @NotNull ILogger logger) {
+    final android.net.NetworkInfo activeNetwork =
         getActiveNetworkInfo(context, connectivityManager, logger);
 
     if (activeNetwork == null) {
-      logger.log(SentryLevel.INFO, "NetworkInfo is null and cannot check network status");
-      return null;
+      logger.log(SentryLevel.INFO, "NetworkInfo is null, there's no active network.");
+      return false;
     }
     return activeNetwork.isConnected();
   }
 
   @SuppressWarnings({"deprecation", "MissingPermission"})
   private static @Nullable android.net.NetworkInfo getActiveNetworkInfo(
-      @NotNull Context context,
-      @NotNull ConnectivityManager connectivityManager,
-      @NotNull ILogger logger) {
+      final @NotNull Context context,
+      final @NotNull ConnectivityManager connectivityManager,
+      final @NotNull ILogger logger)
+      throws SecurityException {
     if (!Permissions.hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE)) {
       logger.log(SentryLevel.INFO, "No permission (ACCESS_NETWORK_STATE) to check network status.");
-      return null;
+      throw new SecurityException("No ACCESS_NETWORK_STATE permission");
     }
 
     return connectivityManager.getActiveNetworkInfo();
@@ -70,9 +79,10 @@ public final class ConnectivityChecker {
    * @return the connection type wifi, ethernet, cellular or null
    */
   @SuppressLint({"ObsoleteSdkInt", "MissingPermission"})
-  public static String getConnectionType(@NotNull Context context, @NotNull ILogger logger) {
+  public static @Nullable String getConnectionType(
+      final @NotNull Context context, final @NotNull ILogger logger) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      ConnectivityManager connectivityManager = getConnectivityManager(context, logger);
+      final ConnectivityManager connectivityManager = getConnectivityManager(context, logger);
       if (connectivityManager == null) {
         return null;
       }
@@ -81,12 +91,12 @@ public final class ConnectivityChecker {
             SentryLevel.INFO, "No permission (ACCESS_NETWORK_STATE) to check network status.");
         return null;
       }
-      Network activeNetwork = connectivityManager.getActiveNetwork();
+      final Network activeNetwork = connectivityManager.getActiveNetwork();
       if (activeNetwork == null) {
         logger.log(SentryLevel.INFO, "Network is null and cannot check network status");
         return null;
       }
-      NetworkCapabilities networkCapabilities =
+      final NetworkCapabilities networkCapabilities =
           connectivityManager.getNetworkCapabilities(activeNetwork);
       if (networkCapabilities == null) {
         logger.log(SentryLevel.INFO, "NetworkCapabilities is null and cannot check network type");
@@ -106,8 +116,8 @@ public final class ConnectivityChecker {
   }
 
   private static @Nullable ConnectivityManager getConnectivityManager(
-      @NotNull Context context, @NotNull ILogger logger) {
-    ConnectivityManager connectivityManager =
+      final @NotNull Context context, final @NotNull ILogger logger) {
+    final ConnectivityManager connectivityManager =
         (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
     if (connectivityManager == null) {
       logger.log(SentryLevel.INFO, "ConnectivityManager is null and cannot check network status");
