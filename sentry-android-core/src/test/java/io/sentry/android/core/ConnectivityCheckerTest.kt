@@ -115,7 +115,7 @@ class ConnectivityCheckerTest {
     }
 
     @Test
-    fun `When network capabilities is TRANSPORT_WIFI, return wifi`() {
+    fun `When network capabilities has TRANSPORT_WIFI, return wifi`() {
         val contextMock = mock<Context>()
         val cm = mock<ConnectivityManager>()
         whenever(contextMock.getSystemService(any())).thenReturn(cm)
