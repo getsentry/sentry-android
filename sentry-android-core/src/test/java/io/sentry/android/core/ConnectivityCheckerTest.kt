@@ -145,7 +145,7 @@ class ConnectivityCheckerTest {
     }
 
     @Test
-    fun `When network capabilities is TRANSPORT_CELLULAR, return wifi`() {
+    fun `When network capabilities has TRANSPORT_CELLULAR, return cellular`() {
         val contextMock = mock<Context>()
         val cm = mock<ConnectivityManager>()
         whenever(contextMock.getSystemService(any())).thenReturn(cm)
