@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
+import io.sentry.android.core.IBuildInfoProvider;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import org.jetbrains.annotations.ApiStatus;
@@ -78,10 +79,12 @@ public final class ConnectivityChecker {
    * @param logger the logger from options
    * @return the connection type wifi, ethernet, cellular or null
    */
-  @SuppressLint({"ObsoleteSdkInt", "MissingPermission"})
+  @SuppressLint({"ObsoleteSdkInt", "MissingPermission", "NewApi"})
   public static @Nullable String getConnectionType(
-      final @NotNull Context context, final @NotNull ILogger logger) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      final @NotNull Context context,
+      final @NotNull ILogger logger,
+      final @NotNull IBuildInfoProvider buildInfoProvider) {
+    if (buildInfoProvider.getSdkInfoVersion() >= Build.VERSION_CODES.M) {
       final ConnectivityManager connectivityManager = getConnectivityManager(context, logger);
       if (connectivityManager == null) {
         return null;

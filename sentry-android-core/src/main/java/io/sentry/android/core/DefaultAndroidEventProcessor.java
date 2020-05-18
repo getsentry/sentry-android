@@ -75,16 +75,27 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @TestOnly final Future<Map<String, Object>> contextData;
 
-  public DefaultAndroidEventProcessor(
-      final @NotNull Context context, final @NotNull SentryOptions options) {
+  private final @NotNull IBuildInfoProvider buildInfoProvider;
+
+  DefaultAndroidEventProcessor(
+      final @NotNull Context context,
+      final @NotNull SentryOptions options,
+      final @NotNull IBuildInfoProvider buildInfoProvider) {
     this.context = Objects.requireNonNull(context, "The application context is required.");
     this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
+    this.buildInfoProvider =
+        Objects.requireNonNull(buildInfoProvider, "The BuildInfoProvider is required.");
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     // dont ref. to method reference, theres a bug on it
     contextData = executorService.submit(() -> loadContextData());
 
     executorService.shutdown();
+  }
+
+  public DefaultAndroidEventProcessor(
+      final @NotNull Context context, final @NotNull SentryOptions options) {
+    this(context, options, BuildInfoProvider.getInstance());
   }
 
   private @NotNull Map<String, Object> loadContextData() {
@@ -344,7 +355,8 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     }
     if (device.getConnectionType() == null) {
       // wifi, ethernet or cellular, null if none
-      device.setConnectionType(ConnectivityChecker.getConnectionType(context, options.getLogger()));
+      device.setConnectionType(
+          ConnectivityChecker.getConnectionType(context, options.getLogger(), buildInfoProvider));
     }
 
     return device;
