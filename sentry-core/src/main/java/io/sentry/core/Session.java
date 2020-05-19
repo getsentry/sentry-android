@@ -14,7 +14,7 @@ public final class Session {
     Ok,
     Exited,
     Crashed,
-    Abnormal // not used by mobile SDKs
+    Abnormal // not currently used in this SDK.
   }
 
   /** started timestamp */
