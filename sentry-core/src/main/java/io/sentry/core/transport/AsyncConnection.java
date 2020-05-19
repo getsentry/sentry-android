@@ -69,7 +69,7 @@ public final class AsyncConnection implements Closeable, Connection {
     this.executor = executorService;
   }
 
-  private static RetryingThreadPoolExecutor initExecutor(
+  private static QueuedThreadPoolExecutor initExecutor(
       final int maxQueueSize,
       final @NotNull IEventCache eventCache,
       final @NotNull IEnvelopeCache sessionCache) {
@@ -96,7 +96,7 @@ public final class AsyncConnection implements Closeable, Connection {
           }
         };
 
-    return new RetryingThreadPoolExecutor(
+    return new QueuedThreadPoolExecutor(
         1, maxQueueSize, new AsyncConnectionThreadFactory(), storeEvents);
   }
 
@@ -130,6 +130,7 @@ public final class AsyncConnection implements Closeable, Connection {
     if (hint instanceof Cached) {
       currentEventCache = NoOpEventCache.getInstance();
       cached = true;
+      options.getLogger().log(SentryLevel.DEBUG, "Captured SentryEvent is already cached");
     }
 
     // no reason to continue
@@ -254,7 +255,6 @@ public final class AsyncConnection implements Closeable, Connection {
       TransportResult result = this.failedResult;
       try {
         result = flush();
-        options.getLogger().log(SentryLevel.DEBUG, "Event flushed: %s", event.getEventId());
       } catch (Exception e) {
         options
             .getLogger()
@@ -269,7 +269,10 @@ public final class AsyncConnection implements Closeable, Connection {
         } else {
           options
               .getLogger()
-              .log(SentryLevel.DEBUG, "Event %s is not SubmissionResult", event.getEventId());
+              .log(
+                  SentryLevel.DEBUG,
+                  "%s is not SubmissionResult",
+                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
         }
       }
     }
@@ -306,7 +309,10 @@ public final class AsyncConnection implements Closeable, Connection {
           } else {
             options
                 .getLogger()
-                .log(SentryLevel.DEBUG, "Event %s is not Retryable", event.getEventId());
+                .log(
+                    SentryLevel.DEBUG,
+                    "%s is not Retryable",
+                    hint != null ? hint.getClass().getCanonicalName() : "Hint");
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -317,7 +323,10 @@ public final class AsyncConnection implements Closeable, Connection {
         } else {
           options
               .getLogger()
-              .log(SentryLevel.DEBUG, "Event %s is not Retryable", event.getEventId());
+              .log(
+                  SentryLevel.DEBUG,
+                  "%s is not Retryable",
+                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
         }
       }
       return result;
@@ -359,8 +368,8 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(
                   SentryLevel.DEBUG,
-                  "Envelope's Hint is not SubmissionResult",
-                  envelope.getHeader().getEventId());
+                  "%s is not SubmissionResult",
+                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
         }
       }
     }
@@ -401,8 +410,8 @@ public final class AsyncConnection implements Closeable, Connection {
                 .getLogger()
                 .log(
                     SentryLevel.DEBUG,
-                    "Envelope %s is not Retryable",
-                    envelope.getHeader().getEventId());
+                    "%s is not Retryable",
+                    hint != null ? hint.getClass().getCanonicalName() : "Hint");
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -415,8 +424,8 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(
                   SentryLevel.DEBUG,
-                  "Envelope %s is not Retryable",
-                  envelope.getHeader().getEventId());
+                  "%s is not Retryable",
+                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
         }
       }
       return result;

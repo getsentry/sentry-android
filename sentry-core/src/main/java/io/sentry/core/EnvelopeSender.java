@@ -1,6 +1,5 @@
 package io.sentry.core;
 
-import static io.sentry.core.SentryLevel.DEBUG;
 import static io.sentry.core.SentryLevel.ERROR;
 import static io.sentry.core.cache.SessionCache.PREFIX_CURRENT_SESSION_FILE;
 
@@ -81,7 +80,10 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
           }
         }
       } else {
-        logger.log(SentryLevel.DEBUG, "File '%s' is not Retryable.", file.getAbsolutePath());
+        logger.log(
+            SentryLevel.DEBUG,
+            "%s is not Retryable",
+            hint != null ? hint.getClass().getCanonicalName() : "Hint");
       }
     }
   }
@@ -144,13 +146,18 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                     SentryLevel.WARNING,
                     "Timed out waiting for event submission: %s",
                     event.getEventId());
+
+                if (hint instanceof Retryable) {
+                  ((Retryable) hint).setRetry(true);
+                }
+
                 break;
               }
             } else {
               logger.log(
                   SentryLevel.DEBUG,
-                  "Envelope's Hint is not Flushable",
-                  envelope.getHeader().getEventId());
+                  "%s is not Flushable",
+                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
             }
           }
         } catch (Exception e) {
@@ -179,11 +186,19 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                     SentryLevel.WARNING,
                     "Timed out waiting for item submission: %s",
                     session.getSessionId());
+
+                if (hint instanceof Retryable) {
+                  ((Retryable) hint).setRetry(true);
+                }
+
                 break;
               }
               logger.log(SentryLevel.DEBUG, "Flushed %d item.", items);
             } else {
-              logger.log(DEBUG, "Envelope %s is not Flushable.", envelope.getHeader().getEventId());
+              logger.log(
+                  SentryLevel.DEBUG,
+                  "%s is not Flushable",
+                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
             }
           }
         } catch (Exception e) {
@@ -208,8 +223,8 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
       } else {
         logger.log(
             SentryLevel.DEBUG,
-            "Envelope's Hint %s is not SubmissionResult",
-            envelope.getHeader().getEventId());
+            "%s is not SubmissionResult",
+            hint != null ? hint.getClass().getCanonicalName() : "Hint");
       }
     }
   }
