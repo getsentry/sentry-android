@@ -1,7 +1,5 @@
 package io.sentry.android.core;
 
-import static io.sentry.android.core.util.ConnectivityChecker.ConnectionStatus.CONNECTED;
-
 import android.content.Context;
 import io.sentry.android.core.util.ConnectivityChecker;
 import io.sentry.core.ILogger;
