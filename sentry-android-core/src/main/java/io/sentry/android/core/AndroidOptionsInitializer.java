@@ -80,6 +80,8 @@ final class AndroidOptionsInitializer {
     try {
       context.startService(SentryService.getIntent(context));
     } catch (IllegalStateException e) {
+      // maybe we should make Throwable instead of to be safe than sorry
+      // services have different behaviours across OS versioms eg foreground etc
       options.getLogger().log(SentryLevel.ERROR, e, "SentryService can't be started.");
     }
   }
