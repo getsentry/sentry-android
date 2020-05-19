@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nhaarman.mockitokotlin2.mock
+import io.sentry.android.core.util.ConnectivityChecker
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -29,17 +30,22 @@ class AndroidTransportGateTest {
     }
 
     @Test
-    fun `isConnected returns true if connection was not found or no permission`() {
-        assertTrue(transportGate.isConnected(null))
+    fun `isConnected returns true if connection was not found`() {
+        assertTrue(transportGate.isConnected(ConnectivityChecker.ConnectionStatus.UNKNOWN))
     }
 
     @Test
     fun `isConnected returns true if connection is connected`() {
-        assertTrue(transportGate.isConnected(true))
+        assertTrue(transportGate.isConnected(ConnectivityChecker.ConnectionStatus.CONNECTED))
     }
 
     @Test
     fun `isConnected returns false if connection is not connected`() {
-        assertFalse(transportGate.isConnected(false))
+        assertFalse(transportGate.isConnected(ConnectivityChecker.ConnectionStatus.NOT_CONNECTED))
+    }
+
+    @Test
+    fun `isConnected returns false if no permission`() {
+        assertTrue(transportGate.isConnected(ConnectivityChecker.ConnectionStatus.NO_PERMISSION))
     }
 }

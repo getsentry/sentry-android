@@ -17,25 +17,27 @@ import org.jetbrains.annotations.Nullable;
 @ApiStatus.Internal
 public final class ConnectivityChecker {
 
+  public enum ConnectionStatus {
+    CONNECTED,
+    NOT_CONNECTED,
+    NO_PERMISSION,
+    UNKNOWN
+  }
+
   private ConnectivityChecker() {}
 
   /**
    * Check whether the application has internet access at a point in time.
    *
-   * @return true if the application has internet access
+   * @return the ConnectionStatus
    */
-  public static @Nullable Boolean isConnected(
+  public static @NotNull ConnectionStatus isConnected(
       final @NotNull Context context, final @NotNull ILogger logger) {
     final ConnectivityManager connectivityManager = getConnectivityManager(context, logger);
     if (connectivityManager == null) {
-      return null;
+      return ConnectionStatus.UNKNOWN;
     }
-    try {
-      return isConnected(context, connectivityManager, logger);
-    } catch (SecurityException ignored) {
-      // if no permission, we assume its connected.
-      return true;
-    }
+    return isConnected(context, connectivityManager, logger);
     // getActiveNetworkInfo might return null if VPN doesn't specify its
     // underlying network
 
@@ -43,33 +45,32 @@ public final class ConnectivityChecker {
     // connectivityManager.registerDefaultNetworkCallback(...)
   }
 
+  /**
+   * Returns whether its connected or not
+   *
+   * @param context the Context
+   * @param connectivityManager the ConnectivityManager
+   * @param logger the Logger
+   * @return true if connected or no permission to check, false otherwise
+   */
   @SuppressWarnings({"deprecation", "MissingPermission"})
-  private static boolean isConnected(
+  private static @NotNull ConnectionStatus isConnected(
       final @NotNull Context context,
       final @NotNull ConnectivityManager connectivityManager,
       final @NotNull ILogger logger) {
-    final android.net.NetworkInfo activeNetwork =
-        getActiveNetworkInfo(context, connectivityManager, logger);
-
-    if (activeNetwork == null) {
-      logger.log(SentryLevel.INFO, "NetworkInfo is null, there's no active network.");
-      return false;
-    }
-    return activeNetwork.isConnected();
-  }
-
-  @SuppressWarnings({"deprecation", "MissingPermission"})
-  private static @Nullable android.net.NetworkInfo getActiveNetworkInfo(
-      final @NotNull Context context,
-      final @NotNull ConnectivityManager connectivityManager,
-      final @NotNull ILogger logger)
-      throws SecurityException {
     if (!Permissions.hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE)) {
       logger.log(SentryLevel.INFO, "No permission (ACCESS_NETWORK_STATE) to check network status.");
-      throw new SecurityException("No ACCESS_NETWORK_STATE permission");
+      return ConnectionStatus.NO_PERMISSION;
     }
+    final android.net.NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
-    return connectivityManager.getActiveNetworkInfo();
+    if (activeNetworkInfo == null) {
+      logger.log(SentryLevel.INFO, "NetworkInfo is null, there's no active network.");
+      return ConnectionStatus.NOT_CONNECTED;
+    }
+    return activeNetworkInfo.isConnected()
+        ? ConnectionStatus.CONNECTED
+        : ConnectionStatus.NOT_CONNECTED;
   }
 
   /**
@@ -77,6 +78,7 @@ public final class ConnectivityChecker {
    *
    * @param context the App. context
    * @param logger the logger from options
+   * @param buildInfoProvider the BuildInfoProvider provider
    * @return the connection type wifi, ethernet, cellular or null
    */
   @SuppressLint({"ObsoleteSdkInt", "MissingPermission", "NewApi"})

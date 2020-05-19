@@ -298,7 +298,18 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       device.setCharging(isCharging(batteryIntent));
       device.setBatteryTemperature(getBatteryTemperature(batteryIntent));
     }
-    device.setOnline(ConnectivityChecker.isConnected(context, options.getLogger()));
+    Boolean connected;
+    switch (ConnectivityChecker.isConnected(context, options.getLogger())) {
+      case NOT_CONNECTED:
+        connected = false;
+        break;
+      case CONNECTED:
+        connected = true;
+        break;
+      default:
+        connected = null;
+    }
+    device.setOnline(connected);
     device.setOrientation(getOrientation());
 
     try {

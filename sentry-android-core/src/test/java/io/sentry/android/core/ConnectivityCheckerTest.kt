@@ -17,60 +17,63 @@ import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.android.core.util.ConnectivityChecker
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class ConnectivityCheckerTest {
 
     @Test
-    fun `When network is active and connected, return true for isConnected`() {
+    fun `When network is active and connected with permission, return CONNECTED for isConnected`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
-        val an = mock<NetworkInfo>()
-        whenever(cm.activeNetworkInfo).thenReturn(an)
-        whenever(an.isConnected).thenReturn(true)
-        assertTrue(ConnectivityChecker.isConnected(contextMock, mock())!!)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
+        val networkInfo = mock<NetworkInfo>()
+        whenever(connectivityManager.activeNetworkInfo).thenReturn(networkInfo)
+        whenever(networkInfo.isConnected).thenReturn(true)
+
+        assertEquals(ConnectivityChecker.ConnectionStatus.CONNECTED, ConnectivityChecker.isConnected(contextMock, mock()))
     }
 
     @Test
-    fun `When network is active but not connected, return false for isConnected`() {
+    fun `When network is active but not connected with permission, return NOT_CONNECTED for isConnected`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
-        val an = mock<NetworkInfo>()
-        whenever(cm.activeNetworkInfo).thenReturn(an)
-        whenever(an.isConnected).thenReturn(false)
-        assertFalse(ConnectivityChecker.isConnected(contextMock, mock())!!)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
+        val networkInfo = mock<NetworkInfo>()
+        whenever(connectivityManager.activeNetworkInfo).thenReturn(networkInfo)
+        whenever(networkInfo.isConnected).thenReturn(false)
+
+        assertEquals(ConnectivityChecker.ConnectionStatus.NOT_CONNECTED, ConnectivityChecker.isConnected(contextMock, mock()))
     }
 
     @Test
-    fun `When there's no permission, return true for isConnected`() {
+    fun `When there's no permission, return NO_PERMISSION for isConnected`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
         whenever(contextMock.checkPermission(any(), any(), any())).thenReturn(PERMISSION_DENIED)
-        assertTrue(ConnectivityChecker.isConnected(contextMock, mock())!!)
+
+        assertEquals(ConnectivityChecker.ConnectionStatus.NO_PERMISSION, ConnectivityChecker.isConnected(contextMock, mock()))
     }
 
     @Test
-    fun `When network is not active, return false for isConnected`() {
+    fun `When network is not active, return NOT_CONNECTED for isConnected`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
-        assertFalse(ConnectivityChecker.isConnected(contextMock, mock())!!)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
+
+        assertEquals(ConnectivityChecker.ConnectionStatus.NOT_CONNECTED, ConnectivityChecker.isConnected(contextMock, mock()))
     }
 
     @Test
-    fun `When ConnectivityManager is not available, return null for isConnected`() {
-        assertNull(ConnectivityChecker.isConnected(mock(), mock()))
+    fun `When ConnectivityManager is not available, return UNKNOWN for isConnected`() {
+        assertEquals(ConnectivityChecker.ConnectionStatus.UNKNOWN, ConnectivityChecker.isConnected(mock(), mock()))
     }
 
     @Test
     fun `When ConnectivityManager is not available, return null for getConnectionType`() {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
+
         assertNull(ConnectivityChecker.getConnectionType(mock(), mock(), buildInfo))
     }
 
@@ -78,84 +81,91 @@ class ConnectivityCheckerTest {
     fun `When sdkInfoVersion is not min Marshmallow, return null for getConnectionType`() {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(0)
+
         assertNull(ConnectivityChecker.getConnectionType(mock(), mock(), buildInfo))
     }
 
     @Test
     fun `When there's no permission, return null for getConnectionType`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
         whenever(contextMock.checkPermission(any(), any(), any())).thenReturn(PERMISSION_DENIED)
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
+
         assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network is not active, return null for getConnectionType`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
+
         assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities are not available, return null for getConnectionType`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
-        val net = mock<Network>()
-        whenever(cm.activeNetwork).thenReturn(net)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
+        val network = mock<Network>()
+        whenever(connectivityManager.activeNetwork).thenReturn(network)
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
+
         assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities is TRANSPORT_WIFI, return wifi`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
-        val net = mock<Network>()
-        whenever(cm.activeNetwork).thenReturn(net)
-        val nc = mock<NetworkCapabilities>()
-        whenever(cm.getNetworkCapabilities(any())).thenReturn(nc)
-        whenever(nc.hasTransport(eq(TRANSPORT_WIFI))).thenReturn(true)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
+        val network = mock<Network>()
+        whenever(connectivityManager.activeNetwork).thenReturn(network)
+        val networkCapabilities = mock<NetworkCapabilities>()
+        whenever(connectivityManager.getNetworkCapabilities(any())).thenReturn(networkCapabilities)
+        whenever(networkCapabilities.hasTransport(eq(TRANSPORT_WIFI))).thenReturn(true)
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
+
         assertEquals("wifi", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities is TRANSPORT_ETHERNET, return wifi`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
-        val net = mock<Network>()
-        whenever(cm.activeNetwork).thenReturn(net)
-        val nc = mock<NetworkCapabilities>()
-        whenever(cm.getNetworkCapabilities(any())).thenReturn(nc)
-        whenever(nc.hasTransport(eq(TRANSPORT_ETHERNET))).thenReturn(true)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
+        val network = mock<Network>()
+        whenever(connectivityManager.activeNetwork).thenReturn(network)
+        val networkCapabilities = mock<NetworkCapabilities>()
+        whenever(connectivityManager.getNetworkCapabilities(any())).thenReturn(networkCapabilities)
+        whenever(networkCapabilities.hasTransport(eq(TRANSPORT_ETHERNET))).thenReturn(true)
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
+
         assertEquals("ethernet", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities is TRANSPORT_CELLULAR, return wifi`() {
         val contextMock = mock<Context>()
-        val cm = mock<ConnectivityManager>()
-        whenever(contextMock.getSystemService(any())).thenReturn(cm)
-        val net = mock<Network>()
-        whenever(cm.activeNetwork).thenReturn(net)
-        val nc = mock<NetworkCapabilities>()
-        whenever(cm.getNetworkCapabilities(any())).thenReturn(nc)
-        whenever(nc.hasTransport(eq(TRANSPORT_CELLULAR))).thenReturn(true)
+        val connectivityManager = mock<ConnectivityManager>()
+        whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
+        val network = mock<Network>()
+        whenever(connectivityManager.activeNetwork).thenReturn(network)
+        val networkCapabilities = mock<NetworkCapabilities>()
+        whenever(connectivityManager.getNetworkCapabilities(any())).thenReturn(networkCapabilities)
+        whenever(networkCapabilities.hasTransport(eq(TRANSPORT_CELLULAR))).thenReturn(true)
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
+
         assertEquals("cellular", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 }

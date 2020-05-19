@@ -1,5 +1,7 @@
 package io.sentry.android.core;
 
+import static io.sentry.android.core.util.ConnectivityChecker.ConnectionStatus.CONNECTED;
+
 import android.content.Context;
 import io.sentry.android.core.util.ConnectivityChecker;
 import io.sentry.core.ILogger;
@@ -12,7 +14,7 @@ final class AndroidTransportGate implements ITransportGate {
   private final Context context;
   private final @NotNull ILogger logger;
 
-  AndroidTransportGate(@NotNull Context context, @NotNull ILogger logger) {
+  AndroidTransportGate(final @NotNull Context context, final @NotNull ILogger logger) {
     this.context = context;
     this.logger = logger;
   }
@@ -23,9 +25,16 @@ final class AndroidTransportGate implements ITransportGate {
   }
 
   @TestOnly
-  boolean isConnected(Boolean connected) {
+  boolean isConnected(final @NotNull ConnectivityChecker.ConnectionStatus connectionStatus) {
     // let's assume its connected if there's no permission or something as we can't really know
     // whether is online or not.
-    return connected != null ? connected : true;
+    switch (connectionStatus) {
+      case CONNECTED:
+      case UNKNOWN:
+      case NO_PERMISSION:
+        return true;
+      default:
+        return false;
+    }
   }
 }
