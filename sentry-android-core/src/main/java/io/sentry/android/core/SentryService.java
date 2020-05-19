@@ -15,8 +15,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * This is a best effort to end a session during onTaskRemoved (user swapped up the App. aka killed
- * it). It needs to be public.
+ * This is a best effort to end a session during onTaskRemoved (user swiped up the App. aka killed
+ * it. It needs to be public.
  */
 @ApiStatus.Internal
 public final class SentryService extends Service {
@@ -29,6 +29,7 @@ public final class SentryService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     super.onStartCommand(intent, flags, startId);
+    // START_NOT_STICKY, we don't want to recreate the service nor the AppContext.
     return START_NOT_STICKY;
   }
 
