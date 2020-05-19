@@ -122,7 +122,7 @@ class ConnectivityCheckerTest {
     }
 
     @Test
-    fun `When network capabilities is TRANSPORT_WIFI, return wifi`() {
+    fun `When network capabilities has TRANSPORT_WIFI, return wifi`() {
         val contextMock = mock<Context>()
         val connectivityManager = mock<ConnectivityManager>()
         whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
@@ -138,7 +138,7 @@ class ConnectivityCheckerTest {
     }
 
     @Test
-    fun `When network capabilities is TRANSPORT_ETHERNET, return wifi`() {
+    fun `When network capabilities has TRANSPORT_ETHERNET, return ethernet`() {
         val contextMock = mock<Context>()
         val connectivityManager = mock<ConnectivityManager>()
         whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
@@ -154,7 +154,7 @@ class ConnectivityCheckerTest {
     }
 
     @Test
-    fun `When network capabilities is TRANSPORT_CELLULAR, return wifi`() {
+    fun `When network capabilities has TRANSPORT_CELLULAR, return cellular`() {
         val contextMock = mock<Context>()
         val connectivityManager = mock<ConnectivityManager>()
         whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
