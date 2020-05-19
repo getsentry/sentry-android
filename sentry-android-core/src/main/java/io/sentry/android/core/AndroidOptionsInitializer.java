@@ -76,6 +76,12 @@ final class AndroidOptionsInitializer {
     options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
 
     options.setTransportGate(new AndroidTransportGate(context, options.getLogger()));
+
+    try {
+      context.startService(SentryService.getIntent(context));
+    } catch (IllegalStateException e) {
+      options.getLogger().log(SentryLevel.ERROR, e, "SentryService can't be started.");
+    }
   }
 
   private static void installDefaultIntegrations(

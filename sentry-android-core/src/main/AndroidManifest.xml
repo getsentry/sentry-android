@@ -8,5 +8,8 @@
       android:name=".SentryInitProvider"
       android:authorities="${applicationId}.SentryInitProvider"
       android:exported="false"/>
+
+    <service android:name=".SentryService"
+      android:exported="false" />
   </application>
 </manifest>

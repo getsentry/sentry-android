@@ -1,5 +1,6 @@
 package io.sentry.core;
 
+import io.sentry.core.hints.SessionEndHint;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
 import java.util.List;
@@ -96,7 +97,11 @@ public interface IHub {
   void startSession();
 
   /** Ends the current session */
-  void endSession();
+  default void endSession() {
+    endSession(new SessionEndHint());
+  }
+
+  void endSession(@Nullable Object hint);
 
   /** Flushes out the queue for up to timeout seconds and disable the Hub. */
   void close();

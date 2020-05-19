@@ -370,6 +370,11 @@ public final class AsyncConnection implements Closeable, Connection {
 
       sessionCache.store(envelope, hint);
 
+      if (hint instanceof DiskFlushNotification) {
+        ((DiskFlushNotification) hint).markFlushed();
+        options.getLogger().log(SentryLevel.DEBUG, "Disk flush envelope fired.");
+      }
+
       // we only flush a session update to the disk, but not to the network
       if (hint instanceof SessionUpdate) {
         options
