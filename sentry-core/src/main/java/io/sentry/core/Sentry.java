@@ -151,7 +151,7 @@ public final class Sentry {
     // it might and actually happened that integrations called captureSomething
     // and hub was still NoOp.
     // Registering integrations here make sure that Hub is already created.
-    for (Integration integration : options.getIntegrations()) {
+    for (final Integration integration : options.getIntegrations()) {
       integration.register(HubAdapter.getInstance(), options);
     }
   }
