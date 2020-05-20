@@ -30,7 +30,7 @@ class ConnectivityCheckerTest {
         whenever(connectivityManager.activeNetworkInfo).thenReturn(networkInfo)
         whenever(networkInfo.isConnected).thenReturn(true)
 
-        assertEquals(ConnectivityChecker.ConnectionStatus.CONNECTED, ConnectivityChecker.isConnected(contextMock, mock()))
+        assertEquals(ConnectivityChecker.Status.CONNECTED, ConnectivityChecker.getConnectionStatus(contextMock, mock()))
     }
 
     @Test
@@ -42,7 +42,7 @@ class ConnectivityCheckerTest {
         whenever(connectivityManager.activeNetworkInfo).thenReturn(networkInfo)
         whenever(networkInfo.isConnected).thenReturn(false)
 
-        assertEquals(ConnectivityChecker.ConnectionStatus.NOT_CONNECTED, ConnectivityChecker.isConnected(contextMock, mock()))
+        assertEquals(ConnectivityChecker.Status.NOT_CONNECTED, ConnectivityChecker.getConnectionStatus(contextMock, mock()))
     }
 
     @Test
@@ -52,7 +52,7 @@ class ConnectivityCheckerTest {
         whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
         whenever(contextMock.checkPermission(any(), any(), any())).thenReturn(PERMISSION_DENIED)
 
-        assertEquals(ConnectivityChecker.ConnectionStatus.NO_PERMISSION, ConnectivityChecker.isConnected(contextMock, mock()))
+        assertEquals(ConnectivityChecker.Status.NO_PERMISSION, ConnectivityChecker.getConnectionStatus(contextMock, mock()))
     }
 
     @Test
@@ -61,12 +61,12 @@ class ConnectivityCheckerTest {
         val connectivityManager = mock<ConnectivityManager>()
         whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
 
-        assertEquals(ConnectivityChecker.ConnectionStatus.NOT_CONNECTED, ConnectivityChecker.isConnected(contextMock, mock()))
+        assertEquals(ConnectivityChecker.Status.NOT_CONNECTED, ConnectivityChecker.getConnectionStatus(contextMock, mock()))
     }
 
     @Test
     fun `When ConnectivityManager is not available, return UNKNOWN for isConnected`() {
-        assertEquals(ConnectivityChecker.ConnectionStatus.UNKNOWN, ConnectivityChecker.isConnected(mock(), mock()))
+        assertEquals(ConnectivityChecker.Status.UNKNOWN, ConnectivityChecker.getConnectionStatus(mock(), mock()))
     }
 
     @Test
@@ -74,7 +74,7 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
 
-        assertNull(ConnectivityChecker.getConnectionType(mock(), mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionStatus(mock(), mock(), buildInfo))
     }
 
     @Test
@@ -82,7 +82,7 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(0)
 
-        assertNull(ConnectivityChecker.getConnectionType(mock(), mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionStatus(mock(), mock(), buildInfo))
     }
 
     @Test
@@ -94,7 +94,7 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
 
-        assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
     }
 
     @Test
@@ -105,7 +105,7 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
 
-        assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
     }
 
     @Test
@@ -118,7 +118,7 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
 
-        assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
     }
 
     @Test
@@ -134,7 +134,7 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
 
-        assertEquals("wifi", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+        assertEquals("wifi", ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
     }
 
     @Test
@@ -150,7 +150,7 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
 
-        assertEquals("ethernet", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+        assertEquals("ethernet", ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
     }
 
     @Test
@@ -166,6 +166,6 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.M)
 
-        assertEquals("cellular", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+        assertEquals("cellular", ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
     }
 }
