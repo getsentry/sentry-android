@@ -34,9 +34,9 @@ public final class Hub implements IHub {
     this(options, createRootStackItem(options));
 
     // Register integrations against a root Hub
-    for (Integration integration : options.getIntegrations()) {
-      integration.register(HubAdapter.getInstance(), options);
-    }
+    //    for (Integration integration : options.getIntegrations()) {
+    //      integration.register(HubAdapter.getInstance(), options);
+    //    }
   }
 
   private Hub(final @NotNull SentryOptions options, final @Nullable StackItem rootStackItem) {
