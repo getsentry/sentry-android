@@ -80,7 +80,7 @@ public final class ConnectivityChecker {
    * @return the connection type wifi, ethernet, cellular or null
    */
   @SuppressLint({"ObsoleteSdkInt", "MissingPermission", "NewApi"})
-  public static @Nullable String getConnectionStatus(
+  public static @Nullable String getConnectionType(
       final @NotNull Context context,
       final @NotNull ILogger logger,
       final @NotNull IBuildInfoProvider buildInfoProvider) {

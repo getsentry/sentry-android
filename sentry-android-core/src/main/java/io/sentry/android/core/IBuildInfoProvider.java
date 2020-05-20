@@ -1,12 +1,12 @@
 package io.sentry.android.core;
 
-/** To make the Build class testable */
+/** To make SDK info classes testable */
 public interface IBuildInfoProvider {
 
   /**
-   * Returns Build.VERSION.SDK_INT
+   * Returns the SDK version of the given SDK
    *
-   * @return the Build.VERSION.SDK_INT
+   * @return the SDK Version
    */
   int getSdkInfoVersion();
 }
