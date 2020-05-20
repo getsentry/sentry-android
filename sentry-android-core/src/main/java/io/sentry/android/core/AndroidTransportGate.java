@@ -19,14 +19,14 @@ final class AndroidTransportGate implements ITransportGate {
 
   @Override
   public boolean isConnected() {
-    return isConnected(ConnectivityChecker.isConnected(context, logger));
+    return isConnected(ConnectivityChecker.getConnectionStatus(context, logger));
   }
 
   @TestOnly
-  boolean isConnected(final @NotNull ConnectivityChecker.ConnectionStatus connectionStatus) {
+  boolean isConnected(final @NotNull ConnectivityChecker.Status status) {
     // let's assume its connected if there's no permission or something as we can't really know
     // whether is online or not.
-    switch (connectionStatus) {
+    switch (status) {
       case CONNECTED:
       case UNKNOWN:
       case NO_PERMISSION:

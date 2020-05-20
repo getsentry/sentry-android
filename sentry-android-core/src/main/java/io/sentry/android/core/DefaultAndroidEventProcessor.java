@@ -299,7 +299,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       device.setBatteryTemperature(getBatteryTemperature(batteryIntent));
     }
     Boolean connected;
-    switch (ConnectivityChecker.isConnected(context, options.getLogger())) {
+    switch (ConnectivityChecker.getConnectionStatus(context, options.getLogger())) {
       case NOT_CONNECTED:
         connected = false;
         break;
@@ -367,7 +367,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (device.getConnectionType() == null) {
       // wifi, ethernet or cellular, null if none
       device.setConnectionType(
-          ConnectivityChecker.getConnectionType(context, options.getLogger(), buildInfoProvider));
+          ConnectivityChecker.getConnectionStatus(context, options.getLogger(), buildInfoProvider));
     }
 
     return device;

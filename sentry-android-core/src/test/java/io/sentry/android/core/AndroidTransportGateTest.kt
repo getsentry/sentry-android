@@ -23,21 +23,21 @@ class AndroidTransportGateTest {
 
     @Test
     fun `isConnected returns true if connection was not found`() {
-        assertTrue(fixture.getSut().isConnected(ConnectivityChecker.ConnectionStatus.UNKNOWN))
+        assertTrue(fixture.getSut().isConnected(ConnectivityChecker.Status.UNKNOWN))
     }
 
     @Test
     fun `isConnected returns true if connection is connected`() {
-        assertTrue(fixture.getSut().isConnected(ConnectivityChecker.ConnectionStatus.CONNECTED))
+        assertTrue(fixture.getSut().isConnected(ConnectivityChecker.Status.CONNECTED))
     }
 
     @Test
     fun `isConnected returns false if connection is not connected`() {
-        assertFalse(fixture.getSut().isConnected(ConnectivityChecker.ConnectionStatus.NOT_CONNECTED))
+        assertFalse(fixture.getSut().isConnected(ConnectivityChecker.Status.NOT_CONNECTED))
     }
 
     @Test
     fun `isConnected returns false if no permission`() {
-        assertTrue(fixture.getSut().isConnected(ConnectivityChecker.ConnectionStatus.NO_PERMISSION))
+        assertTrue(fixture.getSut().isConnected(ConnectivityChecker.Status.NO_PERMISSION))
     }
 }
