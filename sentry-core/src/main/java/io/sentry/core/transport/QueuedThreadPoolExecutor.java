@@ -36,7 +36,7 @@ final class QueuedThreadPoolExecutor extends ThreadPoolExecutor {
       final int maxQueueSize,
       final @NotNull ThreadFactory threadFactory,
       final @NotNull RejectedExecutionHandler rejectedExecutionHandler) {
-    // similar to newSingleThreadExecutor.newSingleThreadExecutor, but with a max queue size control
+    // similar to Executors.newSingleThreadExecutor, but with a max queue size control
     super(
         corePoolSize,
         corePoolSize,
