@@ -7,6 +7,7 @@ import io.sentry.core.hints.Flushable;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.CollectionUtils;
+import io.sentry.core.util.LogUtils;
 import io.sentry.core.util.Objects;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -80,10 +81,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
           }
         }
       } else {
-        logger.log(
-            SentryLevel.DEBUG,
-            "%s is not Retryable",
-            hint != null ? hint.getClass().getCanonicalName() : "Hint");
+        LogUtils.logIfNotRetryable(logger, hint);
       }
     }
   }
@@ -147,17 +145,15 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                     "Timed out waiting for event submission: %s",
                     event.getEventId());
 
-                if (hint instanceof Retryable) {
-                  ((Retryable) hint).setRetry(true);
-                }
+                //                TODO: find out about the time out
+                //                if (hint instanceof Retryable) {
+                //                  ((Retryable) hint).setRetry(true);
+                //                }
 
                 break;
               }
             } else {
-              logger.log(
-                  SentryLevel.DEBUG,
-                  "%s is not Flushable",
-                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
+              LogUtils.logIfNotFlushable(logger, hint);
             }
           }
         } catch (Exception e) {
@@ -187,18 +183,16 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                     "Timed out waiting for item submission: %s",
                     session.getSessionId());
 
-                if (hint instanceof Retryable) {
-                  ((Retryable) hint).setRetry(true);
-                }
+                //                TODO: find out about the time out
+                //                if (hint instanceof Retryable) {
+                //                  ((Retryable) hint).setRetry(true);
+                //                }
 
                 break;
               }
               logger.log(SentryLevel.DEBUG, "Flushed %d item.", items);
             } else {
-              logger.log(
-                  SentryLevel.DEBUG,
-                  "%s is not Flushable",
-                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
+              LogUtils.logIfNotFlushable(logger, hint);
             }
           }
         } catch (Exception e) {
@@ -221,10 +215,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
           break;
         }
       } else {
-        logger.log(
-            SentryLevel.DEBUG,
-            "%s is not SubmissionResult",
-            hint != null ? hint.getClass().getCanonicalName() : "Hint");
+        LogUtils.logIfNotSubmissionResult(logger, hint);
       }
     }
   }

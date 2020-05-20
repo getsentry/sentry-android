@@ -13,6 +13,7 @@ import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SessionUpdate;
 import io.sentry.core.hints.SubmissionResult;
+import io.sentry.core.util.LogUtils;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
@@ -267,12 +268,7 @@ public final class AsyncConnection implements Closeable, Connection {
               .log(SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
         } else {
-          options
-              .getLogger()
-              .log(
-                  SentryLevel.DEBUG,
-                  "%s is not SubmissionResult",
-                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
+          LogUtils.logIfNotSubmissionResult(options.getLogger(), hint);
         }
       }
     }
@@ -307,12 +303,7 @@ public final class AsyncConnection implements Closeable, Connection {
           if (hint instanceof Retryable) {
             ((Retryable) hint).setRetry(true);
           } else {
-            options
-                .getLogger()
-                .log(
-                    SentryLevel.DEBUG,
-                    "%s is not Retryable",
-                    hint != null ? hint.getClass().getCanonicalName() : "Hint");
+            LogUtils.logIfNotRetryable(options.getLogger(), hint);
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -321,12 +312,7 @@ public final class AsyncConnection implements Closeable, Connection {
         if (hint instanceof Retryable) {
           ((Retryable) hint).setRetry(true);
         } else {
-          options
-              .getLogger()
-              .log(
-                  SentryLevel.DEBUG,
-                  "%s is not Retryable",
-                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
+          LogUtils.logIfNotRetryable(options.getLogger(), hint);
         }
       }
       return result;
@@ -364,12 +350,7 @@ public final class AsyncConnection implements Closeable, Connection {
               .log(SentryLevel.DEBUG, "Marking envelope submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
         } else {
-          options
-              .getLogger()
-              .log(
-                  SentryLevel.DEBUG,
-                  "%s is not SubmissionResult",
-                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
+          LogUtils.logIfNotSubmissionResult(options.getLogger(), hint);
         }
       }
     }
@@ -406,12 +387,7 @@ public final class AsyncConnection implements Closeable, Connection {
           if (hint instanceof Retryable) {
             ((Retryable) hint).setRetry(true);
           } else {
-            options
-                .getLogger()
-                .log(
-                    SentryLevel.DEBUG,
-                    "%s is not Retryable",
-                    hint != null ? hint.getClass().getCanonicalName() : "Hint");
+            LogUtils.logIfNotRetryable(options.getLogger(), hint);
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -420,12 +396,7 @@ public final class AsyncConnection implements Closeable, Connection {
         if (hint instanceof Retryable) {
           ((Retryable) hint).setRetry(true);
         } else {
-          options
-              .getLogger()
-              .log(
-                  SentryLevel.DEBUG,
-                  "%s is not Retryable",
-                  hint != null ? hint.getClass().getCanonicalName() : "Hint");
+          LogUtils.logIfNotRetryable(options.getLogger(), hint);
         }
       }
       return result;

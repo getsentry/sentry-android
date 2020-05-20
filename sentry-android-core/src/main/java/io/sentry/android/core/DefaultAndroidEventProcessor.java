@@ -80,7 +80,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     this.context = Objects.requireNonNull(context, "The application context is required.");
     this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
 
-    // TODO: Executor could be ISentryExecutorService
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     // dont ref. to method reference, theres a bug on it
     contextData = executorService.submit(() -> loadContextData());
