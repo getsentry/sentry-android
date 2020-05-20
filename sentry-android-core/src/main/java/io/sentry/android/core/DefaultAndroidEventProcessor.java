@@ -77,7 +77,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   private final @NotNull IBuildInfoProvider buildInfoProvider;
 
-  DefaultAndroidEventProcessor(
+  public DefaultAndroidEventProcessor(
       final @NotNull Context context,
       final @NotNull SentryOptions options,
       final @NotNull IBuildInfoProvider buildInfoProvider) {
@@ -91,11 +91,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     contextData = executorService.submit(() -> loadContextData());
 
     executorService.shutdown();
-  }
-
-  public DefaultAndroidEventProcessor(
-      final @NotNull Context context, final @NotNull SentryOptions options) {
-    this(context, options, BuildInfoProvider.getInstance());
   }
 
   private @NotNull Map<String, Object> loadContextData() {
@@ -367,7 +362,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (device.getConnectionType() == null) {
       // wifi, ethernet or cellular, null if none
       device.setConnectionType(
-          ConnectivityChecker.getConnectionStatus(context, options.getLogger(), buildInfoProvider));
+          ConnectivityChecker.getConnectionType(context, options.getLogger(), buildInfoProvider));
     }
 
     return device;

@@ -84,7 +84,7 @@ class ConnectivityCheckerTest {
 
     @Test
     fun `When ConnectivityManager is not available, return null for getConnectionType`() {
-        assertNull(ConnectivityChecker.getConnectionStatus(mock(), mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionType(mock(), mock(), buildInfo))
     }
 
     @Test
@@ -92,46 +92,46 @@ class ConnectivityCheckerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(0)
 
-        assertNull(ConnectivityChecker.getConnectionStatus(mock(), mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionType(mock(), mock(), buildInfo))
     }
 
     @Test
     fun `When there's no permission, return null for getConnectionType`() {
         whenever(contextMock.checkPermission(any(), any(), any())).thenReturn(PERMISSION_DENIED)
 
-        assertNull(ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network is not active, return null for getConnectionType`() {
         whenever(contextMock.getSystemService(any())).thenReturn(connectivityManager)
 
-        assertNull(ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities are not available, return null for getConnectionType`() {
-        assertNull(ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
+        assertNull(ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities has TRANSPORT_WIFI, return wifi`() {
         whenever(networkCapabilities.hasTransport(eq(TRANSPORT_WIFI))).thenReturn(true)
 
-        assertEquals("wifi", ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
+        assertEquals("wifi", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities has TRANSPORT_ETHERNET, return ethernet`() {
         whenever(networkCapabilities.hasTransport(eq(TRANSPORT_ETHERNET))).thenReturn(true)
 
-        assertEquals("ethernet", ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
+        assertEquals("ethernet", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 
     @Test
     fun `When network capabilities has TRANSPORT_CELLULAR, return cellular`() {
         whenever(networkCapabilities.hasTransport(eq(TRANSPORT_CELLULAR))).thenReturn(true)
 
-        assertEquals("cellular", ConnectivityChecker.getConnectionStatus(contextMock, mock(), buildInfo))
+        assertEquals("cellular", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
 }
