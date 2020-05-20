@@ -3,6 +3,9 @@ package io.sentry.android.core
 import android.content.Context
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.net.ConnectivityManager
+import android.net.ConnectivityManager.TYPE_ETHERNET
+import android.net.ConnectivityManager.TYPE_MOBILE
+import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
@@ -90,7 +93,7 @@ class ConnectivityCheckerTest {
     @Test
     fun `When sdkInfoVersion is not min Marshmallow, return null for getConnectionType`() {
         val buildInfo = mock<IBuildInfoProvider>()
-        whenever(buildInfo.sdkInfoVersion).thenReturn(0)
+        whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 
         assertNull(ConnectivityChecker.getConnectionType(mock(), mock(), buildInfo))
     }
@@ -122,6 +125,14 @@ class ConnectivityCheckerTest {
     }
 
     @Test
+    fun `When network is TYPE_WIFI, return wifi`() {
+        whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+        whenever(networkInfo.type).thenReturn(TYPE_WIFI)
+
+        assertEquals("wifi", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+    }
+
+    @Test
     fun `When network capabilities has TRANSPORT_ETHERNET, return ethernet`() {
         whenever(networkCapabilities.hasTransport(eq(TRANSPORT_ETHERNET))).thenReturn(true)
 
@@ -129,8 +140,24 @@ class ConnectivityCheckerTest {
     }
 
     @Test
+    fun `When network is TYPE_ETHERNET, return ethernet`() {
+        whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+        whenever(networkInfo.type).thenReturn(TYPE_ETHERNET)
+
+        assertEquals("ethernet", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+    }
+
+    @Test
     fun `When network capabilities has TRANSPORT_CELLULAR, return cellular`() {
         whenever(networkCapabilities.hasTransport(eq(TRANSPORT_CELLULAR))).thenReturn(true)
+
+        assertEquals("cellular", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
+    }
+
+    @Test
+    fun `When network is TYPE_MOBILE, return cellular`() {
+        whenever(buildInfo.sdkInfoVersion).thenReturn(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+        whenever(networkInfo.type).thenReturn(TYPE_MOBILE)
 
         assertEquals("cellular", ConnectivityChecker.getConnectionType(contextMock, mock(), buildInfo))
     }
