@@ -93,37 +93,78 @@ public final class ConnectivityChecker {
       return null;
     }
 
-    NetworkCapabilities networkCapabilities = null;
+    boolean ethernet = false;
+    boolean wifi = false;
+    boolean cellular = false;
+
     if (buildInfoProvider.getSdkInfoVersion() >= Build.VERSION_CODES.M) {
       final Network activeNetwork = connectivityManager.getActiveNetwork();
       if (activeNetwork == null) {
         logger.log(SentryLevel.INFO, "Network is null and cannot check network status");
         return null;
       }
-      networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork);
+      final NetworkCapabilities networkCapabilities =
+          connectivityManager.getNetworkCapabilities(activeNetwork);
+      if (networkCapabilities == null) {
+        logger.log(SentryLevel.INFO, "NetworkCapabilities is null and cannot check network type");
+        return null;
+      }
+      if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+        ethernet = true;
+      }
+      if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+        wifi = true;
+      }
+      if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+        cellular = true;
+      }
     } else {
-      // NetworkInfo won't be able to detect if multiple networks, so fallback to getAllNetworks
-      final Network[] allNetworks = connectivityManager.getAllNetworks();
+      // ideally using connectivityManager.getAllNetworks(), but its >= Android L only
 
-      for (final Network network : allNetworks) {
-        networkCapabilities = connectivityManager.getNetworkCapabilities(network);
-        if (networkCapabilities == null) {
-          continue;
-        }
-        break;
+      // for some reason linting didn't allow a single @SuppressWarnings("deprecation") on method
+      // signature
+      @SuppressWarnings("deprecation")
+      final android.net.NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+      if (activeNetworkInfo == null) {
+        logger.log(SentryLevel.INFO, "NetworkInfo is null, there's no active network.");
+        return null;
+      }
+
+      @SuppressWarnings("deprecation")
+      final int type = activeNetworkInfo.getType();
+
+      @SuppressWarnings("deprecation")
+      final int TYPE_ETHERNET = ConnectivityManager.TYPE_ETHERNET;
+
+      @SuppressWarnings("deprecation")
+      final int TYPE_WIFI = ConnectivityManager.TYPE_WIFI;
+
+      @SuppressWarnings("deprecation")
+      final int TYPE_MOBILE = ConnectivityManager.TYPE_MOBILE;
+
+      switch (type) {
+        case TYPE_ETHERNET:
+          ethernet = true;
+          break;
+        case TYPE_WIFI:
+          wifi = true;
+          break;
+        case TYPE_MOBILE:
+          cellular = true;
+          break;
       }
     }
-    if (networkCapabilities == null) {
-      logger.log(SentryLevel.INFO, "NetworkCapabilities is null and cannot check network type");
-      return null;
-    }
-    if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+
+    // TODO: change the protocol to be a list of transports as a device may have the capability of
+    // multiple
+    if (ethernet) {
       return "ethernet";
     }
-    if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+    if (wifi) {
       return "wifi";
     }
-    if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+    if (cellular) {
       return "cellular";
     }
 
