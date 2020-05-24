@@ -45,14 +45,26 @@ public final class AppComponentsBreadcrumbsIntegration
             this.options.isEnableAppComponentBreadcrumbs());
 
     if (this.options.isEnableAppComponentBreadcrumbs()) {
-      context.registerComponentCallbacks(this);
-      options.getLogger().log(SentryLevel.DEBUG, "AppComponentsBreadcrumbsIntegration installed.");
+      try {
+        // if its a ContextImpl, registerComponentCallbacks can't be used
+        context.registerComponentCallbacks(this);
+        options
+            .getLogger()
+            .log(SentryLevel.DEBUG, "AppComponentsBreadcrumbsIntegration installed.");
+      } catch (Exception e) {
+        this.options.setEnableAppComponentBreadcrumbs(false);
+        options.getLogger().log(SentryLevel.INFO, e, "ComponentCallbacks2 is not available.");
+      }
     }
   }
 
   @Override
   public void close() throws IOException {
-    context.unregisterComponentCallbacks(this);
+    try {
+      // if its a ContextImpl, unregisterComponentCallbacks can't be used
+      context.unregisterComponentCallbacks(this);
+    } catch (Exception ignored) {
+    }
 
     if (options != null) {
       options.getLogger().log(SentryLevel.DEBUG, "AppComponentsBreadcrumbsIntegration removed.");
@@ -95,13 +107,27 @@ public final class AppComponentsBreadcrumbsIntegration
   private void createLowMemoryBreadcrumb(final @Nullable Integer level) {
     if (hub != null) {
       final Breadcrumb breadcrumb = new Breadcrumb();
+      if (level != null) {
+        // only add breadcrumb if TRIM_MEMORY_BACKGROUND, TRIM_MEMORY_MODERATE or
+        // TRIM_MEMORY_COMPLETE.
+        // Release as much memory as the process can.
+
+        // TRIM_MEMORY_UI_HIDDEN, TRIM_MEMORY_RUNNING_MODERATE, TRIM_MEMORY_RUNNING_LOW and
+        // TRIM_MEMORY_RUNNING_CRITICAL.
+        // Release any memory that your app doesn't need to run.
+        // So they are still not so critical at the point of killing the process.
+        // https://developer.android.com/topic/performance/memory
+
+        if (level < TRIM_MEMORY_BACKGROUND) {
+          return;
+        }
+        breadcrumb.setData("level", level);
+      }
+
       breadcrumb.setType("system");
       breadcrumb.setCategory("device.event");
       breadcrumb.setMessage("Low memory");
       breadcrumb.setData("action", "LOW_MEMORY");
-      if (level != null) {
-        breadcrumb.setData("level", level);
-      }
       breadcrumb.setLevel(SentryLevel.WARNING);
       hub.addBreadcrumb(breadcrumb);
     }

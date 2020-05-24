@@ -177,6 +177,18 @@ public class SentryOptions {
    */
   private boolean enableUncaughtExceptionHandler = true;
 
+  /** Sentry Executor Service that sends cached events and envelopes on App. start. */
+  private @NotNull ISentryExecutorService executorService;
+
+  /** connection timeout in milliseconds. */
+  private int connectionTimeoutMillis = 5000;
+
+  /** read timeout in milliseconds */
+  private int readTimeoutMillis = 5000;
+
+  /** whether to ignore TLS errors */
+  private boolean bypassSecurity = false;
+
   /**
    * Adds an event processor
    *
@@ -803,6 +815,81 @@ public class SentryOptions {
     this.enableUncaughtExceptionHandler = enableUncaughtExceptionHandler;
   }
 
+  /**
+   * Returns the SentryExecutorService
+   *
+   * @return the SentryExecutorService
+   */
+  @NotNull
+  ISentryExecutorService getExecutorService() {
+    return executorService;
+  }
+
+  /**
+   * Sets the SentryExecutorService
+   *
+   * @param executorService the SentryExecutorService
+   */
+  void setExecutorService(final @NotNull ISentryExecutorService executorService) {
+    if (executorService != null) {
+      this.executorService = executorService;
+    }
+  }
+
+  /**
+   * Returns the connection timeout in milliseconds.
+   *
+   * @return the connectionTimeoutMillis
+   */
+  public int getConnectionTimeoutMillis() {
+    return connectionTimeoutMillis;
+  }
+
+  /**
+   * Sets the connection timeout in milliseconds.
+   *
+   * @param connectionTimeoutMillis the connectionTimeoutMillis
+   */
+  public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+    this.connectionTimeoutMillis = connectionTimeoutMillis;
+  }
+
+  /**
+   * Returns the read timeout in milliseconds
+   *
+   * @return the readTimeoutMillis
+   */
+  public int getReadTimeoutMillis() {
+    return readTimeoutMillis;
+  }
+
+  /**
+   * Sets the read timeout in milliseconds
+   *
+   * @param readTimeoutMillis the readTimeoutMillis
+   */
+  public void setReadTimeoutMillis(int readTimeoutMillis) {
+    this.readTimeoutMillis = readTimeoutMillis;
+  }
+
+  /**
+   * Returns whether to ignore TLS errors
+   *
+   * @return the bypassSecurity
+   */
+  public boolean isBypassSecurity() {
+    return bypassSecurity;
+  }
+
+  /**
+   * Sets whether to ignore TLS errors
+   *
+   * @param bypassSecurity the bypassSecurity
+   */
+  public void setBypassSecurity(boolean bypassSecurity) {
+    this.bypassSecurity = bypassSecurity;
+  }
+
   /** The BeforeSend callback */
   public interface BeforeSendCallback {
 
@@ -833,55 +920,21 @@ public class SentryOptions {
 
   /** SentryOptions ctor It adds and set default things */
   public SentryOptions() {
+    // SentryExecutorService should be inited before any SendCachedEventFireAndForgetIntegration
+    executorService = new SentryExecutorService();
+
+    // UncaughtExceptionHandlerIntegration should be inited before any other Integration.
+    // if there's an error on the setup, we are able to capture it
+    integrations.add(new UncaughtExceptionHandlerIntegration());
+
     eventProcessors.add(new MainEventProcessor(this));
 
-    // Start off sending any cached event.
     integrations.add(
         new SendCachedEventFireAndForgetIntegration(
-            (hub, options) -> {
-              SendCachedEvent sender =
-                  new SendCachedEvent(
-                      options.getSerializer(),
-                      hub,
-                      options.getLogger(),
-                      options.getFlushTimeoutMillis());
-              if (options.getCacheDirPath() != null) {
-                File cacheDir = new File(options.getCacheDirPath());
-                return () -> sender.processDirectory(cacheDir);
-              } else {
-                options
-                    .getLogger()
-                    .log(
-                        SentryLevel.WARNING,
-                        "No cache dir path is defined in options, discarding SendCachedEvent.");
-                return null;
-              }
-            }));
+            new SendFireAndForgetEventSender(() -> getCacheDirPath())));
 
-    //     send cached sessions
     integrations.add(
         new SendCachedEventFireAndForgetIntegration(
-            (hub, options) -> {
-              EnvelopeSender envelopeSender =
-                  new EnvelopeSender(
-                      hub,
-                      new EnvelopeReader(),
-                      options.getSerializer(),
-                      logger,
-                      options.getFlushTimeoutMillis());
-              if (options.getSessionsPath() != null) {
-                File outbox = new File(options.getSessionsPath());
-                return () -> envelopeSender.processDirectory(outbox);
-              } else {
-                options
-                    .getLogger()
-                    .log(
-                        SentryLevel.WARNING,
-                        "No sessions dir path is defined in options, discarding EnvelopeSender.");
-                return null;
-              }
-            }));
-
-    integrations.add(new UncaughtExceptionHandlerIntegration());
+            new SendFireAndForgetEnvelopeSender(() -> getSessionsPath())));
   }
 }
