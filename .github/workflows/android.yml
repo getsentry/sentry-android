@@ -50,10 +50,12 @@ jobs:
 
       # uses eskatos/gradle-command-action, so we don't care for ./gradlew or gradlew.bat
 
-      - name: Clean and Build
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: clean build
+      # - name: Clean and Build
+      #   uses: eskatos/gradle-command-action@v1
+      #   with:
+      #     arguments: clean build
+      - name: Make all
+        run: make all
 
       # We stop gradle at the end to make sure the cache folders
       # don't contain any lock files and are free to be cached.
