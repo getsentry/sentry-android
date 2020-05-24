@@ -23,9 +23,10 @@ jobs:
       # sudo is necessary for linux
 
       # 20.0.5594570 is not used, but it needs to be installed
-      - name: Install NDK
-        run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;20.0.5594570"
+#      - name: Install NDK
+#        run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;20.0.5594570"
 
+      # required because macos doesn't have cmake 3.10 installed by default
       - name: Install CMake 3.10.2
         run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "cmake;3.10.2.4988404"
 
