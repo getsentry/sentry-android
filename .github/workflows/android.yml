@@ -59,7 +59,9 @@ jobs:
 
       # We stop gradle at the end to make sure the cache folders
       # don't contain any lock files and are free to be cached.
-      - name: Stop Gradle
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: --stop
+      # - name: Stop Gradle
+      #   uses: eskatos/gradle-command-action@v1
+      #  with:
+      #    arguments: --stop
+      - name: Make stop
+        run: make stop
