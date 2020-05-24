@@ -2,18 +2,12 @@ name: Android CI Windows
 on: [push, pull_request]
 
 env:
-  CMAKE_VERSION: "3.10.2.4988404"
-  NDK_VERSION: "20.0.5594570"
+  # CMAKE_VERSION: "3.10.2.4988404"
+  NDK_VERSION: "21.1.6352462"
 
 jobs:
   build:
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      # if we want that the matrix keeps running, default is to cancel if one of them fails.
-      # fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    runs-on: windows-latest
 
     steps:
       - name: Git checkout
@@ -25,16 +19,8 @@ jobs:
         with:
           java-version: 1.8
 
-      # sudo is necessary for linux
-
-      # 20.0.5594570 is not used, but it needs to be installed
-      # https://github.com/actions/virtual-environments/issues/60
-      # - name: Install NDK 20.0
-      #  run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;${NDK_VERSION}"
-
-      # required because macOS doesn't have cmake 3.10 installed by default
-      - name: Install cmake 3.10.2
-        run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "cmake;${CMAKE_VERSION}"
+      - name: Install NDK 21.1
+        run: ${ANDROID_HOME}\tools\bin\sdkmanager "ndk;${NDK_VERSION}"
 
       - name: Cache Gradle Caches
         uses: actions/cache@v1
