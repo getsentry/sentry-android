@@ -1,26 +1,24 @@
 name: Android CI
-
-on:
-  - pull_request
-  - push
+on: [push, pull_request]
 
 jobs:
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [ubuntu-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: set up JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    
-    - name: Install NDK
-      run: echo "y" | ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;20.0.5594570" --sdk_root=${ANDROID_SDK_ROOT}
+      - uses: actions/checkout@v2
+      - name: set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
 
-    - name: Build with Gradle
-      run: ./gradlew build
+      - name: Install NDK
+        run: echo "y" | ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;20.0.5594570" --sdk_root=${ANDROID_SDK_ROOT}
+
+      - name: Build with Gradle
+        run: ./gradlew build
