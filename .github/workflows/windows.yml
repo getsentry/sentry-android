@@ -19,9 +19,12 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Install NDK 21.1
-        run: %ANDROID_HOME%\tools\bin\sdkmanager "ndk;%NDK_VERSION%"
+      - name: Set path
+        run: set PATH=%PATH%;"%ANDROID_HOME%\tools\bin"
         shell: cmd
+
+      - name: Install NDK 21.1
+        run: sdkmanager "ndk;%NDK_VERSION%"
 
       - name: Cache Gradle Caches
         uses: actions/cache@v1
