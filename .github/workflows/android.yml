@@ -1,5 +1,11 @@
 name: Android CI Ubuntu/macOS
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '*'
 
 env:
   CMAKE_VERSION: "3.10.2.4988404"
@@ -7,12 +13,13 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.config.name }}
+    name: Build Job ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      # if we want that the matrix keeps running, default is to cancel if one of them fails.
-      # fail-fast: false
+      # we want that the matrix keeps running, default is to cancel them if it fails.
+      fail-fast: false
       matrix:
+        # TODO: windows-latest
         os: [ubuntu-latest, macos-latest]
 
     steps:
