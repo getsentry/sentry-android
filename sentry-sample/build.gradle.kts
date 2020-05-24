@@ -30,12 +30,13 @@ android {
 
         ndk {
             abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
+            ndkVersion = Config.Android.ndkVersion
         }
     }
 
     externalNativeBuild {
         cmake {
-            setVersion("3.10.2")
+            setVersion(Config.Android.cmakeVersion)
             setPath("CMakeLists.txt")
         }
     }

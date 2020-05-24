@@ -44,6 +44,7 @@ android {
 
         ndk {
             abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
+            ndkVersion = Config.Android.ndkVersion
         }
 
         // replace with https://issuetracker.google.com/issues/72050365 once released.
@@ -56,7 +57,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            setVersion("3.10.2")
+            setVersion(Config.Android.cmakeVersion)
             setPath("CMakeLists.txt")
         }
     }
