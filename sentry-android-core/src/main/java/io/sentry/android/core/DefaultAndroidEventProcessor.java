@@ -101,7 +101,9 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       map.put(PROGUARD_UUID, proGuardUuids);
     }
 
-    map.put(ROOTED, RootChecker.isDeviceRooted(context, options.getLogger()));
+    final RootChecker rootChecker =
+        new RootChecker(context, buildInfoProvider, options.getLogger());
+    map.put(ROOTED, rootChecker.isDeviceRooted());
 
     String androidId = getAndroidId();
     if (androidId != null) {
