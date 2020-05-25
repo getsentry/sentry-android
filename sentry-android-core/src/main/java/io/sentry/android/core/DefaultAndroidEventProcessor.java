@@ -77,15 +77,29 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   @TestOnly final Future<Map<String, Object>> contextData;
 
   private final @NotNull IBuildInfoProvider buildInfoProvider;
+  private final @NotNull RootChecker rootChecker;
 
   public DefaultAndroidEventProcessor(
       final @NotNull Context context,
       final @NotNull SentryOptions options,
       final @NotNull IBuildInfoProvider buildInfoProvider) {
+    this(
+        context,
+        options,
+        buildInfoProvider,
+        new RootChecker(context, buildInfoProvider, options.getLogger()));
+  }
+
+  DefaultAndroidEventProcessor(
+      final @NotNull Context context,
+      final @NotNull SentryOptions options,
+      final @NotNull IBuildInfoProvider buildInfoProvider,
+      final @NotNull RootChecker rootChecker) {
     this.context = Objects.requireNonNull(context, "The application context is required.");
     this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
     this.buildInfoProvider =
         Objects.requireNonNull(buildInfoProvider, "The BuildInfoProvider is required.");
+    this.rootChecker = Objects.requireNonNull(rootChecker, "The RootChecker is required.");
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     // dont ref. to method reference, theres a bug on it
@@ -101,8 +115,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       map.put(PROGUARD_UUID, proGuardUuids);
     }
 
-    final RootChecker rootChecker =
-        new RootChecker(context, buildInfoProvider, options.getLogger());
     map.put(ROOTED, rootChecker.isDeviceRooted());
 
     String androidId = getAndroidId();
