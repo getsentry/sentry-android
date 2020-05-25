@@ -69,7 +69,7 @@ public final class RootChecker {
       final @NotNull ILogger logger,
       final @NotNull String[] rootFiles,
       final @NotNull String[] rootPackages,
-      @NotNull Runtime runtime) {
+      final @NotNull Runtime runtime) {
     this.context = Objects.requireNonNull(context, "The application context is required.");
     this.buildInfoProvider =
         Objects.requireNonNull(buildInfoProvider, "The BuildInfoProvider is required.");
