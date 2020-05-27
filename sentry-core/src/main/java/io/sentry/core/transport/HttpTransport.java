@@ -164,7 +164,6 @@ public class HttpTransport implements ITransport {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(event, writer);
 
-      finishAndFlushStreams(outputStream, gzip);
       options.getLogger().log(DEBUG, "Event sent %s successfully.", event.getEventId());
       return TransportResult.success();
     } catch (IOException e) {
@@ -174,7 +173,7 @@ public class HttpTransport implements ITransport {
     } finally {
       updateRetryAfterLimits(connection, responseCode);
 
-      connection.disconnect();
+      closeAndDisconnectConnection(connection);
     }
   }
 
@@ -282,7 +281,6 @@ public class HttpTransport implements ITransport {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(envelope, writer);
 
-      finishAndFlushStreams(outputStream, gzip);
       options.getLogger().log(DEBUG, "Envelope sent successfully.");
       return TransportResult.success();
     } catch (IOException e) {
@@ -294,22 +292,22 @@ public class HttpTransport implements ITransport {
     } finally {
       updateRetryAfterLimits(connection, responseCode);
 
-      connection.disconnect();
+      closeAndDisconnectConnection(connection);
     }
   }
 
   /**
-   * Finishes and flushes the streams
+   * Closes the Response stream and disconnect the connection
    *
-   * @param outputStream the OutputStream
-   * @param gzip the GZIPOutputStream
-   * @throws IOException throws IOException if error while manipulating the streams
+   * @param connection the HttpURLConnection
    */
-  private void finishAndFlushStreams(
-      final @NotNull OutputStream outputStream, final @NotNull GZIPOutputStream gzip)
-      throws IOException {
-    gzip.finish();
-    outputStream.flush();
+  private void closeAndDisconnectConnection(final @NotNull HttpURLConnection connection) {
+    try {
+      connection.getInputStream().close();
+    } catch (IOException e) {
+      options.getLogger().log(ERROR, e, "Error while closing the connection.");
+    }
+    connection.disconnect();
   }
 
   /**
@@ -477,11 +475,7 @@ public class HttpTransport implements ITransport {
     // just because its expensive, but internally isDebug is already checked when
     // .log() is called
     if (options.isDebug()) {
-      String errorMessage = null;
-      final InputStream errorStream = connection.getErrorStream();
-      if (errorStream != null) {
-        errorMessage = getErrorMessageFromStream(errorStream);
-      }
+      String errorMessage = getErrorMessageFromStream(connection);
       if (null == errorMessage || errorMessage.isEmpty()) {
         errorMessage = "An exception occurred while submitting the event to the Sentry server.";
       }
@@ -491,14 +485,15 @@ public class HttpTransport implements ITransport {
   }
 
   /**
-   * Reads the error message from the stream
+   * Reads the error message from the error stream
    *
-   * @param errorStream the InputStream
+   * @param connection the HttpURLConnection
    * @return the error message or null if none
    */
-  private @Nullable String getErrorMessageFromStream(final @NotNull InputStream errorStream) {
-    try (final BufferedReader reader =
-        new BufferedReader(new InputStreamReader(errorStream, UTF_8))) {
+  private @Nullable String getErrorMessageFromStream(final @NotNull HttpURLConnection connection) {
+    try (final InputStream errorStream = connection.getErrorStream();
+        final BufferedReader reader =
+            new BufferedReader(new InputStreamReader(errorStream, UTF_8))) {
       final StringBuilder sb = new StringBuilder();
       String line;
       // ensure we do not add "\n" to the last line
