@@ -14,7 +14,6 @@ import io.sentry.core.util.Objects;
 import io.sentry.core.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -160,13 +159,12 @@ public class HttpTransport implements ITransport {
 
     int responseCode = -1;
 
-    try (final ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        final OutputStream outputStream = connection.getOutputStream();
-        final GZIPOutputStream gzip = new GZIPOutputStream(byteOut);
+    try (final OutputStream outputStream = connection.getOutputStream();
+        final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(event, writer);
 
-      writeAndFlushStreams(connection, byteOut, outputStream, gzip);
+      finishAndFlushStreams(outputStream, gzip);
       options.getLogger().log(DEBUG, "Event sent %s successfully.", event.getEventId());
       return TransportResult.success();
     } catch (IOException e) {
@@ -279,13 +277,12 @@ public class HttpTransport implements ITransport {
 
     int responseCode = -1;
 
-    try (final ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        final OutputStream outputStream = connection.getOutputStream();
-        final GZIPOutputStream gzip = new GZIPOutputStream(byteOut);
+    try (final OutputStream outputStream = connection.getOutputStream();
+        final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(envelope, writer);
 
-      writeAndFlushStreams(connection, byteOut, outputStream, gzip);
+      finishAndFlushStreams(outputStream, gzip);
       options.getLogger().log(DEBUG, "Envelope sent successfully.");
       return TransportResult.success();
     } catch (IOException e) {
@@ -302,26 +299,17 @@ public class HttpTransport implements ITransport {
   }
 
   /**
-   * Writes and flushes the streams
+   * Finishes and flushes the streams
    *
-   * @param connection the HttpURLConnection
-   * @param byteOut the ByteArrayOutputStream
    * @param outputStream the OutputStream
    * @param gzip the GZIPOutputStream
    * @throws IOException throws IOException if error while manipulating the streams
    */
-  private void writeAndFlushStreams(
-      final @NotNull HttpURLConnection connection,
-      final @NotNull ByteArrayOutputStream byteOut,
-      final @NotNull OutputStream outputStream,
-      final @NotNull GZIPOutputStream gzip)
+  private void finishAndFlushStreams(
+      final @NotNull OutputStream outputStream, final @NotNull GZIPOutputStream gzip)
       throws IOException {
     gzip.finish();
-    outputStream.write(byteOut.toByteArray());
     outputStream.flush();
-
-    // need to also close the input stream of the connection
-    connection.getInputStream().close();
   }
 
   /**

@@ -30,8 +30,9 @@ public abstract class TransportResult {
   }
 
   /**
-   * Use this method to announce failure of sending the event.
-   * Defaults responseCode to -1 (unknown responseCode)
+   * Use this method to announce failure of sending the event. Defaults responseCode to -1 (unknown
+   * responseCode)
+   *
    * @return an erroneous transport result
    */
   public static @NotNull TransportResult error() {
