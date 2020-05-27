@@ -38,7 +38,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * An implementation of the {@link ITransport} interface that sends the events to the Sentry server
- * over HTTP(S) in gzip encoding.
+ * over HTTP(S).
  */
 @Open
 @ApiStatus.NonExtendable // only not final because of testing
