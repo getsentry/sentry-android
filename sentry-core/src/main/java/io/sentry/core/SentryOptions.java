@@ -5,8 +5,8 @@ import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import java.io.File;
 import java.net.Proxy;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,13 +22,13 @@ public class SentryOptions {
    * Are callbacks that run for every event. They can either return a new event which in most cases
    * means just adding data OR return null in case the event will be dropped and not sent.
    */
-  private final @NotNull List<EventProcessor> eventProcessors = new ArrayList<>();
+  private final @NotNull List<EventProcessor> eventProcessors = new CopyOnWriteArrayList<>();
 
   /**
    * Code that provides middlewares, bindings or hooks into certain frameworks or environments,
    * along with code that inserts those bindings and activates them.
    */
-  private final @NotNull List<Integration> integrations = new ArrayList<>();
+  private final @NotNull List<Integration> integrations = new CopyOnWriteArrayList<>();
 
   /**
    * The DSN tells the SDK where to send the events to. If this value is not provided, the SDK will
@@ -128,13 +128,13 @@ public class SentryOptions {
    * packages. Modules considered not to be part of the app will be hidden from stack traces by
    * default.
    */
-  private final @NotNull List<String> inAppExcludes = new ArrayList<>();
+  private final @NotNull List<String> inAppExcludes = new CopyOnWriteArrayList<>();
 
   /**
    * A list of string prefixes of module names that belong to the app. This option takes precedence
    * over inAppExcludes.
    */
-  private final @NotNull List<String> inAppIncludes = new ArrayList<>();
+  private final @NotNull List<String> inAppIncludes = new CopyOnWriteArrayList<>();
 
   /** The transport is an internal construct of the client that abstracts away the event sending. */
   private @Nullable ITransport transport;
@@ -171,6 +171,23 @@ public class SentryOptions {
 
   /** The server name used in the Sentry messages. */
   private String serverName;
+
+  /*
+  When enabled, Sentry installs UncaughtExceptionHandlerIntegration.
+   */
+  private boolean enableUncaughtExceptionHandler = true;
+
+  /** Sentry Executor Service that sends cached events and envelopes on App. start. */
+  private @NotNull ISentryExecutorService executorService;
+
+  /** connection timeout in milliseconds. */
+  private int connectionTimeoutMillis = 5000;
+
+  /** read timeout in milliseconds */
+  private int readTimeoutMillis = 5000;
+
+  /** whether to ignore TLS errors */
+  private boolean bypassSecurity = false;
 
   /**
    * Adds an event processor
@@ -780,6 +797,99 @@ public class SentryOptions {
     this.flushTimeoutMillis = flushTimeoutMillis;
   }
 
+  /**
+   * Checks if the default UncaughtExceptionHandlerIntegration is enabled or not.
+   *
+   * @return true if enabled or false otherwise.
+   */
+  public boolean isEnableUncaughtExceptionHandler() {
+    return enableUncaughtExceptionHandler;
+  }
+
+  /**
+   * Enable or disable the default UncaughtExceptionHandlerIntegration.
+   *
+   * @param enableUncaughtExceptionHandler true if enabled or false otherwise.
+   */
+  public void setEnableUncaughtExceptionHandler(boolean enableUncaughtExceptionHandler) {
+    this.enableUncaughtExceptionHandler = enableUncaughtExceptionHandler;
+  }
+
+  /**
+   * Returns the SentryExecutorService
+   *
+   * @return the SentryExecutorService
+   */
+  @NotNull
+  ISentryExecutorService getExecutorService() {
+    return executorService;
+  }
+
+  /**
+   * Sets the SentryExecutorService
+   *
+   * @param executorService the SentryExecutorService
+   */
+  void setExecutorService(final @NotNull ISentryExecutorService executorService) {
+    if (executorService != null) {
+      this.executorService = executorService;
+    }
+  }
+
+  /**
+   * Returns the connection timeout in milliseconds.
+   *
+   * @return the connectionTimeoutMillis
+   */
+  public int getConnectionTimeoutMillis() {
+    return connectionTimeoutMillis;
+  }
+
+  /**
+   * Sets the connection timeout in milliseconds.
+   *
+   * @param connectionTimeoutMillis the connectionTimeoutMillis
+   */
+  public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+    this.connectionTimeoutMillis = connectionTimeoutMillis;
+  }
+
+  /**
+   * Returns the read timeout in milliseconds
+   *
+   * @return the readTimeoutMillis
+   */
+  public int getReadTimeoutMillis() {
+    return readTimeoutMillis;
+  }
+
+  /**
+   * Sets the read timeout in milliseconds
+   *
+   * @param readTimeoutMillis the readTimeoutMillis
+   */
+  public void setReadTimeoutMillis(int readTimeoutMillis) {
+    this.readTimeoutMillis = readTimeoutMillis;
+  }
+
+  /**
+   * Returns whether to ignore TLS errors
+   *
+   * @return the bypassSecurity
+   */
+  public boolean isBypassSecurity() {
+    return bypassSecurity;
+  }
+
+  /**
+   * Sets whether to ignore TLS errors
+   *
+   * @param bypassSecurity the bypassSecurity
+   */
+  public void setBypassSecurity(boolean bypassSecurity) {
+    this.bypassSecurity = bypassSecurity;
+  }
+
   /** The BeforeSend callback */
   public interface BeforeSendCallback {
 
@@ -810,55 +920,21 @@ public class SentryOptions {
 
   /** SentryOptions ctor It adds and set default things */
   public SentryOptions() {
+    // SentryExecutorService should be inited before any SendCachedEventFireAndForgetIntegration
+    executorService = new SentryExecutorService();
+
+    // UncaughtExceptionHandlerIntegration should be inited before any other Integration.
+    // if there's an error on the setup, we are able to capture it
+    integrations.add(new UncaughtExceptionHandlerIntegration());
+
     eventProcessors.add(new MainEventProcessor(this));
 
-    // Start off sending any cached event.
     integrations.add(
         new SendCachedEventFireAndForgetIntegration(
-            (hub, options) -> {
-              SendCachedEvent sender =
-                  new SendCachedEvent(
-                      options.getSerializer(),
-                      hub,
-                      options.getLogger(),
-                      options.getFlushTimeoutMillis());
-              if (options.getCacheDirPath() != null) {
-                File cacheDir = new File(options.getCacheDirPath());
-                return () -> sender.processDirectory(cacheDir);
-              } else {
-                options
-                    .getLogger()
-                    .log(
-                        SentryLevel.WARNING,
-                        "No cache dir path is defined in options, discarding SendCachedEvent.");
-                return null;
-              }
-            }));
+            new SendFireAndForgetEventSender(() -> getCacheDirPath())));
 
-    //     send cached sessions
     integrations.add(
         new SendCachedEventFireAndForgetIntegration(
-            (hub, options) -> {
-              EnvelopeSender envelopeSender =
-                  new EnvelopeSender(
-                      hub,
-                      new EnvelopeReader(),
-                      options.getSerializer(),
-                      logger,
-                      options.getFlushTimeoutMillis());
-              if (options.getSessionsPath() != null) {
-                File outbox = new File(options.getSessionsPath());
-                return () -> envelopeSender.processDirectory(outbox);
-              } else {
-                options
-                    .getLogger()
-                    .log(
-                        SentryLevel.WARNING,
-                        "No sessions dir path is defined in options, discarding EnvelopeSender.");
-                return null;
-              }
-            }));
-
-    integrations.add(new UncaughtExceptionHandlerIntegration());
+            new SendFireAndForgetEnvelopeSender(() -> getSessionsPath())));
   }
 }

@@ -9,6 +9,7 @@ import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.cache.DiskCache
 import io.sentry.core.hints.Retryable
+import io.sentry.core.util.NoFlushTimeout
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,7 +23,7 @@ class SendCachedEventTest {
         var hub: IHub? = mock()
         var logger: ILogger? = mock()
         var serializer: ISerializer? = mock()
-        var options = SentryOptions()
+        var options = SentryOptions().NoFlushTimeout()
 
         init {
             options.isDebug = true
@@ -94,7 +95,7 @@ class SendCachedEventTest {
         val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
         testFile.deleteOnExit()
         sut.processFile(testFile, mock<Retryable>())
-        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq("Failed to capture cached event."), any<Any>())
+        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq(expected), eq("Failed to capture cached event %s"), eq(testFile.absolutePath))
         verifyNoMoreInteractions(fixture.hub)
         assertFalse(testFile.exists())
     }
@@ -108,7 +109,7 @@ class SendCachedEventTest {
         val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
         testFile.deleteOnExit()
         sut.processFile(testFile, any())
-        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq("Failed to capture cached event."), any<Any>())
+        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq(expected), eq("Failed to capture cached event %s"), eq(testFile.absolutePath))
         verifyNoMoreInteractions(fixture.hub)
     }
 }

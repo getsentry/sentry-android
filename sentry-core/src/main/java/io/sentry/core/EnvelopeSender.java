@@ -7,6 +7,7 @@ import io.sentry.core.hints.Flushable;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.CollectionUtils;
+import io.sentry.core.util.LogUtils;
 import io.sentry.core.util.Objects;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -51,7 +52,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
     Objects.requireNonNull(file, "File is required.");
 
     if (!isRelevantFileName(file.getName())) {
-      logger.log(SentryLevel.DEBUG, "File '%s' should be ignored.", file.getName());
+      logger.log(SentryLevel.DEBUG, "File '%s' should be ignored.", file.getAbsolutePath());
       return;
     }
 
@@ -64,16 +65,23 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             file.getAbsolutePath());
       } else {
         processEnvelope(envelope, hint);
+        logger.log(SentryLevel.DEBUG, "File '%s' is done.", file.getAbsolutePath());
       }
     } catch (IOException e) {
       logger.log(SentryLevel.ERROR, "Error processing envelope.", e);
     } finally {
-      if ((hint instanceof Retryable) && !((Retryable) hint).isRetry()) {
-        try {
-          file.delete();
-        } catch (RuntimeException e) {
-          logger.log(SentryLevel.ERROR, "Failed to delete.", e);
+      if (hint instanceof Retryable) {
+        if (!((Retryable) hint).isRetry()) {
+          try {
+            if (!file.delete()) {
+              logger.log(SentryLevel.ERROR, "Failed to delete: %s", file.getAbsolutePath());
+            }
+          } catch (RuntimeException e) {
+            logger.log(SentryLevel.ERROR, e, "Failed to delete: %s", file.getAbsolutePath());
+          }
         }
+      } else {
+        LogUtils.logIfNotRetryable(logger, hint);
       }
     }
   }
@@ -106,7 +114,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
         logger.log(SentryLevel.ERROR, "Item %d has no header", items);
         continue;
       }
-      if (SentryEnvelopeItemType.Event.getType().equals(item.getHeader().getType())) {
+      if (SentryItemType.Event.equals(item.getHeader().getType())) {
         try (final Reader eventReader =
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8))) {
@@ -130,18 +138,28 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             }
             hub.captureEvent(event, hint);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
-            if ((hint instanceof Flushable) && !((Flushable) hint).waitFlush()) {
-              logger.log(
-                  SentryLevel.WARNING,
-                  "Timed out waiting for event submission: %s",
-                  event.getEventId());
-              break;
+            if (hint instanceof Flushable) {
+              if (!((Flushable) hint).waitFlush()) {
+                logger.log(
+                    SentryLevel.WARNING,
+                    "Timed out waiting for event submission: %s",
+                    event.getEventId());
+
+                //                TODO: find out about the time out
+                //                if (hint instanceof Retryable) {
+                //                  ((Retryable) hint).setRetry(true);
+                //                }
+
+                break;
+              }
+            } else {
+              LogUtils.logIfNotFlushable(logger, hint);
             }
           }
         } catch (Exception e) {
           logger.log(ERROR, "Item failed to process.", e);
         }
-      } else if (SentryEnvelopeItemType.Session.getType().equals(item.getHeader().getType())) {
+      } else if (SentryItemType.Session.equals(item.getHeader().getType())) {
         try (final Reader reader =
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8))) {
@@ -156,12 +174,25 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             // TODO: Bundle all session in a single envelope
             hub.captureEnvelope(SentryEnvelope.fromSession(serializer, session), hint);
             logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
-            if ((hint instanceof Flushable) && !((Flushable) hint).waitFlush()) {
-              logger.log(
-                  SentryLevel.WARNING,
-                  "Timed out waiting for item submission: %s",
-                  session.getSessionId());
-              break;
+
+            if (hint instanceof Flushable) {
+              logger.log(SentryLevel.DEBUG, "Going to wait flush %d item.", items);
+              if (!((Flushable) hint).waitFlush()) {
+                logger.log(
+                    SentryLevel.WARNING,
+                    "Timed out waiting for item submission: %s",
+                    session.getSessionId());
+
+                //                TODO: find out about the time out
+                //                if (hint instanceof Retryable) {
+                //                  ((Retryable) hint).setRetry(true);
+                //                }
+
+                break;
+              }
+              logger.log(SentryLevel.DEBUG, "Flushed %d item.", items);
+            } else {
+              LogUtils.logIfNotFlushable(logger, hint);
             }
           }
         } catch (Exception e) {
@@ -173,14 +204,18 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
             SentryLevel.WARNING, "Item %d of type: %s ignored.", items, item.getHeader().getType());
       }
 
-      if ((hint instanceof SubmissionResult) && !((SubmissionResult) hint).isSuccess()) {
-        // Failed to send an item of the envelope: Stop attempting to send the rest (an attachment
-        // without the event that created it isn't useful)
-        logger.log(
-            SentryLevel.WARNING,
-            "Envelope had a failed capture at item %d. No more items will be sent.",
-            items);
-        break;
+      if (hint instanceof SubmissionResult) {
+        if (!((SubmissionResult) hint).isSuccess()) {
+          // Failed to send an item of the envelope: Stop attempting to send the rest (an attachment
+          // without the event that created it isn't useful)
+          logger.log(
+              SentryLevel.WARNING,
+              "Envelope had a failed capture at item %d. No more items will be sent.",
+              items);
+          break;
+        }
+      } else {
+        LogUtils.logIfNotSubmissionResult(logger, hint);
       }
     }
   }

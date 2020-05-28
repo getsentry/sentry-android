@@ -8,6 +8,7 @@ import io.sentry.core.ILogger;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.util.Objects;
 import java.util.Locale;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /** Class responsible for reading values from manifest and setting them to the options */
@@ -20,7 +21,7 @@ final class ManifestMetadataReader {
   static final String ANR_ENABLE = "io.sentry.anr.enable";
   static final String ANR_REPORT_DEBUG = "io.sentry.anr.report-debug";
 
-  @Deprecated
+  @ApiStatus.ScheduledForRemoval @Deprecated
   static final String ANR_TIMEOUT_INTERVAL_MILLS = "io.sentry.anr.timeout-interval-mills";
 
   static final String ANR_TIMEOUT_INTERVAL_MILLIS = "io.sentry.anr.timeout-interval-millis";
@@ -32,6 +33,15 @@ final class ManifestMetadataReader {
   static final String SESSION_TRACKING_ENABLE = "io.sentry.session-tracking.enable";
   static final String SESSION_TRACKING_TIMEOUT_INTERVAL_MILLIS =
       "io.sentry.session-tracking.timeout-interval-millis";
+
+  static final String BREADCRUMBS_ACTIVITY_LIFECYCLE_ENABLE =
+      "io.sentry.breadcrumbs.activity-lifecycle";
+  static final String BREADCRUMBS_APP_LIFECYCLE_ENABLE = "io.sentry.breadcrumbs.app-lifecycle";
+  static final String BREADCRUMBS_SYSTEM_EVENTS_ENABLE = "io.sentry.breadcrumbs.system-events";
+  static final String BREADCRUMBS_APP_COMPONENTS_ENABLE = "io.sentry.breadcrumbs.app-components";
+
+  static final String UNCAUGHT_EXCEPTION_HANDLER_ENABLE =
+      "io.sentry.uncaught-exception-handler.enable";
 
   /** ManifestMetadataReader ctor */
   private ManifestMetadataReader() {}
@@ -135,6 +145,39 @@ final class ManifestMetadataReader {
                 "sessionTrackingTimeoutIntervalMillis read: %d",
                 sessionTrackingTimeoutIntervalMillis);
         options.setSessionTrackingIntervalMillis(sessionTrackingTimeoutIntervalMillis);
+
+        final boolean enableActivityLifecycleBreadcrumbs =
+            metadata.getBoolean(
+                BREADCRUMBS_ACTIVITY_LIFECYCLE_ENABLE,
+                options.isEnableActivityLifecycleBreadcrumbs());
+        options
+            .getLogger()
+            .log(SentryLevel.DEBUG, "enableActivityLifecycleBreadcrumbs read: %s", ndk);
+        options.setEnableActivityLifecycleBreadcrumbs(enableActivityLifecycleBreadcrumbs);
+
+        final boolean enableAppLifecycleBreadcrumbs =
+            metadata.getBoolean(
+                BREADCRUMBS_APP_LIFECYCLE_ENABLE, options.isEnableAppComponentBreadcrumbs());
+        options.getLogger().log(SentryLevel.DEBUG, "enableAppLifecycleBreadcrumbs read: %s", ndk);
+        options.setEnableAppLifecycleBreadcrumbs(enableAppLifecycleBreadcrumbs);
+
+        final boolean enableSystemEventBreadcrumbs =
+            metadata.getBoolean(
+                BREADCRUMBS_SYSTEM_EVENTS_ENABLE, options.isEnableSystemEventBreadcrumbs());
+        options.getLogger().log(SentryLevel.DEBUG, "enableSystemEventBreadcrumbs read: %s", ndk);
+        options.setEnableSystemEventBreadcrumbs(enableSystemEventBreadcrumbs);
+
+        final boolean enableAppComponentBreadcrumbs =
+            metadata.getBoolean(
+                BREADCRUMBS_APP_COMPONENTS_ENABLE, options.isEnableAppComponentBreadcrumbs());
+        options.getLogger().log(SentryLevel.DEBUG, "enableAppComponentBreadcrumbs read: %s", ndk);
+        options.setEnableAppComponentBreadcrumbs(enableAppComponentBreadcrumbs);
+
+        final boolean enableUncaughtExceptionHandler =
+            metadata.getBoolean(
+                UNCAUGHT_EXCEPTION_HANDLER_ENABLE, options.isEnableUncaughtExceptionHandler());
+        options.getLogger().log(SentryLevel.DEBUG, "enableUncaughtExceptionHandler read: %s", ndk);
+        options.setEnableUncaughtExceptionHandler(enableUncaughtExceptionHandler);
       }
       options
           .getLogger()

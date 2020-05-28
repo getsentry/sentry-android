@@ -9,6 +9,7 @@ import java.io.Closeable;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,10 +33,7 @@ public final class Hub implements IHub {
   public Hub(final @NotNull SentryOptions options) {
     this(options, createRootStackItem(options));
 
-    // Register integrations against a root Hub
-    for (Integration integration : options.getIntegrations()) {
-      integration.register(HubAdapter.getInstance(), options);
-    }
+    // Integrations are no longer registed on Hub ctor, but on Sentry.init
   }
 
   private Hub(final @NotNull SentryOptions options, final @Nullable StackItem rootStackItem) {
@@ -130,6 +128,7 @@ public final class Hub implements IHub {
     return sentryId;
   }
 
+  @ApiStatus.Internal
   @Override
   public SentryId captureEnvelope(
       final @NotNull SentryEnvelope envelope, final @Nullable Object hint) {
@@ -247,6 +246,7 @@ public final class Hub implements IHub {
             ((Closeable) integration).close();
           }
         }
+        options.getExecutorService().close(options.getShutdownTimeout());
 
         // Close the top-most client
         final StackItem item = stack.peek();

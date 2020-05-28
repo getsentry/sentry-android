@@ -3,7 +3,7 @@ object Config {
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
-        val androidGradle = "com.android.tools.build:gradle:4.0.0-beta04"
+        val androidGradle = "com.android.tools.build:gradle:4.0.0"
         val kotlinGradlePlugin = "gradle-plugin"
     }
 
@@ -15,6 +15,9 @@ object Config {
         val minSdkVersionNdk = 16
         val targetSdkVersion = sdkVersion
         val compileSdkVersion = sdkVersion
+        val cmakeVersion = "3.10.2"
+        val ndkVersion = "21.1.6352462"
+        val abiFilters = listOf("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
     }
 
     object Libs {
@@ -22,10 +25,10 @@ object Config {
         val timber = "com.jakewharton.timber:timber:4.7.1"
         // only bump gson if https://github.com/google/gson/issues/1597 is fixed
         val gson = "com.google.code.gson:gson:2.8.5"
-        val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.1"
+        val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.3"
 
         val lifecycleVersion = "2.2.0"
-        val lifecycleProcessor = "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
+        val lifecycleProcess = "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
         val lifecycleCommonJava8 = "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
     }
 
@@ -38,6 +41,7 @@ object Config {
         val androidxJunit = "androidx.test.ext:junit:1.1.1"
         val robolectric = "org.robolectric:robolectric:4.3.1"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+        val awaitility = "org.awaitility:awaitility-kotlin:4.0.2"
     }
 
     object QualityPlugins {

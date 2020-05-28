@@ -2,8 +2,8 @@ package io.sentry.core.transport;
 
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEnvelopeItem;
-import io.sentry.core.SentryEnvelopeItemType;
 import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryItemType;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.cache.IEnvelopeCache;
@@ -13,6 +13,7 @@ import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.Retryable;
 import io.sentry.core.hints.SessionUpdate;
 import io.sentry.core.hints.SubmissionResult;
+import io.sentry.core.util.LogUtils;
 import io.sentry.core.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
@@ -69,7 +70,7 @@ public final class AsyncConnection implements Closeable, Connection {
     this.executor = executorService;
   }
 
-  private static RetryingThreadPoolExecutor initExecutor(
+  private static QueuedThreadPoolExecutor initExecutor(
       final int maxQueueSize,
       final @NotNull IEventCache eventCache,
       final @NotNull IEnvelopeCache sessionCache) {
@@ -77,16 +78,42 @@ public final class AsyncConnection implements Closeable, Connection {
     final RejectedExecutionHandler storeEvents =
         (r, executor) -> {
           if (r instanceof EventSender) {
-            eventCache.store(((EventSender) r).event);
+            final EventSender eventSender = (EventSender) r;
+
+            if (!(eventSender.hint instanceof Cached)) {
+              eventCache.store(eventSender.event);
+            }
+
+            markHintWhenSendingFailed(eventSender.hint, true);
           }
           if (r instanceof SessionSender) {
-            final SessionSender sessionSender = ((SessionSender) r);
-            sessionCache.store(sessionSender.envelope, sessionSender.hint);
+            final SessionSender sessionSender = (SessionSender) r;
+
+            if (!(sessionSender.hint instanceof Cached)) {
+              sessionCache.store(sessionSender.envelope, sessionSender.hint);
+            }
+
+            markHintWhenSendingFailed(sessionSender.hint, true);
           }
         };
 
-    return new RetryingThreadPoolExecutor(
+    return new QueuedThreadPoolExecutor(
         1, maxQueueSize, new AsyncConnectionThreadFactory(), storeEvents);
+  }
+
+  /**
+   * It marks the hints when sending has failed, so it's not necessary to wait the timeout
+   *
+   * @param hint the Hint
+   * @param retry if event should be retried or not
+   */
+  private static void markHintWhenSendingFailed(final @Nullable Object hint, final boolean retry) {
+    if (hint instanceof SubmissionResult) {
+      ((SubmissionResult) hint).setResult(false);
+    }
+    if (hint instanceof Retryable) {
+      ((Retryable) hint).setRetry(retry);
+    }
   }
 
   /**
@@ -100,12 +127,19 @@ public final class AsyncConnection implements Closeable, Connection {
   public void send(final @NotNull SentryEvent event, final @Nullable Object hint)
       throws IOException {
     IEventCache currentEventCache = eventCache;
+    boolean cached = false;
     if (hint instanceof Cached) {
       currentEventCache = NoOpEventCache.getInstance();
+      cached = true;
+      options.getLogger().log(SentryLevel.DEBUG, "Captured SentryEvent is already cached");
     }
 
     // no reason to continue
-    if (transport.isRetryAfter(SentryEnvelopeItemType.Event.getType())) {
+    if (transport.isRetryAfter(SentryItemType.Event.getItemType())) {
+      if (cached) {
+        eventCache.discard(event);
+      }
+      markHintWhenSendingFailed(hint, false);
       return;
     }
 
@@ -117,19 +151,28 @@ public final class AsyncConnection implements Closeable, Connection {
   public void send(@NotNull SentryEnvelope envelope, final @Nullable Object hint)
       throws IOException {
     // For now no caching on envelopes
-    IEnvelopeCache currentEventCache = sessionCache;
+    IEnvelopeCache currentEnvelopeCache = sessionCache;
+    boolean cached = false;
     if (hint instanceof Cached) {
-      currentEventCache = NoOpEnvelopeCache.getInstance();
+      currentEnvelopeCache = NoOpEnvelopeCache.getInstance();
+      cached = true;
+      options.getLogger().log(SentryLevel.DEBUG, "Captured Envelope is already cached");
     }
 
     // Optimize for/No allocations if no items are under 429
     List<SentryEnvelopeItem> dropItems = null;
     for (SentryEnvelopeItem item : envelope.getItems()) {
-      if (transport.isRetryAfter(item.getHeader().getType())) {
+      // using the raw value of the enum to not expose SentryEnvelopeItemType
+      if (transport.isRetryAfter(item.getHeader().getType().getItemType())) {
         if (dropItems == null) {
           dropItems = new ArrayList<>();
         }
         dropItems.add(item);
+      }
+      if (dropItems != null) {
+        options
+            .getLogger()
+            .log(SentryLevel.INFO, "%d items will be dropped due rate limiting.", dropItems.size());
       }
     }
 
@@ -144,13 +187,19 @@ public final class AsyncConnection implements Closeable, Connection {
 
       // no reason to continue
       if (toSend.isEmpty()) {
+        if (cached) {
+          sessionCache.discard(envelope);
+        }
+        options.getLogger().log(SentryLevel.INFO, "Envelope discarded due all items rate limited.");
+
+        markHintWhenSendingFailed(hint, false);
         return;
       }
 
       envelope = new SentryEnvelope(envelope.getHeader(), toSend);
     }
 
-    executor.submit(new SessionSender(envelope, hint, currentEventCache));
+    executor.submit(new SessionSender(envelope, hint, currentEnvelopeCache));
   }
 
   @Override
@@ -207,7 +256,6 @@ public final class AsyncConnection implements Closeable, Connection {
       TransportResult result = this.failedResult;
       try {
         result = flush();
-        options.getLogger().log(SentryLevel.DEBUG, "Event flushed: %s", event.getEventId());
       } catch (Exception e) {
         options
             .getLogger()
@@ -219,6 +267,8 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
+        } else {
+          LogUtils.logIfNotSubmissionResult(options.getLogger(), hint);
         }
       }
     }
@@ -252,6 +302,8 @@ public final class AsyncConnection implements Closeable, Connection {
           // Failure due to IO is allowed to retry the event
           if (hint instanceof Retryable) {
             ((Retryable) hint).setRetry(true);
+          } else {
+            LogUtils.logIfNotRetryable(options.getLogger(), hint);
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -259,6 +311,8 @@ public final class AsyncConnection implements Closeable, Connection {
         // If transportGate is blocking from sending, allowed to retry
         if (hint instanceof Retryable) {
           ((Retryable) hint).setRetry(true);
+        } else {
+          LogUtils.logIfNotRetryable(options.getLogger(), hint);
         }
       }
       return result;
@@ -295,6 +349,8 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(SentryLevel.DEBUG, "Marking envelope submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
+        } else {
+          LogUtils.logIfNotSubmissionResult(options.getLogger(), hint);
         }
       }
     }
@@ -306,6 +362,9 @@ public final class AsyncConnection implements Closeable, Connection {
 
       // we only flush a session update to the disk, but not to the network
       if (hint instanceof SessionUpdate) {
+        options
+            .getLogger()
+            .log(SentryLevel.DEBUG, "SessionUpdate event, leaving after event being cached.");
         return TransportResult.success();
       }
 
@@ -327,6 +386,8 @@ public final class AsyncConnection implements Closeable, Connection {
           // Failure due to IO is allowed to retry the event
           if (hint instanceof Retryable) {
             ((Retryable) hint).setRetry(true);
+          } else {
+            LogUtils.logIfNotRetryable(options.getLogger(), hint);
           }
           throw new IllegalStateException("Sending the event failed.", e);
         }
@@ -334,6 +395,8 @@ public final class AsyncConnection implements Closeable, Connection {
         // If transportGate is blocking from sending, allowed to retry
         if (hint instanceof Retryable) {
           ((Retryable) hint).setRetry(true);
+        } else {
+          LogUtils.logIfNotRetryable(options.getLogger(), hint);
         }
       }
       return result;

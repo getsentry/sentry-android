@@ -10,7 +10,7 @@ import io.sentry.core.DateUtils;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEnvelopeItem;
-import io.sentry.core.SentryEnvelopeItemType;
+import io.sentry.core.SentryItemType;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.Session;
@@ -96,6 +96,9 @@ public final class SessionCache implements IEnvelopeCache {
     }
 
     if (hint instanceof SessionStart) {
+
+      // TODO: should we move this to AppLifecycleIntegration? and do on SDK init? but it's too much
+      // on main-thread
       if (currentSessionFile.exists()) {
         options.getLogger().log(WARNING, "Current session is not ended, we'd need to end it.");
 
@@ -112,12 +115,6 @@ public final class SessionCache implements IEnvelopeCache {
                     "Stream from path %s resulted in a null envelope.",
                     currentSessionFile.getAbsolutePath());
           } else {
-            options
-                .getLogger()
-                .log(
-                    INFO,
-                    "There's a left over session, it's gonna be ended and cached to be sent.");
-
             final File crashMarkerFile = new File(options.getCacheDirPath(), CRASH_MARKER_FILE);
             Date timestamp = null;
             if (crashMarkerFile.exists()) {
@@ -135,22 +132,14 @@ public final class SessionCache implements IEnvelopeCache {
                         crashMarkerFile.getAbsolutePath());
               }
               session.update(Session.State.Crashed, null, true);
-            } else {
-              // We don't know what happened, it's not a NDK crash nor a normal crashed shutdown,
-              // let's mark it as Abnormal
-              Session.State state = Session.State.Abnormal;
-              if (session.getStatus() != null
-                  && Session.State.Crashed.equals(session.getStatus())) {
-                state = null; // keep as it is
-              }
-              session.update(state, null, false);
             }
+
             session.end(timestamp);
             final SentryEnvelope fromSession = SentryEnvelope.fromSession(serializer, session);
             final File fileFromSession = getEnvelopeFile(fromSession);
             writeEnvelopeToDisk(fileFromSession, fromSession);
           }
-        } catch (IOException e) {
+        } catch (Exception e) {
           options.getLogger().log(SentryLevel.ERROR, "Error processing session.", e);
         }
 
@@ -213,7 +202,7 @@ public final class SessionCache implements IEnvelopeCache {
     if (items.iterator().hasNext()) {
       final SentryEnvelopeItem item = items.iterator().next();
 
-      if (SentryEnvelopeItemType.Session.getType().equals(item.getHeader().getType())) {
+      if (SentryItemType.Session.equals(item.getHeader().getType())) {
         try (final Reader reader =
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8))) {
@@ -253,7 +242,9 @@ public final class SessionCache implements IEnvelopeCache {
       options
           .getLogger()
           .log(DEBUG, "Overwriting envelope to offline storage: %s", file.getAbsolutePath());
-      file.delete();
+      if (!file.delete()) {
+        options.getLogger().log(SentryLevel.ERROR, "Failed to delete: %s", file.getAbsolutePath());
+      }
     }
 
     try (final OutputStream outputStream = new FileOutputStream(file);
@@ -262,7 +253,7 @@ public final class SessionCache implements IEnvelopeCache {
     } catch (Exception e) {
       options
           .getLogger()
-          .log(ERROR, "Error writing Envelope %s to offline storage", file.getAbsolutePath());
+          .log(ERROR, e, "Error writing Envelope %s to offline storage", file.getAbsolutePath());
     }
   }
 
@@ -271,7 +262,9 @@ public final class SessionCache implements IEnvelopeCache {
       options
           .getLogger()
           .log(DEBUG, "Overwriting session to offline storage: %s", session.getSessionId());
-      file.delete();
+      if (!file.delete()) {
+        options.getLogger().log(SentryLevel.ERROR, "Failed to delete: %s", file.getAbsolutePath());
+      }
     }
 
     try (final OutputStream outputStream = new FileOutputStream(file);
@@ -280,7 +273,7 @@ public final class SessionCache implements IEnvelopeCache {
     } catch (Exception e) {
       options
           .getLogger()
-          .log(ERROR, "Error writing Session to offline storage: %s", session.getSessionId());
+          .log(ERROR, e, "Error writing Session to offline storage: %s", session.getSessionId());
     }
   }
 

@@ -1,12 +1,13 @@
 package io.sentry.android.core;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import io.sentry.core.EnvelopeReader;
-import io.sentry.core.EnvelopeSender;
 import io.sentry.core.IEnvelopeReader;
 import io.sentry.core.ILogger;
 import io.sentry.core.SendCachedEventFireAndForgetIntegration;
+import io.sentry.core.SendFireAndForgetEnvelopeSender;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Objects;
@@ -47,9 +48,12 @@ final class AndroidOptionsInitializer {
       @NotNull Context context,
       final @NotNull ILogger logger) {
     Objects.requireNonNull(context, "The context is required.");
-    context =
-        Objects.requireNonNull(
-            context.getApplicationContext(), "The application context is required.");
+
+    // it returns null if ContextImpl, so let's check for nullability
+    if (context.getApplicationContext() != null) {
+      context = context.getApplicationContext();
+    }
+
     Objects.requireNonNull(options, "The options object is required.");
     Objects.requireNonNull(logger, "The ILogger object is required.");
 
@@ -63,6 +67,23 @@ final class AndroidOptionsInitializer {
 
     final IEnvelopeReader envelopeReader = new EnvelopeReader();
 
+    installDefaultIntegrations(context, options, envelopeReader);
+
+    readDefaultOptionValues(options, context);
+
+    options.addEventProcessor(
+        new DefaultAndroidEventProcessor(context, options, new BuildInfoProvider()));
+
+    options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
+
+    options.setTransportGate(new AndroidTransportGate(context, options.getLogger()));
+  }
+
+  private static void installDefaultIntegrations(
+      final @NotNull Context context,
+      final @NotNull SentryOptions options,
+      final @NotNull IEnvelopeReader envelopeReader) {
+
     // Integrations are registered in the same order. NDK before adding Watch outbox,
     // because sentry-native move files around and we don't want to watch that.
     options.addIntegration(new NdkIntegration());
@@ -73,37 +94,25 @@ final class AndroidOptionsInitializer {
     // and we'd like to send them right away
     options.addIntegration(
         new SendCachedEventFireAndForgetIntegration(
-            (hub, sentryOptions) -> {
-              final EnvelopeSender envelopeSender =
-                  new EnvelopeSender(
-                      hub,
-                      new EnvelopeReader(),
-                      sentryOptions.getSerializer(),
-                      sentryOptions.getLogger(),
-                      sentryOptions.getFlushTimeoutMillis());
-              if (sentryOptions.getOutboxPath() != null) {
-                final File outbox = new File(sentryOptions.getOutboxPath());
-                return () -> envelopeSender.processDirectory(outbox);
-              } else {
-                sentryOptions
-                    .getLogger()
-                    .log(
-                        SentryLevel.WARNING,
-                        "No outbox dir path is defined in options, discarding EnvelopeSender.");
-                return null;
-              }
-            }));
+            new SendFireAndForgetEnvelopeSender(() -> options.getOutboxPath())));
 
-    options.addIntegration(new AnrIntegration());
-    options.addIntegration(new SessionTrackingIntegration());
+    options.addIntegration(new AnrIntegration(context));
+    options.addIntegration(new AppLifecycleIntegration());
 
-    readDefaultOptionValues(options, context);
-
-    options.addEventProcessor(new DefaultAndroidEventProcessor(context, options));
-
-    options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
-
-    options.setTransportGate(new AndroidTransportGate(context, options.getLogger()));
+    // registerActivityLifecycleCallbacks is only available if Context is an AppContext
+    if (context instanceof Application) {
+      options.addIntegration(new ActivityBreadcrumbsIntegration((Application) context));
+    } else {
+      options
+          .getLogger()
+          .log(
+              SentryLevel.WARNING,
+              "ActivityBreadcrumbsIntegration needs an Application class to be installed.");
+    }
+    options.addIntegration(new AppComponentsBreadcrumbsIntegration(context));
+    options.addIntegration(new SystemEventsBreadcrumbsIntegration(context));
+    options.addIntegration(new TempSensorBreadcrumbsIntegration(context));
+    options.addIntegration(new PhoneStateBreadcrumbsIntegration(context));
   }
 
   /**

@@ -4,6 +4,8 @@ import io.sentry.core.cache.DiskCache;
 import io.sentry.core.cache.IEnvelopeCache;
 import io.sentry.core.cache.IEventCache;
 import io.sentry.core.cache.SessionCache;
+import io.sentry.core.hints.DiskFlushNotification;
+import io.sentry.core.hints.SessionEndHint;
 import io.sentry.core.hints.SessionUpdateHint;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.transport.Connection;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -169,9 +172,19 @@ public final class SentryClient implements ISentryClient {
                 }
 
                 if (session.update(status, userAgent, crashedOrErrored)) {
-                  // a session update hint means its gonna only flush to the disk, but not to the
-                  // network
-                  captureSession(session, new SessionUpdateHint());
+
+                  Object sessionHint;
+
+                  // if hint is DiskFlushNotification, it means we have an uncaughtException
+                  // and we can end the session.
+                  if (hint instanceof DiskFlushNotification) {
+                    sessionHint = new SessionEndHint();
+                    session.end();
+                  } else {
+                    // otherwise we just cache in the disk but do not flush to the network.
+                    sessionHint = new SessionUpdateHint();
+                  }
+                  captureSession(session, sessionHint);
                 }
               } else {
                 options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
@@ -183,11 +196,12 @@ public final class SentryClient implements ISentryClient {
     }
   }
 
+  @ApiStatus.Internal
   @Override
   public void captureSession(final @NotNull Session session, final @Nullable Object hint) {
     Objects.requireNonNull(session, "Session is required.");
 
-    if (session.getRelease() == null) {
+    if (session.getRelease() == null || session.getRelease().isEmpty()) {
       options
           .getLogger()
           .log(SentryLevel.WARNING, "Sessions can't be captured without setting a release.");
@@ -205,6 +219,7 @@ public final class SentryClient implements ISentryClient {
     captureEnvelope(envelope, hint);
   }
 
+  @ApiStatus.Internal
   @Override
   public @Nullable SentryId captureEnvelope(
       final @NotNull SentryEnvelope envelope, final @Nullable Object hint) {

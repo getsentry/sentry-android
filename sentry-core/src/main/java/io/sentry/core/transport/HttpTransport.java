@@ -2,6 +2,7 @@ package io.sentry.core.transport;
 
 import static io.sentry.core.SentryLevel.DEBUG;
 import static io.sentry.core.SentryLevel.ERROR;
+import static io.sentry.core.SentryLevel.INFO;
 import static io.sentry.core.SentryLevel.WARNING;
 
 import com.jakewharton.nopen.annotation.Open;
@@ -9,6 +10,8 @@ import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.util.Objects;
+import io.sentry.core.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -41,6 +44,27 @@ import org.jetbrains.annotations.Nullable;
 @ApiStatus.Internal
 public class HttpTransport implements ITransport {
 
+  private enum DataCategory {
+    All("__all__"),
+    Default("default"), // same as Error
+    Error("error"),
+    Session("session"),
+    Attachment("attachment"),
+    Transaction("transaction"),
+    Security("security"),
+    Unknown("unknown");
+
+    private final String category;
+
+    DataCategory(final @NotNull String category) {
+      this.category = category;
+    }
+
+    public String getCategory() {
+      return category;
+    }
+  }
+
   @SuppressWarnings("CharsetObjectCanBeUsed")
   private static final Charset UTF_8 = Charset.forName("UTF-8");
 
@@ -54,9 +78,11 @@ public class HttpTransport implements ITransport {
   private final @NotNull URL envelopeUrl;
   private final @NotNull SentryOptions options;
 
-  private final @NotNull Map<String, Date> sentryRetryAfterLimit = new ConcurrentHashMap<>();
+  private final @NotNull Map<DataCategory, Date> sentryRetryAfterLimit = new ConcurrentHashMap<>();
 
   private static final int HTTP_RETRY_AFTER_DEFAULT_DELAY_MILLIS = 60000;
+
+  private final @NotNull ICurrentDateProvider currentDateProvider;
 
   /**
    * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set
@@ -78,6 +104,24 @@ public class HttpTransport implements ITransport {
       final int readTimeoutMillis,
       final boolean bypassSecurity,
       final @NotNull URL sentryUrl) {
+    this(
+        options,
+        connectionConfigurator,
+        connectionTimeoutMillis,
+        readTimeoutMillis,
+        bypassSecurity,
+        sentryUrl,
+        CurrentDateProvider.getInstance());
+  }
+
+  HttpTransport(
+      final @NotNull SentryOptions options,
+      final @NotNull IConnectionConfigurator connectionConfigurator,
+      final int connectionTimeoutMillis,
+      final int readTimeoutMillis,
+      final boolean bypassSecurity,
+      final @NotNull URL sentryUrl,
+      final @NotNull ICurrentDateProvider currentDateProvider) {
     this.proxy = options.getProxy();
     this.connectionConfigurator = connectionConfigurator;
     this.serializer = options.getSerializer();
@@ -85,6 +129,8 @@ public class HttpTransport implements ITransport {
     this.readTimeout = readTimeoutMillis;
     this.options = options;
     this.bypassSecurity = bypassSecurity;
+    this.currentDateProvider =
+        Objects.requireNonNull(currentDateProvider, "CurrentDateProvider is required.");
 
     try {
       final URI uri = sentryUrl.toURI();
@@ -103,7 +149,6 @@ public class HttpTransport implements ITransport {
 
   protected @NotNull HttpURLConnection open(final @NotNull URL url, final @Nullable Proxy proxy)
       throws IOException {
-    // why do we need url here? its not used
     return (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
   }
 
@@ -153,23 +198,57 @@ public class HttpTransport implements ITransport {
   }
 
   /**
-   * Check if a type is retry after or not
+   * Check if an itemType is retry after or not
    *
-   * @param type the type (eg event, session, etc...)
+   * @param itemType the itemType (eg event, session, etc...)
    * @return true if retry after or false otherwise
    */
   @Override
-  public boolean isRetryAfter(final @NotNull String type) {
-    if (sentryRetryAfterLimit.containsKey(type)) {
-      final Date date = sentryRetryAfterLimit.get(type);
+  public boolean isRetryAfter(final @NotNull String itemType) {
+    final DataCategory dataCategory = getCategoryFromItemType(itemType);
+    final Date currentDate = new Date(currentDateProvider.getCurrentTimeMillis());
 
-      return !new Date().after(date);
-    } else if (sentryRetryAfterLimit.containsKey("default")) {
-      final Date date = sentryRetryAfterLimit.get("default");
-
-      return !new Date().after(date);
+    // check all categories
+    final Date dateAllCategories = sentryRetryAfterLimit.get(DataCategory.All);
+    if (dateAllCategories != null) {
+      if (!currentDate.after(dateAllCategories)) {
+        return true;
+      }
     }
+
+    // Unknown should not be rate limited
+    if (DataCategory.Unknown.equals(dataCategory)) {
+      return false;
+    }
+
+    // check for specific dataCategory
+    final Date dateCategory = sentryRetryAfterLimit.get(dataCategory);
+    if (dateCategory != null) {
+      return !currentDate.after(dateCategory);
+    }
+
     return false;
+  }
+
+  /**
+   * Returns a rate limiting category from item itemType
+   *
+   * @param itemType the item itemType (eg event, session, attachment, ...)
+   * @return the DataCategory eg (DataCategory.Error, DataCategory.Session, DataCategory.Attachment)
+   */
+  private @NotNull DataCategory getCategoryFromItemType(final @NotNull String itemType) {
+    switch (itemType) {
+      case "event":
+        return DataCategory.Error;
+      case "session":
+        return DataCategory.Session;
+      case "attachment":
+        return DataCategory.Attachment;
+      case "transaction":
+        return DataCategory.Transaction;
+      default:
+        return DataCategory.Unknown;
+    }
   }
 
   /**
@@ -260,7 +339,15 @@ public class HttpTransport implements ITransport {
 
   private void updateRetryAfterLimits(
       final @NotNull HttpURLConnection connection, final int responseCode) {
+    // seconds
     final String retryAfterHeader = connection.getHeaderField("Retry-After");
+
+    // X-Sentry-Rate-Limits looks like: seconds:categories:scope
+    // it could have more than one scope so it looks like:
+    // quota_limit, quota_limit, quota_limit
+
+    // a real example: 50:transaction:key, 2700:default;error;security:organization
+    // 50::key is also a valid case, it means no categories and it should apply to all of them
     final String sentryRateLimitHeader = connection.getHeaderField("X-Sentry-Rate-Limits");
     updateRetryAfterLimits(sentryRateLimitHeader, retryAfterHeader, responseCode);
   }
@@ -292,14 +379,29 @@ public class HttpTransport implements ITransport {
           if (retryAfterAndCategories.length > 1) {
             final String allCategories = retryAfterAndCategories[1];
 
-            if (allCategories != null) {
+            // we dont care if Date is UTC as we just add the relative seconds
+            final Date date =
+                new Date(currentDateProvider.getCurrentTimeMillis() + retryAfterMillis);
+
+            if (allCategories != null && !allCategories.isEmpty()) {
               final String[] categories = allCategories.split(";", -1);
 
               for (final String catItem : categories) {
-                // we dont care if Date is UTC as we just add the relative seconds
-                sentryRetryAfterLimit.put(
-                    catItem, new Date(System.currentTimeMillis() + retryAfterMillis));
+                DataCategory dataCategory = DataCategory.Unknown;
+                try {
+                  dataCategory = DataCategory.valueOf(StringUtils.capitalize(catItem));
+                } catch (IllegalArgumentException e) {
+                  options.getLogger().log(INFO, e, "Unknown category: %s", catItem);
+                }
+                // we dont apply rate limiting for unknown categories
+                if (DataCategory.Unknown.equals(dataCategory)) {
+                  continue;
+                }
+                applyRetryAfterOnlyIfLonger(dataCategory, date);
               }
+            } else {
+              // if categories are empty, we should apply to "all" categories.
+              applyRetryAfterOnlyIfLonger(DataCategory.All, date);
             }
           }
         }
@@ -307,8 +409,24 @@ public class HttpTransport implements ITransport {
     } else if (errorCode == 429) {
       final long retryAfterMillis = parseRetryAfterOrDefault(retryAfterHeader);
       // we dont care if Date is UTC as we just add the relative seconds
-      final Date date = new Date(System.currentTimeMillis() + retryAfterMillis);
-      sentryRetryAfterLimit.put("default", date);
+      final Date date = new Date(currentDateProvider.getCurrentTimeMillis() + retryAfterMillis);
+      applyRetryAfterOnlyIfLonger(DataCategory.All, date);
+    }
+  }
+
+  /**
+   * apply new timestamp for rate limiting only if its longer than the previous one
+   *
+   * @param dataCategory the DataCategory
+   * @param date the Date to be applied
+   */
+  private void applyRetryAfterOnlyIfLonger(
+      final @NotNull DataCategory dataCategory, final @NotNull Date date) {
+    final Date oldDate = sentryRetryAfterLimit.get(dataCategory);
+
+    // only overwrite its previous date if the limit is even longer
+    if (oldDate == null || date.after(oldDate)) {
+      sentryRetryAfterLimit.put(dataCategory, date);
     }
   }
 
