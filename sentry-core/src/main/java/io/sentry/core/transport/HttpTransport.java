@@ -310,8 +310,9 @@ public class HttpTransport implements ITransport {
       connection.getInputStream().close();
     } catch (IOException e) {
       logger.log(ERROR, e, "Error while closing the connection.");
+    } finally {
+      connection.disconnect();
     }
-    connection.disconnect();
   }
 
   /**

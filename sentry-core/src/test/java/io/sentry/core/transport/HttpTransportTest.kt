@@ -366,7 +366,7 @@ class HttpTransportTest {
         return Session("123", User(), "env", "release")
     }
 
-    // TODO: make inline fun <reified T : Any>
+    // TODO: make inline fun <reified T : Any>, so we can throwOnSerialize<SentryEvent>()
     private fun throwOnEventSerialize() {
         whenever(fixture.serializer.serialize(any<SentryEvent>(), any())).thenThrow(IOException())
     }
