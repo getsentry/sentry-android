@@ -32,11 +32,11 @@ jobs:
         with:
           java-version: 1.8
 
-      # sudo is necessary for linux
+      # sudo is required for linux
 
       # https://github.com/actions/virtual-environments/issues/60
-      # necessary for ubuntu build
-      - name: Install NDK 20.0
+      # required because ubuntu doesn't have NDK 21.0 installed by default
+      - name: Install NDK 21.0
         run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;${NDK_VERSION}"
 
       # required because macOS doesn't have cmake 3.10 installed by default

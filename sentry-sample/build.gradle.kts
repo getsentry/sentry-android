@@ -30,7 +30,7 @@ android {
 
         ndk {
             setAbiFilters(Config.Android.abiFilters)
-//            ndkVersion = Config.Android.ndkVersion
+            ndkVersion = Config.Android.ndkVersion
         }
     }
 

@@ -38,9 +38,7 @@ android {
 
         ndk {
             setAbiFilters(Config.Android.abiFilters)
-
-//            TODO: enable when https://discuss.lgtm.com/t/android-ndk-v21-1-6352462-is-not-available/2910 ois fixed
-//            ndkVersion = Config.Android.ndkVersion
+            ndkVersion = Config.Android.ndkVersion
         }
     }
 
