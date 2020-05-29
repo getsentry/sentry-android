@@ -6,6 +6,7 @@ import static io.sentry.core.SentryLevel.INFO;
 import static io.sentry.core.SentryLevel.WARNING;
 
 import com.jakewharton.nopen.annotation.Open;
+import io.sentry.core.ILogger;
 import io.sentry.core.ISerializer;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEvent;
@@ -85,6 +86,8 @@ public class HttpTransport implements ITransport {
 
   private final @NotNull ICurrentDateProvider currentDateProvider;
 
+  private final @NotNull ILogger logger;
+
   /**
    * Constructs a new HTTP transport instance. Notably, the provided {@code requestUpdater} must set
    * the appropriate content encoding header for the {@link io.sentry.core.ISerializer} instance
@@ -132,6 +135,7 @@ public class HttpTransport implements ITransport {
     this.bypassSecurity = bypassSecurity;
     this.currentDateProvider =
         Objects.requireNonNull(currentDateProvider, "CurrentDateProvider is required.");
+    this.logger = Objects.requireNonNull(options.getLogger(), "Logger is required.");
 
     try {
       final URI uri = sentryUrl.toURI();
@@ -164,7 +168,7 @@ public class HttpTransport implements ITransport {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(event, writer);
 
-      options.getLogger().log(DEBUG, "Event sent %s successfully.", event.getEventId());
+      logger.log(DEBUG, "Event sent %s successfully.", event.getEventId());
       return TransportResult.success();
     } catch (IOException e) {
       final TransportResult errorResult = getResultFromErrorCode(connection, e);
@@ -173,7 +177,7 @@ public class HttpTransport implements ITransport {
     } finally {
       updateRetryAfterLimits(connection, responseCode);
 
-      closeAndDisconnectConnection(connection);
+      closeAndDisconnect(connection);
     }
   }
 
@@ -281,7 +285,7 @@ public class HttpTransport implements ITransport {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(envelope, writer);
 
-      options.getLogger().log(DEBUG, "Envelope sent successfully.");
+      logger.log(DEBUG, "Envelope sent successfully.");
       return TransportResult.success();
     } catch (IOException e) {
       final TransportResult errorResult = getResultFromErrorCode(connection, e);
@@ -292,7 +296,7 @@ public class HttpTransport implements ITransport {
     } finally {
       updateRetryAfterLimits(connection, responseCode);
 
-      closeAndDisconnectConnection(connection);
+      closeAndDisconnect(connection);
     }
   }
 
@@ -301,11 +305,11 @@ public class HttpTransport implements ITransport {
    *
    * @param connection the HttpURLConnection
    */
-  private void closeAndDisconnectConnection(final @NotNull HttpURLConnection connection) {
+  private void closeAndDisconnect(final @NotNull HttpURLConnection connection) {
     try {
       connection.getInputStream().close();
     } catch (IOException e) {
-      options.getLogger().log(ERROR, e, "Error while closing the connection.");
+      logger.log(ERROR, e, "Error while closing the connection.");
     }
     connection.disconnect();
   }
@@ -325,7 +329,7 @@ public class HttpTransport implements ITransport {
       logErrorInPayload(connection);
       return TransportResult.error(responseCode);
     } catch (IOException responseCodeException) {
-      options.getLogger().log(ERROR, responseCodeException, "Error getting responseCode");
+      logger.log(ERROR, responseCodeException, "Error getting responseCode");
 
       // this should not stop us from continuing.
       return getDefaultErrorResult(ioException);
@@ -339,12 +343,8 @@ public class HttpTransport implements ITransport {
    * @return the TransportResult error
    */
   private @NotNull TransportResult getDefaultErrorResult(final @NotNull Exception exception) {
-    options
-        .getLogger()
-        .log(
-            WARNING,
-            "Failed to obtain error message while analyzing event send failure.",
-            exception);
+    logger.log(
+        WARNING, "Failed to obtain error message while analyzing event send failure.", exception);
     return TransportResult.error();
   }
 
@@ -408,7 +408,7 @@ public class HttpTransport implements ITransport {
                 try {
                   dataCategory = DataCategory.valueOf(StringUtils.capitalize(catItem));
                 } catch (IllegalArgumentException e) {
-                  options.getLogger().log(INFO, e, "Unknown category: %s", catItem);
+                  logger.log(INFO, e, "Unknown category: %s", catItem);
                 }
                 // we dont apply rate limiting for unknown categories
                 if (DataCategory.Unknown.equals(dataCategory)) {
@@ -480,7 +480,7 @@ public class HttpTransport implements ITransport {
         errorMessage = "An exception occurred while submitting the event to the Sentry server.";
       }
 
-      options.getLogger().log(DEBUG, errorMessage);
+      logger.log(DEBUG, errorMessage);
     }
   }
 
@@ -507,9 +507,7 @@ public class HttpTransport implements ITransport {
       }
       return sb.toString();
     } catch (IOException e) {
-      options
-          .getLogger()
-          .log(ERROR, e, "Exception while reading the error message from the connection");
+      logger.log(ERROR, e, "Exception while reading the error message from the connection");
     }
     return null;
   }
