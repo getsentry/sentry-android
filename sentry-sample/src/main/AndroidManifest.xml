@@ -44,7 +44,7 @@
     <!--    <meta-data android:name="io.sentry.anr.report-debug" android:value="true" />-->
 
     <!--    how to disable ANR-->
-    <!--    <meta-data android:name="io.sentry.anr.enable" android:value="false" />-->
+        <meta-data android:name="io.sentry.anr.enable" android:value="false" />
 
     <!--    how to disable the auto-init-->
     <!--    <meta-data android:name="io.sentry.auto-init" android:value="false" />-->
