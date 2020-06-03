@@ -873,6 +873,9 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   private @Nullable String[] getProguardUUIDs() {
+    // one may have thousands of asset files and looking up this list might slow down the SDK init.
+    // quite a bit, for this reason, we try to open the file directly and take care of errors
+    // like FileNotFoundException
     try (final AssetManager assets = context.getAssets();
         final InputStream is =
             new BufferedInputStream(assets.open("sentry-debug-meta.properties"))) {
@@ -883,7 +886,8 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       if (uuid != null && !uuid.isEmpty()) {
         final String[] proguardUUIDs = uuid.split("\\|", -1);
 
-        // it should be only 1 proguard uuid, but the API accepts an Array so keeping it consistency
+        // it should be only 1 proguard uuid, but the API accepts an array so we are keeping it for
+        // consistency
         for (final String item : proguardUUIDs) {
           logger.log(SentryLevel.DEBUG, "Proguard UUID found: %s", item);
         }
