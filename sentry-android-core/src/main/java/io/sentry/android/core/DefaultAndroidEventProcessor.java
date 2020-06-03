@@ -37,13 +37,14 @@ import io.sentry.core.protocol.SentryThread;
 import io.sentry.core.protocol.User;
 import io.sentry.core.util.ApplyScopeUtils;
 import io.sentry.core.util.Objects;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -880,34 +881,31 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   private @Nullable String[] getProGuardUuids() {
-    AssetManager assets = context.getAssets();
-    try {
-      String[] files = assets.list("");
+    final AssetManager assets = context.getAssets();
 
-      List<String> listFiles = Arrays.asList(files != null ? files : new String[0]);
-      if (listFiles.contains("sentry-debug-meta.properties")) {
-        try (InputStream is = assets.open("sentry-debug-meta.properties")) {
-          Properties properties = new Properties();
-          properties.load(is);
+    try (final InputStream is =
+        new BufferedInputStream(assets.open("sentry-debug-meta.properties"))) {
+      final Properties properties = new Properties();
+      properties.load(is);
 
-          String uuid = properties.getProperty("io.sentry.ProguardUuids");
-          if (uuid != null && !uuid.isEmpty()) {
-            return uuid.split("\\|", -1);
-          }
-          options
-              .getLogger()
-              .log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
-        } catch (IOException e) {
-          options.getLogger().log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
-        }
-        options
-            .getLogger()
-            .log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
-      } else {
-        options.getLogger().log(SentryLevel.INFO, "Proguard UUIDs file not found.");
+      final String uuid = properties.getProperty("io.sentry.ProguardUuids");
+      if (uuid != null && !uuid.isEmpty()) {
+        String[] proguardUuids = uuid.split("\\|", -1);
+        options.getLogger().log(SentryLevel.DEBUG, "ProguardUuids found: %s", proguardUuids);
+        return proguardUuids;
       }
+      options
+          .getLogger()
+          .log(
+              SentryLevel.INFO, "io.sentry.ProguardUuids property was not found or it is invalid.");
+    } catch (FileNotFoundException e) {
+      options.getLogger().log(SentryLevel.INFO, "sentry-debug-meta.properties file was not found.");
     } catch (IOException e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error listing Proguard files.", e);
+      options.getLogger().log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
+    } catch (RuntimeException e) {
+      options
+          .getLogger()
+          .log(SentryLevel.ERROR, "sentry-debug-meta.properties file is malformed.", e);
     }
 
     return null;
