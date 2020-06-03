@@ -890,8 +890,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
       final String uuid = properties.getProperty("io.sentry.ProguardUuids");
       if (uuid != null && !uuid.isEmpty()) {
-        String[] proguardUuids = uuid.split("\\|", -1);
-        options.getLogger().log(SentryLevel.DEBUG, "ProguardUuids found: %s", proguardUuids);
+        final String[] proguardUuids = uuid.split("\\|", -1);
+
+        // it should be only 1 proguard uuid, but the API accepts an Array so keeping it consistency
+        for (final String item : proguardUuids) {
+          options.getLogger().log(SentryLevel.DEBUG, "ProguardUuids found: %s", item);
+        }
         return proguardUuids;
       }
       options
