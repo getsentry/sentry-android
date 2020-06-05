@@ -27,15 +27,13 @@ jobs:
 
       - name: set up sdkmanager and emulators
         uses: malinskiy/action-android/install-sdk@release/0.0.7
-      - run: echo $ANDROID_HOME
       - run: sdkmanager platform-tools
-      - run: adb devices
       - run: sdkmanager --install "cmake;${CMAKE_VERSION}"
       - run: sdkmanager --install "ndk;${NDK_VERSION}"
 
       - uses: malinskiy/action-android/emulator-run-cmd@release/0.0.7
         with:
-          cmd: ./gradlew installDebug && adb shell am start -n io.sentry.sample/io.sentry.sample.MainActivity
+          cmd: make runsample
           api: 25
           tag: default
           abi: x86

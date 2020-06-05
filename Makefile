@@ -1,4 +1,4 @@
-.PHONY: clean compile dryRelease doRelease release update stop
+.PHONY: clean compile dryRelease doRelease release update stop runsample
 
 all: clean compile update dryRelease
 
@@ -29,3 +29,7 @@ update:
 # don't contain any lock files and are free to be cached.
 stop:
 	./gradlew --stop
+
+# install and run sample on connected emulator/device
+runsample:
+	./gradlew installDebug && adb shell am start -n io.sentry.sample/io.sentry.sample.MainActivity
