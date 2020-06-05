@@ -33,7 +33,7 @@ jobs:
 
       - uses: malinskiy/action-android/emulator-run-cmd@release/0.0.7
         with:
-          cmd: make runsample
+          cmd: make runSample
           api: 25
           tag: default
           abi: x86

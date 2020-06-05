@@ -1,4 +1,4 @@
-.PHONY: clean compile dryRelease doRelease release update stop runsample
+.PHONY: clean compile dryRelease doRelease release update stop installSample startSample runSample sleepHack
 
 all: clean compile update dryRelease
 
@@ -31,5 +31,16 @@ stop:
 	./gradlew --stop
 
 # install and run sample on connected emulator/device
-runsample:
-	./gradlew installDebug && adb shell am start -n io.sentry.sample/io.sentry.sample.MainActivity
+installSample:
+	./gradlew installDebug
+
+# start sample using adb start
+startSample:
+	adb shell am start -n io.sentry.sample/io.sentry.sample.MainActivity
+
+# hack for sleeping 10 seconds, so emulator won't get killed asap
+sleepHack:
+	sleep 10
+
+# install debug mode, run with adb and wait for 10 seconds
+runSample: installSample startSample sleepHack
