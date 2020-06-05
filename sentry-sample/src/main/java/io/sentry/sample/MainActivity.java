@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
 
-    Timber.i("Sentry.isEnabled() = %s", Sentry.isEnabled());
+//    Timber.i("Sentry.isEnabled() = %s", Sentry.isEnabled());
 
     binding.crashFromJava.setOnClickListener(
         view -> {
@@ -62,5 +62,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
     setContentView(binding.getRoot());
+
+    new Thread(() -> {
+      throw new RuntimeException("Test from a thread.");
+    }).start();
   }
 }

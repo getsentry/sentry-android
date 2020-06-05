@@ -2,7 +2,7 @@ package io.sentry.sample;
 
 import android.app.Application;
 import android.os.StrictMode;
-import timber.log.Timber;
+//import timber.log.Timber;
 
 // import io.sentry.android.core.SentryAndroid;
 
@@ -14,7 +14,7 @@ public class MyApplication extends Application {
     strictMode();
     super.onCreate();
 
-    Timber.plant(new Timber.DebugTree());
+//    Timber.plant(new Timber.DebugTree());
 
     // Example how to initialize the SDK manually which allows access to SentryOptions callbacks.
     // Make sure you disable the auto init via manifest meta-data: io.sentry.auto-init=false
