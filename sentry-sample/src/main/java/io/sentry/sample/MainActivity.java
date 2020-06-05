@@ -6,7 +6,7 @@ import io.sentry.core.Sentry;
 import io.sentry.core.protocol.User;
 import io.sentry.sample.databinding.ActivityMainBinding;
 import java.util.Collections;
-import timber.log.Timber;
+//import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -62,9 +62,5 @@ public class MainActivity extends AppCompatActivity {
         });
 
     setContentView(binding.getRoot());
-
-    new Thread(() -> {
-      throw new RuntimeException("Test from a thread.");
-    }).start();
   }
 }

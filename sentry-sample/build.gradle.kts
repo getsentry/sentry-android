@@ -32,6 +32,7 @@ android {
             setAbiFilters(Config.Android.abiFilters)
             ndkVersion = Config.Android.ndkVersion
         }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
@@ -104,5 +105,9 @@ dependencies {
 
     // debugging purpose
     implementation(Config.Libs.timber)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")
+    androidTestImplementation(Config.TestLibs.androidxRunner)
+    androidTestImplementation(Config.TestLibs.androidxJunit)
+    androidTestImplementation("androidx.test:rules:1.2.0")
     debugImplementation(Config.Libs.leakCanary)
 }
