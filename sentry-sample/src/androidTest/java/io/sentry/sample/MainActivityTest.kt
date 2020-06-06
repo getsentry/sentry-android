@@ -29,7 +29,7 @@ class MainActivityTest {
 
         val count = CountDownLatch(1)
 
-        Timer(true).schedule(5000) {
+        Timer(true).schedule(10000) {
             count.countDown()
         }
 

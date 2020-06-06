@@ -107,13 +107,13 @@ dependencies {
 
     implementation(Config.Libs.appCompat)
 
-    // debugging purpose
-    implementation(Config.Libs.timber)
     androidTestImplementation(Config.TestLibs.espressoCore)
     androidTestImplementation(Config.TestLibs.androidxRunner)
     androidTestImplementation(Config.TestLibs.androidxJunit)
     androidTestImplementation(Config.TestLibs.androidxRules)
     androidTestImplementation(Config.TestLibs.androidxCoreKtx)
     androidTestImplementation(Config.TestLibs.androidxJunitKtx)
+
+    // debugging purpose
     debugImplementation(Config.Libs.leakCanary)
 }
