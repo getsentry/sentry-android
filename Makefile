@@ -1,4 +1,4 @@
-.PHONY: clean compile dryRelease doRelease release update stop installSample startSample runSample sleepHack
+.PHONY: clean compile dryRelease doRelease release update stop installSample startSample runSample sleepHack runConnected
 
 all: clean compile update dryRelease
 
@@ -44,3 +44,7 @@ sleepHack:
 
 # install debug mode, run with adb and wait for 10 seconds
 runSample: installSample startSample sleepHack
+
+# run connectedCheck
+runConnected:
+	./gradlew connectedCheck
