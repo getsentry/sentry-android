@@ -84,26 +84,26 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   private final @NotNull ILogger logger;
 
   public DefaultAndroidEventProcessor(
-      final @NotNull Context context,
-      final @NotNull SentryOptions options,
-      final @NotNull IBuildInfoProvider buildInfoProvider) {
+    final @NotNull Context context,
+    final @NotNull SentryOptions options,
+    final @NotNull IBuildInfoProvider buildInfoProvider) {
     this(
-        context,
-        options,
-        buildInfoProvider,
-        new RootChecker(context, buildInfoProvider, options.getLogger()));
+      context,
+      options,
+      buildInfoProvider,
+      new RootChecker(context, buildInfoProvider, options.getLogger()));
   }
 
   DefaultAndroidEventProcessor(
-      final @NotNull Context context,
-      final @NotNull SentryOptions options,
-      final @NotNull IBuildInfoProvider buildInfoProvider,
-      final @NotNull RootChecker rootChecker) {
+    final @NotNull Context context,
+    final @NotNull SentryOptions options,
+    final @NotNull IBuildInfoProvider buildInfoProvider,
+    final @NotNull RootChecker rootChecker) {
     this.context = Objects.requireNonNull(context, "The application context is required.");
     this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
     this.logger = Objects.requireNonNull(options.getLogger(), "The Logger is required.");
     this.buildInfoProvider =
-        Objects.requireNonNull(buildInfoProvider, "The BuildInfoProvider is required.");
+      Objects.requireNonNull(buildInfoProvider, "The BuildInfoProvider is required.");
     this.rootChecker = Objects.requireNonNull(rootChecker, "The RootChecker is required.");
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -140,14 +140,14 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @Override
   public @NotNull SentryEvent process(
-      final @NotNull SentryEvent event, final @Nullable Object hint) {
+    final @NotNull SentryEvent event, final @Nullable Object hint) {
     if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       processNonCachedEvent(event);
     } else {
       logger.log(
-          SentryLevel.DEBUG,
-          "Event was cached so not applying data relevant to the current app execution/version: %s",
-          event.getEventId());
+        SentryLevel.DEBUG,
+        "Event was cached so not applying data relevant to the current app execution/version: %s",
+        event.getEventId());
     }
 
     if (event.getContexts().getDevice() == null) {
@@ -380,7 +380,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (device.getConnectionType() == null) {
       // wifi, ethernet or cellular, null if none
       device.setConnectionType(
-          ConnectivityChecker.getConnectionType(context, logger, buildInfoProvider));
+        ConnectivityChecker.getConnectionType(context, logger, buildInfoProvider));
     }
 
     return device;
@@ -397,7 +397,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @SuppressWarnings("deprecation")
   private void setScreenResolution(
-      final @NotNull Device device, final @NotNull DisplayMetrics displayMetrics) {
+    final @NotNull Device device, final @NotNull DisplayMetrics displayMetrics) {
     device.setScreenResolution(getResolution(displayMetrics));
   }
 
@@ -415,7 +415,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   private @NotNull Date getBootTime() {
     // if user changes time, will give a wrong answer, consider ACTION_TIME_CHANGED
     return DateUtils.getDateTime(
-        new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime()));
+      new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime()));
   }
 
   private @NotNull String getResolution(final @NotNull DisplayMetrics displayMetrics) {
@@ -496,7 +496,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     try {
       int plugged = batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
       return plugged == BatteryManager.BATTERY_PLUGGED_AC
-          || plugged == BatteryManager.BATTERY_PLUGGED_USB;
+        || plugged == BatteryManager.BATTERY_PLUGGED_USB;
     } catch (Exception e) {
       logger.log(SentryLevel.ERROR, "Error getting device charging state.", e);
       return null;
@@ -525,11 +525,11 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     Device.DeviceOrientation deviceOrientation = null;
     try {
       deviceOrientation =
-          DeviceOrientations.getOrientation(context.getResources().getConfiguration().orientation);
+        DeviceOrientations.getOrientation(context.getResources().getConfiguration().orientation);
       if (deviceOrientation == null) {
         logger.log(
-            SentryLevel.INFO,
-            "No device orientation available (ORIENTATION_SQUARE|ORIENTATION_UNDEFINED)");
+          SentryLevel.INFO,
+          "No device orientation available (ORIENTATION_SQUARE|ORIENTATION_UNDEFINED)");
         return null;
       }
     } catch (Exception e) {
@@ -547,24 +547,24 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   private @Nullable Boolean isEmulator() {
     try {
       return (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
-          || Build.FINGERPRINT.startsWith("generic")
-          || Build.FINGERPRINT.startsWith("unknown")
-          || Build.HARDWARE.contains("goldfish")
-          || Build.HARDWARE.contains("ranchu")
-          || Build.MODEL.contains("google_sdk")
-          || Build.MODEL.contains("Emulator")
-          || Build.MODEL.contains("Android SDK built for x86")
-          || Build.MANUFACTURER.contains("Genymotion")
-          || Build.PRODUCT.contains("sdk_google")
-          || Build.PRODUCT.contains("google_sdk")
-          || Build.PRODUCT.contains("sdk")
-          || Build.PRODUCT.contains("sdk_x86")
-          || Build.PRODUCT.contains("vbox86p")
-          || Build.PRODUCT.contains("emulator")
-          || Build.PRODUCT.contains("simulator");
+        || Build.FINGERPRINT.startsWith("generic")
+        || Build.FINGERPRINT.startsWith("unknown")
+        || Build.HARDWARE.contains("goldfish")
+        || Build.HARDWARE.contains("ranchu")
+        || Build.MODEL.contains("google_sdk")
+        || Build.MODEL.contains("Emulator")
+        || Build.MODEL.contains("Android SDK built for x86")
+        || Build.MANUFACTURER.contains("Genymotion")
+        || Build.PRODUCT.contains("sdk_google")
+        || Build.PRODUCT.contains("google_sdk")
+        || Build.PRODUCT.contains("sdk")
+        || Build.PRODUCT.contains("sdk_x86")
+        || Build.PRODUCT.contains("vbox86p")
+        || Build.PRODUCT.contains("emulator")
+        || Build.PRODUCT.contains("simulator");
     } catch (Exception e) {
       logger.log(
-          SentryLevel.ERROR, "Error checking whether application is running in an emulator.", e);
+        SentryLevel.ERROR, "Error checking whether application is running in an emulator.", e);
       return null;
     }
   }
@@ -672,7 +672,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (externalFilesDirs != null) {
       // return the 1st file which is not the emulated internal storage
       String internalStoragePath =
-          internalStorage != null ? internalStorage.getAbsolutePath() : null;
+        internalStorage != null ? internalStorage.getAbsolutePath() : null;
       for (File file : externalFilesDirs) {
         // externalFilesDirs may contain null values :(
         if (file == null) {
@@ -715,8 +715,8 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   private boolean isExternalStorageMounted() {
     final String storageState = Environment.getExternalStorageState();
     return (Environment.MEDIA_MOUNTED.equals(storageState)
-            || Environment.MEDIA_MOUNTED_READ_ONLY.equals(storageState))
-        && !Environment.isExternalStorageEmulated();
+      || Environment.MEDIA_MOUNTED_READ_ONLY.equals(storageState))
+      && !Environment.isExternalStorageEmulated();
   }
 
   /**
@@ -854,12 +854,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     // Android 29 has changed and -> Avoid using hardware identifiers, find another way in the
     // future
     String androidId =
-        Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+      Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
     //    https://android-developers.googleblog.com/2011/03/identifying-app-installations.html
     if (androidId == null
-        || androidId.isEmpty()
-        || androidId.toLowerCase(Locale.ROOT).contentEquals("9774d56d682e549c")) {
+      || androidId.isEmpty()
+      || androidId.toLowerCase(Locale.ROOT).contentEquals("9774d56d682e549c")) {
       try {
         androidId = Installation.id(context);
       } catch (RuntimeException e) {
@@ -873,12 +873,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   private @Nullable String[] getProguardUUIDs() {
-    final AssetManager assets = context.getAssets();
     // one may have thousands of asset files and looking up this list might slow down the SDK init.
     // quite a bit, for this reason, we try to open the file directly and take care of errors
     // like FileNotFoundException
-    try (final InputStream is =
-        new BufferedInputStream(assets.open("sentry-debug-meta.properties"))) {
+    try (final AssetManager assets = context.getAssets();
+         final InputStream is =
+           new BufferedInputStream(assets.open("sentry-debug-meta.properties"))) {
       final Properties properties = new Properties();
       properties.load(is);
 
@@ -894,7 +894,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         return proguardUUIDs;
       }
       logger.log(
-          SentryLevel.INFO, "io.sentry.ProguardUuids property was not found or it is invalid.");
+        SentryLevel.INFO, "io.sentry.ProguardUuids property was not found or it is invalid.");
     } catch (FileNotFoundException e) {
       logger.log(SentryLevel.INFO, "sentry-debug-meta.properties file was not found.");
     } catch (IOException e) {
