@@ -7,13 +7,11 @@ import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import java.util.Timer
-//import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.schedule
-//import org.awaitility.kotlin.await
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.CountDownLatch
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
@@ -28,17 +26,14 @@ class MainActivityTest {
         onView(withId(R.id.native_capture)).perform(click())
         onView(withId(R.id.breadcrumb)).perform(click())
 
-//        val wait5s = AtomicBoolean(false)
         val count = CountDownLatch(1)
 
-        // Didn't find class "java.time.temporal.ChronoUnit" throws API 25
         Timer(true).schedule(5000) {
             count.countDown()
         }
 
         // might be possible to replace with https://developer.android.com/training/testing/espresso/idling-resource
         // little waiting time for getting events processed
-//        await.untilTrue(wait5s)
         count.await()
     }
 }
