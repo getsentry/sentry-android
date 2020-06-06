@@ -33,12 +33,12 @@ object Config {
     }
 
     object TestLibs {
-        private val androidxTestVersion = "1.2.0"
+        private val androidxTestVersion = "1.3.0-rc01"
 
         val kotlinTestJunit = "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
         val androidxCore = "androidx.test:core:$androidxTestVersion"
         val androidxRunner = "androidx.test:runner:$androidxTestVersion"
-        val androidxJunit = "androidx.test.ext:junit:1.1.1"
+        val androidxJunit = "androidx.test.ext:junit:1.1.2-rc01"
         val robolectric = "org.robolectric:robolectric:4.3.1"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
         val awaitility = "org.awaitility:awaitility-kotlin:4.0.3"
