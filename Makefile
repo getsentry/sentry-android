@@ -1,4 +1,4 @@
-.PHONY: clean compile dryRelease doRelease release update stop runConnected
+.PHONY: clean compile dryRelease doRelease release update stop runConnectedTests
 
 all: clean compile update dryRelease
 
@@ -30,21 +30,6 @@ update:
 stop:
 	./gradlew --stop
 
-# install and run sample on connected emulator/device
-#installSample:
-#	./gradlew installDebug
-
-# start sample using adb start
-#startSample:
-#	adb shell am instrument -w -r -e debug false -e class 'io.sentry.sample.MainActivityTest' io.sentry.sample.test/androidx.test.runner.AndroidJUnitRunner
-
-# hack for sleeping 10 seconds, so emulator won't get killed asap
-#sleepHack:
-#	sleep 5
-
-# install debug mode, run with adb and wait for 10 seconds
-#runSample: installSample startSample sleepHack
-
 # run connectedCheck
-runConnected:
-	./gradlew connectedCheck
+runConnectedTests:
+	./gradlew connectedDebugAndroidTest

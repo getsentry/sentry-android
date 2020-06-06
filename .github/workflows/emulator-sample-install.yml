@@ -25,6 +25,21 @@ jobs:
         with:
           java-version: 1.8
 
+
+      # use sequential key when bumping dependencies till single lock file is out of preview
+      # https://docs.gradle.org/current/userguide/dependency_locking.html#single_lock_file_per_project
+      - name: Cache Gradle Caches
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches/
+          key: cache-gradle-cache-1
+
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/wrapper/
+          key: cache-gradle-wrapper-1
+
       - name: set up sdkmanager and emulators
         uses: malinskiy/action-android/install-sdk@release/0.0.7
       - run: sdkmanager platform-tools
@@ -33,7 +48,7 @@ jobs:
 
       - uses: malinskiy/action-android/emulator-run-cmd@release/0.0.7
         with:
-          cmd: make runConnected
+          cmd: make runConnectedTests
           api: 25
           tag: default
           abi: x86
@@ -44,3 +59,8 @@ jobs:
         with:
           name: logcat
           path: artifacts/logcat.log
+
+      # We stop gradle at the end to make sure the cache folders
+      # don't contain any lock files and are free to be cached.
+      - name: Make stop
+        run: make stop

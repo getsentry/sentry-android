@@ -109,11 +109,11 @@ dependencies {
 
     // debugging purpose
     implementation(Config.Libs.timber)
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0-rc01")
+    androidTestImplementation(Config.TestLibs.espressoCore)
     androidTestImplementation(Config.TestLibs.androidxRunner)
     androidTestImplementation(Config.TestLibs.androidxJunit)
-    androidTestImplementation("androidx.test:rules:1.3.0-rc01")
-    androidTestImplementation("androidx.test:core-ktx:1.3.0-rc01")
-    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.2-rc01")
+    androidTestImplementation(Config.TestLibs.androidxRules)
+    androidTestImplementation(Config.TestLibs.androidxCoreKtx)
+    androidTestImplementation(Config.TestLibs.androidxJunitKtx)
     debugImplementation(Config.Libs.leakCanary)
 }

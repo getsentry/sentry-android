@@ -23,8 +23,9 @@ class MainActivityTest {
     @Test
     fun mainActivityTest() {
         onView(withId(R.id.send_message)).perform(click())
-        onView(withId(R.id.native_capture)).perform(click())
+        onView(withId(R.id.capture_exception)).perform(click())
         onView(withId(R.id.breadcrumb)).perform(click())
+        onView(withId(R.id.native_capture)).perform(click())
 
         val count = CountDownLatch(1)
 
