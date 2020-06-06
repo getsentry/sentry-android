@@ -35,7 +35,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // because of coreLibraryDesugaring
-        multiDexEnabled = true
+//        multiDexEnabled = true
     }
 
     buildFeatures {
@@ -91,7 +91,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
         // because of ChronoUnit API 25
-        coreLibraryDesugaringEnabled = true
+//        coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -128,5 +128,5 @@ dependencies {
     }
 
     // because of coreLibraryDesugaringEnabled
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.0.5")
+//    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.0.5")
 }
