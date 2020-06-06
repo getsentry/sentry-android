@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         view -> {
           Sentry.addBreadcrumb("Breadcrumb");
           Sentry.setExtra("extra", "extra");
-          Sentry.setTransaction("transaction");
           User user = new User();
           user.setUsername("username");
           Sentry.setUser(user);
