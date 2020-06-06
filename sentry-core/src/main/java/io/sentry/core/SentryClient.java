@@ -74,9 +74,6 @@ public final class SentryClient implements ISentryClient {
     Objects.requireNonNull(event, "SentryEvent is required.");
 
     options.getLogger().log(SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
-    if (hint == null) {
-      throw new Error(new Exception());
-    }
 
     if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       // Event has already passed through here before it was cached
