@@ -33,6 +33,9 @@ android {
             ndkVersion = Config.Android.ndkVersion
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // because of coreLibraryDesugaring
+        multiDexEnabled = true
     }
 
     buildFeatures {
@@ -87,6 +90,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        // because of ChronoUnit API 25
+        coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -121,4 +126,7 @@ dependencies {
         exclude(group = "org.hamcrest", module = "hamcrest-library")
         exclude(group = "org.hamcrest", module = "hamcrest")
     }
+
+    // because of coreLibraryDesugaringEnabled
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.0.5")
 }
