@@ -106,6 +106,7 @@ dependencies {
 //    }
 
     implementation(Config.Libs.appCompat)
+    compileOnly(Config.CompileOnly.jetbrainsAnnotations)
 
     androidTestImplementation(Config.TestLibs.espressoCore)
     androidTestImplementation(Config.TestLibs.androidxRunner)
@@ -117,5 +118,7 @@ dependencies {
     androidTestImplementation(Config.TestLibs.retrofit)
 
     // debugging purpose
-    debugImplementation(Config.Libs.leakCanary)
+    debugImplementation(Config.Libs.leakCanary) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
 }
