@@ -11,16 +11,17 @@ import io.sentry.core.protocol.SentryId
 import java.util.Timer
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.schedule
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import okhttp3.ResponseBody
 import org.junit.Rule
 import org.junit.runner.RunWith
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+//import kotlin.test.BeforeTest
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
@@ -28,6 +29,11 @@ class MainActivityTest {
 
     @get:Rule
     val rule = activityScenarioRule<MainActivity>()
+
+//    @BeforeTest
+//    fun beforeTest() {
+//        val token = System.getenv("TEST")
+//    }
 
     @Test
     fun mainActivityTest() {
@@ -47,7 +53,6 @@ class MainActivityTest {
 //        val service = retrofit.create(SentryService::class.java)
 
 //        val count = CountDownLatch(4)
-
         rule.scenario.onActivity {
             val ids = it.ids
             assertEquals(4, ids.size)

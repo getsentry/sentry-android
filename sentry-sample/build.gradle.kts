@@ -33,6 +33,13 @@ android {
             ndkVersion = Config.Android.ndkVersion
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
+        testInstrumentationRunnerArguments = mapOf("clearPackageData" to "true")
+
+        testOptions {
+            execution = "ANDROIDX_TEST_ORCHESTRATOR"
+        }
     }
 
     buildFeatures {
@@ -115,6 +122,7 @@ dependencies {
     androidTestImplementation(Config.TestLibs.androidxCoreKtx)
     androidTestImplementation(Config.TestLibs.androidxJunitKtx)
     androidTestImplementation(Config.TestLibs.kotlinTestJunit)
+    androidTestImplementation(Config.TestLibs.orchestrator)
     androidTestImplementation(Config.TestLibs.retrofit)
 
     // debugging purpose
