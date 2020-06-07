@@ -45,6 +45,7 @@ object Config {
         val robolectric = "org.robolectric:robolectric:4.3.1"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
         val awaitility = "org.awaitility:awaitility-kotlin:4.0.3"
+        val retrofit = "com.squareup.retrofit2:retrofit:2.9.0"
     }
 
     object QualityPlugins {

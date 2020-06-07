@@ -3,10 +3,16 @@ package io.sentry.sample;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import io.sentry.core.Sentry;
+import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
 import io.sentry.sample.databinding.ActivityMainBinding;
+import java.util.ArrayList;
+import java.util.List;
+import org.jetbrains.annotations.TestOnly;
 
 public class MainActivity extends AppCompatActivity {
+
+  private final List<SentryId> ids = new ArrayList<>();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -19,12 +25,19 @@ public class MainActivity extends AppCompatActivity {
           throw new RuntimeException("Uncaught Exception from Java.");
         });
 
-    binding.sendMessage.setOnClickListener(view -> Sentry.captureMessage("Some message."));
+    binding.sendMessage.setOnClickListener(
+        view -> {
+          SentryId sentryId = Sentry.captureMessage("Some message.");
+          ids.add(sentryId);
+        });
 
     binding.captureException.setOnClickListener(
-        view ->
-            Sentry.captureException(
-                new Exception(new Exception(new Exception("Some exception.")))));
+        view -> {
+          SentryId sentryId =
+              Sentry.captureException(
+                  new Exception(new Exception(new Exception("Some exception."))));
+          ids.add(sentryId);
+        });
 
     binding.breadcrumb.setOnClickListener(
         view -> {
@@ -34,12 +47,19 @@ public class MainActivity extends AppCompatActivity {
           user.setUsername("username");
           Sentry.setUser(user);
           Sentry.setTag("tag", "tag");
-          Sentry.captureException(new Exception("Some exception with scope and breadcrumbs."));
+          SentryId sentryId =
+              Sentry.captureException(new Exception("Some exception with scope and breadcrumbs."));
+          ids.add(sentryId);
         });
 
     binding.nativeCrash.setOnClickListener(view -> NativeSample.crash());
 
-    binding.nativeCapture.setOnClickListener(view -> NativeSample.message());
+    binding.nativeCapture.setOnClickListener(
+        view -> {
+          String id = NativeSample.message();
+          SentryId sentryId = new SentryId(id);
+          ids.add(sentryId);
+        });
 
     binding.anr.setOnClickListener(
         view -> {
@@ -56,5 +76,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
     setContentView(binding.getRoot());
+  }
+
+  @TestOnly
+  public List<SentryId> getIds() {
+    return ids;
   }
 }

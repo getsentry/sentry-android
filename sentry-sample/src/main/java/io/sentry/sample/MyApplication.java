@@ -13,8 +13,6 @@ public class MyApplication extends Application {
     strictMode();
     super.onCreate();
 
-    //    Timber.plant(new Timber.DebugTree());
-
     // Example how to initialize the SDK manually which allows access to SentryOptions callbacks.
     // Make sure you disable the auto init via manifest meta-data: io.sentry.auto-init=false
     // SentryAndroid.init(

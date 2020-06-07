@@ -113,6 +113,8 @@ dependencies {
     androidTestImplementation(Config.TestLibs.androidxRules)
     androidTestImplementation(Config.TestLibs.androidxCoreKtx)
     androidTestImplementation(Config.TestLibs.androidxJunitKtx)
+    androidTestImplementation(Config.TestLibs.kotlinTestJunit)
+    androidTestImplementation(Config.TestLibs.retrofit)
 
     // debugging purpose
     debugImplementation(Config.Libs.leakCanary)
