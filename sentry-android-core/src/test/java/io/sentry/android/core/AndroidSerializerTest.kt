@@ -122,7 +122,7 @@ class AndroidSerializerTest {
     }
 
     @Test
-    fun `when deserializing mills timestamp with mills precision, it shoule be UTC`() {
+    fun `when deserializing mills timestamp with mills precision, it should be UTC`() {
         // Jun 7, 2020 12:38:12 PM UTC
         val dateIsoFormat = "1591533492.631"
         val actual = DateUtils.getDateTimeWithMillisPrecision(dateIsoFormat)
