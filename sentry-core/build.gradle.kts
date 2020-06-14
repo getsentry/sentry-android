@@ -7,6 +7,7 @@ plugins {
     id(Config.QualityPlugins.errorProne)
     id(Config.Deploy.novodaBintray)
     id(Config.QualityPlugins.gradleVersions)
+    id(Config.QualityPlugins.animalSniffer)
 }
 
 dependencies {
@@ -18,6 +19,8 @@ dependencies {
     errorprone(Config.CompileOnly.errorprone)
     errorproneJavac(Config.CompileOnly.errorProneJavac8)
     compileOnly(Config.CompileOnly.jetbrainsAnnotations)
+
+    signature(Config.Signature.AnimalSnifferAndroidApiLevel)
 
     // tests
     testImplementation(kotlin(Config.kotlinStdLib))

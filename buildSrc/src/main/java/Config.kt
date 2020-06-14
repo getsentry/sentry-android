@@ -52,6 +52,7 @@ object Config {
         val errorpronePlugin = "net.ltgt.gradle:gradle-errorprone-plugin:1.1.1"
         val gradleVersionsPlugin = "com.github.ben-manes:gradle-versions-plugin:0.28.0"
         val gradleVersions = "com.github.ben-manes.versions"
+        val animalSniffer = "ru.vyarus.animalsniffer"
     }
 
     object Sentry {
@@ -82,6 +83,10 @@ object Config {
         val nopenChecker = "com.jakewharton.nopen:nopen-checker:$nopenVersion"
         val errorprone = "com.google.errorprone:error_prone_core:2.3.4"
         val errorProneJavac8 = "com.google.errorprone:javac:9+181-r4173-1"
+    }
+
+    object Signature {
+        val AnimalSnifferAndroidApiLevel = "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
     }
 
     object Deploy {
