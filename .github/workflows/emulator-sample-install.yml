@@ -7,13 +7,9 @@ on:
     branches:
       - '*'
 
-env:
-  CMAKE_VERSION: "3.10.2.4988404"
-  NDK_VERSION: "21.0.6113669"
-
 jobs:
   build:
-    runs-on: macOS-10.15
+    runs-on: macos-latest
 
     steps:
       - name: Git checkout
@@ -25,40 +21,24 @@ jobs:
         with:
           java-version: 1.8
 
-
-      # use sequential key when bumping dependencies till single lock file is out of preview
-      # https://docs.gradle.org/current/userguide/dependency_locking.html#single_lock_file_per_project
-      - name: Cache Gradle Caches
-        uses: actions/cache@v1
+      - name: Generate Gradle checksums
+        run: |
+          find buildSrc -name "*.kt" -type f | sort | xargs shasum  > gradle-checksums.txt
+          cat gradle-checksums.txt
+      - uses: actions/cache@v2
         with:
-          path: ~/.gradle/caches/
-          key: cache-gradle-cache-1
+          path: ~/.gradle
+          key: gradle-${{ hashFiles('gradle-checksums.txt') }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ hashFiles('gradle-checksums.txt') }}-
 
-      - name: Cache Gradle Wrapper
-        uses: actions/cache@v1
+      - name: run tests
+      - uses: reactivecircus/android-emulator-runner@v2
         with:
-          path: ~/.gradle/wrapper/
-          key: cache-gradle-wrapper-1
-
-      - name: set up sdkmanager and emulators
-        uses: malinskiy/action-android/install-sdk@release/0.0.7
-      - run: sdkmanager platform-tools
-      - run: sdkmanager --install "cmake;${CMAKE_VERSION}"
-      - run: sdkmanager --install "ndk;${NDK_VERSION}"
-
-      - uses: malinskiy/action-android/emulator-run-cmd@release/0.0.7
-        with:
-          cmd: make runConnectedTests
-          api: 25
-          tag: default
-          abi: x86
-
-      - name: Save logcat output
-        uses: actions/upload-artifact@master
-        if: failure()
-        with:
-          name: logcat
-          path: artifacts/logcat.log
+          api-level: 29
+          ndk: 21.0.6113669
+          cmake: 3.10.2.4988404
+          script: make runConnectedTests
 
       # We stop gradle at the end to make sure the cache folders
       # don't contain any lock files and are free to be cached.
