@@ -2,11 +2,18 @@ package io.sentry.android.core
 
 import android.app.Application
 import android.content.Context
+import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import io.sentry.core.ILogger
 import io.sentry.core.MainEventProcessor
+import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import java.io.File
 import kotlin.test.BeforeTest
@@ -181,13 +188,46 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `NdkIntegration added to integration list`() {
-        val sentryOptions = SentryAndroidOptions()
-        val mockContext = createMockContext()
+    fun `NdkIntegration availability check won't throw`() {
+        val bundle = Bundle().apply {
+            putString(ManifestMetadataReader.DSN, "https://key@sentry.io/123")
+        }
+        val mockContext = ContextUtilsTest.mockMetaData(metaData = bundle)
+        val logger = mock<ILogger>()
+        val sentryOptions = SentryAndroidOptions().apply {
+            isDebug = true
+        }
+        val buildInfo = mock<IBuildInfoProvider>()
+        whenever(buildInfo.sdkInfoVersion).thenReturn(16)
 
-        AndroidOptionsInitializer.init(sentryOptions, mockContext)
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, buildInfo)
+
+        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to load (UnsatisfiedLinkError) SentryNdk."), any())
+        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to initialize SentryNdk."), any())
+    }
+
+    @Test
+    fun `NdkIntegration won't be added as API is lower than 16`() {
+        val bundle = Bundle().apply {
+            putString(ManifestMetadataReader.DSN, "https://key@sentry.io/123")
+        }
+        val mockContext = ContextUtilsTest.mockMetaData(metaData = bundle)
+        val logger = mock<ILogger>()
+        val sentryOptions = SentryAndroidOptions().apply {
+            isDebug = true
+        }
+        val buildInfo = mock<IBuildInfoProvider>()
+        whenever(buildInfo.sdkInfoVersion).thenReturn(14)
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, buildInfo)
+
         val actual = sentryOptions.integrations.firstOrNull { it is NdkIntegration }
-        assertNotNull(actual)
+        assertNull(actual)
+
+        assertFalse(sentryOptions.isEnableNdk)
+
+        verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
+        verify(logger, never()).log(eq(SentryLevel.FATAL), any<String>(), any())
     }
 
     @Test

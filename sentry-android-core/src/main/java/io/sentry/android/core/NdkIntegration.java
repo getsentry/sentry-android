@@ -1,31 +1,34 @@
 package io.sentry.android.core;
 
-import android.os.Build;
 import io.sentry.core.IHub;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.util.Objects;
 import java.lang.reflect.Method;
+import org.jetbrains.annotations.NotNull;
 
 /** Enables the NDK error reporting for Android */
 public final class NdkIntegration implements Integration {
-  private boolean isNdkAvailable() {
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
-  }
+
+  public static final String SENTRY_NDK_CLASS_NAME = "io.sentry.android.ndk.SentryNdk";
 
   @Override
-  public final void register(IHub hub, SentryOptions options) {
-    boolean enabled = options.isEnableNdk() && isNdkAvailable();
+  public final void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
+    Objects.requireNonNull(hub, "Hub is required");
+    Objects.requireNonNull(options, "SentryOptions is required");
+
+    final boolean enabled = options.isEnableNdk();
     options.getLogger().log(SentryLevel.DEBUG, "NdkIntegration enabled: %s", enabled);
 
     // Note: `hub` isn't used here because the NDK integration writes files to disk which are picked
     // up by another integration (EnvelopeFileObserverIntegration).
     if (enabled) {
       try {
-        Class<?> cls = Class.forName("io.sentry.android.ndk.SentryNdk");
+        final Class<?> cls = Class.forName(SENTRY_NDK_CLASS_NAME);
 
-        Method method = cls.getMethod("init", SentryOptions.class);
-        Object[] args = new Object[1];
+        final Method method = cls.getMethod("init", SentryOptions.class);
+        final Object[] args = new Object[1];
         args[0] = options;
         method.invoke(null, args);
 

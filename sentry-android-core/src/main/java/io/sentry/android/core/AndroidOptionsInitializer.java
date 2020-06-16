@@ -1,8 +1,11 @@
 package io.sentry.android.core;
 
+import static io.sentry.android.core.NdkIntegration.SENTRY_NDK_CLASS_NAME;
+
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import io.sentry.core.EnvelopeReader;
 import io.sentry.core.IEnvelopeReader;
 import io.sentry.core.ILogger;
@@ -47,6 +50,22 @@ final class AndroidOptionsInitializer {
       final @NotNull SentryAndroidOptions options,
       @NotNull Context context,
       final @NotNull ILogger logger) {
+    init(options, context, logger, new BuildInfoProvider());
+  }
+
+  /**
+   * Init method of the Android Options initializer
+   *
+   * @param options the SentryOptions
+   * @param context the Application context
+   * @param logger the ILogger interface
+   * @param buildInfoProvider the IBuildInfoProvider interface
+   */
+  static void init(
+      final @NotNull SentryAndroidOptions options,
+      @NotNull Context context,
+      final @NotNull ILogger logger,
+      final @NotNull IBuildInfoProvider buildInfoProvider) {
     Objects.requireNonNull(context, "The context is required.");
 
     // it returns null if ContextImpl, so let's check for nullability
@@ -67,12 +86,12 @@ final class AndroidOptionsInitializer {
 
     final IEnvelopeReader envelopeReader = new EnvelopeReader();
 
-    installDefaultIntegrations(context, options, envelopeReader);
+    installDefaultIntegrations(context, options, envelopeReader, buildInfoProvider);
 
     readDefaultOptionValues(options, context);
 
     options.addEventProcessor(
-        new DefaultAndroidEventProcessor(context, options, new BuildInfoProvider()));
+        new DefaultAndroidEventProcessor(context, options, buildInfoProvider));
 
     options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
 
@@ -82,11 +101,14 @@ final class AndroidOptionsInitializer {
   private static void installDefaultIntegrations(
       final @NotNull Context context,
       final @NotNull SentryOptions options,
-      final @NotNull IEnvelopeReader envelopeReader) {
+      final @NotNull IEnvelopeReader envelopeReader,
+      final @NotNull IBuildInfoProvider buildInfoProvider) {
 
     // Integrations are registered in the same order. NDK before adding Watch outbox,
     // because sentry-native move files around and we don't want to watch that.
-    options.addIntegration(new NdkIntegration());
+    if (loadNdkIfAvailable(options, buildInfoProvider)) {
+      options.addIntegration(new NdkIntegration());
+    }
     options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver(envelopeReader));
 
     // Send cached envelopes from outbox path
@@ -182,5 +204,33 @@ final class AndroidOptionsInitializer {
     } else {
       options.getLogger().log(SentryLevel.WARNING, "No session dir path is defined in options.");
     }
+  }
+
+  private static boolean isNdkAvailable(final @NotNull IBuildInfoProvider buildInfoProvider) {
+    return buildInfoProvider.getSdkInfoVersion() >= Build.VERSION_CODES.JELLY_BEAN;
+  }
+
+  private static boolean loadNdkIfAvailable(
+      final @NotNull SentryOptions options, final @NotNull IBuildInfoProvider buildInfoProvider) {
+    if (isNdkAvailable(buildInfoProvider)) {
+      try {
+        Class.forName(SENTRY_NDK_CLASS_NAME);
+        return true;
+      } catch (ClassNotFoundException e) {
+        options.setEnableNdk(false);
+        options.getLogger().log(SentryLevel.ERROR, "Failed to load SentryNdk.", e);
+      } catch (UnsatisfiedLinkError e) {
+        options.setEnableNdk(false);
+        options
+            .getLogger()
+            .log(SentryLevel.ERROR, "Failed to load (UnsatisfiedLinkError) SentryNdk.", e);
+      } catch (Throwable e) {
+        options.setEnableNdk(false);
+        options.getLogger().log(SentryLevel.ERROR, "Failed to initialize SentryNdk.", e);
+      }
+    } else {
+      options.setEnableNdk(false);
+    }
+    return false;
   }
 }
