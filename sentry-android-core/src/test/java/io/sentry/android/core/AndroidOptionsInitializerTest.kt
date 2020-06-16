@@ -200,6 +200,7 @@ class AndroidOptionsInitializerTest {
         val buildInfo = mock<IBuildInfoProvider>()
         whenever(buildInfo.sdkInfoVersion).thenReturn(16)
 
+        // hard to test, lets just check that its not throwing anything
         AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, buildInfo)
 
         verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to load (UnsatisfiedLinkError) SentryNdk."), any())

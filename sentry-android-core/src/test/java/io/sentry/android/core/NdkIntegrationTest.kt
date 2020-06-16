@@ -30,7 +30,6 @@ class NdkIntegrationTest {
 
     @Test
     fun `NdkIntegration won't init if ndk integration is disabled`() {
-        // hard to test, lets just check that its not throwing anything
         val integration = NdkIntegration()
         val logger = mock<ILogger>()
         val options = SentryOptions().apply {
