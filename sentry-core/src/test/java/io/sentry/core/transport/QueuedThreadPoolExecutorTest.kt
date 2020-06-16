@@ -51,7 +51,8 @@ class QueuedThreadPoolExecutorTest {
         Thread.sleep(1000)
 
         assertEquals(1, actualTimes.get(), "Successful task should only be run once.")
-        sut.shutdown()
+        val runnables = sut.shutdownNow()
+        assertTrue(runnables.isEmpty())
     }
 
     @Test
@@ -70,7 +71,8 @@ class QueuedThreadPoolExecutorTest {
         Thread.sleep(1000)
 
         assertEquals(1, actualTimes.get(), "Shouldn't see any more attempts, but saw some")
-        sut.shutdown()
+        val runnables = sut.shutdownNow()
+        assertTrue(runnables.isEmpty())
     }
 
     @Test
@@ -132,6 +134,7 @@ class QueuedThreadPoolExecutorTest {
 
         synchronized(jobBlocker) { jobBlocker.notifyAll() }
         jobBlocker2.countDown()
-        sut.shutdown()
+        val runnables = sut.shutdownNow()
+        assertTrue(runnables.isEmpty())
     }
 }
