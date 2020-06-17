@@ -10,37 +10,103 @@ import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import kotlin.test.Test
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class NdkIntegrationTest {
 
-    @Test
-    fun `NdkIntegration won't throw exception`() {
-        // hard to test, lets just check that its not throwing anything
-        val integration = NdkIntegration()
-        val logger = mock<ILogger>()
-        val options = SentryOptions().apply {
-            setLogger(logger)
-            isDebug = true
+    private class Fixture {
+        fun getSut(clazz: Class<*>? = SentryNdk::class.java): NdkIntegration {
+            return NdkIntegration(clazz)
         }
-        // it'll throw ClassNotFoundException because this class is not available on the test runtime.
+    }
+
+    private val fixture = Fixture()
+
+    @Test
+    fun `NdkIntegration calls init method`() {
+        val integration = fixture.getSut()
+
+        val logger = mock<ILogger>()
+        val options = getOptions(logger = logger)
+
         integration.register(mock(), options)
-        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to load (UnsatisfiedLinkError) SentryNdk."), any())
-        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to initialize SentryNdk."), any())
+
+        verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
+        assertTrue(options.isEnableNdk)
     }
 
     @Test
     fun `NdkIntegration won't init if ndk integration is disabled`() {
-        val integration = NdkIntegration()
+        val integration = fixture.getSut()
+
         val logger = mock<ILogger>()
-        val options = SentryOptions().apply {
+        val options = getOptions(enableNdk = false, logger = logger)
+
+        integration.register(mock(), options)
+
+        verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
+
+        assertFalse(options.isEnableNdk)
+    }
+
+    @Test
+    fun `NdkIntegration won't init if SentryNdk class is not available`() {
+        val integration = fixture.getSut(null)
+
+        val logger = mock<ILogger>()
+        val options = getOptions(logger = logger)
+
+        integration.register(mock(), options)
+
+        verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
+
+        assertFalse(options.isEnableNdk)
+    }
+
+    @Test
+    fun `NdkIntegration won't init if init method is not available`() {
+        val integration = fixture.getSut(SentryNdkNoInit::class.java)
+
+        val logger = mock<ILogger>()
+        val options = getOptions(logger = logger)
+
+        integration.register(mock(), options)
+
+        verify(logger).log(eq(SentryLevel.ERROR), any<String>(), any())
+
+        assertFalse(options.isEnableNdk)
+    }
+
+    @Test
+    fun `NdkIntegration won't init if init throws`() {
+        val integration = fixture.getSut(SentryNdkThrows::class.java)
+
+        val logger = mock<ILogger>()
+        val options = getOptions(logger = logger)
+
+        integration.register(mock(), options)
+
+        verify(logger).log(eq(SentryLevel.ERROR), any<String>(), any())
+
+        assertFalse(options.isEnableNdk)
+    }
+
+    private fun getOptions(enableNdk: Boolean = true, logger: ILogger = mock()): SentryOptions {
+        return SentryOptions().apply {
             setLogger(logger)
             isDebug = true
-            isEnableNdk = false
+            isEnableNdk = enableNdk
         }
-        // it'll throw ClassNotFoundException because this class is not available on the test runtime.
-        integration.register(mock(), options)
-        verify(logger, never()).log(any(), any<String>(), any())
-        verify(logger, never()).log(any(), any())
-        assertFalse(options.isEnableNdk)
+    }
+
+    private class SentryNdkNoInit
+
+    private class SentryNdkThrows {
+        companion object {
+            @JvmStatic
+            fun init(options: SentryOptions) {
+                throw RuntimeException("damn")
+            }
+        }
     }
 }

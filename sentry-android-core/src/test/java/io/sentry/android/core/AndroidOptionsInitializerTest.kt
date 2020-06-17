@@ -16,6 +16,7 @@ import io.sentry.core.MainEventProcessor
 import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import java.io.File
+import java.lang.RuntimeException
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -188,47 +189,85 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `NdkIntegration availability check won't throw`() {
-        val bundle = Bundle().apply {
-            putString(ManifestMetadataReader.DSN, "https://key@sentry.io/123")
-        }
-        val mockContext = ContextUtilsTest.mockMetaData(metaData = bundle)
+    fun `NdkIntegration will load SentryNdk class and add to the integration list`() {
+        val mockContext = ContextUtilsTest.mockMetaData(metaData = createBundleWithDsn())
         val logger = mock<ILogger>()
         val sentryOptions = SentryAndroidOptions().apply {
             isDebug = true
         }
-        val buildInfo = mock<IBuildInfoProvider>()
-        whenever(buildInfo.sdkInfoVersion).thenReturn(16)
 
-        // hard to test, lets just check that its not throwing anything
-        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, buildInfo)
-
-        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to load (UnsatisfiedLinkError) SentryNdk."), any())
-        verify(logger, never()).log(eq(SentryLevel.ERROR), eq("Failed to initialize SentryNdk."), any())
-    }
-
-    @Test
-    fun `NdkIntegration won't be added as API is lower than 16`() {
-        val bundle = Bundle().apply {
-            putString(ManifestMetadataReader.DSN, "https://key@sentry.io/123")
-        }
-        val mockContext = ContextUtilsTest.mockMetaData(metaData = bundle)
-        val logger = mock<ILogger>()
-        val sentryOptions = SentryAndroidOptions().apply {
-            isDebug = true
-        }
-        val buildInfo = mock<IBuildInfoProvider>()
-        whenever(buildInfo.sdkInfoVersion).thenReturn(14)
-
-        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, buildInfo)
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, createBuildInfo(), createClassMock())
 
         val actual = sentryOptions.integrations.firstOrNull { it is NdkIntegration }
-        assertNull(actual)
-
-        assertFalse(sentryOptions.isEnableNdk)
+        assertNotNull((actual as NdkIntegration).sentryNdkClass)
 
         verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
         verify(logger, never()).log(eq(SentryLevel.FATAL), any<String>(), any())
+    }
+
+    @Test
+    fun `NdkIntegration won't be enabled because API is lower than 16`() {
+        val mockContext = ContextUtilsTest.mockMetaData(metaData = createBundleWithDsn())
+        val logger = mock<ILogger>()
+        val sentryOptions = SentryAndroidOptions().apply {
+            isDebug = true
+        }
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, createBuildInfo(14), createClassMock())
+
+        val actual = sentryOptions.integrations.firstOrNull { it is NdkIntegration }
+        assertNull((actual as NdkIntegration).sentryNdkClass)
+
+        verify(logger, never()).log(eq(SentryLevel.ERROR), any<String>(), any())
+        verify(logger, never()).log(eq(SentryLevel.FATAL), any<String>(), any())
+    }
+
+    @Test
+    fun `NdkIntegration won't be enabled, it throws linkage error`() {
+        val mockContext = ContextUtilsTest.mockMetaData(metaData = createBundleWithDsn())
+        val logger = mock<ILogger>()
+        val sentryOptions = SentryAndroidOptions().apply {
+            isDebug = true
+        }
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, createBuildInfo(), createClassMockThrows(UnsatisfiedLinkError()))
+
+        val actual = sentryOptions.integrations.firstOrNull { it is NdkIntegration }
+        assertNull((actual as NdkIntegration).sentryNdkClass)
+
+        verify(logger).log(eq(SentryLevel.ERROR), any<String>(), any())
+    }
+
+    @Test
+    fun `NdkIntegration won't be enabled, it throws class not found`() {
+        val mockContext = ContextUtilsTest.mockMetaData(metaData = createBundleWithDsn())
+        val logger = mock<ILogger>()
+        val sentryOptions = SentryAndroidOptions().apply {
+            isDebug = true
+        }
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, createBuildInfo(), createClassMockThrows(ClassNotFoundException()))
+
+        val actual = sentryOptions.integrations.firstOrNull { it is NdkIntegration }
+        assertNull((actual as NdkIntegration).sentryNdkClass)
+
+        verify(logger).log(eq(SentryLevel.ERROR), any<String>(), any())
+    }
+
+    @Test
+    fun `NdkIntegration won't be enabled, it throws unknown error`() {
+        val mockContext = ContextUtilsTest.mockMetaData(metaData = createBundleWithDsn())
+        val logger = mock<ILogger>()
+        val sentryOptions = SentryAndroidOptions().apply {
+            isDebug = true
+        }
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext, logger, createBuildInfo(), createClassMockThrows(RuntimeException()))
+
+        val actual = sentryOptions.integrations.firstOrNull { it is NdkIntegration }
+        assertNull((actual as NdkIntegration).sentryNdkClass)
+
+        verify(logger).log(eq(SentryLevel.ERROR), any<String>(), any())
     }
 
     @Test
@@ -287,5 +326,29 @@ class AndroidOptionsInitializerTest {
         val mockContext = ContextUtilsTest.createMockContext()
         whenever(mockContext.cacheDir).thenReturn(file)
         return mockContext
+    }
+
+    private fun createBundleWithDsn(): Bundle {
+        return Bundle().apply {
+            putString(ManifestMetadataReader.DSN, "https://key@sentry.io/123")
+        }
+    }
+
+    private fun createBuildInfo(minApi: Int = 16): IBuildInfoProvider {
+        val buildInfo = mock<IBuildInfoProvider>()
+        whenever(buildInfo.sdkInfoVersion).thenReturn(minApi)
+        return buildInfo
+    }
+
+    private fun createClassMock(clazz: Class<*> = SentryNdk::class.java): ILoadClass {
+        val loadClassMock = mock<ILoadClass>()
+        whenever(loadClassMock.loadClass(any())).thenReturn(clazz)
+        return loadClassMock
+    }
+
+    private fun createClassMockThrows(ex: Throwable): ILoadClass {
+        val loadClassMock = mock<ILoadClass>()
+        whenever(loadClassMock.loadClass(any())).thenThrow(ex)
+        return loadClassMock
     }
 }
