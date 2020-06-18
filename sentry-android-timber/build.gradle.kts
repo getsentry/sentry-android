@@ -73,7 +73,6 @@ android {
 
 dependencies {
     api(project(":sentry-core"))
-//    api(project(":sentry-android-core"))
 
     api(Config.Libs.timber)
 
@@ -109,7 +108,4 @@ configure<PublishExtension> {
     scmConnection = Config.Sentry.scmConnection
     scmDevConnection = Config.Sentry.scmDevConnection
     scmUrl  = Config.Sentry.scmUrl
-}
-repositories {
-    mavenCentral()
 }

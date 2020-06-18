@@ -18,6 +18,7 @@ public class MyApplication extends Application {
     SentryAndroid.init(
         this,
         options -> {
+          // only add if its not a debug build
           //       if (!BuildConfig.DEBUG) {
           options.addIntegration(new SentryTimberIntegration());
           //       }
