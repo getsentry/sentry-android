@@ -32,6 +32,14 @@ android {
             setAbiFilters(Config.Android.abiFilters)
             ndkVersion = Config.Android.ndkVersion
         }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
+        testInstrumentationRunnerArguments = mapOf("clearPackageData" to "true")
+
+        testOptions {
+            execution = "ANDROIDX_TEST_ORCHESTRATOR"
+        }
     }
 
     buildFeatures {
@@ -87,6 +95,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
 }
 
 dependencies {
@@ -101,8 +113,20 @@ dependencies {
 //    }
 
     implementation(Config.Libs.appCompat)
+    compileOnly(Config.CompileOnly.jetbrainsAnnotations)
+
+    androidTestImplementation(Config.TestLibs.espressoCore)
+    androidTestImplementation(Config.TestLibs.androidxRunner)
+    androidTestImplementation(Config.TestLibs.androidxJunit)
+    androidTestImplementation(Config.TestLibs.androidxRules)
+    androidTestImplementation(Config.TestLibs.androidxCoreKtx)
+    androidTestImplementation(Config.TestLibs.androidxJunitKtx)
+    androidTestImplementation(Config.TestLibs.kotlinTestJunit)
+    androidTestImplementation(Config.TestLibs.orchestrator)
+    androidTestImplementation(Config.TestLibs.retrofit)
 
     // debugging purpose
-    implementation(Config.Libs.timber)
-    debugImplementation(Config.Libs.leakCanary)
+    debugImplementation(Config.Libs.leakCanary) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
 }

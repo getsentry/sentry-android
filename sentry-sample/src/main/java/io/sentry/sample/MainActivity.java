@@ -3,12 +3,16 @@ package io.sentry.sample;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import io.sentry.core.Sentry;
+import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
 import io.sentry.sample.databinding.ActivityMainBinding;
-import java.util.Collections;
-import timber.log.Timber;
+import java.util.ArrayList;
+import java.util.List;
+import org.jetbrains.annotations.TestOnly;
 
 public class MainActivity extends AppCompatActivity {
+
+  private final List<SentryId> ids = new ArrayList<>();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -16,51 +20,66 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
 
-    Timber.i("Sentry.isEnabled() = %s", Sentry.isEnabled());
-
     binding.crashFromJava.setOnClickListener(
         view -> {
           throw new RuntimeException("Uncaught Exception from Java.");
         });
 
-    binding.sendMessage.setOnClickListener(view -> Sentry.captureMessage("Some message."));
+    binding.sendMessage.setOnClickListener(
+        view -> {
+          SentryId sentryId = Sentry.captureMessage("Some message.");
+          ids.add(sentryId);
+        });
 
     binding.captureException.setOnClickListener(
-        view ->
-            Sentry.captureException(
-                new Exception(new Exception(new Exception("Some exception.")))));
+        view -> {
+          SentryId sentryId =
+              Sentry.captureException(
+                  new Exception(new Exception(new Exception("Some exception."))));
+          ids.add(sentryId);
+        });
 
     binding.breadcrumb.setOnClickListener(
         view -> {
           Sentry.addBreadcrumb("Breadcrumb");
           Sentry.setExtra("extra", "extra");
-          Sentry.setFingerprint(Collections.singletonList("fingerprint"));
-          Sentry.setTransaction("transaction");
           User user = new User();
           user.setUsername("username");
           Sentry.setUser(user);
           Sentry.setTag("tag", "tag");
-          Sentry.captureException(new Exception("Some exception with scope."));
+          SentryId sentryId =
+              Sentry.captureException(new Exception("Some exception with scope and breadcrumbs."));
+          ids.add(sentryId);
         });
 
     binding.nativeCrash.setOnClickListener(view -> NativeSample.crash());
 
-    binding.nativeCapture.setOnClickListener(view -> NativeSample.message());
+    binding.nativeCapture.setOnClickListener(
+        view -> {
+          String id = NativeSample.message();
+          SentryId sentryId = new SentryId(id);
+          ids.add(sentryId);
+        });
 
     binding.anr.setOnClickListener(
         view -> {
-          // Try cause ANR by blocking for 2.5 seconds.
-          // By default the SDK sends an event if blocked by at least 4 seconds.
-          // The time was configurable (see manifest) to 1 second for demo purposes.
+          // Try cause ANR by blocking for 10 seconds.
+          // By default the SDK sends an event if blocked by at least 5 seconds.
+          // you must keep clicking on the UI, so OS will detect that the UI is not responding.
           // NOTE: By default it doesn't raise if the debugger is attached. That can also be
           // configured.
           try {
-            Thread.sleep(2500);
+            Thread.sleep(10000);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
         });
 
     setContentView(binding.getRoot());
+  }
+
+  @TestOnly
+  public List<SentryId> getIds() {
+    return ids;
   }
 }

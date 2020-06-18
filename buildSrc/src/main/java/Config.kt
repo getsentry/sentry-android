@@ -22,7 +22,6 @@ object Config {
 
     object Libs {
         val appCompat = "androidx.appcompat:appcompat:1.1.0"
-        val timber = "com.jakewharton.timber:timber:4.7.1"
         // only bump gson if https://github.com/google/gson/issues/1597 is fixed
         val gson = "com.google.code.gson:gson:2.8.5"
         val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.3"
@@ -33,15 +32,21 @@ object Config {
     }
 
     object TestLibs {
-        private val androidxTestVersion = "1.2.0"
+        private val androidxTestVersion = "1.3.0-rc01"
 
         val kotlinTestJunit = "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
         val androidxCore = "androidx.test:core:$androidxTestVersion"
         val androidxRunner = "androidx.test:runner:$androidxTestVersion"
-        val androidxJunit = "androidx.test.ext:junit:1.1.1"
+        val androidxJunit = "androidx.test.ext:junit:1.1.2-rc01"
+        val androidxRules = "androidx.test:rules:$androidxTestVersion"
+        val androidxCoreKtx = "androidx.test:core-ktx:$androidxTestVersion"
+        val orchestrator = "androidx.test:orchestrator:$androidxTestVersion"
+        val androidxJunitKtx = "androidx.test.ext:junit-ktx:1.1.2-rc01"
+        val espressoCore = "androidx.test.espresso:espresso-core:3.3.0-rc01"
         val robolectric = "org.robolectric:robolectric:4.3.1"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
         val awaitility = "org.awaitility:awaitility-kotlin:4.0.3"
+        val retrofit = "com.squareup.retrofit2:retrofit:2.9.0"
     }
 
     object QualityPlugins {
