@@ -2,9 +2,8 @@ package io.sentry.sample;
 
 import android.app.Application;
 import android.os.StrictMode;
-import timber.log.Timber;
-
-// import io.sentry.android.core.SentryAndroid;
+import io.sentry.android.core.SentryAndroid;
+import io.sentry.android.timber.SentryTimberIntegration;
 
 /** Apps. main Application. */
 public class MyApplication extends Application {
@@ -14,18 +13,15 @@ public class MyApplication extends Application {
     strictMode();
     super.onCreate();
 
-    Timber.plant(new Timber.DebugTree());
-
     // Example how to initialize the SDK manually which allows access to SentryOptions callbacks.
     // Make sure you disable the auto init via manifest meta-data: io.sentry.auto-init=false
-    // SentryAndroid.init(
-    // this,
-    // options -> {
-    //   options.setBeforeSend(event -> {
-    //     event.setTag("sample-key", "before-send");
-    //   });
-    //   options.setAnrTimeoutIntervalMillis(2000);
-    // });
+    SentryAndroid.init(
+        this,
+        options -> {
+          //       if (!BuildConfig.DEBUG) {
+          options.addIntegration(new SentryTimberIntegration());
+          //       }
+        });
   }
 
   private void strictMode() {

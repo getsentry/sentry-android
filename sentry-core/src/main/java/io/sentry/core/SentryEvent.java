@@ -65,6 +65,7 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     return (Date) timestamp.clone();
   }
 
+  @Nullable
   Throwable getThrowable() {
     return throwable;
   }

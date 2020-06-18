@@ -16,19 +16,17 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
 
-    Timber.i("Sentry.isEnabled() = %s", Sentry.isEnabled());
+    Timber.d("Sentry.isEnabled() = %s", Sentry.isEnabled());
 
     binding.crashFromJava.setOnClickListener(
         view -> {
           throw new RuntimeException("Uncaught Exception from Java.");
         });
 
-    binding.sendMessage.setOnClickListener(view -> Sentry.captureMessage("Some message."));
+    binding.sendMessage.setOnClickListener(view -> Timber.i("Some message."));
 
     binding.captureException.setOnClickListener(
-        view ->
-            Sentry.captureException(
-                new Exception(new Exception(new Exception("Some exception.")))));
+        view -> Timber.e(new Exception(new Exception(new Exception("Some exception.")))));
 
     binding.breadcrumb.setOnClickListener(
         view -> {
@@ -39,8 +37,7 @@ public class MainActivity extends AppCompatActivity {
           User user = new User();
           user.setUsername("username");
           Sentry.setUser(user);
-          Sentry.setTag("tag", "tag");
-          Sentry.captureException(new Exception("Some exception with scope."));
+          Timber.e(new Exception("Some exception with scope."));
         });
 
     binding.nativeCrash.setOnClickListener(view -> NativeSample.crash());

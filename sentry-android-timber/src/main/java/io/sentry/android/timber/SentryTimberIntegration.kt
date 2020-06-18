@@ -1,0 +1,36 @@
+package io.sentry.android.timber
+
+import io.sentry.core.IHub
+import io.sentry.core.ILogger
+import io.sentry.core.Integration
+import io.sentry.core.SentryLevel
+import io.sentry.core.SentryOptions
+import java.io.Closeable
+import timber.log.Timber
+
+/**
+ * Sentry integration for Timber.
+ */
+class SentryTimberIntegration(private val minLevel: SentryLevel = SentryLevel.ERROR) : Integration, Closeable {
+    private lateinit var tree: SentryTimberTree
+    private lateinit var logger: ILogger
+
+    override fun register(hub: IHub, options: SentryOptions) {
+        logger = options.logger
+
+        tree = SentryTimberTree(hub, minLevel)
+        Timber.plant(tree)
+
+        options.logger.log(SentryLevel.DEBUG, "SentryTimberIntegration installed.")
+    }
+
+    override fun close() {
+        if (this::tree.isInitialized) {
+            Timber.uproot(tree)
+
+            if (this::logger.isInitialized) {
+                logger.log(SentryLevel.DEBUG, "SentryTimberIntegration removed.")
+            }
+        }
+    }
+}

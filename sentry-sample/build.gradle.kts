@@ -93,6 +93,7 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     implementation(project(":sentry-android"))
+    implementation(project(":sentry-android-timber"))
 
 //    how to exclude androidx if release health feature is disabled
 //    implementation(project(":sentry-android")) {
@@ -102,7 +103,5 @@ dependencies {
 
     implementation(Config.Libs.appCompat)
 
-    // debugging purpose
-    implementation(Config.Libs.timber)
     debugImplementation(Config.Libs.leakCanary)
 }
