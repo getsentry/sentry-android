@@ -2,7 +2,6 @@ package io.sentry.android.timber
 
 import com.nhaarman.mockitokotlin2.mock
 import io.sentry.core.IHub
-import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -15,8 +14,8 @@ class SentryTimberIntegrationTest {
         val hub = mock<IHub>()
         val options = SentryOptions()
 
-        fun getSut(minLevel: SentryLevel = SentryLevel.ERROR): SentryTimberIntegration {
-            return SentryTimberIntegration(minLevel)
+        fun getSut(): SentryTimberIntegration {
+            return SentryTimberIntegration()
         }
     }
     private val fixture = Fixture()

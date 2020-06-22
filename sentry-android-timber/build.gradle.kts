@@ -1,13 +1,15 @@
 import com.novoda.gradle.release.PublishExtension
 import org.jetbrains.kotlin.config.KotlinCompilerVersion
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 
 plugins {
     id("com.android.library")
     kotlin("android")
     jacoco
-    id(Config.QualityPlugins.errorProne)
     id(Config.Deploy.novodaBintray)
     id(Config.QualityPlugins.gradleVersions)
+    id(Config.QualityPlugins.detektPlugin)
 }
 
 android {
@@ -34,8 +36,6 @@ android {
     buildFeatures {
         // Determines whether to generate a BuildConfig class.
         buildConfig = false
-        // Determines whether to support injecting custom variables into the module's R class.
-        resValues = false
     }
 
     compileOptions {
@@ -76,9 +76,6 @@ dependencies {
 
     api(Config.Libs.timber)
 
-    errorprone(Config.CompileOnly.errorprone)
-    errorproneJavac(Config.CompileOnly.errorProneJavac8)
-
     implementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
 
     // tests
@@ -108,4 +105,14 @@ configure<PublishExtension> {
     scmConnection = Config.Sentry.scmConnection
     scmDevConnection = Config.Sentry.scmDevConnection
     scmUrl  = Config.Sentry.scmUrl
+}
+
+tasks.withType<Detekt> {
+    // Target version of the generated JVM bytecode. It is used for type resolution.
+    jvmTarget = JavaVersion.VERSION_1_8.toString()
+}
+
+configure<DetektExtension> {
+    failFast = true
+    buildUponDefaultConfig = true
 }
