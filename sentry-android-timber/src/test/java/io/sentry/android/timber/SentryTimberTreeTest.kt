@@ -173,6 +173,7 @@ class SentryTimberTreeTest {
         val sut = fixture.getSut()
         sut.e(Throwable())
         verify(fixture.hub).captureEvent(check {
+            println(it.message.formatted)
             assertEquals("java.lang.Throwable", it.message.formatted)
         })
     }
