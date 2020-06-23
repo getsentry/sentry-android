@@ -6,7 +6,6 @@ import io.sentry.core.Sentry;
 import io.sentry.core.protocol.User;
 import io.sentry.sample.databinding.ActivityMainBinding;
 import java.util.Collections;
-import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,17 +15,17 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
 
-    Timber.d("Sentry.isEnabled() = %s", Sentry.isEnabled());
-
     binding.crashFromJava.setOnClickListener(
         view -> {
           throw new RuntimeException("Uncaught Exception from Java.");
         });
 
-    binding.sendMessage.setOnClickListener(view -> Timber.i("Some message."));
+    binding.sendMessage.setOnClickListener(view -> Sentry.captureMessage("Some message."));
 
     binding.captureException.setOnClickListener(
-        view -> Timber.e(new Exception(new Exception(new Exception("Some exception.")))));
+        view ->
+            Sentry.captureException(
+                new Exception(new Exception(new Exception("Some exception.")))));
 
     binding.breadcrumb.setOnClickListener(
         view -> {
@@ -37,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
           User user = new User();
           user.setUsername("username");
           Sentry.setUser(user);
-          Timber.e(new Exception("Some exception with scope."));
+          Sentry.setTag("tag", "tag");
+          Sentry.captureException(new Exception("Some exception with scope."));
         });
 
     binding.nativeCrash.setOnClickListener(view -> NativeSample.crash());
