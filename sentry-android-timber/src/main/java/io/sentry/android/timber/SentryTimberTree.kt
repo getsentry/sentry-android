@@ -11,8 +11,11 @@ import timber.log.Timber
 /**
  * Sentry Timber tree which is responsible to capture events via Timber
  */
-class SentryTimberTree(private val hub: IHub, private val minEventLevel: SentryLevel,
-                       private val minBreadcrumbLevel: SentryLevel) : Timber.Tree() {
+class SentryTimberTree(
+    private val hub: IHub,
+    private val minEventLevel: SentryLevel,
+    private val minBreadcrumbLevel: SentryLevel
+) : Timber.Tree() {
 
     /**
      * do not log if it's lower than min. required level.

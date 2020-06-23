@@ -20,8 +20,10 @@ class SentryTimberTreeTest {
     private class Fixture {
         val hub = mock<IHub>()
 
-        fun getSut(minEventLevel: SentryLevel = SentryLevel.ERROR,
-                   minBreadcrumbLevel: SentryLevel = SentryLevel.INFO): SentryTimberTree {
+        fun getSut(
+            minEventLevel: SentryLevel = SentryLevel.ERROR,
+            minBreadcrumbLevel: SentryLevel = SentryLevel.INFO
+        ): SentryTimberTree {
             return SentryTimberTree(hub, minEventLevel, minBreadcrumbLevel)
         }
     }
