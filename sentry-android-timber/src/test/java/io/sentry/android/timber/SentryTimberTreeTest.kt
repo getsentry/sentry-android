@@ -169,6 +169,7 @@ class SentryTimberTreeTest {
         })
     }
 
+    @Ignore("Test is flaky on Appveyor for no reason")
     @Test
     fun `Tree captures an event with stacktrace header`() {
         val sut = fixture.getSut()
@@ -178,7 +179,6 @@ class SentryTimberTreeTest {
         })
     }
 
-    @Ignore("Test is flaky on Appveyor for no reason")
     @Test
     fun `Tree captures an event with message and stacktrace, but only message is available`() {
         val sut = fixture.getSut()
