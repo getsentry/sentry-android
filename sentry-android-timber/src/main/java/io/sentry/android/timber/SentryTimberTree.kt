@@ -40,13 +40,12 @@ class SentryTimberTree(
         val level = getSentryLevel(priority)
 
         captureEvent(level, tag, message, throwable)
-        addBreadcrumbIfEventHasThrowable(level, throwable)
+        addBreadcrumbIfEventHasThrowable(level, throwable, message)
     }
 
     /**
      * Captures an event with the given attributes
      */
-    @SuppressWarnings("SpreadOperator")
     private fun captureEvent(level: SentryLevel, tag: String?, message: String, throwable: Throwable?) {
         val sentryEvent = SentryEvent()
         sentryEvent.level = level
@@ -55,17 +54,9 @@ class SentryTimberTree(
         throwable?.let {
             sentryEvent.setThrowable(it)
         }
-
-        // timber concatenates the stacktrace to the exception if the exception is not null
-        // let's take only the 1st line as this is probably the only message written by the user.
-        // or the 1st line of the exception which is probably the same as event.title
-        // eg java.lang.Exception: java.lang.Exception: java.lang.Exception: Some exception.
-        // timber should offer a way of disabling it
-        val realMessage = message.splitToSequence(delimiters = *arrayOf("\n"))
-        val sentryMessage = Message()
-
-        sentryMessage.formatted = realMessage.first()
-        sentryEvent.message = sentryMessage
+        sentryEvent.message = Message().apply {
+            formatted = message
+        }
 
         tag?.let {
             sentryEvent.setTag("TimberTag", it)
@@ -80,14 +71,14 @@ class SentryTimberTree(
     /**
      * Adds a breadcrumb if the event has an exception.
      */
-    private fun addBreadcrumbIfEventHasThrowable(level: SentryLevel, throwable: Throwable?) {
+    private fun addBreadcrumbIfEventHasThrowable(level: SentryLevel, throwable: Throwable?, message: String) {
         // checks the breadcrumb level
         if (throwable != null && isLoggable(level, minBreadcrumbLevel)) {
             val breadCrumb = Breadcrumb()
             breadCrumb.level = level
             breadCrumb.category = "exception"
             breadCrumb.type = "error"
-            breadCrumb.message = throwable.message
+            breadCrumb.message = message
 
             hub.addBreadcrumb(breadCrumb)
         }
