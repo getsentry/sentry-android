@@ -60,9 +60,7 @@ class SentryTimberTree(
         tag?.let {
             sentryEvent.setTag("TimberTag", it)
         }
-        // maybe this should add itself to the integration package
-        // we need to define a merging mechanism then
-        sentryEvent.setTag("origin", "SentryTimberIntegration")
+        sentryEvent.logger = "Timber"
 
         hub.captureEvent(sentryEvent)
     }

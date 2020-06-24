@@ -130,11 +130,11 @@ class SentryTimberTreeTest {
     }
 
     @Test
-    fun `Tree captures an event with origin tag`() {
+    fun `Tree captures an event and sets Timber as a logger`() {
         val sut = fixture.getSut()
         sut.e("message")
         verify(fixture.hub).captureEvent(check {
-            assertEquals("SentryTimberIntegration", it.getTag("origin"))
+            assertEquals("Timber", it.logger)
         })
     }
 
