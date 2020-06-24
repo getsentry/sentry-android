@@ -50,7 +50,6 @@ class SentryTimberTree(
         val sentryEvent = SentryEvent()
         sentryEvent.level = level
 
-        // if there's no throwable, should it be a breadcrumb then?
         throwable?.let {
             sentryEvent.setThrowable(it)
         }
