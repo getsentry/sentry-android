@@ -32,48 +32,69 @@ public final class ContextsDeserializerAdapter implements JsonDeserializer<Conte
       throws JsonParseException {
     try {
       if (json != null && !json.isJsonNull()) {
-        Contexts contexts = new Contexts();
-
-        JsonObject jsonObject = json.getAsJsonObject();
+        final Contexts contexts = new Contexts();
+        final JsonObject jsonObject = json.getAsJsonObject();
 
         if (jsonObject != null && !jsonObject.isJsonNull()) {
-          JsonObject appOjbect = jsonObject.getAsJsonObject(App.TYPE);
-          if (appOjbect != null && !appOjbect.isJsonNull()) {
-            App app = context.deserialize(appOjbect, App.class);
-            contexts.setApp(app);
-          }
-
-          JsonObject browserObject = jsonObject.getAsJsonObject(Browser.TYPE);
-          if (browserObject != null && !browserObject.isJsonNull()) {
-            Browser browser = context.deserialize(browserObject, Browser.class);
-            contexts.setBrowser(browser);
-          }
-
-          JsonObject deviceObject = jsonObject.getAsJsonObject(Device.TYPE);
-          if (deviceObject != null && !deviceObject.isJsonNull()) {
-            Device device = context.deserialize(deviceObject, Device.class);
-            contexts.setDevice(device);
-          }
-
-          JsonObject osObject = jsonObject.getAsJsonObject(OperatingSystem.TYPE);
-          if (osObject != null && !osObject.isJsonNull()) {
-            OperatingSystem os = context.deserialize(osObject, OperatingSystem.class);
-            contexts.setOperatingSystem(os);
-          }
-
-          JsonObject runtimeObject = jsonObject.getAsJsonObject(SentryRuntime.TYPE);
-          if (runtimeObject != null && !runtimeObject.isJsonNull()) {
-            SentryRuntime runtime = context.deserialize(runtimeObject, SentryRuntime.class);
-            contexts.setRuntime(runtime);
-          }
-
-          JsonObject gpuObject = jsonObject.getAsJsonObject(Gpu.TYPE);
-          if (gpuObject != null && !gpuObject.isJsonNull()) {
-            Gpu gpu = context.deserialize(runtimeObject, Gpu.class);
-            contexts.setGpu(gpu);
+          for (final String key : jsonObject.keySet()) {
+            switch (key) {
+              case App.TYPE:
+                final JsonObject appOjbect = jsonObject.getAsJsonObject(App.TYPE);
+                if (appOjbect != null && !appOjbect.isJsonNull()) {
+                  final App app = context.deserialize(appOjbect, App.class);
+                  contexts.setApp(app);
+                }
+                break;
+              case Browser.TYPE:
+                final JsonObject browserObject = jsonObject.getAsJsonObject(Browser.TYPE);
+                if (browserObject != null && !browserObject.isJsonNull()) {
+                  final Browser browser = context.deserialize(browserObject, Browser.class);
+                  contexts.setBrowser(browser);
+                }
+                break;
+              case Device.TYPE:
+                final JsonObject deviceObject = jsonObject.getAsJsonObject(Device.TYPE);
+                if (deviceObject != null && !deviceObject.isJsonNull()) {
+                  final Device device = context.deserialize(deviceObject, Device.class);
+                  contexts.setDevice(device);
+                }
+                break;
+              case OperatingSystem.TYPE:
+                final JsonObject osObject = jsonObject.getAsJsonObject(OperatingSystem.TYPE);
+                if (osObject != null && !osObject.isJsonNull()) {
+                  final OperatingSystem os = context.deserialize(osObject, OperatingSystem.class);
+                  contexts.setOperatingSystem(os);
+                }
+                break;
+              case SentryRuntime.TYPE:
+                final JsonObject runtimeObject = jsonObject.getAsJsonObject(SentryRuntime.TYPE);
+                if (runtimeObject != null && !runtimeObject.isJsonNull()) {
+                  final SentryRuntime runtime =
+                      context.deserialize(runtimeObject, SentryRuntime.class);
+                  contexts.setRuntime(runtime);
+                }
+                break;
+              case Gpu.TYPE:
+                final JsonObject gpuObject = jsonObject.getAsJsonObject(Gpu.TYPE);
+                if (gpuObject != null && !gpuObject.isJsonNull()) {
+                  final Gpu gpu = context.deserialize(gpuObject, Gpu.class);
+                  contexts.setGpu(gpu);
+                }
+                break;
+              default:
+                final JsonElement element = jsonObject.get(key);
+                if (element != null && !element.isJsonNull()) {
+                  try {
+                    final Object object = context.deserialize(element, Object.class);
+                    contexts.put(key, object);
+                  } catch (JsonParseException e) {
+                    logger.log(SentryLevel.ERROR, e, "Error when deserializing the %s key.", key);
+                  }
+                }
+                break;
+            }
           }
         }
-
         return contexts;
       }
     } catch (Exception e) {
