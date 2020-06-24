@@ -17,6 +17,7 @@ import io.sentry.core.protocol.SentryRuntime;
 import java.lang.reflect.Type;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public final class ContextsDeserializerAdapter implements JsonDeserializer<Contexts> {
@@ -39,45 +40,38 @@ public final class ContextsDeserializerAdapter implements JsonDeserializer<Conte
           for (final String key : jsonObject.keySet()) {
             switch (key) {
               case App.TYPE:
-                final JsonObject appOjbect = jsonObject.getAsJsonObject(App.TYPE);
-                if (appOjbect != null && !appOjbect.isJsonNull()) {
-                  final App app = context.deserialize(appOjbect, App.class);
+                App app = parseObject(context, jsonObject, key, App.class);
+                if (app != null) {
                   contexts.setApp(app);
                 }
                 break;
               case Browser.TYPE:
-                final JsonObject browserObject = jsonObject.getAsJsonObject(Browser.TYPE);
-                if (browserObject != null && !browserObject.isJsonNull()) {
-                  final Browser browser = context.deserialize(browserObject, Browser.class);
+                Browser browser = parseObject(context, jsonObject, key, Browser.class);
+                if (browser != null) {
                   contexts.setBrowser(browser);
                 }
                 break;
               case Device.TYPE:
-                final JsonObject deviceObject = jsonObject.getAsJsonObject(Device.TYPE);
-                if (deviceObject != null && !deviceObject.isJsonNull()) {
-                  final Device device = context.deserialize(deviceObject, Device.class);
+                Device device = parseObject(context, jsonObject, key, Device.class);
+                if (device != null) {
                   contexts.setDevice(device);
                 }
                 break;
               case OperatingSystem.TYPE:
-                final JsonObject osObject = jsonObject.getAsJsonObject(OperatingSystem.TYPE);
-                if (osObject != null && !osObject.isJsonNull()) {
-                  final OperatingSystem os = context.deserialize(osObject, OperatingSystem.class);
+                OperatingSystem os = parseObject(context, jsonObject, key, OperatingSystem.class);
+                if (os != null) {
                   contexts.setOperatingSystem(os);
                 }
                 break;
               case SentryRuntime.TYPE:
-                final JsonObject runtimeObject = jsonObject.getAsJsonObject(SentryRuntime.TYPE);
-                if (runtimeObject != null && !runtimeObject.isJsonNull()) {
-                  final SentryRuntime runtime =
-                      context.deserialize(runtimeObject, SentryRuntime.class);
+                SentryRuntime runtime = parseObject(context, jsonObject, key, SentryRuntime.class);
+                if (runtime != null) {
                   contexts.setRuntime(runtime);
                 }
                 break;
               case Gpu.TYPE:
-                final JsonObject gpuObject = jsonObject.getAsJsonObject(Gpu.TYPE);
-                if (gpuObject != null && !gpuObject.isJsonNull()) {
-                  final Gpu gpu = context.deserialize(gpuObject, Gpu.class);
+                Gpu gpu = parseObject(context, jsonObject, key, Gpu.class);
+                if (gpu != null) {
                   contexts.setGpu(gpu);
                 }
                 break;
@@ -99,6 +93,19 @@ public final class ContextsDeserializerAdapter implements JsonDeserializer<Conte
       }
     } catch (Exception e) {
       logger.log(SentryLevel.ERROR, "Error when deserializing Contexts", e);
+    }
+    return null;
+  }
+
+  private @Nullable <T> T parseObject(
+      final @NotNull JsonDeserializationContext context,
+      final @NotNull JsonObject jsonObject,
+      final @NotNull String key,
+      final @NotNull Class<T> clazz)
+      throws JsonParseException {
+    final JsonObject object = jsonObject.getAsJsonObject(key);
+    if (object != null && !object.isJsonNull()) {
+      return context.deserialize(object, clazz);
     }
     return null;
   }
