@@ -191,13 +191,6 @@ class SentryTimberTreeTest {
     }
 
     @Test
-    fun `Tree won't add a breadcrumb if theres no exception`() {
-        val sut = fixture.getSut(minEventLevel = SentryLevel.INFO)
-        sut.i("test")
-        verify(fixture.hub, never()).addBreadcrumb(any<Breadcrumb>())
-    }
-
-    @Test
     fun `Tree adds a breadcrumb with given level`() {
         val sut = fixture.getSut(minEventLevel = SentryLevel.INFO)
         sut.e(Throwable("test"))
@@ -207,20 +200,11 @@ class SentryTimberTreeTest {
     }
 
     @Test
-    fun `Tree adds a breadcrumb with exception category`() {
+    fun `Tree adds a breadcrumb with Timber category`() {
         val sut = fixture.getSut(minEventLevel = SentryLevel.INFO)
         sut.e(Throwable("test"))
         verify(fixture.hub).addBreadcrumb(check<Breadcrumb> {
-            assertEquals("exception", it.category)
-        })
-    }
-
-    @Test
-    fun `Tree adds a breadcrumb with error type`() {
-        val sut = fixture.getSut(minEventLevel = SentryLevel.INFO)
-        sut.e(Throwable("test"))
-        verify(fixture.hub).addBreadcrumb(check<Breadcrumb> {
-            assertEquals("error", it.type)
+            assertEquals("Timber", it.category)
         })
     }
 

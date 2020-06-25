@@ -40,42 +40,46 @@ class SentryTimberTree(
         val level = getSentryLevel(priority)
 
         captureEvent(level, tag, message, throwable)
-        addBreadcrumbIfEventHasThrowable(level, throwable, message)
+        addBreadcrumb(level, message)
     }
 
     /**
      * Captures an event with the given attributes
      */
-    private fun captureEvent(level: SentryLevel, tag: String?, message: String, throwable: Throwable?) {
-        val sentryEvent = SentryEvent()
-        sentryEvent.level = level
+    private fun captureEvent(sentryLevel: SentryLevel, tag: String?, msg: String, throwable: Throwable?) {
+        val sentryEvent = SentryEvent().apply {
 
-        throwable?.let {
-            sentryEvent.setThrowable(it)
-        }
-        sentryEvent.message = Message().apply {
-            formatted = message
-        }
+            level = sentryLevel
 
-        tag?.let {
-            sentryEvent.setTag("TimberTag", it)
+            throwable?.let {
+                setThrowable(it)
+            }
+
+            message = Message().apply {
+                formatted = msg
+            }
+
+            tag?.let {
+                setTag("TimberTag", it)
+            }
+
+            logger = "Timber"
         }
-        sentryEvent.logger = "Timber"
 
         hub.captureEvent(sentryEvent)
     }
 
     /**
-     * Adds a breadcrumb if the event has an exception.
+     * Adds a breadcrumb
      */
-    private fun addBreadcrumbIfEventHasThrowable(level: SentryLevel, throwable: Throwable?, message: String) {
+    private fun addBreadcrumb(sentryLevel: SentryLevel, msg: String) {
         // checks the breadcrumb level
-        if (throwable != null && isLoggable(level, minBreadcrumbLevel)) {
-            val breadCrumb = Breadcrumb()
-            breadCrumb.level = level
-            breadCrumb.category = "exception"
-            breadCrumb.type = "error"
-            breadCrumb.message = message
+        if (isLoggable(sentryLevel, minBreadcrumbLevel)) {
+            val breadCrumb = Breadcrumb().apply {
+                level = sentryLevel
+                category = "Timber"
+                message = msg
+            }
 
             hub.addBreadcrumb(breadCrumb)
         }
