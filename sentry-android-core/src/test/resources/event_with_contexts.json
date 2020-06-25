@@ -21,59 +21,6 @@
         "string": "ciao",
         "number": 10
       }
-    ],
-    "device": {
-      "screen_resolution": "2392x1440",
-      "orientation": "portrait",
-      "family": "Android",
-      "battery_level": 100,
-      "screen_dpi": 560,
-      "memory_size": 1567342592,
-      "id": "414902396cbf4c53",
-      "timezone": null,
-      "external_storage_size": 534761472,
-      "external_free_storage": 534738944,
-      "connection_type": "wifi",
-      "battery_temperature": 0,
-      "screen_width_pixels": 1440,
-      "low_memory": false,
-      "simulator": true,
-      "screen_height_pixels": 2392,
-      "free_memory": 1053757440,
-      "online": true,
-      "screen_density": 3.5,
-      "type": "device",
-      "charging": false,
-      "model_id": "PSR1.180720.012",
-      "brand": "Android",
-      "storage_size": 812531712,
-      "boot_time": "2020-06-20T08:22:00.367Z",
-      "arch": "x86_64",
-      "manufacturer": "unknown",
-      "name": "Android SDK built for x86_64",
-      "language": "en_US",
-      "free_storage": 679772160,
-      "model": "Android SDK built for x86_64",
-      "archs": [
-        "x86_64",
-        "x86"
-      ]
-    },
-    "app": {
-      "app_identifier": "io.sentry.sample",
-      "app_name": "Sentry sample",
-      "app_start_time": "2020-06-20T11:45:13.386Z",
-      "app_version": "1.1.0",
-      "type": "app",
-      "app_build": "2"
-    },
-    "os": {
-      "rooted": true,
-      "kernel_version": "4.4.124+",
-      "version": "9",
-      "build": "sdk_phone_x86_64-userdebug 9 PSR1.180720.012 4923214 test-keys",
-      "type": "os",
-      "name": "Android"
-    }
+    ]
   }
 }
