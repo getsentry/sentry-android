@@ -26,6 +26,12 @@ public final class NdkIntegration implements Integration {
     Objects.requireNonNull(hub, "Hub is required");
     Objects.requireNonNull(options, "SentryOptions is required");
 
+    final String cachedDir = options.getCacheDirPath();
+    if (cachedDir == null || cachedDir.isEmpty()) {
+      options.getLogger().log(SentryLevel.WARNING, "No cache dir path is defined in options.");
+      return;
+    }
+
     final boolean enabled = options.isEnableNdk();
     options.getLogger().log(SentryLevel.DEBUG, "NdkIntegration enabled: %s", enabled);
 

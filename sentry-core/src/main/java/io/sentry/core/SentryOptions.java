@@ -1,8 +1,13 @@
 package io.sentry.core;
 
 import com.jakewharton.nopen.annotation.Open;
+import io.sentry.core.cache.IEnvelopeCache;
+import io.sentry.core.cache.IEventCache;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
+import io.sentry.core.transport.NoOpEnvelopeCache;
+import io.sentry.core.transport.NoOpEventCache;
+import io.sentry.core.transport.NoOpTransportGate;
 import java.io.File;
 import java.net.Proxy;
 import java.util.List;
@@ -67,6 +72,8 @@ public class SentryOptions {
 
   /** Serializer interface to serialize/deserialize json events */
   private @NotNull ISerializer serializer = NoOpSerializer.getInstance();
+
+  private @NotNull IEnvelopeReader envelopeReader = NoOpEnvelopeReader.getInstance();
 
   /**
    * Sentry client name used for the HTTP authHeader and userAgent eg
@@ -137,13 +144,13 @@ public class SentryOptions {
   private final @NotNull List<String> inAppIncludes = new CopyOnWriteArrayList<>();
 
   /** The transport is an internal construct of the client that abstracts away the event sending. */
-  private @Nullable ITransport transport;
+  private @Nullable ITransport transport; // TODO: should it be NoOp by default?
 
   /**
    * Implementations of this interface serve as gatekeepers that allow or disallow sending of the
    * events
    */
-  private @Nullable ITransportGate transportGate;
+  private @NotNull ITransportGate transportGate = NoOpTransportGate.getInstance();
 
   /** Sets the distribution. Think about it together with release and environment */
   private @Nullable String dist;
@@ -188,6 +195,10 @@ public class SentryOptions {
 
   /** whether to ignore TLS errors */
   private boolean bypassSecurity = false;
+
+  private @NotNull IEventCache eventDiskCache = NoOpEventCache.getInstance();
+
+  private @NotNull IEnvelopeCache envelopeDiskCache = NoOpEnvelopeCache.getInstance();
 
   /**
    * Adds an event processor
@@ -313,6 +324,15 @@ public class SentryOptions {
    */
   public void setSerializer(@Nullable ISerializer serializer) {
     this.serializer = serializer != null ? serializer : NoOpSerializer.getInstance();
+  }
+
+  public @NotNull IEnvelopeReader getEnvelopeReader() {
+    return envelopeReader;
+  }
+
+  public void setEnvelopeReader(final @Nullable IEnvelopeReader envelopeReader) {
+    this.envelopeReader =
+        envelopeReader != null ? envelopeReader : NoOpEnvelopeReader.getInstance();
   }
 
   /**
@@ -638,7 +658,7 @@ public class SentryOptions {
    *
    * @return the transport gate
    */
-  public @Nullable ITransportGate getTransportGate() {
+  public @NotNull ITransportGate getTransportGate() {
     return transportGate;
   }
 
@@ -648,7 +668,7 @@ public class SentryOptions {
    * @param transportGate the transport gate
    */
   public void setTransportGate(@Nullable ITransportGate transportGate) {
-    this.transportGate = transportGate;
+    this.transportGate = (transportGate != null) ? transportGate : NoOpTransportGate.getInstance();
   }
 
   /**
@@ -888,6 +908,23 @@ public class SentryOptions {
    */
   public void setBypassSecurity(boolean bypassSecurity) {
     this.bypassSecurity = bypassSecurity;
+  }
+
+  public @NotNull IEventCache getEventDiskCache() {
+    return eventDiskCache;
+  }
+
+  public void setEventDiskCache(final @Nullable IEventCache eventDiskCache) {
+    this.eventDiskCache = eventDiskCache != null ? eventDiskCache : NoOpEventCache.getInstance();
+  }
+
+  public @NotNull IEnvelopeCache getEnvelopeDiskCache() {
+    return envelopeDiskCache;
+  }
+
+  public void setEnvelopeDiskCache(final @Nullable IEnvelopeCache envelopeDiskCache) {
+    this.envelopeDiskCache =
+        envelopeDiskCache != null ? envelopeDiskCache : NoOpEnvelopeCache.getInstance();
   }
 
   /** The BeforeSend callback */

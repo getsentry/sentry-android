@@ -32,6 +32,10 @@ public final class SentryAndroidOptions extends SentryOptions {
   /** Enable or disable automatic breadcrumbs for App Components Using ComponentCallbacks */
   private boolean enableAppComponentBreadcrumbs = true;
 
+  public SentryAndroidOptions() {
+    setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
+  }
+
   /**
    * Checks if ANR (Application Not Responding) is enabled or disabled Default is enabled
    *

@@ -19,7 +19,7 @@ final class SendFireAndForgetEventSender
   public SendCachedEventFireAndForgetIntegration.SendFireAndForget create(
       final @NotNull IHub hub, final @NotNull SentryOptions options) {
     final String dirPath = sendFireAndForgetDirPath.getDirPath();
-    if (dirPath == null) {
+    if (dirPath == null || dirPath.isEmpty()) {
       options
           .getLogger()
           .log(

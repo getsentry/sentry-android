@@ -1,8 +1,10 @@
 package io.sentry.core;
 
+import io.sentry.core.util.Objects;
 import java.io.File;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public final class SendFireAndForgetEnvelopeSender
@@ -14,14 +16,18 @@ public final class SendFireAndForgetEnvelopeSender
   public SendFireAndForgetEnvelopeSender(
       final @NotNull SendCachedEventFireAndForgetIntegration.SendFireAndForgetDirPath
               sendFireAndForgetDirPath) {
-    this.sendFireAndForgetDirPath = sendFireAndForgetDirPath;
+    this.sendFireAndForgetDirPath =
+        Objects.requireNonNull(sendFireAndForgetDirPath, "SendFireAndForgetDirPath is required");
   }
 
   @Override
-  public SendCachedEventFireAndForgetIntegration.SendFireAndForget create(
+  public @Nullable SendCachedEventFireAndForgetIntegration.SendFireAndForget create(
       final @NotNull IHub hub, final @NotNull SentryOptions options) {
+    Objects.requireNonNull(hub, "Hub is required");
+    Objects.requireNonNull(options, "SentryOptions is required");
+
     final String dirPath = sendFireAndForgetDirPath.getDirPath();
-    if (dirPath == null) {
+    if (dirPath == null || dirPath.isEmpty()) {
       options
           .getLogger()
           .log(
@@ -33,7 +39,7 @@ public final class SendFireAndForgetEnvelopeSender
     final EnvelopeSender envelopeSender =
         new EnvelopeSender(
             hub,
-            new EnvelopeReader(),
+            options.getEnvelopeReader(),
             options.getSerializer(),
             options.getLogger(),
             options.getFlushTimeoutMillis());
