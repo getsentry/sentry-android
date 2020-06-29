@@ -3,11 +3,6 @@ plugins {
     kotlin("jvm")
 }
 
-//configure<JavaPluginConvention> {
-//    sourceCompatibility = JavaVersion.VERSION_1_8
-//    targetCompatibility = JavaVersion.VERSION_1_8
-//}
-
 application {
     mainClass.set("io.sentry.console.Main")
     mainModule.set("io.sentry.console-sample")

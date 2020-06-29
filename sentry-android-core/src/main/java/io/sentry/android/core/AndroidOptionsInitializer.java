@@ -204,7 +204,6 @@ final class AndroidOptionsInitializer {
    * @param context the Application context
    * @param options the SentryOptions
    */
-  @SuppressWarnings("UnusedMethod") // TODO: remove
   private static void initializeCacheDirs(
       final @NotNull Context context, final @NotNull SentryOptions options) {
     final File cacheDir = new File(context.getCacheDir(), "sentry");
