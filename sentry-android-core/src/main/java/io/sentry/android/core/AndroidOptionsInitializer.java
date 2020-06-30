@@ -6,7 +6,6 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.os.Build;
-import io.sentry.core.EnvelopeReader;
 import io.sentry.core.ILogger;
 import io.sentry.core.SendCachedEventFireAndForgetIntegration;
 import io.sentry.core.SendFireAndForgetEnvelopeSender;
@@ -99,9 +98,6 @@ final class AndroidOptionsInitializer {
 
     ManifestMetadataReader.applyMetadata(context, options);
     initializeCacheDirs(context, options);
-
-    // TODO: should we set that in the core instead?
-    options.setEnvelopeReader(new EnvelopeReader());
 
     installDefaultIntegrations(context, options, buildInfoProvider, loadClass);
 

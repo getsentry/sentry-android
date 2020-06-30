@@ -58,6 +58,19 @@ public class MainActivity extends AppCompatActivity {
           }
         });
 
+    binding.sessions.setOnClickListener(
+        view -> {
+          //                    Sentry.startSession();
+          //                    Sentry.endSession();
+          for (int i = 0; i < 5; i++) {
+            System.out.println("session start: i = " + i);
+            Sentry.startSession();
+            Sentry.captureException(new Throwable());
+            Sentry.endSession();
+            System.out.println("session end: i = " + i);
+          }
+        });
+
     setContentView(binding.getRoot());
   }
 }

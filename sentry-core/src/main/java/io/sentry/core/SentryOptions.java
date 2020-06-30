@@ -102,6 +102,8 @@ public class SentryOptions {
   /** The sessions dir. size for capping the number of envelopes Default is 100 */
   private int sessionsDirSize = 100;
 
+  private int maxQueueSize = 100;
+
   /**
    * This variable controls the total amount of breadcrumbs that should be captured Default is 100
    */
@@ -925,6 +927,14 @@ public class SentryOptions {
   public void setEnvelopeDiskCache(final @Nullable IEnvelopeCache envelopeDiskCache) {
     this.envelopeDiskCache =
         envelopeDiskCache != null ? envelopeDiskCache : NoOpEnvelopeCache.getInstance();
+  }
+
+  public int getMaxQueueSize() {
+    return maxQueueSize;
+  }
+
+  public void setMaxQueueSize(int maxQueueSize) {
+    this.maxQueueSize = maxQueueSize;
   }
 
   /** The BeforeSend callback */

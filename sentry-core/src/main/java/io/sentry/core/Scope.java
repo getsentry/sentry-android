@@ -437,7 +437,23 @@ public final class Scope implements Cloneable {
      * @return the previous sessions if exists or null
      */
     public @Nullable Session getPrevious() {
-      return previous;
+      if (previous == null) {
+        return null;
+      }
+      return new Session(
+          previous.getStatus(),
+          previous.getStarted(),
+          previous.getTimestamp(),
+          previous.errorCount(),
+          previous.getDistinctId(),
+          previous.getSessionId(),
+          previous.getInit(),
+          previous.getSequence(),
+          previous.getDuration(),
+          previous.getIpAddress(),
+          previous.getUserAgent(),
+          previous.getEnvironment(),
+          previous.getRelease());
     }
 
     /**
@@ -446,7 +462,20 @@ public final class Scope implements Cloneable {
      * @return the current session
      */
     public @NotNull Session getCurrent() {
-      return current;
+      return new Session(
+          current.getStatus(),
+          current.getStarted(),
+          current.getTimestamp(),
+          current.errorCount(),
+          current.getDistinctId(),
+          current.getSessionId(),
+          current.getInit(),
+          current.getSequence(),
+          current.getDuration(),
+          current.getIpAddress(),
+          current.getUserAgent(),
+          current.getEnvironment(),
+          current.getRelease());
     }
   }
 

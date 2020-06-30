@@ -284,6 +284,8 @@ public class HttpTransport implements ITransport {
     try (final OutputStream outputStream = connection.getOutputStream();
         final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
+      logger.log(
+          DEBUG, "Sentry: %s", new String(envelope.getItems().iterator().next().getData(), UTF_8));
       serializer.serialize(envelope, writer);
 
       logger.log(DEBUG, "Envelope sent successfully.");

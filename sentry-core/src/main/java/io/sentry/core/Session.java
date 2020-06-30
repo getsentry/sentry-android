@@ -96,7 +96,7 @@ public final class Session {
     this(
         State.Ok,
         DateUtils.getCurrentDateTime(),
-        null,
+        DateUtils.getCurrentDateTime(),
         0,
         distinctId,
         UUID.randomUUID(),
