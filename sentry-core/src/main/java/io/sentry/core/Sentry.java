@@ -180,6 +180,7 @@ public final class Sentry {
     }
 
     // TODO: read values from conf file eg Manifest
+    // eg release and distinctId
 
     if (options.getCacheDirPath() != null && !options.getCacheDirPath().isEmpty()) {
       final File cacheDir = new File(options.getCacheDirPath());
@@ -196,15 +197,6 @@ public final class Sentry {
     } else {
       logger.log(SentryLevel.INFO, "No outbox dir path is defined in options.");
     }
-
-    //    if (options.getRelease() == null || options.getRelease().isEmpty()) {
-    //      options.setRelease("io.sentry.sample@2.2.0+1");
-    //    }
-    //
-    //    if (options.getDistinctId() == null || options.getDistinctId().isEmpty()) {
-    //      options.setDistinctId(
-    //          "ab96942b-1e54-45c0-99d5-c59d5ab5e959");
-    //    }
 
     if (options.getEnvelopeReader() instanceof NoOpEnvelopeReader) {
       options.setEnvelopeReader(new EnvelopeReader());

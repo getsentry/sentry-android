@@ -168,6 +168,7 @@ public class HttpTransport implements ITransport {
         final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
 
+      // TODO: just for debugging, remove it
       StringWriter stringWriter = new StringWriter();
       serializer.serialize(event, stringWriter);
       logger.log(DEBUG, "Sentry event: %s", stringWriter.toString());
@@ -290,6 +291,8 @@ public class HttpTransport implements ITransport {
     try (final OutputStream outputStream = connection.getOutputStream();
         final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
+
+      // TODO: just for debugging, remove it
       logger.log(
           DEBUG,
           "Sentry envelope: %s",

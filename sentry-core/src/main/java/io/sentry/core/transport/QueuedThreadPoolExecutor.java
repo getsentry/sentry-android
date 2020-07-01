@@ -59,6 +59,8 @@ final class QueuedThreadPoolExecutor extends ThreadPoolExecutor {
     if (isSchedulingAllowed()) {
       return super.submit(task);
     } else {
+      // TODO: when runnable gets to RejectedExecutionHandler, we cache it, but we dont do it here
+      // should we? this would happen when maxQueueSize is not high enough
       logger.log(SentryLevel.WARNING, "Submit cancelled");
       return new CancelledFuture<>();
     }
@@ -84,9 +86,7 @@ final class QueuedThreadPoolExecutor extends ThreadPoolExecutor {
   }
 
   private boolean isSchedulingAllowed() {
-    int total = getQueue().size() + currentlyRunning.get();
-    logger.log(SentryLevel.DEBUG, "Current queue size: " + total);
-    return total < maxQueueSize;
+    return getQueue().size() + currentlyRunning.get() < maxQueueSize;
   }
 
   private static final class CancelledFuture<T> implements Future<T> {
