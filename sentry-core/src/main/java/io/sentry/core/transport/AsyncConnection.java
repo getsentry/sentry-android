@@ -271,8 +271,6 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
-        } else {
-          LogUtils.logIfNotSubmissionResult(options.getLogger(), hint);
         }
       }
     }
@@ -353,8 +351,6 @@ public final class AsyncConnection implements Closeable, Connection {
               .getLogger()
               .log(SentryLevel.DEBUG, "Marking envelope submission result: %s", result.isSuccess());
           ((SubmissionResult) hint).setResult(result.isSuccess());
-        } else {
-          LogUtils.logIfNotSubmissionResult(options.getLogger(), hint);
         }
       }
     }

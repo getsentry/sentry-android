@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import io.sentry.core.util.Objects;
+import java.io.File;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +22,28 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
   public interface SendFireAndForgetFactory {
     @Nullable
     SendFireAndForget create(IHub hub, SentryOptions options);
+
+    default boolean hasValidPath(final @Nullable String dirPath, final @NotNull ILogger logger) {
+      if (dirPath == null || dirPath.isEmpty()) {
+        logger.log(SentryLevel.INFO, "No cached dir path is defined in options.");
+        return false;
+      }
+      return true;
+    }
+
+    default @NotNull SendFireAndForget processDir(
+        final @NotNull DirectoryProcessor directoryProcessor,
+        final @NotNull String dirPath,
+        final @NotNull ILogger logger) {
+      final File dirFile = new File(dirPath);
+      return () -> {
+        logger.log(SentryLevel.DEBUG, "Started processing cached files from %s", dirPath);
+
+        directoryProcessor.processDirectory(dirFile);
+
+        logger.log(SentryLevel.DEBUG, "Finished processing cached files from %s", dirPath);
+      };
+    }
   }
 
   public SendCachedEventFireAndForgetIntegration(final @NotNull SendFireAndForgetFactory factory) {
@@ -34,16 +57,16 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
     Objects.requireNonNull(options, "SentryOptions is required");
 
     final String cachedDir = options.getCacheDirPath();
-    if (cachedDir == null || cachedDir.isEmpty()) {
-      options
-          .getLogger()
-          .log(
-              SentryLevel.INFO,
-              "No cache dir path is defined in options to SendCachedEventFireAndForgetIntegration.");
+    if (!factory.hasValidPath(cachedDir, options.getLogger())) {
       return;
     }
 
     final SendFireAndForget sender = factory.create(hub, options);
+
+    if (sender == null) {
+      options.getLogger().log(SentryLevel.INFO, "SendFireAndForget factory is null.");
+      return;
+    }
 
     try {
       options

@@ -1,6 +1,5 @@
 package io.sentry.core;
 
-import java.io.File;
 import org.jetbrains.annotations.NotNull;
 
 final class SendFireAndForgetEventSender
@@ -19,12 +18,7 @@ final class SendFireAndForgetEventSender
   public SendCachedEventFireAndForgetIntegration.SendFireAndForget create(
       final @NotNull IHub hub, final @NotNull SentryOptions options) {
     final String dirPath = sendFireAndForgetDirPath.getDirPath();
-    if (dirPath == null || dirPath.isEmpty()) {
-      options
-          .getLogger()
-          .log(
-              SentryLevel.WARNING,
-              "No cache dir path is defined in options, discarding SendCachedEvent.");
+    if (!hasValidPath(dirPath, options.getLogger())) {
       return null;
     }
 
@@ -32,17 +26,6 @@ final class SendFireAndForgetEventSender
         new SendCachedEvent(
             options.getSerializer(), hub, options.getLogger(), options.getFlushTimeoutMillis());
 
-    final File dirFile = new File(dirPath);
-    return () -> {
-      options
-          .getLogger()
-          .log(SentryLevel.DEBUG, "Started processing cached files from %s", dirPath);
-
-      sender.processDirectory(dirFile);
-
-      options
-          .getLogger()
-          .log(SentryLevel.DEBUG, "Finished processing cached files from %s", dirPath);
-    };
+    return processDir(sender, dirPath, options.getLogger());
   }
 }

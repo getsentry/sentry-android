@@ -102,7 +102,7 @@ public class SentryOptions {
   /** The sessions dir. size for capping the number of envelopes Default is 100 */
   private int sessionsDirSize = 100;
 
-  private int maxQueueSize = 100;
+  private int maxQueueSize = cacheDirSize + sessionsDirSize;
 
   /**
    * This variable controls the total amount of breadcrumbs that should be captured Default is 100

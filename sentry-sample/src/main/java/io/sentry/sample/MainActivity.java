@@ -60,12 +60,43 @@ public class MainActivity extends AppCompatActivity {
 
     binding.sessions.setOnClickListener(
         view -> {
-          //                    Sentry.startSession();
-          //                    Sentry.endSession();
-          for (int i = 0; i < 5; i++) {
+          for (int i = 0; i < 10; i++) {
             System.out.println("session start: i = " + i);
             Sentry.startSession();
-            Sentry.captureException(new Throwable());
+
+            // only crashed sessions
+            //                        SentryEvent event = new SentryEvent(new Throwable());
+            //                        event.setLevel(SentryLevel.FATAL);
+            //                        Sentry.captureEvent(event);
+
+            // 50% healthy 50% errored
+            //                        if (i % 2 == 0) {
+            //                            Sentry.captureException(new Throwable());
+            //                        }
+
+            // 50% healthy and 50% crashed
+            //                        if (i % 2 == 0) {
+            //                            SentryEvent event = new SentryEvent(new Throwable());
+            //                            event.setLevel(SentryLevel.FATAL);
+            //                            Sentry.captureEvent(event);
+            //                        }
+
+            // 50% crashed and 50% errored
+            //                        if (i % 2 == 0) {
+            //                            SentryEvent event = new SentryEvent(new Throwable());
+            //                            event.setLevel(SentryLevel.FATAL);
+            //                            Sentry.captureEvent(event);
+            //                        } else {
+            //                            Sentry.captureException(new Throwable());
+            //                        }
+
+            // for having at least 1s duration
+            //                        try {
+            //                            Thread.sleep(1000);
+            //                        } catch (InterruptedException e) {
+            //                            System.out.println("InterruptedException");
+            //                        }
+
             Sentry.endSession();
             System.out.println("session end: i = " + i);
           }

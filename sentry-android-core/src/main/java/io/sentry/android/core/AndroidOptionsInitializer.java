@@ -119,8 +119,8 @@ final class AndroidOptionsInitializer {
     // because sentry-native move files around and we don't want to watch that.
     final Class<?> sentryNdkClass = loadNdkIfAvailable(options, buildInfoProvider, loadClass);
     options.addIntegration(new NdkIntegration(sentryNdkClass));
-    // TODO: do we need this for Java backend? dont think so, the envelope reader bits can live in
-    // the android core package
+
+    // TODO: do we need this for Java backend? dont think so
     options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
 
     // Send cached envelopes from outbox path

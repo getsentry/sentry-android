@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -166,6 +167,11 @@ public class HttpTransport implements ITransport {
     try (final OutputStream outputStream = connection.getOutputStream();
         final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
+
+      StringWriter stringWriter = new StringWriter();
+      serializer.serialize(event, stringWriter);
+      logger.log(DEBUG, "Sentry event: %s", stringWriter.toString());
+
       serializer.serialize(event, writer);
 
       logger.log(DEBUG, "Event sent %s successfully.", event.getEventId());
@@ -285,7 +291,9 @@ public class HttpTransport implements ITransport {
         final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       logger.log(
-          DEBUG, "Sentry: %s", new String(envelope.getItems().iterator().next().getData(), UTF_8));
+          DEBUG,
+          "Sentry envelope: %s",
+          new String(envelope.getItems().iterator().next().getData(), UTF_8));
       serializer.serialize(envelope, writer);
 
       logger.log(DEBUG, "Envelope sent successfully.");

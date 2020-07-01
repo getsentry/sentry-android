@@ -38,18 +38,14 @@ public final class SessionAdapter extends TypeAdapter<Session> {
       writer.name("did").value(value.getDistinctId());
     }
 
-    final Boolean init = value.getInit();
-    if (value.getInit() != null && init) {
-      //    if (init != null) {
+    if (value.getInit() != null) {
       writer.name("init").value(value.getInit());
     }
 
     writer.name("started").value(DateUtils.getTimestamp(value.getStarted()));
     writer.name("status").value(value.getStatus().name().toLowerCase(Locale.ROOT));
 
-    final Long sequence = value.getSequence();
-    if (sequence != null && sequence > 0) {
-      //    if (sequence != null) {
+    if (value.getSequence() != null) {
       writer.name("seq").value(value.getSequence());
     }
 
