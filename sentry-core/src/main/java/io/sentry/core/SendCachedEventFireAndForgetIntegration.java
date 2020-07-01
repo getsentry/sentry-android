@@ -64,7 +64,7 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
     final SendFireAndForget sender = factory.create(hub, options);
 
     if (sender == null) {
-      options.getLogger().log(SentryLevel.INFO, "SendFireAndForget factory is null.");
+      options.getLogger().log(SentryLevel.WARNING, "SendFireAndForget factory is null.");
       return;
     }
 

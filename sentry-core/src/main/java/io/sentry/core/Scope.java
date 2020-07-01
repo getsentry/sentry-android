@@ -402,6 +402,10 @@ public final class Scope implements Cloneable {
       }
       previousSession = session;
 
+      // TODO: remove it
+      // only for generating data with random user Ids (check crash free users)
+      //      options.setDistinctId(UUID.randomUUID().toString());
+
       session =
           new Session(
               options.getDistinctId(), user, options.getEnvironment(), options.getRelease());

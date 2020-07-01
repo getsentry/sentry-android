@@ -3,6 +3,8 @@ package io.sentry.sample;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import io.sentry.core.Sentry;
+import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryLevel;
 import io.sentry.core.protocol.User;
 import io.sentry.sample.databinding.ActivityMainBinding;
 import java.util.Collections;
@@ -60,14 +62,20 @@ public class MainActivity extends AppCompatActivity {
 
     binding.sessions.setOnClickListener(
         view -> {
-          for (int i = 0; i < 10; i++) {
+          for (int i = 0; i < 100; i++) {
             System.out.println("session start: i = " + i);
+
+            // if all capture event and exceptions are commented, it means 100% healthy
             Sentry.startSession();
 
             // only crashed sessions
-            //                        SentryEvent event = new SentryEvent(new Throwable());
-            //                        event.setLevel(SentryLevel.FATAL);
-            //                        Sentry.captureEvent(event);
+            //                                    SentryEvent event = new SentryEvent(new
+            // Throwable());
+            //                                    event.setLevel(SentryLevel.FATAL);
+            //                                    Sentry.captureEvent(event);
+
+            // 100% errored
+            //                        Sentry.captureException(new Throwable());
 
             // 50% healthy 50% errored
             //                        if (i % 2 == 0) {
@@ -75,11 +83,11 @@ public class MainActivity extends AppCompatActivity {
             //                        }
 
             // 50% healthy and 50% crashed
-            //                        if (i % 2 == 0) {
-            //                            SentryEvent event = new SentryEvent(new Throwable());
-            //                            event.setLevel(SentryLevel.FATAL);
-            //                            Sentry.captureEvent(event);
-            //                        }
+            if (i % 2 == 0) {
+              SentryEvent event = new SentryEvent(new Throwable());
+              event.setLevel(SentryLevel.FATAL);
+              Sentry.captureEvent(event);
+            }
 
             // 50% crashed and 50% errored
             //                        if (i % 2 == 0) {

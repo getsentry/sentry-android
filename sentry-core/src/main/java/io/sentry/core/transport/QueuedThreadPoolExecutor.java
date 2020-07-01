@@ -59,7 +59,7 @@ final class QueuedThreadPoolExecutor extends ThreadPoolExecutor {
     if (isSchedulingAllowed()) {
       return super.submit(task);
     } else {
-      logger.log(SentryLevel.INFO, "Submit cancelled");
+      logger.log(SentryLevel.WARNING, "Submit cancelled");
       return new CancelledFuture<>();
     }
   }
@@ -84,7 +84,9 @@ final class QueuedThreadPoolExecutor extends ThreadPoolExecutor {
   }
 
   private boolean isSchedulingAllowed() {
-    return getQueue().size() + currentlyRunning.get() < maxQueueSize;
+    int total = getQueue().size() + currentlyRunning.get();
+    logger.log(SentryLevel.DEBUG, "Current queue size: " + total);
+    return total < maxQueueSize;
   }
 
   private static final class CancelledFuture<T> implements Future<T> {

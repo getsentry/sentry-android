@@ -28,7 +28,7 @@ public class MyApplication extends Application {
         options -> {
           options.setDebug(true);
           options.setDsn("https://f7f320d5c3a54709be7b28e0f2ca7081@sentry.io/1808954");
-          options.setRelease("io.sentry.100sessions-sample@4.0.15+1");
+          options.setRelease("io.sentry.100sessions-sample@5.0.15+1");
           options.setDistinctId("ab96942b-1e54-45c0-99d5-c59d5ab5e959");
         });
   }

@@ -103,6 +103,9 @@ public class SentryOptions {
   private int sessionsDirSize = 100;
 
   private int maxQueueSize = cacheDirSize + sessionsDirSize;
+  // TODO: revert, this is necessary because start/end session + events will be higher than the
+  // maxQueueSize
+  //  private int maxQueueSize = (cacheDirSize + sessionsDirSize) * 10;
 
   /**
    * This variable controls the total amount of breadcrumbs that should be captured Default is 100

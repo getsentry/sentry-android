@@ -87,7 +87,7 @@ public final class AsyncConnection implements Closeable, Connection {
             }
 
             markHintWhenSendingFailed(eventSender.hint, true);
-            logger.log(SentryLevel.INFO, "Event rejected: %s", eventSender.event.getEventId());
+            logger.log(SentryLevel.WARNING, "Event rejected: %s", eventSender.event.getEventId());
           }
           if (r instanceof SessionSender) {
             final SessionSender sessionSender = (SessionSender) r;
@@ -97,7 +97,7 @@ public final class AsyncConnection implements Closeable, Connection {
             }
 
             markHintWhenSendingFailed(sessionSender.hint, true);
-            logger.log(SentryLevel.INFO, "Envelope rejected");
+            logger.log(SentryLevel.WARNING, "Envelope rejected");
           }
         };
 
