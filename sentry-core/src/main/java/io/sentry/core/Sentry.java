@@ -182,6 +182,15 @@ public final class Sentry {
     // TODO: read values from conf file eg Manifest
     // eg release and distinctId
 
+    if (options.getEnvelopeReader() instanceof NoOpEnvelopeReader) {
+      options.setEnvelopeReader(new EnvelopeReader());
+    }
+
+    if (options.getSerializer() instanceof NoOpSerializer) {
+      options.setSerializer(new GsonSerializer(logger, options.getEnvelopeReader()));
+    }
+
+    // this should be after setting serializers
     if (options.getCacheDirPath() != null && !options.getCacheDirPath().isEmpty()) {
       final File cacheDir = new File(options.getCacheDirPath());
       cacheDir.mkdirs();
@@ -196,14 +205,6 @@ public final class Sentry {
       options.setEnvelopeDiskCache(new SessionCache(options));
     } else {
       logger.log(SentryLevel.INFO, "No outbox dir path is defined in options.");
-    }
-
-    if (options.getEnvelopeReader() instanceof NoOpEnvelopeReader) {
-      options.setEnvelopeReader(new EnvelopeReader());
-    }
-
-    if (options.getSerializer() instanceof NoOpSerializer) {
-      options.setSerializer(new GsonSerializer(logger, options.getEnvelopeReader()));
     }
 
     return true;
