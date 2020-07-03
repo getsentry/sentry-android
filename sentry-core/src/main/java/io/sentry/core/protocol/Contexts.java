@@ -1,8 +1,8 @@
 package io.sentry.core.protocol;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 
-public final class Contexts extends ConcurrentHashMap<String, Object> {
+public final class Contexts extends HashMap<String, Object> {
   private static final long serialVersionUID = 252445813254943011L;
 
   private <T> T toContextType(String key, Class<T> clazz) {
