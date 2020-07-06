@@ -2,6 +2,7 @@ package io.sentry.android.core.adapters;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import io.sentry.core.ILogger;
@@ -29,11 +30,13 @@ public final class ContextsSerializerAdapter implements JsonSerializer<Contexts>
 
     final JsonObject object = new JsonObject();
     for (final Map.Entry<String, Object> entry : src.entrySet()) {
-      final JsonElement element = context.serialize(entry.getValue(), Object.class);
-      if (element != null) {
-        object.add(entry.getKey(), element);
-      } else {
-        logger.log(SentryLevel.INFO, "%s context key isn't serializable.");
+      try {
+        final JsonElement element = context.serialize(entry.getValue(), Object.class);
+        if (element != null) {
+          object.add(entry.getKey(), element);
+        }
+      } catch (JsonParseException e) {
+        logger.log(SentryLevel.ERROR, "%s context key isn't serializable.");
       }
     }
     return object;
