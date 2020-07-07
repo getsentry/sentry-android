@@ -4,6 +4,7 @@ import static io.sentry.core.SentryLevel.DEBUG;
 import static io.sentry.core.SentryLevel.ERROR;
 import static io.sentry.core.SentryLevel.INFO;
 import static io.sentry.core.SentryLevel.WARNING;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.jakewharton.nopen.annotation.Open;
 import io.sentry.core.ILogger;
@@ -168,7 +169,9 @@ public class HttpTransport implements ITransport {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(event, writer);
 
-      logger.log(DEBUG, "Event sent %s successfully.", event.getEventId());
+      logIfNotSuccessfulResponseCode(
+          connection, String.format("Event sent %s successfully.", event.getEventId()));
+
       return TransportResult.success();
     } catch (IOException e) {
       final TransportResult errorResult = getResultFromErrorCode(connection, e);
@@ -286,7 +289,8 @@ public class HttpTransport implements ITransport {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(envelope, writer);
 
-      logger.log(DEBUG, "Envelope sent successfully.");
+      logIfNotSuccessfulResponseCode(connection, "Envelope sent successfully.");
+
       return TransportResult.success();
     } catch (IOException e) {
       final TransportResult errorResult = getResultFromErrorCode(connection, e);
@@ -309,8 +313,8 @@ public class HttpTransport implements ITransport {
   private void closeAndDisconnect(final @NotNull HttpURLConnection connection) {
     try {
       connection.getInputStream().close();
-    } catch (IOException e) {
-      logger.log(ERROR, e, "Error while closing the connection.");
+    } catch (IOException ignored) {
+      // connection is already closed
     } finally {
       connection.disconnect();
     }
@@ -484,7 +488,7 @@ public class HttpTransport implements ITransport {
         errorMessage = "An exception occurred while submitting the event to the Sentry server.";
       }
 
-      logger.log(DEBUG, errorMessage);
+      logger.log(ERROR, errorMessage);
     }
   }
 
@@ -514,6 +518,34 @@ public class HttpTransport implements ITransport {
       logger.log(ERROR, e, "Exception while reading the error message from the connection");
     }
     return null;
+  }
+
+  /**
+   * Returns if response code is OK=200
+   *
+   * @param responseCode the response code
+   * @return true if it is OK=200 or false otherwise
+   */
+  private boolean isSuccessfulResponseCode(final int responseCode) {
+    return responseCode == HTTP_OK;
+  }
+
+  /**
+   * Logs if not successful response code
+   *
+   * @param connection the connection
+   * @param message the message if a successful response
+   * @throws IOException Exception when reading the response code
+   */
+  private void logIfNotSuccessfulResponseCode(
+      final @NotNull HttpURLConnection connection, final @NotNull String message)
+      throws IOException {
+    final int responseCode = connection.getResponseCode();
+    if (isSuccessfulResponseCode(responseCode)) {
+      logger.log(DEBUG, message);
+    } else {
+      logErrorInPayload(connection);
+    }
   }
 
   @Override
