@@ -1,6 +1,7 @@
 package io.sentry.core;
 
 import com.jakewharton.nopen.annotation.Open;
+import io.sentry.core.protocol.SdkInfo;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import java.io.File;
@@ -188,6 +189,8 @@ public class SentryOptions {
 
   /** whether to ignore TLS errors */
   private boolean bypassSecurity = false;
+
+  private @Nullable SdkInfo sdkInfo;
 
   /**
    * Adds an event processor
@@ -888,6 +891,15 @@ public class SentryOptions {
    */
   public void setBypassSecurity(boolean bypassSecurity) {
     this.bypassSecurity = bypassSecurity;
+  }
+
+  public @Nullable SdkInfo getSdkInfo() {
+    return sdkInfo;
+  }
+
+  @ApiStatus.Internal
+  public void setSdkInfo(final @Nullable SdkInfo sdkInfo) {
+    this.sdkInfo = sdkInfo;
   }
 
   /** The BeforeSend callback */
