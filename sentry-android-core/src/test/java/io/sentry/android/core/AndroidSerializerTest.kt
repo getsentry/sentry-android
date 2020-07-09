@@ -373,7 +373,7 @@ class AndroidSerializerTest {
     @Test
     fun `When serializing an envelope, all the values should be set`() {
         val session = createSessionMockData()
-        val sentryEnvelope = SentryEnvelope.fromSession(serializer, session)
+        val sentryEnvelope = SentryEnvelope.fromSession(serializer, session, null)
 
         val jsonEnvelope = serializeToString(sentryEnvelope)
         // reversing it so we can assert the values

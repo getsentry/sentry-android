@@ -135,9 +135,8 @@ public final class SessionCache implements IEnvelopeCache {
             }
 
             session.end(timestamp);
-            // if the App. has been upgraded and there's a new version of the SDK running, SdkInfo
-            // will
-            // be outdated.
+            // if the App. has been upgraded and there's a new version of the SDK running,
+            // SdkInfo will be outdated.
             final SentryEnvelope fromSession =
                 SentryEnvelope.fromSession(serializer, session, options.getSdkInfo());
             final File fileFromSession = getEnvelopeFile(fromSession);

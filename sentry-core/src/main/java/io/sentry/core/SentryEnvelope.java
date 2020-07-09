@@ -42,11 +42,6 @@ public final class SentryEnvelope {
   }
 
   public SentryEnvelope(
-      final @Nullable SentryId eventId, final @NotNull Iterable<SentryEnvelopeItem> items) {
-    this(eventId, null, items);
-  }
-
-  public SentryEnvelope(
       final @Nullable SentryId eventId,
       final @Nullable SdkInfo sdkInfo,
       final @NotNull SentryEnvelopeItem item) {
@@ -58,10 +53,6 @@ public final class SentryEnvelope {
     this.items = items;
   }
 
-  public SentryEnvelope(final @Nullable SentryId eventId, final @NotNull SentryEnvelopeItem item) {
-    this(eventId, null, item);
-  }
-
   public static @NotNull SentryEnvelope fromSession(
       final @NotNull ISerializer serializer,
       final @NotNull Session session,
@@ -71,10 +62,5 @@ public final class SentryEnvelope {
     Objects.requireNonNull(session, "session is required.");
 
     return new SentryEnvelope(null, sdkInfo, SentryEnvelopeItem.fromSession(serializer, session));
-  }
-
-  public static @NotNull SentryEnvelope fromSession(
-      final @NotNull ISerializer serializer, final @NotNull Session session) throws IOException {
-    return fromSession(serializer, session, null);
   }
 }

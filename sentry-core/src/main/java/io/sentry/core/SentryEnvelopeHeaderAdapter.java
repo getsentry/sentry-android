@@ -32,18 +32,20 @@ public final class SentryEnvelopeHeaderAdapter extends TypeAdapter<SentryEnvelop
       if (sdkInfo.getSdkName() != null) {
         hasInitAttrs = initAttrs(writer, hasInitAttrs);
         writer.name("sdk_name").value(sdkInfo.getSdkName());
-      }
-      if (sdkInfo.getVersionMajor() != null) {
-        hasInitAttrs = initAttrs(writer, hasInitAttrs);
-        writer.name("version_major").value(sdkInfo.getVersionMajor());
-      }
-      if (sdkInfo.getVersionMinor() != null) {
-        hasInitAttrs = initAttrs(writer, hasInitAttrs);
-        writer.name("version_minor").value(sdkInfo.getVersionMinor());
-      }
-      if (sdkInfo.getVersionPatchlevel() != null) {
-        hasInitAttrs = initAttrs(writer, hasInitAttrs);
-        writer.name("version_patchlevel").value(sdkInfo.getVersionPatchlevel());
+
+        // we only add versions if the name is not null
+        if (sdkInfo.getVersionMajor() != null) {
+          hasInitAttrs = initAttrs(writer, hasInitAttrs);
+          writer.name("version_major").value(sdkInfo.getVersionMajor());
+        }
+        if (sdkInfo.getVersionMinor() != null) {
+          hasInitAttrs = initAttrs(writer, hasInitAttrs);
+          writer.name("version_minor").value(sdkInfo.getVersionMinor());
+        }
+        if (sdkInfo.getVersionPatchlevel() != null) {
+          hasInitAttrs = initAttrs(writer, hasInitAttrs);
+          writer.name("version_patchlevel").value(sdkInfo.getVersionPatchlevel());
+        }
       }
 
       // we don't write the unknown fields for the envelope header, we skip them

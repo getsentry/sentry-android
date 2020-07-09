@@ -454,7 +454,7 @@ class SentryClientTest {
     fun `when captureEnvelope and thres an exception, returns empty sentryId`() {
         whenever(fixture.connection.send(any<SentryEnvelope>(), anyOrNull())).thenThrow(IOException())
 
-        val envelope = SentryEnvelope(SentryId(UUID.randomUUID()), setOf())
+        val envelope = SentryEnvelope(SentryId(UUID.randomUUID()), null, setOf())
         val sentryId = fixture.getSut().captureEnvelope(envelope)
         assertEquals(SentryId.EMPTY_ID, sentryId)
     }
@@ -462,7 +462,7 @@ class SentryClientTest {
     @Test
     fun `when captureEnvelope and theres no exception, returns envelope header id`() {
         val expectedSentryId = SentryId(UUID.randomUUID())
-        val envelope = SentryEnvelope(expectedSentryId, setOf())
+        val envelope = SentryEnvelope(expectedSentryId, null, setOf())
         val sentryId = fixture.getSut().captureEnvelope(envelope)
         assertEquals(expectedSentryId, sentryId)
     }
