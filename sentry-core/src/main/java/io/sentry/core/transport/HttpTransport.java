@@ -3,7 +3,6 @@ package io.sentry.core.transport;
 import static io.sentry.core.SentryLevel.DEBUG;
 import static io.sentry.core.SentryLevel.ERROR;
 import static io.sentry.core.SentryLevel.INFO;
-import static io.sentry.core.SentryLevel.WARNING;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.jakewharton.nopen.annotation.Open;
@@ -161,27 +160,20 @@ public class HttpTransport implements ITransport {
   @Override
   public @NotNull TransportResult send(final @NotNull SentryEvent event) throws IOException {
     final HttpURLConnection connection = createConnection(false);
-
-    int responseCode = -1;
+    TransportResult result;
 
     try (final OutputStream outputStream = connection.getOutputStream();
         final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(event, writer);
-
-      logIfNotSuccessfulResponseCode(
-          connection, String.format("Event sent %s successfully.", event.getEventId()));
-
-      return TransportResult.success();
     } catch (IOException e) {
-      final TransportResult errorResult = getResultFromErrorCode(connection, e);
-      responseCode = errorResult.getResponseCode();
-      return errorResult;
+      logger.log(
+          ERROR, e, "An exception occurred while submitting the event to the Sentry server.");
     } finally {
-      updateRetryAfterLimits(connection, responseCode);
-
-      closeAndDisconnect(connection);
+      result =
+          readAndLog(connection, String.format("Event sent %s successfully.", event.getEventId()));
     }
+    return result;
   }
 
   /**
@@ -259,6 +251,7 @@ public class HttpTransport implements ITransport {
 
     connection.setRequestMethod("POST");
     connection.setDoOutput(true);
+    connection.setChunkedStreamingMode(0);
 
     connection.setRequestProperty("Content-Encoding", "gzip");
     connection.setRequestProperty("Content-Type", contentType);
@@ -281,28 +274,48 @@ public class HttpTransport implements ITransport {
   @Override
   public @NotNull TransportResult send(final @NotNull SentryEnvelope envelope) throws IOException {
     final HttpURLConnection connection = createConnection(true);
-
-    int responseCode = -1;
+    TransportResult result;
 
     try (final OutputStream outputStream = connection.getOutputStream();
         final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
         final Writer writer = new BufferedWriter(new OutputStreamWriter(gzip, UTF_8))) {
       serializer.serialize(envelope, writer);
+    } catch (Exception e) {
+      logger.log(
+          ERROR, e, "An exception occurred while submitting the envelope to the Sentry server.");
+    } finally {
+      result = readAndLog(connection, "Envelope sent successfully.");
+    }
+    return result;
+  }
 
-      logIfNotSuccessfulResponseCode(connection, "Envelope sent successfully.");
+  private @NotNull TransportResult readAndLog(
+      final @NotNull HttpURLConnection connection, final @NotNull String message) {
+    try {
+      final int responseCode = connection.getResponseCode();
+
+      updateRetryAfterLimits(connection, responseCode);
+
+      if (!isSuccessfulResponseCode(responseCode)) {
+        logger.log(ERROR, "Request failed, API returned %s", responseCode);
+        // double check because call is expensive
+        if (options.isDebug()) {
+          String errorMessage = getErrorMessageFromStream(connection);
+          logger.log(ERROR, errorMessage);
+        }
+
+        return TransportResult.error(responseCode);
+      }
+
+      logger.log(DEBUG, message);
 
       return TransportResult.success();
     } catch (IOException e) {
-      final TransportResult errorResult = getResultFromErrorCode(connection, e);
-      responseCode = errorResult.getResponseCode();
-      return errorResult;
-    } catch (Exception e) {
-      return getDefaultErrorResult(e);
+      logger.log(ERROR, e, "Error reading and logging the response stream");
     } finally {
-      updateRetryAfterLimits(connection, responseCode);
-
       closeAndDisconnect(connection);
     }
+    return TransportResult.error();
   }
 
   /**
@@ -318,40 +331,6 @@ public class HttpTransport implements ITransport {
     } finally {
       connection.disconnect();
     }
-  }
-
-  /**
-   * Returns a TransportResult error with the given responseCode
-   *
-   * @param connection the HttpURLConnection
-   * @param ioException the IOException
-   * @return the TransportResult error
-   */
-  private @NotNull TransportResult getResultFromErrorCode(
-      final @NotNull HttpURLConnection connection, final @NotNull IOException ioException) {
-    try {
-      final int responseCode = connection.getResponseCode();
-
-      logErrorInPayload(connection);
-      return TransportResult.error(responseCode);
-    } catch (IOException responseCodeException) {
-      logger.log(ERROR, responseCodeException, "Error getting responseCode");
-
-      // this should not stop us from continuing.
-      return getDefaultErrorResult(ioException);
-    }
-  }
-
-  /**
-   * Logs a default error message and return the TransportResult error with -1 responseCode
-   *
-   * @param exception the Exception
-   * @return the TransportResult error
-   */
-  private @NotNull TransportResult getDefaultErrorResult(final @NotNull Exception exception) {
-    logger.log(
-        WARNING, "Failed to obtain error message while analyzing event send failure.", exception);
-    return TransportResult.error();
   }
 
   /**
@@ -475,30 +454,13 @@ public class HttpTransport implements ITransport {
   }
 
   /**
-   * Logs the error message from the ErrorStream
-   *
-   * @param connection the HttpURLConnection
-   */
-  private void logErrorInPayload(final @NotNull HttpURLConnection connection) {
-    // just because its expensive, but internally isDebug is already checked when
-    // .log() is called
-    if (options.isDebug()) {
-      String errorMessage = getErrorMessageFromStream(connection);
-      if (null == errorMessage || errorMessage.isEmpty()) {
-        errorMessage = "An exception occurred while submitting the event to the Sentry server.";
-      }
-
-      logger.log(ERROR, errorMessage);
-    }
-  }
-
-  /**
    * Reads the error message from the error stream
    *
    * @param connection the HttpURLConnection
    * @return the error message or null if none
    */
-  private @Nullable String getErrorMessageFromStream(final @NotNull HttpURLConnection connection) {
+  private @NotNull String getErrorMessageFromStream(final @NotNull HttpURLConnection connection)
+      throws IOException {
     try (final InputStream errorStream = connection.getErrorStream();
         final BufferedReader reader =
             new BufferedReader(new InputStreamReader(errorStream, UTF_8))) {
@@ -514,10 +476,7 @@ public class HttpTransport implements ITransport {
         first = false;
       }
       return sb.toString();
-    } catch (IOException e) {
-      logger.log(ERROR, e, "Exception while reading the error message from the connection");
     }
-    return null;
   }
 
   /**
@@ -528,24 +487,6 @@ public class HttpTransport implements ITransport {
    */
   private boolean isSuccessfulResponseCode(final int responseCode) {
     return responseCode == HTTP_OK;
-  }
-
-  /**
-   * Logs if not successful response code
-   *
-   * @param connection the connection
-   * @param message the message if a successful response
-   * @throws IOException Exception when reading the response code
-   */
-  private void logIfNotSuccessfulResponseCode(
-      final @NotNull HttpURLConnection connection, final @NotNull String message)
-      throws IOException {
-    final int responseCode = connection.getResponseCode();
-    if (isSuccessfulResponseCode(responseCode)) {
-      logger.log(DEBUG, message);
-    } else {
-      logErrorInPayload(connection);
-    }
   }
 
   @Override
