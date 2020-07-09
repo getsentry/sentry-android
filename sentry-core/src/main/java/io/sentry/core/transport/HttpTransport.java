@@ -459,8 +459,7 @@ public class HttpTransport implements ITransport {
    * @param connection the HttpURLConnection
    * @return the error message or null if none
    */
-  private @NotNull String getErrorMessageFromStream(final @NotNull HttpURLConnection connection)
-      throws IOException {
+  private @NotNull String getErrorMessageFromStream(final @NotNull HttpURLConnection connection) {
     try (final InputStream errorStream = connection.getErrorStream();
         final BufferedReader reader =
             new BufferedReader(new InputStreamReader(errorStream, UTF_8))) {
@@ -476,6 +475,8 @@ public class HttpTransport implements ITransport {
         first = false;
       }
       return sb.toString();
+    } catch (IOException e) {
+      return "Failed to obtain error message while analyzing send failure.";
     }
   }
 
