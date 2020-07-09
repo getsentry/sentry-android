@@ -289,6 +289,13 @@ public class HttpTransport implements ITransport {
     return result;
   }
 
+  /**
+   * Read responde code, retry after header and its error stream if there are errors and log it
+   *
+   * @param connection the HttpURLConnection
+   * @param message the message, if custom message if its an event or envelope
+   * @return TransportResult.success if responseCode is 200 or TransportResult.error otherwise
+   */
   private @NotNull TransportResult readAndLog(
       final @NotNull HttpURLConnection connection, final @NotNull String message) {
     try {
