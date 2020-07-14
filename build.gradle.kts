@@ -6,11 +6,7 @@ plugins {
     `java-library`
     id(Config.QualityPlugins.spotless) version Config.QualityPlugins.spotlessVersion apply true
     jacoco
-}
-
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    id(Config.QualityPlugins.detekt) version Config.QualityPlugins.detektVersion
 }
 
 buildscript {
@@ -49,9 +45,9 @@ allprojects {
             testLogging.showStandardStreams = true
             testLogging.exceptionFormat = TestExceptionFormat.FULL
             testLogging.events = setOf(
-                TestLogEvent.SKIPPED,
-                TestLogEvent.PASSED,
-                TestLogEvent.FAILED)
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.FAILED)
             dependsOn("cleanTest")
         }
         withType<JavaCompile> {
@@ -66,7 +62,6 @@ spotless {
         target("**/*.java")
         removeUnusedImports()
         googleJavaFormat()
-        paddedCell()
     }
 
     kotlin {

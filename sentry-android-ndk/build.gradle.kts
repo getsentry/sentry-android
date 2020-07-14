@@ -45,8 +45,6 @@ android {
     buildFeatures {
         // Determines whether to generate a BuildConfig class.
         buildConfig = false
-        // Determines whether to support injecting custom variables into the module's R class.
-        resValues = false
     }
 
     externalNativeBuild {
@@ -110,6 +108,7 @@ dependencies {
 val initNative = tasks.register<Exec>("initNative") {
     logger.log(LogLevel.LIFECYCLE, "Initializing git submodules")
     commandLine("git", "submodule", "update", "--init", "--recursive")
+    outputs.dir("${project.projectDir}/sentry-native")
 }
 
 tasks.named("preBuild") {

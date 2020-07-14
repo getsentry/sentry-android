@@ -96,12 +96,12 @@ public final class Session {
     this(
         State.Ok,
         DateUtils.getCurrentDateTime(),
-        null,
+        DateUtils.getCurrentDateTime(),
         0,
         distinctId,
         UUID.randomUUID(),
         true,
-        0L,
+        null,
         null,
         (user != null ? user.getIpAddress() : null),
         null,
@@ -109,6 +109,7 @@ public final class Session {
         release);
   }
 
+  @SuppressWarnings("JdkObsolete")
   public @NotNull Date getStarted() {
     return (Date) started.clone();
   }
@@ -157,7 +158,8 @@ public final class Session {
     return duration;
   }
 
-  public Date getTimestamp() {
+  @SuppressWarnings("JdkObsolete")
+  public @Nullable Date getTimestamp() {
     final Date timestampRef = timestamp;
     return timestampRef != null ? (Date) timestampRef.clone() : null;
   }
@@ -188,7 +190,7 @@ public final class Session {
       }
 
       duration = calculateDurationTime(this.timestamp);
-      sequence = getSequenceTimestamp();
+      sequence = getSequenceTimestamp(this.timestamp);
     }
   }
 
@@ -198,7 +200,8 @@ public final class Session {
    * @param timestamp the timestamp
    * @return duration in seconds
    */
-  private Double calculateDurationTime(final @NotNull Date timestamp) {
+  @SuppressWarnings("JdkObsolete")
+  private double calculateDurationTime(final @NotNull Date timestamp) {
     long diff = Math.abs(timestamp.getTime() - started.getTime());
     return (double) diff / 1000; // duration in seconds
   }
@@ -212,7 +215,7 @@ public final class Session {
    * @return if the session has been updated
    */
   public boolean update(
-      final @Nullable State status, final String userAgent, boolean addErrorsCount) {
+      final @Nullable State status, final @Nullable String userAgent, boolean addErrorsCount) {
     synchronized (sessionLock) {
       boolean sessionHasBeenUpdated = false;
       if (status != null) {
@@ -232,7 +235,7 @@ public final class Session {
       if (sessionHasBeenUpdated) {
         init = null;
         timestamp = DateUtils.getCurrentDateTime();
-        sequence = getSequenceTimestamp();
+        sequence = getSequenceTimestamp(timestamp);
       }
       return sessionHasBeenUpdated;
     }
@@ -241,9 +244,40 @@ public final class Session {
   /**
    * Returns a logical clock.
    *
+   * @param timestamp The timestamp
    * @return time stamp in milliseconds UTC
    */
-  private Long getSequenceTimestamp() {
-    return DateUtils.getCurrentDateTime().getTime();
+  @SuppressWarnings("JdkObsolete")
+  private long getSequenceTimestamp(final @NotNull Date timestamp) {
+    long sequence = timestamp.getTime();
+    // if device has wrong date and time and it is nearly at the beginning of the epoch time.
+    // when converting GMT to UTC may give a negative value.
+    if (sequence < 0) {
+      sequence = Math.abs(sequence);
+    }
+    return sequence;
+  }
+
+  /**
+   * Ctor copy of the Session
+   *
+   * @return a copy of the Session
+   */
+  @SuppressWarnings("MissingOverride")
+  public @NotNull Session clone() {
+    return new Session(
+        status,
+        started,
+        timestamp,
+        errorCount.get(),
+        distinctId,
+        sessionId,
+        init,
+        sequence,
+        duration,
+        ipAddress,
+        userAgent,
+        environment,
+        release);
   }
 }
