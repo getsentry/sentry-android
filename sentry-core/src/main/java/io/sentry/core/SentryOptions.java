@@ -3,6 +3,7 @@ package io.sentry.core;
 import com.jakewharton.nopen.annotation.Open;
 import io.sentry.core.cache.IEnvelopeCache;
 import io.sentry.core.cache.IEventCache;
+import io.sentry.core.protocol.SdkInfo;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import io.sentry.core.transport.NoOpEnvelopeCache;
@@ -204,6 +205,10 @@ public class SentryOptions {
   private @NotNull IEventCache eventDiskCache = NoOpEventCache.getInstance();
 
   private @NotNull IEnvelopeCache envelopeDiskCache = NoOpEnvelopeCache.getInstance();
+
+  /** SdkInfo object that contains the Sentry Client Name and its version */
+  private @Nullable SdkInfo sdkInfo;
+
 
   /**
    * Adds an event processor
@@ -938,6 +943,25 @@ public class SentryOptions {
 
   public void setMaxQueueSize(int maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
+  }
+
+  /**
+   * Returns the SdkInfo object
+   *
+   * @return the SdkInfo object or null
+   */
+  public @Nullable SdkInfo getSdkInfo() {
+    return sdkInfo;
+  }
+
+  /**
+   * Sets the SdkInfo object
+   *
+   * @param sdkInfo the sdkInfo object or null
+   */
+  @ApiStatus.Internal
+  public void setSdkInfo(final @Nullable SdkInfo sdkInfo) {
+    this.sdkInfo = sdkInfo;
   }
 
   /** The BeforeSend callback */

@@ -11,6 +11,7 @@ import io.sentry.core.SendCachedEventFireAndForgetIntegration;
 import io.sentry.core.SendFireAndForgetEnvelopeSender;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.protocol.SdkInfo;
 import io.sentry.core.util.Objects;
 import java.io.File;
 import org.jetbrains.annotations.NotNull;
@@ -95,6 +96,10 @@ final class AndroidOptionsInitializer {
 
     // Firstly set the logger, if `debug=true` configured, logging can start asap.
     options.setLogger(logger);
+
+    options.setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
+    options.setSdkInfo(
+        SdkInfo.createSdkInfo(BuildConfig.SENTRY_CLIENT_NAME, BuildConfig.VERSION_NAME));
 
     ManifestMetadataReader.applyMetadata(context, options);
     initializeCacheDirs(context, options);
