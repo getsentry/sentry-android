@@ -11,7 +11,6 @@ import io.sentry.core.SendCachedEventFireAndForgetIntegration;
 import io.sentry.core.SendFireAndForgetEnvelopeSender;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-import io.sentry.core.protocol.SdkInfo;
 import io.sentry.core.util.Objects;
 import java.io.File;
 import org.jetbrains.annotations.NotNull;

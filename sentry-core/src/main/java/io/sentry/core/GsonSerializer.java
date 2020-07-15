@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /** The AndroidSerializer class that uses Gson as JSON parser */
-final class GsonSerializer implements ISerializer {
+public final class GsonSerializer implements ISerializer {
 
   /** the UTF-8 Charset */
   @SuppressWarnings("CharsetObjectCanBeUsed")

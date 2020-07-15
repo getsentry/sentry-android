@@ -96,6 +96,7 @@ class NdkIntegrationTest {
             setLogger(logger)
             isDebug = true
             isEnableNdk = enableNdk
+            cacheDirPath = "abc"
         }
     }
 

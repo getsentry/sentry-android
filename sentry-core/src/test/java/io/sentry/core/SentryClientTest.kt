@@ -385,7 +385,7 @@ class SentryClientTest {
             dsn = dsnString
         }
         val transportGate = CustomTransportGate()
-        sentryOptions.transportGate = transportGate
+        sentryOptions.setTransportGate(transportGate)
 
         val connection = mock<AsyncConnection>()
         SentryClient(sentryOptions, connection)

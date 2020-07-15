@@ -1,17 +1,10 @@
-package io.sentry.android.core
+package io.sentry.core
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import io.sentry.core.DateUtils
-import io.sentry.core.EnvelopeReader
-import io.sentry.core.SentryEnvelope
-import io.sentry.core.SentryEvent
-import io.sentry.core.SentryItemType
-import io.sentry.core.SentryLevel
-import io.sentry.core.Session
 import io.sentry.core.protocol.Contexts
 import io.sentry.core.protocol.Device
 import io.sentry.core.protocol.SdkInfo
@@ -33,7 +26,7 @@ import kotlin.test.assertTrue
 
 class GsonSerializerTest {
 
-    private val serializer = AndroidSerializer(mock(), EnvelopeReader())
+    private val serializer = GsonSerializer(mock(), EnvelopeReader())
 
     private fun serializeToString(ev: SentryEvent): String {
         val wrt = StringWriter()

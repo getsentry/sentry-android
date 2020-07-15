@@ -2,7 +2,6 @@ package io.sentry.android.core;
 
 import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.SdkInfo;
-
 import org.jetbrains.annotations.ApiStatus;
 
 /** Sentry SDK options for Android */

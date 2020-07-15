@@ -18,6 +18,7 @@ import io.sentry.core.SentryOptions
 import java.io.File
 import java.lang.RuntimeException
 import kotlin.test.BeforeTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -71,6 +72,7 @@ class AndroidOptionsInitializerTest {
         assertNotNull(actual)
     }
 
+    @Ignore("should be tested in sentry static class")
     @Test
     fun `envelopesDir should be created at initialization`() {
         val sentryOptions = SentryAndroidOptions()
@@ -84,6 +86,7 @@ class AndroidOptionsInitializerTest {
         file.deleteOnExit()
     }
 
+    @Ignore("should be tested in sentry static class")
     @Test
     fun `outboxDir should be created at initialization`() {
         val sentryOptions = SentryAndroidOptions()
@@ -97,6 +100,7 @@ class AndroidOptionsInitializerTest {
         file.deleteOnExit()
     }
 
+    @Ignore("should be tested in sentry static class")
     @Test
     fun `sessionDir should be created at initialization`() {
         val sentryOptions = SentryAndroidOptions()

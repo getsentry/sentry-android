@@ -207,7 +207,6 @@ public class SentryOptions {
   /** SdkInfo object that contains the Sentry Client Name and its version */
   private @Nullable SdkInfo sdkInfo;
 
-
   /**
    * Adds an event processor
    *
