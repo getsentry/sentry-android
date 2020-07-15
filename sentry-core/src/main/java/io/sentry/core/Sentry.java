@@ -168,23 +168,14 @@ public final class Sentry {
 
     ILogger logger = options.getLogger();
 
-    // check if its no op, might be agnostic?
     if (options.isDebug() && logger instanceof NoOpLogger) {
       options.setLogger(new SystemOutLogger());
       logger = options.getLogger();
     }
     logger.log(SentryLevel.INFO, "Initializing SDK with DSN: '%s'", options.getDsn());
 
-    if (options.getSentryClientName() == null || options.getSentryClientName().isEmpty()) {
-      options.setSentryClientName("sentry.java/2.2.0"); // TODO: get from build script or CI envs
-    }
-
-    // TODO: read values from conf file eg Manifest
-    // eg release and distinctId
-
-    if (options.getEnvelopeReader() instanceof NoOpEnvelopeReader) {
-      options.setEnvelopeReader(new EnvelopeReader());
-    }
+    // TODO: read values from conf file, Build conf or system envs
+    // eg release, distinctId, sentryClientName
 
     if (options.getSerializer() instanceof NoOpSerializer) {
       options.setSerializer(new GsonSerializer(logger, options.getEnvelopeReader()));

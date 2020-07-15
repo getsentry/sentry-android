@@ -11,7 +11,8 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!--  if your minSdkVersion < 16, this would make usable on minSdkVersion >= 14-->
-    <uses-sdk tools:overrideLibrary="io.sentry.android" />
+    <uses-sdk
+        tools:overrideLibrary="io.sentry.android"/>
 
     <application
         android:name=".MyApplication"
@@ -32,14 +33,10 @@
         </activity>
 
         <!--    NOTE: Replace the test DSN below with YOUR OWN DSN to see the events from this app in your Sentry project/dashboard-->
-        <meta-data
-            android:name="io.sentry.dsn"
-            android:value="https://f7f320d5c3a54709be7b28e0f2ca7081@sentry.io/1808954" />
+        <meta-data android:name="io.sentry.dsn" android:value="https://f7f320d5c3a54709be7b28e0f2ca7081@sentry.io/1808954" />
 
         <!--    how to enable Sentry's debug mode-->
-        <meta-data
-            android:name="io.sentry.debug"
-            android:value="${sentryDebug}" />
+        <meta-data android:name="io.sentry.debug" android:value="${sentryDebug}" />
 
         <!--    how to set a custom debug level-->
         <!--    <meta-data android:name="io.sentry.debug.level" android:value="info" />-->
@@ -51,9 +48,7 @@
         <!--    <meta-data android:name="io.sentry.anr.report-debug" android:value="true" />-->
 
         <!--    how to disable ANR-->
-        <meta-data
-            android:name="io.sentry.anr.enable"
-            android:value="false" />
+        <!--    <meta-data android:name="io.sentry.anr.enable" android:value="false" />-->
 
         <!--    how to disable the auto-init-->
         <!--    <meta-data android:name="io.sentry.auto-init" android:value="false" />-->
@@ -65,15 +60,13 @@
         <!--    <meta-data android:name="io.sentry.release" android:value="io.sentry.sample@1.0.0+10001" />-->
 
         <!--    how to enable automatic session tracking-->
-        <!--    <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />-->
+        <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
 
         <!--    how to set an environment-->
         <!--    <meta-data android:name="io.sentry.environment" android:value="debug" />-->
 
         <!--    how to change the session tracking interval-->
-        <meta-data
-            android:name="io.sentry.session-tracking.timeout-interval-millis"
-            android:value="10000" />
+        <meta-data android:name="io.sentry.session-tracking.timeout-interval-millis" android:value="10000" />
 
         <!--    how to enable and set a sampleRate (anything between 0.01 and 1.0), it's disabled by default-->
         <!--    <meta-data android:name="io.sentry.sample-rate" android:value="0.5" />-->
@@ -92,11 +85,6 @@
 
         <!--    how to disable the app components breadcrumbs integration-->
         <!--    <meta-data android:name="io.sentry.breadcrumbs.app-components" android:value="false" />-->
-
-        <provider
-            android:name="io.sentry.android.core.SentryInitProvider"
-            android:authorities="${applicationId}.SentryInitProvider"
-            tools:node="remove" />
 
     </application>
 </manifest>

@@ -6,6 +6,7 @@ import io.sentry.core.hints.SessionUpdateHint;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.transport.Connection;
 import io.sentry.core.transport.ITransport;
+import io.sentry.core.transport.NoOpTransport;
 import io.sentry.core.util.ApplyScopeUtils;
 import io.sentry.core.util.Objects;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public final class SentryClient implements ISentryClient {
     this.enabled = true;
 
     ITransport transport = options.getTransport();
-    if (transport == null) {
+    if (transport == null || transport instanceof NoOpTransport) {
       transport = HttpTransportFactory.create(options);
       options.setTransport(transport);
     }

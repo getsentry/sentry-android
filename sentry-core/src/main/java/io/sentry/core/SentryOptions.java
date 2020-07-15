@@ -8,6 +8,7 @@ import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import io.sentry.core.transport.NoOpEnvelopeCache;
 import io.sentry.core.transport.NoOpEventCache;
+import io.sentry.core.transport.NoOpTransport;
 import io.sentry.core.transport.NoOpTransportGate;
 import java.io.File;
 import java.net.Proxy;
@@ -74,7 +75,7 @@ public class SentryOptions {
   /** Serializer interface to serialize/deserialize json events */
   private @NotNull ISerializer serializer = NoOpSerializer.getInstance();
 
-  private @NotNull IEnvelopeReader envelopeReader = NoOpEnvelopeReader.getInstance();
+  private @NotNull IEnvelopeReader envelopeReader = new EnvelopeReader();
 
   /**
    * Sentry client name used for the HTTP authHeader and userAgent eg
@@ -104,9 +105,6 @@ public class SentryOptions {
   private int sessionsDirSize = 100;
 
   private int maxQueueSize = cacheDirSize + sessionsDirSize;
-  // TODO: revert, this is necessary because start/end session + events will be higher than the
-  // maxQueueSize
-  //  private int maxQueueSize = (cacheDirSize + sessionsDirSize) * 10;
 
   /**
    * This variable controls the total amount of breadcrumbs that should be captured Default is 100
@@ -150,7 +148,7 @@ public class SentryOptions {
   private final @NotNull List<String> inAppIncludes = new CopyOnWriteArrayList<>();
 
   /** The transport is an internal construct of the client that abstracts away the event sending. */
-  private @Nullable ITransport transport; // TODO: should it be NoOp by default?
+  private @Nullable ITransport transport = NoOpTransport.getInstance();
 
   /**
    * Implementations of this interface serve as gatekeepers that allow or disallow sending of the
@@ -642,7 +640,7 @@ public class SentryOptions {
    * @param transport the transport
    */
   public void setTransport(@Nullable ITransport transport) {
-    this.transport = transport;
+    this.transport = transport != null ? transport : NoOpTransport.getInstance();
   }
 
   /**

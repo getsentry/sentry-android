@@ -3,8 +3,6 @@ package io.sentry.core;
 /** ILogger implementation to System.out. */
 public final class SystemOutLogger implements ILogger {
 
-  // TODO: add a tag to the logs, so people can grep it
-
   /**
    * Logs to console a message with the specified level, message and optional arguments.
    *

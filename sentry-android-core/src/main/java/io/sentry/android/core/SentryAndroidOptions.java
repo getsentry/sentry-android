@@ -1,6 +1,8 @@
 package io.sentry.android.core;
 
 import io.sentry.core.SentryOptions;
+import io.sentry.core.protocol.SdkInfo;
+
 import org.jetbrains.annotations.ApiStatus;
 
 /** Sentry SDK options for Android */
@@ -34,6 +36,7 @@ public final class SentryAndroidOptions extends SentryOptions {
 
   public SentryAndroidOptions() {
     setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
+    setSdkInfo(SdkInfo.createSdkInfo(BuildConfig.SENTRY_CLIENT_NAME, BuildConfig.VERSION_NAME));
   }
 
   /**

@@ -97,10 +97,6 @@ final class AndroidOptionsInitializer {
     // Firstly set the logger, if `debug=true` configured, logging can start asap.
     options.setLogger(logger);
 
-    options.setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
-    options.setSdkInfo(
-        SdkInfo.createSdkInfo(BuildConfig.SENTRY_CLIENT_NAME, BuildConfig.VERSION_NAME));
-
     ManifestMetadataReader.applyMetadata(context, options);
     initializeCacheDirs(context, options);
 
@@ -125,7 +121,8 @@ final class AndroidOptionsInitializer {
     final Class<?> sentryNdkClass = loadNdkIfAvailable(options, buildInfoProvider, loadClass);
     options.addIntegration(new NdkIntegration(sentryNdkClass));
 
-    // TODO: do we need this for Java backend? dont think so
+    // this integration uses android.os.FileObserver, we can't move to sentry-core
+    // before creating a pure java impl.
     options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
 
     // Send cached envelopes from outbox path
