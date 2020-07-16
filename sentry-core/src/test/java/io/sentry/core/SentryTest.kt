@@ -56,6 +56,31 @@ class SentryTest {
         file.deleteOnExit()
     }
 
+    @Test
+    fun `Init sets SystemOutLogger if logger is NoOp and debug is enabled`() {
+        var sentryOptions: SentryOptions? = null
+        Sentry.init {
+            it.dsn = "http://key@localhost/proj"
+            it.cacheDirPath = getTempPath()
+            sentryOptions = it
+            it.isDebug = true
+        }
+
+        assertTrue((sentryOptions!!.logger as DiagnosticLogger).logger is SystemOutLogger)
+    }
+
+    @Test
+    fun `Init sets GsonSerializer if serializer is NoOp`() {
+        var sentryOptions: SentryOptions? = null
+        Sentry.init {
+            it.dsn = "http://key@localhost/proj"
+            it.cacheDirPath = getTempPath()
+            sentryOptions = it
+        }
+
+        assertTrue(sentryOptions!!.serializer is GsonSerializer)
+    }
+
     private fun getTempPath(): String {
         val tempFile = Files.createTempDirectory("cache").toFile()
         tempFile.delete()

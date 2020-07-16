@@ -35,6 +35,7 @@ public final class NdkIntegration implements Integration {
       final String cachedDir = options.getCacheDirPath();
       if (cachedDir == null || cachedDir.isEmpty()) {
         options.getLogger().log(SentryLevel.ERROR, "No cache dir path is defined in options.");
+        options.setEnableNdk(false);
         return;
       }
 

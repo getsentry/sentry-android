@@ -168,18 +168,6 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `init should set clientName`() {
-        val sentryOptions = SentryAndroidOptions()
-        val mockContext = createMockContext()
-
-        AndroidOptionsInitializer.init(sentryOptions, mockContext)
-
-        val clientName = "${BuildConfig.SENTRY_CLIENT_NAME}/${BuildConfig.VERSION_NAME}"
-
-        assertEquals(clientName, sentryOptions.sentryClientName)
-    }
-
-    @Test
     fun `NdkIntegration will load SentryNdk class and add to the integration list`() {
         val mockContext = ContextUtilsTest.mockMetaData(metaData = createBundleWithDsn())
         val logger = mock<ILogger>()
@@ -311,25 +299,6 @@ class AndroidOptionsInitializerTest {
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
         val actual = sentryOptions.integrations.firstOrNull { it is ActivityBreadcrumbsIntegration }
         assertNull(actual)
-    }
-
-    @Test
-    fun `init should set SdkInfo`() {
-        val sentryOptions = SentryAndroidOptions()
-        val mockContext = mock<Context>()
-        whenever(mockContext.applicationContext).thenReturn(null)
-
-        AndroidOptionsInitializer.init(sentryOptions, mockContext)
-
-        assertNotNull(sentryOptions.sdkInfo)
-        val sdkInfo = sentryOptions.sdkInfo!!
-
-        assertEquals("sentry.java.android", sdkInfo.sdkName)
-
-        // versions change on every release, so lets check only if its not null
-        assertNotNull(sdkInfo.versionMajor)
-        assertNotNull(sdkInfo.versionMinor)
-        assertNotNull(sdkInfo.versionPatchlevel)
     }
 
     private fun createMockContext(): Context {

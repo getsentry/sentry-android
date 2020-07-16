@@ -58,14 +58,14 @@ public final class SendCachedEventFireAndForgetIntegration implements Integratio
 
     final String cachedDir = options.getCacheDirPath();
     if (!factory.hasValidPath(cachedDir, options.getLogger())) {
-      options.getLogger().log(SentryLevel.WARNING, "No cache dir path is defined in options.");
+      options.getLogger().log(SentryLevel.ERROR, "No cache dir path is defined in options.");
       return;
     }
 
     final SendFireAndForget sender = factory.create(hub, options);
 
     if (sender == null) {
-      options.getLogger().log(SentryLevel.WARNING, "SendFireAndForget factory is null.");
+      options.getLogger().log(SentryLevel.ERROR, "SendFireAndForget factory is null.");
       return;
     }
 
