@@ -18,7 +18,6 @@ import io.sentry.core.SentryOptions
 import java.io.File
 import java.lang.RuntimeException
 import kotlin.test.BeforeTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -72,46 +71,34 @@ class AndroidOptionsInitializerTest {
         assertNotNull(actual)
     }
 
-    @Ignore("should be tested in sentry static class")
     @Test
-    fun `envelopesDir should be created at initialization`() {
+    fun `envelopesDir should be set at initialization`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
         assertTrue(sentryOptions.cacheDirPath?.endsWith("${File.separator}cache${File.separator}sentry")!!)
-        val file = File(sentryOptions.cacheDirPath!!)
-        assertTrue(file.exists())
-        file.deleteOnExit()
     }
 
-    @Ignore("should be tested in sentry static class")
     @Test
-    fun `outboxDir should be created at initialization`() {
+    fun `outboxDir should be set at initialization`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
         assertTrue(sentryOptions.outboxPath?.endsWith("${File.separator}cache${File.separator}sentry${File.separator}outbox")!!)
-        val file = File(sentryOptions.outboxPath!!)
-        assertTrue(file.exists())
-        file.deleteOnExit()
     }
 
-    @Ignore("should be tested in sentry static class")
     @Test
-    fun `sessionDir should be created at initialization`() {
+    fun `sessionDir should be set at initialization`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
         assertTrue(sentryOptions.sessionsPath?.endsWith("${File.separator}cache${File.separator}sentry${File.separator}sessions")!!)
-        val file = File(sentryOptions.sessionsPath!!)
-        assertTrue(file.exists())
-        file.deleteOnExit()
     }
 
     @Test
