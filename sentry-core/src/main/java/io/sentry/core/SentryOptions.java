@@ -148,7 +148,7 @@ public class SentryOptions {
   private final @NotNull List<String> inAppIncludes = new CopyOnWriteArrayList<>();
 
   /** The transport is an internal construct of the client that abstracts away the event sending. */
-  private @Nullable ITransport transport = NoOpTransport.getInstance();
+  private @NotNull ITransport transport = NoOpTransport.getInstance();
 
   /**
    * Implementations of this interface serve as gatekeepers that allow or disallow sending of the
@@ -629,7 +629,7 @@ public class SentryOptions {
    *
    * @return the transport
    */
-  public @Nullable ITransport getTransport() {
+  public @NotNull ITransport getTransport() {
     return transport;
   }
 

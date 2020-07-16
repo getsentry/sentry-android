@@ -4,6 +4,7 @@ import io.sentry.core.util.Objects;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 /** Sentry SDK internal diagnostic logger. */
 @ApiStatus.Internal
@@ -89,6 +90,7 @@ public final class DiagnosticLogger implements ILogger {
     }
   }
 
+  @TestOnly
   public @Nullable ILogger getLogger() {
     return logger;
   }

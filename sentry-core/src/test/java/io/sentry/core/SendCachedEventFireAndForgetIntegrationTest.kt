@@ -27,7 +27,7 @@ class SendCachedEventFireAndForgetIntegrationTest {
     private val fixture = Fixture()
 
     @Test
-    fun `when cacheDirPath returns null, register logs and exists`() {
+    fun `when cacheDirPath returns null, register logs and exit`() {
         fixture.options.cacheDirPath = null
         val sut = fixture.getSut()
         sut.register(fixture.hub, fixture.options)
@@ -51,5 +51,20 @@ class SendCachedEventFireAndForgetIntegrationTest {
     fun `path is valid if not null or empty`() {
         val sut = fixture.getSut()
         assertFalse(fixture.callback.hasValidPath("cache", fixture.logger))
+    }
+
+    @Test
+    fun `when Factory returns null, register logs and exit`() {
+        val sut = SendCachedEventFireAndForgetIntegration(CustomFactory())
+        fixture.options.cacheDirPath = "abc"
+        sut.register(fixture.hub, fixture.options)
+        verify(fixture.logger).log(eq(SentryLevel.ERROR), eq("SendFireAndForget factory is null."))
+        verifyNoMoreInteractions(fixture.hub)
+    }
+
+    private class CustomFactory : SendCachedEventFireAndForgetIntegration.SendFireAndForgetFactory {
+        override fun create(hub: IHub?, options: SentryOptions?): SendCachedEventFireAndForgetIntegration.SendFireAndForget? {
+            return null
+        }
     }
 }
