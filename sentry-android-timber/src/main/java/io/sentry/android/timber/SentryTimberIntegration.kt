@@ -19,6 +19,7 @@ class SentryTimberIntegration(
     private lateinit var logger: ILogger
 
     override fun register(hub: IHub, options: SentryOptions) {
+        addPackage(options)
         logger = options.logger
 
         tree = SentryTimberTree(hub, minEventLevel, minBreadcrumbLevel)
@@ -35,5 +36,11 @@ class SentryTimberIntegration(
                 logger.log(SentryLevel.DEBUG, "SentryTimberIntegration removed.")
             }
         }
+    }
+
+    private fun addPackage(options: SentryOptions) {
+        val sdkVersion = options.sdkVersion ?: return
+        sdkVersion.addPackage("maven:sentry-android-timber", BuildConfig.VERSION_NAME)
+        sdkVersion.addIntegration("SentryTimberIntegration")
     }
 }

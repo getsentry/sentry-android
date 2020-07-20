@@ -14,7 +14,7 @@ import io.sentry.core.SentryLevel
 import io.sentry.core.Session
 import io.sentry.core.protocol.Contexts
 import io.sentry.core.protocol.Device
-import io.sentry.core.protocol.SdkInfo
+import io.sentry.core.protocol.SdkVersion
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -358,16 +358,21 @@ class AndroidSerializerTest {
     }
 
     @Test
-    fun `When deserializing an Envelope, sdkInfo should be set`() {
-        val jsonEnvelope = FileFromResources.invoke("envelope_session_sdkinfo.txt")
+    fun `When deserializing an Envelope, SdkVersion should be set`() {
+        val jsonEnvelope = FileFromResources.invoke("envelope_session_sdkversion.txt")
         val envelope = serializer.deserializeEnvelope(ByteArrayInputStream(jsonEnvelope.toByteArray(Charsets.UTF_8)))!!
-        assertNotNull(envelope.header.sdkInfo)
-        val sdkInfo = envelope.header.sdkInfo!!
+        assertNotNull(envelope.header.sdkVersion)
+        val sdkInfo = envelope.header.sdkVersion!!
 
-        assertEquals("test", sdkInfo.sdkName)
-        assertEquals(1, sdkInfo.versionMajor)
-        assertEquals(2, sdkInfo.versionMinor)
-        assertEquals(3, sdkInfo.versionPatchlevel)
+        assertEquals("test", sdkInfo.name)
+        assertEquals("1.2.3", sdkInfo.version)
+
+        assertNotNull(sdkInfo.integrations)
+        assertEquals("NdkIntegration", sdkInfo.integrations!![0])
+
+        assertNotNull(sdkInfo.packages)
+        assertEquals("maven:sentry-android-core", sdkInfo.packages!![0].name)
+        assertEquals("4.5.6", sdkInfo.packages!![0].version)
     }
 
     @Test
@@ -382,20 +387,31 @@ class AndroidSerializerTest {
     }
 
     @Test
-    fun `When serializing an envelope, sdkInfo should be set`() {
+    fun `When serializing an envelope, SdkVersion should be set`() {
         val session = createSessionMockData()
-        val sentryEnvelope = SentryEnvelope.fromSession(serializer, session, SdkInfo.createSdkInfo("test", "1.2.3"))
+        val version = SdkVersion().apply {
+            name = "test"
+            version = "1.2.3"
+            addIntegration("TestIntegration")
+            addPackage("abc", "4.5.6")
+        }
+        val sentryEnvelope = SentryEnvelope.fromSession(serializer, session, version)
 
         val jsonEnvelope = serializeToString(sentryEnvelope)
         // reversing it so we can assert the values
         val envelope = serializer.deserializeEnvelope(ByteArrayInputStream(jsonEnvelope.toByteArray(Charsets.UTF_8)))!!
-        assertNotNull(envelope.header.sdkInfo)
+        assertNotNull(envelope.header.sdkVersion)
 
-        val sdkInfo = envelope.header.sdkInfo!!
-        assertEquals("test", sdkInfo.sdkName)
-        assertEquals(1, sdkInfo.versionMajor)
-        assertEquals(2, sdkInfo.versionMinor)
-        assertEquals(3, sdkInfo.versionPatchlevel)
+        val sdkVersion = envelope.header.sdkVersion!!
+        assertEquals("test", sdkVersion.name)
+        assertEquals("1.2.3", sdkVersion.version)
+
+        assertNotNull(sdkVersion.integrations)
+        assertEquals("TestIntegration", sdkVersion.integrations!![0])
+
+        assertNotNull(sdkVersion.packages)
+        assertEquals("abc", sdkVersion.packages!![0].name)
+        assertEquals("4.5.6", sdkVersion.packages!![0].version)
     }
 
     private fun assertSessionData(expectedSession: Session?) {

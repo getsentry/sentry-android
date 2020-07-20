@@ -42,11 +42,6 @@ android {
         }
     }
 
-    buildFeatures {
-        // Determines whether to generate a BuildConfig class.
-        buildConfig = false
-    }
-
     externalNativeBuild {
         cmake {
             version = Config.Android.cmakeVersion

@@ -4,6 +4,7 @@ import io.sentry.core.IHub;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
+import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.util.Objects;
 import java.lang.reflect.Method;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +39,7 @@ public final class NdkIntegration implements Integration {
         args[0] = options;
         method.invoke(null, args);
 
+        addPackage(options);
         options.getLogger().log(SentryLevel.DEBUG, "NdkIntegration installed.");
       } catch (NoSuchMethodException e) {
         options.setEnableNdk(false);
@@ -57,5 +59,13 @@ public final class NdkIntegration implements Integration {
   @Nullable
   Class<?> getSentryNdkClass() {
     return sentryNdkClass;
+  }
+
+  private void addPackage(@NotNull final SentryOptions options) {
+    final SdkVersion sdkVersion = options.getSdkVersion();
+    if (sdkVersion == null) {
+      return;
+    }
+    sdkVersion.addIntegration("NdkIntegration");
   }
 }

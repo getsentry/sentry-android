@@ -323,22 +323,20 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `init should set SdkInfo`() {
+    fun `init should set SdkVersion`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = mock<Context>()
         whenever(mockContext.applicationContext).thenReturn(null)
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
-        assertNotNull(sentryOptions.sdkInfo)
-        val sdkInfo = sentryOptions.sdkInfo!!
+        assertNotNull(sentryOptions.sdkVersion)
+        val sdkVersion = sentryOptions.sdkVersion!!
 
-        assertEquals("sentry.java.android", sdkInfo.sdkName)
+        assertEquals("sentry.java.android", sdkVersion.name)
 
         // versions change on every release, so lets check only if its not null
-        assertNotNull(sdkInfo.versionMajor)
-        assertNotNull(sdkInfo.versionMinor)
-        assertNotNull(sdkInfo.versionPatchlevel)
+        assertNotNull(sdkVersion.version)
     }
 
     private fun createMockContext(): Context {
