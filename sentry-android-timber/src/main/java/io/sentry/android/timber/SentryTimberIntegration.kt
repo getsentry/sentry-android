@@ -41,6 +41,5 @@ class SentryTimberIntegration(
     private fun addPackage(options: SentryOptions) {
         val sdkVersion = options.sdkVersion ?: return
         sdkVersion.addPackage("maven:sentry-android-timber", BuildConfig.VERSION_NAME)
-        sdkVersion.addIntegration("SentryTimberIntegration")
     }
 }
