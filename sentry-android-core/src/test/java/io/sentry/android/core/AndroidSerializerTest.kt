@@ -368,11 +368,14 @@ class AndroidSerializerTest {
         assertEquals("1.2.3", sdkInfo.version)
 
         assertNotNull(sdkInfo.integrations)
-        assertEquals("NdkIntegration", sdkInfo.integrations!![0])
+        assertTrue(sdkInfo.integrations!!.any { it == "NdkIntegration" })
 
         assertNotNull(sdkInfo.packages)
-        assertEquals("maven:sentry-android-core", sdkInfo.packages!![0].name)
-        assertEquals("4.5.6", sdkInfo.packages!![0].version)
+
+        assertTrue(sdkInfo.packages!!.any {
+            it.name == "maven:sentry-android-core"
+            it.version == "4.5.6"
+        })
     }
 
     @Test
@@ -403,15 +406,17 @@ class AndroidSerializerTest {
         assertNotNull(envelope.header.sdkVersion)
 
         val sdkVersion = envelope.header.sdkVersion!!
-        assertEquals("test", sdkVersion.name)
-        assertEquals("1.2.3", sdkVersion.version)
+        assertEquals(version.name, sdkVersion.name)
+        assertEquals(version.version, sdkVersion.version)
 
         assertNotNull(sdkVersion.integrations)
-        assertEquals("TestIntegration", sdkVersion.integrations!![0])
+        assertTrue(sdkVersion.integrations!!.any { it == "TestIntegration" })
 
         assertNotNull(sdkVersion.packages)
-        assertEquals("abc", sdkVersion.packages!![0].name)
-        assertEquals("4.5.6", sdkVersion.packages!![0].version)
+        assertTrue(sdkVersion.packages!!.any {
+            it.name == "abc"
+            it.version == "4.5.6"
+        })
     }
 
     private fun assertSessionData(expectedSession: Session?) {

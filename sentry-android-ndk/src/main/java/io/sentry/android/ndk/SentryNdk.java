@@ -1,7 +1,6 @@
 package io.sentry.android.ndk;
 
 import io.sentry.core.SentryOptions;
-import io.sentry.core.protocol.SdkVersion;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,15 +23,7 @@ public final class SentryNdk {
   private static native void initSentryNative(@NotNull final SentryOptions options);
 
   public static void init(@NotNull final SentryOptions options) {
-    addPackage(options);
+    SentryNdkUtil.addPackage(options.getSdkVersion());
     initSentryNative(options);
-  }
-
-  private static void addPackage(@NotNull final SentryOptions options) {
-    final SdkVersion sdkVersion = options.getSdkVersion();
-    if (sdkVersion == null) {
-      return;
-    }
-    sdkVersion.addPackage("maven:sentry-android-ndk", BuildConfig.VERSION_NAME);
   }
 }

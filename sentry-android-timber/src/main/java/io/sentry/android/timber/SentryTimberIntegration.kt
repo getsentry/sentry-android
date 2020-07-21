@@ -5,6 +5,7 @@ import io.sentry.core.ILogger
 import io.sentry.core.Integration
 import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
+import io.sentry.core.protocol.SdkVersion
 import java.io.Closeable
 import timber.log.Timber
 
@@ -19,7 +20,7 @@ class SentryTimberIntegration(
     private lateinit var logger: ILogger
 
     override fun register(hub: IHub, options: SentryOptions) {
-        addPackage(options)
+        addPackage(options.sdkVersion)
         logger = options.logger
 
         tree = SentryTimberTree(hub, minEventLevel, minBreadcrumbLevel)
@@ -38,8 +39,7 @@ class SentryTimberIntegration(
         }
     }
 
-    private fun addPackage(options: SentryOptions) {
-        val sdkVersion = options.sdkVersion ?: return
-        sdkVersion.addPackage("maven:sentry-android-timber", BuildConfig.VERSION_NAME)
+    private fun addPackage(sdkVersion: SdkVersion?) {
+        sdkVersion?.addPackage("maven:sentry-android-timber", BuildConfig.VERSION_NAME)
     }
 }

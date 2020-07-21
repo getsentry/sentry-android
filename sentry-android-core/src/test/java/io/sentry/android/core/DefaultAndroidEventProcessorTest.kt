@@ -27,6 +27,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import org.junit.runner.RunWith
 
@@ -173,7 +174,6 @@ class DefaultAndroidEventProcessorTest {
         val event = SentryEvent()
         processor.process(event, null)
         assertNotNull(event.sdk)
-        assertEquals("test", event.sdk.name)
-        assertEquals("1.2.3", event.sdk.version)
+        assertSame(event.sdk, fixture.options.sdkVersion)
     }
 }

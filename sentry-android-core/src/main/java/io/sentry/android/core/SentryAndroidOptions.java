@@ -41,7 +41,7 @@ public final class SentryAndroidOptions extends SentryOptions {
   private @NotNull SdkVersion createSdkVersion() {
     final SdkVersion sdkVersion = new SdkVersion();
 
-    sdkVersion.setName("sentry.java.android");
+    sdkVersion.setName(BuildConfig.SENTRY_CLIENT_NAME);
     String version = BuildConfig.VERSION_NAME;
     sdkVersion.setVersion(version);
 

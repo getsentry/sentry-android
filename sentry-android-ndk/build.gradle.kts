@@ -1,4 +1,5 @@
 import com.novoda.gradle.release.PublishExtension
+import org.jetbrains.kotlin.config.KotlinCompilerVersion
 
 plugins {
     id("com.android.library")
@@ -98,6 +99,9 @@ dependencies {
     api(project(":sentry-android-core"))
 
     compileOnly(Config.CompileOnly.jetbrainsAnnotations)
+
+    testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
+    testImplementation(Config.TestLibs.kotlinTestJunit)
 }
 
 val initNative = tasks.register<Exec>("initNative") {

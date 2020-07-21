@@ -40,8 +40,8 @@ public final class SentryEnvelopeHeaderAdapter extends TypeAdapter<SentryEnvelop
         if (integrations != null) {
           writer.name("integrations").beginArray();
 
-          for (final String item : integrations) {
-            writer.value(item);
+          for (final String integration : integrations) {
+            writer.value(integration);
           }
 
           // integrations
