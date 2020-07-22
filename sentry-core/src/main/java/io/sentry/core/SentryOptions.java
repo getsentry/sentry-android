@@ -967,7 +967,7 @@ public class SentryOptions {
   }
 
   /**
-   * Sets the max queue size if maxQueueSize is > 0
+   * Sets the max queue size if maxQueueSize is bigger than 0
    *
    * @param maxQueueSize max queue size
    */
