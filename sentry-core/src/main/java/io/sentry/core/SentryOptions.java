@@ -104,6 +104,7 @@ public class SentryOptions {
   /** The sessions dir. size for capping the number of envelopes Default is 100 */
   private int sessionsDirSize = 100;
 
+  /** Max. queue size before flushing events/envelopes to the disk */
   private int maxQueueSize = cacheDirSize + sessionsDirSize;
 
   /**
@@ -200,8 +201,10 @@ public class SentryOptions {
   /** whether to ignore TLS errors */
   private boolean bypassSecurity = false;
 
+  /** Reads and caches event json files in the disk */
   private @NotNull IEventCache eventDiskCache = NoOpEventCache.getInstance();
 
+  /** Reads and caches envelope files in the disk */
   private @NotNull IEnvelopeCache envelopeDiskCache = NoOpEnvelopeCache.getInstance();
 
   /** SdkVersion object that contains the Sentry Client Name and its version */
@@ -917,29 +920,61 @@ public class SentryOptions {
     this.bypassSecurity = bypassSecurity;
   }
 
+  /**
+   * Returns the EventCache interface
+   *
+   * @return the EventCache object
+   */
   public @NotNull IEventCache getEventDiskCache() {
     return eventDiskCache;
   }
 
+  /**
+   * Sets the EventCache interface
+   *
+   * @param eventDiskCache the EventCache object
+   */
   public void setEventDiskCache(final @Nullable IEventCache eventDiskCache) {
     this.eventDiskCache = eventDiskCache != null ? eventDiskCache : NoOpEventCache.getInstance();
   }
 
+  /**
+   * Returns the EnvelopeCache interface
+   *
+   * @return the EnvelopeCache object
+   */
   public @NotNull IEnvelopeCache getEnvelopeDiskCache() {
     return envelopeDiskCache;
   }
 
+  /**
+   * Sets the EnvelopeCache interface
+   *
+   * @param envelopeDiskCache the EnvelopeCache object
+   */
   public void setEnvelopeDiskCache(final @Nullable IEnvelopeCache envelopeDiskCache) {
     this.envelopeDiskCache =
         envelopeDiskCache != null ? envelopeDiskCache : NoOpEnvelopeCache.getInstance();
   }
 
+  /**
+   * Returns the Max queue size
+   *
+   * @return the max queue size
+   */
   public int getMaxQueueSize() {
     return maxQueueSize;
   }
 
+  /**
+   * Sets the max queue size if maxQueueSize is > 0
+   *
+   * @param maxQueueSize max queue size
+   */
   public void setMaxQueueSize(int maxQueueSize) {
-    this.maxQueueSize = maxQueueSize;
+    if (maxQueueSize > 0) {
+      this.maxQueueSize = maxQueueSize;
+    }
   }
 
   /**
