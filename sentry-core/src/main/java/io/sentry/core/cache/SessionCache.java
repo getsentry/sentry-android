@@ -339,7 +339,8 @@ public final class SessionCache extends CacheStrategy implements IEnvelopeCache 
   private @NotNull File[] allEnvelopeFiles() {
     if (isDirectoryValid()) {
       // lets filter the session.json here
-      File[] files = directory.listFiles((__, fileName) -> fileName.endsWith(SUFFIX_ENVELOPE_FILE));
+      final File[] files =
+          directory.listFiles((__, fileName) -> fileName.endsWith(SUFFIX_ENVELOPE_FILE));
       if (files != null) {
         return files;
       }

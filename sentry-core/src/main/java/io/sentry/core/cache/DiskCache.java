@@ -120,8 +120,7 @@ public final class DiskCache extends CacheStrategy implements IEventCache {
 
   private @NotNull File[] allEventFiles() {
     if (isDirectoryValid()) {
-      // TODO: we need to order by oldest to the newest here
-      File[] files = directory.listFiles((__, fileName) -> fileName.endsWith(FILE_SUFFIX));
+      final File[] files = directory.listFiles((__, fileName) -> fileName.endsWith(FILE_SUFFIX));
       if (files != null) {
         return files;
       }

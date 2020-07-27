@@ -26,7 +26,7 @@ abstract class CacheStrategy {
       final @NotNull String directoryPath,
       final int maxSize) {
     this.options = Objects.requireNonNull(options, "SentryOptions is required.");
-    this.serializer = Objects.requireNonNull(options.getSerializer(), "Serializer is required.");
+    this.serializer = options.getSerializer();
 
     Objects.requireNonNull(directoryPath, "Directory is required.");
     this.directory = new File(directoryPath);
@@ -35,9 +35,9 @@ abstract class CacheStrategy {
   }
 
   /**
-   * Check if a Dir. is valid, has write and read permission
+   * Check if a Dir. is valid and have write and read permission
    *
-   * @return true if valid and has permission or false otherwise
+   * @return true if valid and has permissions or false otherwise
    */
   protected boolean isDirectoryValid() {
     if (!directory.isDirectory() || !directory.canWrite() || !directory.canRead()) {
