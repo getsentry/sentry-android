@@ -39,12 +39,12 @@ class CacheStrategyTest {
 
     @Test
     fun `Sort files from the oldest to the newest`() {
-        val sut = fixture.getSUT()
+        val sut = fixture.getSUT(3)
 
-        val files = createTempFiles()
+        val files = createTempFilesSortByOldestToNewest()
         val reverseFiles = files.reversedArray()
 
-        sut.sortFilesOldestToNewest(reverseFiles)
+        sut.rotateCacheIfNeeded(reverseFiles)
 
         assertEquals(files[0].absolutePath, reverseFiles[0].absolutePath)
         assertEquals(files[1].absolutePath, reverseFiles[1].absolutePath)
@@ -55,7 +55,7 @@ class CacheStrategyTest {
     fun `Rotate cache folder to save new file`() {
         val sut = fixture.getSUT(3)
 
-        val files = createTempFiles()
+        val files = createTempFilesSortByOldestToNewest()
         val reverseFiles = files.reversedArray()
 
         sut.rotateCacheIfNeeded(reverseFiles)
@@ -74,7 +74,7 @@ class CacheStrategyTest {
 
     private class CustomCache(options: SentryOptions, path: String, maxSize: Int) : CacheStrategy(options, path, maxSize)
 
-    private fun createTempFiles(): Array<File> {
+    private fun createTempFilesSortByOldestToNewest(): Array<File> {
         val f1 = Files.createTempFile(fixture.dir.toPath(), "f1", ".json").toFile()
         f1.setLastModified(DateUtils.getDateTime("2020-03-27T08:52:58.015Z").time)
 

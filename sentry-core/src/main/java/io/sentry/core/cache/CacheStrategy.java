@@ -19,7 +19,7 @@ abstract class CacheStrategy {
   protected final @NotNull SentryOptions options;
   protected final @NotNull ISerializer serializer;
   protected @NotNull File directory;
-  protected int maxSize;
+  private int maxSize;
 
   CacheStrategy(
       final @NotNull SentryOptions options,
@@ -27,7 +27,7 @@ abstract class CacheStrategy {
       final int maxSize) {
     Objects.requireNonNull(directoryPath, "Directory is required.");
     this.options = Objects.requireNonNull(options, "SentryOptions is required.");
-        
+
     this.serializer = options.getSerializer();
     this.directory = new File(directoryPath);
 
@@ -35,7 +35,7 @@ abstract class CacheStrategy {
   }
 
   /**
-   * Check if a Dir. is valid and have write and read permission
+   * Check if a dir. is valid and have write and read permission
    *
    * @return true if valid and has permissions or false otherwise
    */
@@ -57,10 +57,9 @@ abstract class CacheStrategy {
    *
    * @param files the Files
    */
-  void sortFilesOldestToNewest(@NotNull File[] files) {
+  private void sortFilesOldestToNewest(@NotNull File[] files) {
     // just sort it if more than 1 file
     if (files.length > 1) {
-      // sort by the oldest to the newest
       Arrays.sort(files, (f1, f2) -> Long.compare(f1.lastModified(), f2.lastModified()));
     }
   }
@@ -84,12 +83,10 @@ abstract class CacheStrategy {
       for (int i = 0; i < totalToBeDeleted; i++) {
         final File file = files[i];
         // sanity check if the file actually exists.
-        if (file.exists()) {
-          if (!file.delete()) {
-            options
-                .getLogger()
-                .log(SentryLevel.WARNING, "File can't be deleted: %s", file.getAbsolutePath());
-          }
+        if (!file.delete()) {
+          options
+              .getLogger()
+              .log(SentryLevel.WARNING, "File can't be deleted: %s", file.getAbsolutePath());
         }
       }
     }
