@@ -1033,6 +1033,8 @@ public class SentryOptions {
     // if there's an error on the setup, we are able to capture it
     integrations.add(new UncaughtExceptionHandlerIntegration());
 
+    integrations.add(new ShutdownHookIntegration());
+
     eventProcessors.add(new MainEventProcessor(this));
   }
 }
