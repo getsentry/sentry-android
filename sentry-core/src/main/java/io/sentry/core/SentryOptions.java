@@ -1034,13 +1034,5 @@ public class SentryOptions {
     integrations.add(new UncaughtExceptionHandlerIntegration());
 
     eventProcessors.add(new MainEventProcessor(this));
-
-    integrations.add(
-        new SendCachedEventFireAndForgetIntegration(
-            new SendFireAndForgetEventSender(() -> getCacheDirPath())));
-
-    integrations.add(
-        new SendCachedEventFireAndForgetIntegration(
-            new SendFireAndForgetEnvelopeSender(() -> getSessionsPath())));
   }
 }
