@@ -18,8 +18,8 @@ abstract class CacheStrategy {
 
   protected final @NotNull SentryOptions options;
   protected final @NotNull ISerializer serializer;
-  protected @NotNull File directory;
-  private int maxSize;
+  protected final @NotNull File directory;
+  private final int maxSize;
 
   CacheStrategy(
       final @NotNull SentryOptions options,
