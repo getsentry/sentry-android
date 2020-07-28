@@ -25,10 +25,10 @@ abstract class CacheStrategy {
       final @NotNull SentryOptions options,
       final @NotNull String directoryPath,
       final int maxSize) {
-    this.options = Objects.requireNonNull(options, "SentryOptions is required.");
-    this.serializer = options.getSerializer();
-
     Objects.requireNonNull(directoryPath, "Directory is required.");
+    this.options = Objects.requireNonNull(options, "SentryOptions is required.");
+        
+    this.serializer = options.getSerializer();
     this.directory = new File(directoryPath);
 
     this.maxSize = maxSize;
