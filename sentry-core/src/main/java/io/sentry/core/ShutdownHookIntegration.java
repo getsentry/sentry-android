@@ -13,7 +13,7 @@ public final class ShutdownHookIntegration implements Integration {
   }
 
   @Override
-  public void register(@NotNull IHub hub, @NotNull SentryOptions options) {
+  public void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
     Objects.requireNonNull(hub, "Hub is required");
 
     runtime.addShutdownHook(new Thread(() -> hub.close()));
