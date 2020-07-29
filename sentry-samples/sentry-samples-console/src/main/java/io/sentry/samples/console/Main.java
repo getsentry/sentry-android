@@ -46,12 +46,13 @@ public class Main {
           // Enable SDK logging with Debug level
           options.setDebug(true);
           // To change the verbosity, use:
-          options.setDiagnosticLevel(SentryLevel.LOG);
+          // By default it's DEBUG.
+          options.setDiagnosticLevel(SentryLevel.ERROR); //  A good option to have SDK debug log in prod is to use only level ERROR here.
 
           // Using a proxy:
           options.setProxy(null); // new Proxy(Type.HTTP, new InetSocketAddress(8090)));
 
-          // Exclude classes from certain packages from stack traces sent to Sentry:
+          // Exclude frames from some packages from being "inApp" so are hidden by default in Sentry UI:
           options.addInAppExclude("org.jboss");
         });
 
@@ -73,9 +74,11 @@ public class Main {
           scope.setLevel(SentryLevel.FATAL);
           scope.setTransaction("main");
 
+          // This message includes the data set to the scope in this block:
           Sentry.captureMessage("Fatal message!");
         });
 
+    // Only data added to the scope on `configureScope` above is included.
     Sentry.captureMessage("Some warning!", SentryLevel.WARNING);
 
     Exception exception = new RuntimeException("Attempting to send this multiple times");
