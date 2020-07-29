@@ -1,5 +1,9 @@
 package io.sentry.core;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import org.jetbrains.annotations.NotNull;
+
 /** ILogger implementation to System.out. */
 public final class SystemOutLogger implements ILogger {
 
@@ -27,7 +31,9 @@ public final class SystemOutLogger implements ILogger {
   @Override
   public void log(SentryLevel level, String message, Throwable throwable) {
     System.out.println(
-        String.format("%s: %s", level, String.format(message, throwable.toString())));
+        String.format(
+            "%s: %s\n%s",
+            level, String.format(message, throwable.toString()), captureStackTrace(throwable)));
   }
 
   /**
@@ -42,6 +48,18 @@ public final class SystemOutLogger implements ILogger {
   @Override
   public void log(SentryLevel level, Throwable throwable, String message, Object... args) {
     System.out.println(
-        String.format("%s: %s \n %s", level, String.format(message, args), throwable.toString()));
+        String.format(
+            "%s: %s \n %s\n%s",
+            level,
+            String.format(message, args),
+            throwable.toString(),
+            captureStackTrace(throwable)));
+  }
+
+  private String captureStackTrace(@NotNull Throwable throwable) {
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter printWriter = new PrintWriter(stringWriter);
+    throwable.printStackTrace(printWriter);
+    return stringWriter.toString();
   }
 }
