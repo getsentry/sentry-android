@@ -1,6 +1,5 @@
 package io.sentry.core.protocol
 
-import java.util.Date
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

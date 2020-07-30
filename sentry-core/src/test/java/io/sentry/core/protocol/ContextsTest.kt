@@ -13,6 +13,7 @@ class ContextsTest {
         contexts.browser = Browser()
         contexts.device = Device()
         contexts.operatingSystem = OperatingSystem()
+        contexts.runtime = SentryRuntime()
 
         val clone = contexts.clone()
 
@@ -22,6 +23,7 @@ class ContextsTest {
         assertNotSame(contexts.browser, clone.browser)
         assertNotSame(contexts.device, clone.device)
         assertNotSame(contexts.operatingSystem, clone.operatingSystem)
+        assertNotSame(contexts.runtime, clone.runtime)
     }
 
     @Test

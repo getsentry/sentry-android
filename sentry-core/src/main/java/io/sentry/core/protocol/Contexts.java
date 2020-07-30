@@ -71,7 +71,7 @@ public final class Contexts extends ConcurrentHashMap<String, Object> implements
 
   @Override
   public @NotNull Contexts clone() throws CloneNotSupportedException {
-    Contexts clone = new Contexts();
+    final Contexts clone = new Contexts();
 
     for (Map.Entry<String, Object> entry : entrySet()) {
       if (App.TYPE.equals(entry.getKey()) && entry.getValue() instanceof App) {
@@ -82,6 +82,8 @@ public final class Contexts extends ConcurrentHashMap<String, Object> implements
         clone.setDevice(((Device) entry.getValue()).clone());
       } else if (OperatingSystem.TYPE.equals(entry.getKey()) && entry.getValue() instanceof OperatingSystem) {
         clone.setOperatingSystem(((OperatingSystem) entry.getValue()).clone());
+      } else if (SentryRuntime.TYPE.equals(entry.getKey()) && entry.getValue() instanceof SentryRuntime) {
+        clone.setRuntime(((SentryRuntime) entry.getValue()).clone());
       } else {
         clone.put(entry.getKey(), entry.getValue());
       }
