@@ -357,6 +357,12 @@ public final class Device implements IUnknownPropertiesConsumer, Cloneable {
     this.unknown = unknown;
   }
 
+  /**
+   * Clones a Device aka deep copy
+   *
+   * @return the cloned Device
+   * @throws CloneNotSupportedException if object is not cloneable
+   */
   @Override
   public @NotNull Device clone() throws CloneNotSupportedException {
     final Device clone = (Device) super.clone();

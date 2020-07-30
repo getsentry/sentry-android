@@ -1,7 +1,6 @@
 package io.sentry.core.protocol;
 
 import io.sentry.core.IUnknownPropertiesConsumer;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
@@ -43,6 +42,12 @@ public final class Browser implements IUnknownPropertiesConsumer, Cloneable {
     this.unknown = unknown;
   }
 
+  /**
+   * Clones a Browser aka deep copy
+   *
+   * @return the cloned Browser
+   * @throws CloneNotSupportedException if object is not cloneable
+   */
   @Override
   public @NotNull Browser clone() throws CloneNotSupportedException {
     final Browser clone = (Browser) super.clone();

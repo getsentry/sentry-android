@@ -1,7 +1,6 @@
 package io.sentry.core.protocol;
 
 import io.sentry.core.IUnknownPropertiesConsumer;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
@@ -108,9 +107,9 @@ public final class Gpu implements IUnknownPropertiesConsumer, Cloneable {
   }
 
   /**
-   * Clones an runtime aka deep copy
+   * Clones a Gpu aka deep copy
    *
-   * @return the runtime
+   * @return the cloned Gpu
    * @throws CloneNotSupportedException if object is not cloneable
    */
   @Override

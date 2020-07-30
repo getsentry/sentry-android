@@ -1,7 +1,6 @@
 package io.sentry.core.protocol;
 
 import io.sentry.core.IUnknownPropertiesConsumer;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
@@ -54,9 +53,9 @@ public final class SentryRuntime implements IUnknownPropertiesConsumer, Cloneabl
   }
 
   /**
-   * Clones an runtime aka deep copy
+   * Clones a SentryRuntime aka deep copy
    *
-   * @return the runtime
+   * @return the cloned SentryRuntime
    * @throws CloneNotSupportedException if object is not cloneable
    */
   @Override

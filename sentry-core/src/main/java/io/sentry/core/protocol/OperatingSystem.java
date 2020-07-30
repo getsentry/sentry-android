@@ -1,7 +1,6 @@
 package io.sentry.core.protocol;
 
 import io.sentry.core.IUnknownPropertiesConsumer;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
@@ -83,7 +82,7 @@ public final class OperatingSystem implements IUnknownPropertiesConsumer, Clonea
   /**
    * Clones an OperatingSystem aka deep copy
    *
-   * @return the OperatingSystem
+   * @return the cloned OperatingSystem
    * @throws CloneNotSupportedException if object is not cloneable
    */
   @Override

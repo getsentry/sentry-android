@@ -94,7 +94,7 @@ public final class App implements Cloneable, IUnknownPropertiesConsumer {
   /**
    * Clones an App aka deep copy
    *
-   * @return the App
+   * @return the cloned App
    * @throws CloneNotSupportedException if object is not cloneable
    */
   @Override

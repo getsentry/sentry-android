@@ -80,9 +80,11 @@ public final class Contexts extends ConcurrentHashMap<String, Object> implements
         clone.setBrowser(((Browser) entry.getValue()).clone());
       } else if (Device.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Device) {
         clone.setDevice(((Device) entry.getValue()).clone());
-      } else if (OperatingSystem.TYPE.equals(entry.getKey()) && entry.getValue() instanceof OperatingSystem) {
+      } else if (OperatingSystem.TYPE.equals(entry.getKey())
+          && entry.getValue() instanceof OperatingSystem) {
         clone.setOperatingSystem(((OperatingSystem) entry.getValue()).clone());
-      } else if (SentryRuntime.TYPE.equals(entry.getKey()) && entry.getValue() instanceof SentryRuntime) {
+      } else if (SentryRuntime.TYPE.equals(entry.getKey())
+          && entry.getValue() instanceof SentryRuntime) {
         clone.setRuntime(((SentryRuntime) entry.getValue()).clone());
       } else if (Gpu.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Gpu) {
         clone.setGpu(((Gpu) entry.getValue()).clone());
