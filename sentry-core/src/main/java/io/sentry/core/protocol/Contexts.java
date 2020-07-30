@@ -1,20 +1,11 @@
 package io.sentry.core.protocol;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
 
 public final class Contexts extends ConcurrentHashMap<String, Object> implements Cloneable {
   private static final long serialVersionUID = 252445813254943011L;
-
-  public Contexts(Map<String, Object> initialValues) {
-    super(initialValues);
-  }
-
-  public Contexts() {
-    this(Collections.emptyMap());
-  }
 
   private <T> T toContextType(String key, Class<T> clazz) {
     Object item = get(key);
