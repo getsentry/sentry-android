@@ -1,7 +1,7 @@
 package io.sentry.core;
 
+import io.sentry.core.util.CollectionUtils;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -227,20 +227,7 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
       clone.data = null;
     }
 
-    final Map<String, Object> unknownRef = unknown;
-    if (unknownRef != null) {
-      final Map<String, Object> unknownClone = new HashMap<>();
-
-      for (Map.Entry<String, Object> item : unknownRef.entrySet()) {
-        if (item != null) {
-          unknownClone.put(item.getKey(), item.getValue()); // shallow copy
-        }
-      }
-
-      clone.unknown = unknownClone;
-    } else {
-      clone.unknown = null;
-    }
+    clone.unknown = CollectionUtils.shallowCopy(unknown);
 
     final SentryLevel levelRef = level;
     clone.level =

@@ -1,7 +1,7 @@
 package io.sentry.core.protocol;
 
 import io.sentry.core.IUnknownPropertiesConsumer;
-import java.util.HashMap;
+import io.sentry.core.util.CollectionUtils;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -52,20 +52,7 @@ public final class Browser implements IUnknownPropertiesConsumer, Cloneable {
   public @NotNull Browser clone() throws CloneNotSupportedException {
     final Browser clone = (Browser) super.clone();
 
-    final Map<String, Object> unknownRef = unknown;
-    if (unknownRef != null) {
-      final Map<String, Object> unknownClone = new HashMap<>();
-
-      for (Map.Entry<String, Object> item : unknownRef.entrySet()) {
-        if (item != null) {
-          unknownClone.put(item.getKey(), item.getValue()); // shallow copy
-        }
-      }
-
-      clone.unknown = unknownClone;
-    } else {
-      clone.unknown = null;
-    }
+    clone.unknown = CollectionUtils.shallowCopy(unknown);
 
     return clone;
   }

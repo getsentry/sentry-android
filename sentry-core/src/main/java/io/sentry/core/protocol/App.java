@@ -1,8 +1,8 @@
 package io.sentry.core.protocol;
 
 import io.sentry.core.IUnknownPropertiesConsumer;
+import io.sentry.core.util.CollectionUtils;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -101,20 +101,7 @@ public final class App implements Cloneable, IUnknownPropertiesConsumer {
   public @NotNull App clone() throws CloneNotSupportedException {
     final App clone = (App) super.clone();
 
-    final Map<String, Object> unknownRef = unknown;
-    if (unknownRef != null) {
-      final Map<String, Object> unknownClone = new HashMap<>();
-
-      for (Map.Entry<String, Object> item : unknownRef.entrySet()) {
-        if (item != null) {
-          unknownClone.put(item.getKey(), item.getValue()); // shallow copy
-        }
-      }
-
-      clone.unknown = unknownClone;
-    } else {
-      clone.unknown = null;
-    }
+    clone.unknown = CollectionUtils.shallowCopy(unknown);
 
     return clone;
   }

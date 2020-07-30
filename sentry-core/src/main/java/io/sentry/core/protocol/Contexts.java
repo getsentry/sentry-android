@@ -74,22 +74,24 @@ public final class Contexts extends ConcurrentHashMap<String, Object> implements
     final Contexts clone = new Contexts();
 
     for (Map.Entry<String, Object> entry : entrySet()) {
-      if (App.TYPE.equals(entry.getKey()) && entry.getValue() instanceof App) {
-        clone.setApp(((App) entry.getValue()).clone());
-      } else if (Browser.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Browser) {
-        clone.setBrowser(((Browser) entry.getValue()).clone());
-      } else if (Device.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Device) {
-        clone.setDevice(((Device) entry.getValue()).clone());
-      } else if (OperatingSystem.TYPE.equals(entry.getKey())
-          && entry.getValue() instanceof OperatingSystem) {
-        clone.setOperatingSystem(((OperatingSystem) entry.getValue()).clone());
-      } else if (SentryRuntime.TYPE.equals(entry.getKey())
-          && entry.getValue() instanceof SentryRuntime) {
-        clone.setRuntime(((SentryRuntime) entry.getValue()).clone());
-      } else if (Gpu.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Gpu) {
-        clone.setGpu(((Gpu) entry.getValue()).clone());
-      } else {
-        clone.put(entry.getKey(), entry.getValue());
+      if (entry != null) {
+        Object value = entry.getValue();
+        if (App.TYPE.equals(entry.getKey()) && value instanceof App) {
+          clone.setApp(((App) value).clone());
+        } else if (Browser.TYPE.equals(entry.getKey()) && value instanceof Browser) {
+          clone.setBrowser(((Browser) value).clone());
+        } else if (Device.TYPE.equals(entry.getKey()) && value instanceof Device) {
+          clone.setDevice(((Device) value).clone());
+        } else if (OperatingSystem.TYPE.equals(entry.getKey())
+            && value instanceof OperatingSystem) {
+          clone.setOperatingSystem(((OperatingSystem) value).clone());
+        } else if (SentryRuntime.TYPE.equals(entry.getKey()) && value instanceof SentryRuntime) {
+          clone.setRuntime(((SentryRuntime) value).clone());
+        } else if (Gpu.TYPE.equals(entry.getKey()) && value instanceof Gpu) {
+          clone.setGpu(((Gpu) value).clone());
+        } else {
+          clone.put(entry.getKey(), value);
+        }
       }
     }
 
