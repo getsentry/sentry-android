@@ -95,8 +95,6 @@ class DeviceTest {
         assertEquals(768, clone.screenHeightPixels)
         assertEquals(1.5f, clone.screenDensity)
         assertEquals(300, clone.screenDpi)
-//        assertEquals("appversion", clone.bootTime)
-//        assertEquals("appversion", clone.timezone)
         assertEquals("id", clone.id)
         assertEquals("language", clone.language)
         assertEquals("connection type", clone.connectionType)
