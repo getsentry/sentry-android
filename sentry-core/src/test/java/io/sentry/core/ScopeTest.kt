@@ -1,6 +1,5 @@
 package io.sentry.core
 
-import io.sentry.core.protocol.App
 import io.sentry.core.protocol.User
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,7 +25,6 @@ class ScopeTest {
 
         scope.user = user
         scope.transaction = "transaction"
-        scope.contexts.app = App()
 
         val fingerprints = mutableListOf("abc", "def")
         scope.fingerprint = fingerprints
@@ -52,7 +50,6 @@ class ScopeTest {
         assertNotSame(scope, clone)
         assertNotSame(scope.user, clone.user)
         assertNotSame(scope.contexts, clone.contexts)
-        assertNotSame(scope.contexts.app, clone.contexts.app)
         assertNotSame(scope.fingerprint, clone.fingerprint)
         assertNotSame(scope.breadcrumbs, clone.breadcrumbs)
         assertNotSame(scope.tags, clone.tags)
@@ -71,8 +68,6 @@ class ScopeTest {
 
         scope.user = user
         scope.transaction = "transaction"
-
-        scope.contexts.app = App()
 
         val fingerprints = mutableListOf("abc")
         scope.fingerprint = fingerprints
