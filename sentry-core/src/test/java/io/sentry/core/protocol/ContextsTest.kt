@@ -11,6 +11,7 @@ class ContextsTest {
         val contexts = Contexts()
         contexts.app = App()
         contexts.browser = Browser()
+        contexts.device = Device()
 
         val clone = contexts.clone()
 
@@ -18,6 +19,7 @@ class ContextsTest {
         assertNotSame(contexts, clone)
         assertNotSame(contexts.app, clone.app)
         assertNotSame(contexts.browser, clone.browser)
+        assertNotSame(contexts.device, clone.device)
     }
 
     @Test

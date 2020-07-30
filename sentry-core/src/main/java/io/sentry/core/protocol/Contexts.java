@@ -78,6 +78,8 @@ public final class Contexts extends ConcurrentHashMap<String, Object> implements
         clone.setApp(((App) entry.getValue()).clone());
       } else if (Browser.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Browser) {
         clone.setBrowser(((Browser) entry.getValue()).clone());
+      } else if (Device.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Device) {
+        clone.setDevice(((Device) entry.getValue()).clone());
       } else {
         clone.put(entry.getKey(), entry.getValue());
       }
