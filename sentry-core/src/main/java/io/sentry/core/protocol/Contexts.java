@@ -84,6 +84,8 @@ public final class Contexts extends ConcurrentHashMap<String, Object> implements
         clone.setOperatingSystem(((OperatingSystem) entry.getValue()).clone());
       } else if (SentryRuntime.TYPE.equals(entry.getKey()) && entry.getValue() instanceof SentryRuntime) {
         clone.setRuntime(((SentryRuntime) entry.getValue()).clone());
+      } else if (Gpu.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Gpu) {
+        clone.setGpu(((Gpu) entry.getValue()).clone());
       } else {
         clone.put(entry.getKey(), entry.getValue());
       }
