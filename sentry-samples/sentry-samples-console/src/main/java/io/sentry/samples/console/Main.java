@@ -81,30 +81,9 @@ public class Main {
     // Only data added to the scope on `configureScope` above is included.
     Sentry.captureMessage("Some warning!", SentryLevel.WARNING);
 
-    Exception exception = new RuntimeException("Attempting to send this multiple times");
-
-    // Only the first capture will be sent to Sentry
-    for (int i = 0; i < 3; i++) {
-      // The SDK is able to detect duplicate events:
-      // This is useful, for example, when multiple loggers log the same exception. Or exception is
-      // re-thrown and recaptured.
-      Sentry.captureException(exception);
-    }
-
-    int count = 10;
-    for (int i = 0; i < count; i++) {
-      String msg = "%d of %d items we'll wait to flush to Sentry!";
-      Message message = new Message();
-      message.setMessage(msg);
-      message.setFormatted(String.format(msg, i, count));
-      SentryEvent event = new SentryEvent();
-      event.setMessage(message);
-      Sentry.captureEvent(event, SentryLevel.DEBUG);
-    }
-
-    // Console output will show queue being flushed. Task completes then and timeout is never
-    // reached (you don't need to wait a day :)
-    Sentry.flush(10000);
+    // Sending exception:
+    Exception exception = new RuntimeException("Some error!");
+    Sentry.captureException(exception);
 
     // An event with breadcrumb and user data
     SentryEvent evt = new SentryEvent();
