@@ -49,9 +49,6 @@ public class Main {
           // By default it's DEBUG.
           options.setDiagnosticLevel(SentryLevel.ERROR); //  A good option to have SDK debug log in prod is to use only level ERROR here.
 
-          // Using a proxy:
-          options.setProxy(null); // new Proxy(Type.HTTP, new InetSocketAddress(8090)));
-
           // Exclude frames from some packages from being "inApp" so are hidden by default in Sentry UI:
           options.addInAppExclude("org.jboss");
         });
@@ -90,7 +87,7 @@ public class Main {
     Message msg = new Message();
     msg.setMessage("Detailed event");
     evt.setMessage(msg);
-    evt.addBreadcrumb(new Breadcrumb("Breadcrumb directly to the event"));
+    evt.addBreadcrumb("Breadcrumb directly to the event");
     User user = new User();
     user.setUsername("some@user");
     evt.setUser(user);
@@ -98,6 +95,20 @@ public class Main {
     evt.setFingerprints(Collections.singletonList("NewClientDebug"));
     evt.setLevel(SentryLevel.DEBUG);
     Sentry.captureEvent(evt);
+
+    int count = 10;
+    for (int i = 0; i < count; i++) {
+      String messageContent = "%d of %d items we'll wait to flush to Sentry!";
+      Message message = new Message();
+      message.setMessage(messageContent);
+      message.setFormatted(String.format(messageContent, i, count));
+      SentryEvent event = new SentryEvent();
+      event.setMessage(message);
+      Sentry.captureEvent(event, SentryLevel.DEBUG);
+    }
+
+    // All events that have not been sent yet are being flushed on JVM exit. Events can be also flushed manually:
+    // Sentry.close();
   }
 
   private static class SomeEventProcessor implements EventProcessor {
