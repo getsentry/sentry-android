@@ -3,8 +3,9 @@ package io.sentry.core.protocol;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jetbrains.annotations.NotNull;
 
-public final class Contexts extends ConcurrentHashMap<String, Object> {
+public final class Contexts extends ConcurrentHashMap<String, Object> implements Cloneable {
   private static final long serialVersionUID = 252445813254943011L;
 
   public Contexts(Map<String, Object> initialValues) {
@@ -66,5 +67,20 @@ public final class Contexts extends ConcurrentHashMap<String, Object> {
 
   public void setGpu(Gpu gpu) {
     this.put(Gpu.TYPE, gpu);
+  }
+
+  @Override
+  public @NotNull Contexts clone() throws CloneNotSupportedException {
+    Contexts clone = new Contexts();
+
+    for (Map.Entry<String, Object> entry : entrySet()) {
+      if (App.TYPE.equals(entry.getKey()) && entry.getValue() instanceof App) {
+        clone.setApp(((App) entry.getValue()).clone());
+      } else {
+        clone.put(entry.getKey(), entry.getValue());
+      }
+    }
+
+    return clone;
   }
 }

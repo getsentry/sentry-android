@@ -363,7 +363,7 @@ public final class Scope implements Cloneable {
 
     clone.extra = extraClone;
 
-    clone.contexts = new Contexts(contexts);
+    clone.contexts = contexts.clone();
 
     return clone;
   }
