@@ -1,10 +1,14 @@
 package io.sentry.core.protocol;
 
 import io.sentry.core.IUnknownPropertiesConsumer;
+
+import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
-public final class OperatingSystem implements IUnknownPropertiesConsumer {
+public final class OperatingSystem implements IUnknownPropertiesConsumer, Cloneable {
   public static final String TYPE = "os";
 
   private String name;
@@ -65,9 +69,42 @@ public final class OperatingSystem implements IUnknownPropertiesConsumer {
     this.rooted = rooted;
   }
 
+  @TestOnly
+  Map<String, Object> getUnknown() {
+    return unknown;
+  }
+
   @ApiStatus.Internal
   @Override
   public void acceptUnknownProperties(Map<String, Object> unknown) {
     this.unknown = unknown;
+  }
+
+  /**
+   * Clones an OperatingSystem aka deep copy
+   *
+   * @return the OperatingSystem
+   * @throws CloneNotSupportedException if object is not cloneable
+   */
+  @Override
+  public @NotNull OperatingSystem clone() throws CloneNotSupportedException {
+    final OperatingSystem clone = (OperatingSystem) super.clone();
+
+    final Map<String, Object> unknownRef = unknown;
+    if (unknownRef != null) {
+      final Map<String, Object> unknownClone = new HashMap<>();
+
+      for (Map.Entry<String, Object> item : unknownRef.entrySet()) {
+        if (item != null) {
+          unknownClone.put(item.getKey(), item.getValue()); // shallow copy
+        }
+      }
+
+      clone.unknown = unknownClone;
+    } else {
+      clone.unknown = null;
+    }
+
+    return clone;
   }
 }

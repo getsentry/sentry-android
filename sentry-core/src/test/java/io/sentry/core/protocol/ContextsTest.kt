@@ -12,6 +12,7 @@ class ContextsTest {
         contexts.app = App()
         contexts.browser = Browser()
         contexts.device = Device()
+        contexts.operatingSystem = OperatingSystem()
 
         val clone = contexts.clone()
 
@@ -20,6 +21,7 @@ class ContextsTest {
         assertNotSame(contexts.app, clone.app)
         assertNotSame(contexts.browser, clone.browser)
         assertNotSame(contexts.device, clone.device)
+        assertNotSame(contexts.operatingSystem, clone.operatingSystem)
     }
 
     @Test
