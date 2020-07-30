@@ -11,7 +11,7 @@ class AppTest {
     fun `cloning app wont have the same references`() {
         val app = App()
         app.appBuild = "app build"
-        app.appIdentifier = "app identifer"
+        app.appIdentifier = "app identifier"
         app.appName = "app name"
         app.appStartTime = Date()
         app.appVersion = "app version"

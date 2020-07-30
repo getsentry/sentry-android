@@ -10,12 +10,14 @@ class ContextsTest {
     fun `cloning contexts wont have the same references`() {
         val contexts = Contexts()
         contexts.app = App()
+        contexts.browser = Browser()
 
         val clone = contexts.clone()
 
         assertNotNull(clone)
         assertNotSame(contexts, clone)
         assertNotSame(contexts.app, clone.app)
+        assertNotSame(contexts.browser, clone.browser)
     }
 
     @Test

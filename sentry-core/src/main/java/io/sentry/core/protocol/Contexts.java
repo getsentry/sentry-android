@@ -76,6 +76,8 @@ public final class Contexts extends ConcurrentHashMap<String, Object> implements
     for (Map.Entry<String, Object> entry : entrySet()) {
       if (App.TYPE.equals(entry.getKey()) && entry.getValue() instanceof App) {
         clone.setApp(((App) entry.getValue()).clone());
+      } else if (Browser.TYPE.equals(entry.getKey()) && entry.getValue() instanceof Browser) {
+        clone.setBrowser(((Browser) entry.getValue()).clone());
       } else {
         clone.put(entry.getKey(), entry.getValue());
       }
