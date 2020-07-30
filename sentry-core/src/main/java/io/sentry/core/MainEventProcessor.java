@@ -1,7 +1,10 @@
 package io.sentry.core;
 
-import io.sentry.core.hints.Cached;
+import io.sentry.core.protocol.SentryException;
+import io.sentry.core.util.ApplyScopeUtils;
 import io.sentry.core.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +22,8 @@ public final class MainEventProcessor implements EventProcessor {
         new SentryStackTraceFactory(options.getInAppExcludes(), options.getInAppIncludes());
 
     sentryExceptionFactory = new SentryExceptionFactory(sentryStackTraceFactory);
-    sentryThreadFactory = new SentryThreadFactory(sentryStackTraceFactory);
+    sentryThreadFactory =
+        new SentryThreadFactory(sentryStackTraceFactory, this.options.isAttachStacktrace());
   }
 
   MainEventProcessor(
@@ -45,7 +49,7 @@ public final class MainEventProcessor implements EventProcessor {
       event.setExceptions(sentryExceptionFactory.getSentryExceptions(throwable));
     }
 
-    if (!(hint instanceof Cached)) {
+    if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       processNonCachedEvent(event);
     } else {
       options
@@ -66,13 +70,29 @@ public final class MainEventProcessor implements EventProcessor {
     if (event.getEnvironment() == null) {
       event.setEnvironment(options.getEnvironment());
     }
-
+    if (event.getServerName() == null) {
+      event.setServerName(options.getServerName());
+    }
     if (event.getDist() == null) {
       event.setDist(options.getDist());
     }
 
-    if (event.getThreads() == null) {
-      event.setThreads(sentryThreadFactory.getCurrentThreads());
+    if (event.getThreads() == null && options.isAttachThreads()) {
+      List<Long> mechanismThreadIds = null;
+      if (event.getExceptions() != null) {
+        // collecting threadIds that came from the exception mechanism, so we can mark threads as
+        // crashed properly
+        for (SentryException item : event.getExceptions()) {
+          if (item.getMechanism() != null && item.getThreadId() != null) {
+            if (mechanismThreadIds == null) {
+              mechanismThreadIds = new ArrayList<>();
+            }
+            mechanismThreadIds.add(item.getThreadId());
+          }
+        }
+      }
+
+      event.setThreads(sentryThreadFactory.getCurrentThreads(mechanismThreadIds));
     }
   }
 }

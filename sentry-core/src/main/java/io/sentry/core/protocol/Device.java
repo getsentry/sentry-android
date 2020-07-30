@@ -16,7 +16,7 @@ public final class Device implements IUnknownPropertiesConsumer {
   private String model;
   private String modelId;
 
-  @Deprecated private String arch;
+  @ApiStatus.ScheduledForRemoval @Deprecated private String arch;
 
   private String[] archs;
   private Float batteryLevel;
@@ -33,7 +33,7 @@ public final class Device implements IUnknownPropertiesConsumer {
   private Long externalStorageSize;
   private Long externalFreeStorage;
 
-  @Deprecated private String screenResolution;
+  @ApiStatus.ScheduledForRemoval @Deprecated private String screenResolution;
 
   private Integer screenWidthPixels;
   private Integer screenHeightPixels;
@@ -45,6 +45,9 @@ public final class Device implements IUnknownPropertiesConsumer {
   private String id;
   private String language;
   private String connectionType;
+
+  /** battery's temperature in celsius */
+  private Float batteryTemperature;
 
   @SuppressWarnings("unused")
   private Map<String, Object> unknown;
@@ -98,9 +101,12 @@ public final class Device implements IUnknownPropertiesConsumer {
   }
 
   /**
+   * Returns the arch String
+   *
    * @deprecated use {@link #getArchs} instead.
    * @return device architecture
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public String getArch() {
     return arch;
@@ -110,6 +116,7 @@ public final class Device implements IUnknownPropertiesConsumer {
    * @deprecated use {@link #setArchs} instead.
    * @param arch device architecture
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public void setArch(String arch) {
     this.arch = arch;
@@ -220,9 +227,12 @@ public final class Device implements IUnknownPropertiesConsumer {
   }
 
   /**
+   * Returns the screenResolution String
+   *
    * @deprecated use {@link #getScreenWidthPixels , #getScreenHeightPixels} instead.
    * @return screen resolution largest + smallest
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public String getScreenResolution() {
     return screenResolution;
@@ -232,6 +242,7 @@ public final class Device implements IUnknownPropertiesConsumer {
    * @deprecated use {@link #setScreenWidthPixels} , #getScreenHeightPixels} instead.
    * @param screenResolution screen resolution largest + smallest
    */
+  @ApiStatus.ScheduledForRemoval
   @Deprecated
   public void setScreenResolution(String screenResolution) {
     this.screenResolution = screenResolution;
@@ -253,6 +264,7 @@ public final class Device implements IUnknownPropertiesConsumer {
     this.screenDpi = screenDpi;
   }
 
+  @SuppressWarnings("JdkObsolete")
   public Date getBootTime() {
     final Date bootTimeRef = bootTime;
     return bootTimeRef != null ? (Date) bootTimeRef.clone() : null;
@@ -316,6 +328,14 @@ public final class Device implements IUnknownPropertiesConsumer {
 
   public void setConnectionType(String connectionType) {
     this.connectionType = connectionType;
+  }
+
+  public Float getBatteryTemperature() {
+    return batteryTemperature;
+  }
+
+  public void setBatteryTemperature(Float batteryTemperature) {
+    this.batteryTemperature = batteryTemperature;
   }
 
   public enum DeviceOrientation {

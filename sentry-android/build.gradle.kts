@@ -16,7 +16,7 @@ android {
         minSdkVersion(Config.Android.minSdkVersionNdk)
 
         versionName = project.version.toString()
-        versionCode = Config.Sentry.buildVersionCode
+        versionCode = project.properties[Config.Sentry.buildVersionCodeProp].toString().toInt()
     }
 
     compileOptions {
@@ -24,11 +24,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    // replace with https://issuetracker.google.com/issues/72050365 once released.
-    libraryVariants.all {
-        generateBuildConfigProvider?.configure {
-            enabled = false
-        }
+    buildFeatures {
+        // Determines whether to generate a BuildConfig class.
+        buildConfig = false
     }
 }
 
@@ -46,8 +44,16 @@ configure<PublishExtension> {
     website = Config.Sentry.website
     repoName = Config.Sentry.repoName
     setLicences(Config.Sentry.licence)
+    setLicenceUrls(Config.Sentry.licenceUrl)
     issueTracker = Config.Sentry.issueTracker
     repository = Config.Sentry.repository
     sign = Config.Deploy.sign
-    artifactId = "sentry-android"
+    artifactId = project.name
+    uploadName = "${project.group}:${project.name}"
+    devId = Config.Sentry.userOrg
+    devName = Config.Sentry.devName
+    devEmail = Config.Sentry.devEmail
+    scmConnection = Config.Sentry.scmConnection
+    scmDevConnection = Config.Sentry.scmDevConnection
+    scmUrl  = Config.Sentry.scmUrl
 }

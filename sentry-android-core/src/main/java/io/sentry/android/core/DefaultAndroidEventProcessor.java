@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import static android.content.Context.ACTIVITY_SERVICE;
+import static android.os.BatteryManager.EXTRA_TEMPERATURE;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -9,7 +10,6 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
-import android.content.res.Configuration;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
@@ -20,28 +20,31 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import io.sentry.android.core.util.ConnectivityChecker;
+import io.sentry.android.core.util.DeviceOrientations;
+import io.sentry.android.core.util.RootChecker;
 import io.sentry.core.DateUtils;
 import io.sentry.core.EventProcessor;
+import io.sentry.core.ILogger;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-import io.sentry.core.hints.Cached;
 import io.sentry.core.protocol.App;
 import io.sentry.core.protocol.DebugImage;
 import io.sentry.core.protocol.DebugMeta;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.OperatingSystem;
-import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.protocol.SentryThread;
 import io.sentry.core.protocol.User;
+import io.sentry.core.util.ApplyScopeUtils;
 import io.sentry.core.util.Objects;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,6 +56,7 @@ import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
@@ -73,12 +77,33 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   @TestOnly final Future<Map<String, Object>> contextData;
 
-  public DefaultAndroidEventProcessor(Context context, SentryOptions options) {
-    this.context =
-        Objects.requireNonNull(
-            context != null ? context.getApplicationContext() : null,
-            "The application context is required.");
+  private final @NotNull IBuildInfoProvider buildInfoProvider;
+  private final @NotNull RootChecker rootChecker;
+
+  private final @NotNull ILogger logger;
+
+  public DefaultAndroidEventProcessor(
+      final @NotNull Context context,
+      final @NotNull SentryOptions options,
+      final @NotNull IBuildInfoProvider buildInfoProvider) {
+    this(
+        context,
+        options,
+        buildInfoProvider,
+        new RootChecker(context, buildInfoProvider, options.getLogger()));
+  }
+
+  DefaultAndroidEventProcessor(
+      final @NotNull Context context,
+      final @NotNull SentryOptions options,
+      final @NotNull IBuildInfoProvider buildInfoProvider,
+      final @NotNull RootChecker rootChecker) {
+    this.context = Objects.requireNonNull(context, "The application context is required.");
     this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
+    this.logger = Objects.requireNonNull(options.getLogger(), "The Logger is required.");
+    this.buildInfoProvider =
+        Objects.requireNonNull(buildInfoProvider, "The BuildInfoProvider is required.");
+    this.rootChecker = Objects.requireNonNull(rootChecker, "The RootChecker is required.");
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     // dont ref. to method reference, theres a bug on it
@@ -87,14 +112,14 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     executorService.shutdown();
   }
 
-  private Map<String, Object> loadContextData() {
+  private @NotNull Map<String, Object> loadContextData() {
     Map<String, Object> map = new HashMap<>();
-    String[] proGuardUuids = getProGuardUuids();
-    if (proGuardUuids != null) {
-      map.put(PROGUARD_UUID, proGuardUuids);
+    String[] proguardUUIDs = getProguardUUIDs();
+    if (proguardUUIDs != null) {
+      map.put(PROGUARD_UUID, proguardUUIDs);
     }
 
-    map.put(ROOTED, isRooted());
+    map.put(ROOTED, rootChecker.isDeviceRooted());
 
     String androidId = getAndroidId();
     if (androidId != null) {
@@ -113,16 +138,15 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @Override
-  public SentryEvent process(SentryEvent event, @Nullable Object hint) {
-    if (!(hint instanceof Cached)) {
+  public @NotNull SentryEvent process(
+      final @NotNull SentryEvent event, final @Nullable Object hint) {
+    if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       processNonCachedEvent(event);
     } else {
-      options
-          .getLogger()
-          .log(
-              SentryLevel.DEBUG,
-              "Event was cached so not applying data relevant to the current app execution/version: %s",
-              event.getEventId());
+      logger.log(
+          SentryLevel.DEBUG,
+          "Event was cached so not applying data relevant to the current app execution/version: %s",
+          event.getEventId());
     }
 
     if (event.getContexts().getDevice() == null) {
@@ -136,31 +160,35 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   // Data to be applied to events that was created in the running process
-  private void processNonCachedEvent(SentryEvent event) {
+  private void processNonCachedEvent(final @NotNull SentryEvent event) {
     if (event.getUser() == null) {
       event.setUser(getUser());
     }
-    setAppExtras(event);
+
+    App app = event.getContexts().getApp();
+    if (app == null) {
+      app = new App();
+    }
+    setAppExtras(app);
 
     if (event.getDebugMeta() == null) {
       event.setDebugMeta(getDebugMeta());
     }
     if (event.getSdk() == null) {
-      event.setSdk(getSdkVersion());
+      event.setSdk(options.getSdkVersion());
     }
 
-    PackageInfo packageInfo = getPackageInfo();
+    PackageInfo packageInfo = ContextUtils.getPackageInfo(context, logger);
     if (packageInfo != null) {
-      if (event.getRelease() == null) {
-        event.setRelease(packageInfo.packageName + "-" + packageInfo.versionName);
-      }
+      String versionCode = ContextUtils.getVersionCode(packageInfo);
+
       if (event.getDist() == null) {
-        event.setDist(getVersionCode(packageInfo));
+        event.setDist(versionCode);
       }
-      if (event.getContexts().getApp() == null) {
-        event.getContexts().setApp(getApp(packageInfo));
-      }
+      setAppPackageInfo(app, packageInfo);
     }
+
+    event.getContexts().setApp(app);
 
     if (event.getThreads() != null) {
       for (SentryThread thread : event.getThreads()) {
@@ -169,25 +197,25 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     }
   }
 
-  private List<DebugImage> getDebugImages() {
-    String[] uuids = null;
+  private @Nullable List<DebugImage> getDebugImages() {
+    String[] proguardUUIDs = null;
     try {
-      Object proGuardUuids = contextData.get().get(PROGUARD_UUID);
-      if (proGuardUuids != null) {
-        uuids = (String[]) proGuardUuids;
+      Object proguardUUIDsObject = contextData.get().get(PROGUARD_UUID);
+      if (proguardUUIDsObject != null) {
+        proguardUUIDs = (String[]) proguardUUIDsObject;
       }
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting proGuardUuids.", e);
+      logger.log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
       return null;
     }
 
-    if (uuids == null || uuids.length == 0) {
+    if (proguardUUIDs == null || proguardUUIDs.length == 0) {
       return null;
     }
 
     List<DebugImage> images = new ArrayList<>();
 
-    for (String item : uuids) {
+    for (String item : proguardUUIDs) {
       DebugImage debugImage = new DebugImage();
       debugImage.setType("proguard");
       debugImage.setUuid(item);
@@ -197,7 +225,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     return images;
   }
 
-  private DebugMeta getDebugMeta() {
+  private @Nullable DebugMeta getDebugMeta() {
     List<DebugImage> debugImages = getDebugImages();
 
     if (debugImages == null) {
@@ -209,68 +237,23 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     return debugMeta;
   }
 
-  private void setAppExtras(SentryEvent event) {
-    App app = event.getContexts().getApp();
-    if (event.getContexts().getApp() == null) {
-      app = new App();
-    }
+  private void setAppExtras(final @NotNull App app) {
     app.setAppName(getApplicationName());
     app.setAppStartTime(appStartTime);
   }
 
-  private SdkVersion getSdkVersion() {
-    SdkVersion sdkVersion = new SdkVersion();
-
-    sdkVersion.setName("sentry.java.android");
-    String version = BuildConfig.VERSION_NAME;
-    sdkVersion.setVersion(version);
-    sdkVersion.addPackage("sentry-core", version);
-    sdkVersion.addPackage("sentry-android-core", version);
-    if (options.isEnableNdk()) {
-      sdkVersion.addPackage("sentry-android-ndk", version);
-    }
-
-    return sdkVersion;
-  }
-
-  private String getVersionCode(PackageInfo packageInfo) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-      return Long.toString(packageInfo.getLongVersionCode());
-    }
-    return getVersionCodeDep(packageInfo);
-  }
-
   @SuppressWarnings("deprecation")
-  private String getVersionCodeDep(PackageInfo packageInfo) {
-    return Integer.toString(packageInfo.versionCode);
-  }
-
-  @SuppressWarnings("deprecation")
-  private String getAbi() {
+  private @NotNull String getAbi() {
     return Build.CPU_ABI;
   }
 
   @SuppressWarnings("deprecation")
-  private String getAbi2() {
+  private @NotNull String getAbi2() {
     return Build.CPU_ABI2;
   }
 
-  /**
-   * Return the Application's PackageInfo if possible, or null.
-   *
-   * @return the Application's PackageInfo if possible, or null
-   */
-  private PackageInfo getPackageInfo() {
-    try {
-      return context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-    } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting package info.", e);
-      return null;
-    }
-  }
-
   @SuppressWarnings({"ObsoleteSdkInt", "deprecation"})
-  private void setArchitectures(Device device) {
+  private void setArchitectures(final @NotNull Device device) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       String[] supportedAbis = Build.SUPPORTED_ABIS;
       device.setArch(supportedAbis[0]);
@@ -284,7 +267,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @SuppressWarnings("ObsoleteSdkInt")
-  private Long getMemorySize(ActivityManager.MemoryInfo memInfo) {
+  private @NotNull Long getMemorySize(final @NotNull ActivityManager.MemoryInfo memInfo) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
       return memInfo.totalMem;
     }
@@ -294,7 +277,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   // we can get some inspiration here
   // https://github.com/flutter/plugins/blob/master/packages/device_info/android/src/main/java/io/flutter/plugins/deviceinfo/DeviceInfoPlugin.java
-  private Device getDevice() {
+  private @NotNull Device getDevice() {
     // TODO: missing usable memory
 
     Device device = new Device();
@@ -310,8 +293,20 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (batteryIntent != null) {
       device.setBatteryLevel(getBatteryLevel(batteryIntent));
       device.setCharging(isCharging(batteryIntent));
+      device.setBatteryTemperature(getBatteryTemperature(batteryIntent));
     }
-    device.setOnline(ConnectivityChecker.isConnected(context, options.getLogger()));
+    Boolean connected;
+    switch (ConnectivityChecker.getConnectionStatus(context, logger)) {
+      case NOT_CONNECTED:
+        connected = false;
+        break;
+      case CONNECTED:
+        connected = true;
+        break;
+      default:
+        connected = null;
+    }
+    device.setOnline(connected);
     device.setOrientation(getOrientation());
 
     try {
@@ -320,7 +315,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         device.setSimulator((Boolean) emulator);
       }
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting emulator.", e);
+      logger.log(SentryLevel.ERROR, "Error getting emulator.", e);
     }
 
     ActivityManager.MemoryInfo memInfo = getMemInfo();
@@ -368,14 +363,15 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     }
     if (device.getConnectionType() == null) {
       // wifi, ethernet or cellular, null if none
-      device.setConnectionType(ConnectivityChecker.getConnectionType(context, options.getLogger()));
+      device.setConnectionType(
+          ConnectivityChecker.getConnectionType(context, logger, buildInfoProvider));
     }
 
     return device;
   }
 
   @SuppressWarnings("ObsoleteSdkInt")
-  private String getDeviceName() {
+  private @Nullable String getDeviceName() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       return Settings.Global.getString(context.getContentResolver(), "device_name");
     } else {
@@ -384,7 +380,8 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @SuppressWarnings("deprecation")
-  private void setScreenResolution(Device device, DisplayMetrics displayMetrics) {
+  private void setScreenResolution(
+      final @NotNull Device device, final @NotNull DisplayMetrics displayMetrics) {
     device.setScreenResolution(getResolution(displayMetrics));
   }
 
@@ -399,12 +396,14 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     return Calendar.getInstance().getTimeZone();
   }
 
-  private Date getBootTime() {
+  @SuppressWarnings("JdkObsolete")
+  private @NotNull Date getBootTime() {
     // if user changes time, will give a wrong answer, consider ACTION_TIME_CHANGED
-    return new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
+    return DateUtils.getDateTime(
+        new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime()));
   }
 
-  private String getResolution(DisplayMetrics displayMetrics) {
+  private @NotNull String getResolution(final @NotNull DisplayMetrics displayMetrics) {
     int largestSide = Math.max(displayMetrics.widthPixels, displayMetrics.heightPixels);
     int smallestSide = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
     return largestSide + "x" + smallestSide;
@@ -415,7 +414,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return MemoryInfo object representing the memory state of the application
    */
-  private ActivityManager.MemoryInfo getMemInfo() {
+  private @Nullable ActivityManager.MemoryInfo getMemInfo() {
     try {
       ActivityManager actManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
       ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
@@ -423,15 +422,15 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         actManager.getMemoryInfo(memInfo);
         return memInfo;
       }
-      options.getLogger().log(SentryLevel.INFO, "Error getting MemoryInfo.");
+      logger.log(SentryLevel.INFO, "Error getting MemoryInfo.");
       return null;
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting MemoryInfo.", e);
+      logger.log(SentryLevel.ERROR, "Error getting MemoryInfo.", e);
       return null;
     }
   }
 
-  private Intent getBatteryIntent() {
+  private @Nullable Intent getBatteryIntent() {
     return context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
   }
 
@@ -441,11 +440,11 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return family name of the device, as best we can tell
    */
-  private String getFamily() {
+  private @Nullable String getFamily() {
     try {
       return Build.MODEL.split(" ", -1)[0];
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting device family.", e);
+      logger.log(SentryLevel.ERROR, "Error getting device family.", e);
       return null;
     }
   }
@@ -455,7 +454,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return the device's current battery level (as a percentage of total), or null if unknown
    */
-  private Float getBatteryLevel(Intent batteryIntent) {
+  private @Nullable Float getBatteryLevel(final @NotNull Intent batteryIntent) {
     try {
       int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
       int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
@@ -468,7 +467,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
       return ((float) level / (float) scale) * percentMultiplier;
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting device battery level.", e);
+      logger.log(SentryLevel.ERROR, "Error getting device battery level.", e);
       return null;
     }
   }
@@ -478,15 +477,27 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return whether or not the device is currently plugged in and charging, or null if unknown
    */
-  private Boolean isCharging(Intent batteryIntent) {
+  private @Nullable Boolean isCharging(final @NotNull Intent batteryIntent) {
     try {
       int plugged = batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
       return plugged == BatteryManager.BATTERY_PLUGGED_AC
           || plugged == BatteryManager.BATTERY_PLUGGED_USB;
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting device charging state.", e);
+      logger.log(SentryLevel.ERROR, "Error getting device charging state.", e);
       return null;
     }
+  }
+
+  private @Nullable Float getBatteryTemperature(final @NotNull Intent batteryIntent) {
+    try {
+      int temperature = batteryIntent.getIntExtra(EXTRA_TEMPERATURE, -1);
+      if (temperature != -1) {
+        return ((float) temperature) / 10; // celsius
+      }
+    } catch (Exception e) {
+      logger.log(SentryLevel.ERROR, "Error getting battery temperature.", e);
+    }
+    return null;
   }
 
   /**
@@ -494,23 +505,22 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return the device's current screen orientation, or null if unknown
    */
-  private Device.DeviceOrientation getOrientation() {
+  @SuppressWarnings("deprecation")
+  private @Nullable Device.DeviceOrientation getOrientation() {
+    Device.DeviceOrientation deviceOrientation = null;
     try {
-      switch (context.getResources().getConfiguration().orientation) {
-        case Configuration.ORIENTATION_LANDSCAPE:
-          return Device.DeviceOrientation.LANDSCAPE;
-        case Configuration.ORIENTATION_PORTRAIT:
-          return Device.DeviceOrientation.PORTRAIT;
-        default:
-          options
-              .getLogger()
-              .log(SentryLevel.INFO, "No device orientation available (ORIENTATION_UNDEFINED)");
-          return null;
+      deviceOrientation =
+          DeviceOrientations.getOrientation(context.getResources().getConfiguration().orientation);
+      if (deviceOrientation == null) {
+        logger.log(
+            SentryLevel.INFO,
+            "No device orientation available (ORIENTATION_SQUARE|ORIENTATION_UNDEFINED)");
+        return null;
       }
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting device orientation.", e);
-      return null;
+      logger.log(SentryLevel.ERROR, "Error getting device orientation.", e);
     }
+    return deviceOrientation;
   }
 
   /**
@@ -519,7 +529,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return true if the application is running in an emulator, false otherwise
    */
-  private Boolean isEmulator() {
+  private @Nullable Boolean isEmulator() {
     try {
       return (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
           || Build.FINGERPRINT.startsWith("generic")
@@ -538,12 +548,8 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
           || Build.PRODUCT.contains("emulator")
           || Build.PRODUCT.contains("simulator");
     } catch (Exception e) {
-      options
-          .getLogger()
-          .log(
-              SentryLevel.ERROR,
-              "Error checking whether application is running in an emulator.",
-              e);
+      logger.log(
+          SentryLevel.ERROR, "Error checking whether application is running in an emulator.", e);
       return null;
     }
   }
@@ -553,19 +559,19 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return the total amount of internal storage, in bytes
    */
-  private Long getTotalInternalStorage(StatFs stat) {
+  private @Nullable Long getTotalInternalStorage(final @NotNull StatFs stat) {
     try {
       long blockSize = getBlockSizeLong(stat);
       long totalBlocks = getBlockCountLong(stat);
       return totalBlocks * blockSize;
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting total internal storage amount.", e);
+      logger.log(SentryLevel.ERROR, "Error getting total internal storage amount.", e);
       return null;
     }
   }
 
   @SuppressWarnings("ObsoleteSdkInt")
-  private long getBlockSizeLong(StatFs stat) {
+  private long getBlockSizeLong(final @NotNull StatFs stat) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
       return stat.getBlockSizeLong();
     }
@@ -573,12 +579,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @SuppressWarnings("deprecation")
-  private int getBlockSizeDep(StatFs stat) {
+  private int getBlockSizeDep(final @NotNull StatFs stat) {
     return stat.getBlockSize();
   }
 
   @SuppressWarnings("ObsoleteSdkInt")
-  private long getBlockCountLong(StatFs stat) {
+  private long getBlockCountLong(final @NotNull StatFs stat) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
       return stat.getBlockCountLong();
     }
@@ -586,12 +592,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @SuppressWarnings("deprecation")
-  private int getBlockCountDep(StatFs stat) {
+  private int getBlockCountDep(final @NotNull StatFs stat) {
     return stat.getBlockCount();
   }
 
   @SuppressWarnings("ObsoleteSdkInt")
-  private long getAvailableBlocksLong(StatFs stat) {
+  private long getAvailableBlocksLong(final @NotNull StatFs stat) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
       return stat.getAvailableBlocksLong();
     }
@@ -599,7 +605,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @SuppressWarnings("deprecation")
-  private int getAvailableBlocksDep(StatFs stat) {
+  private int getAvailableBlocksDep(final @NotNull StatFs stat) {
     return stat.getAvailableBlocks();
   }
 
@@ -608,34 +614,32 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return the unused amount of internal storage, in bytes
    */
-  private Long getUnusedInternalStorage(StatFs stat) {
+  private @Nullable Long getUnusedInternalStorage(final @NotNull StatFs stat) {
     try {
       long blockSize = getBlockSizeLong(stat);
       long availableBlocks = getAvailableBlocksLong(stat);
       return availableBlocks * blockSize;
     } catch (Exception e) {
-      options
-          .getLogger()
-          .log(SentryLevel.ERROR, "Error getting unused internal storage amount.", e);
+      logger.log(SentryLevel.ERROR, "Error getting unused internal storage amount.", e);
       return null;
     }
   }
 
-  private StatFs getExternalStorageStat(File internalStorage) {
+  private @Nullable StatFs getExternalStorageStat(final @Nullable File internalStorage) {
     if (!isExternalStorageMounted()) {
       File path = getExternalStorageDep(internalStorage);
       if (path != null) { // && path.canRead()) { canRead() will read return false
         return new StatFs(path.getPath());
       }
-      options.getLogger().log(SentryLevel.INFO, "Not possible to read external files directory");
+      logger.log(SentryLevel.INFO, "Not possible to read external files directory");
       return null;
     }
-    options.getLogger().log(SentryLevel.INFO, "External storage is not mounted or emulated.");
+    logger.log(SentryLevel.INFO, "External storage is not mounted or emulated.");
     return null;
   }
 
   @SuppressWarnings("ObsoleteSdkInt")
-  private File[] getExternalFilesDirs() {
+  private @Nullable File[] getExternalFilesDirs() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
       return context.getExternalFilesDirs(null);
     } else {
@@ -647,7 +651,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     return null;
   }
 
-  private File getExternalStorageDep(File internalStorage) {
+  private @Nullable File getExternalStorageDep(final @Nullable File internalStorage) {
     File[] externalFilesDirs = getExternalFilesDirs();
 
     if (externalFilesDirs != null) {
@@ -655,6 +659,11 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       String internalStoragePath =
           internalStorage != null ? internalStorage.getAbsolutePath() : null;
       for (File file : externalFilesDirs) {
+        // externalFilesDirs may contain null values :(
+        if (file == null) {
+          continue;
+        }
+
         // return the 1st file if you cannot compare with the internal one
         if (internalStoragePath == null || internalStoragePath.isEmpty()) {
           return file;
@@ -666,7 +675,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         return file;
       }
     } else {
-      options.getLogger().log(SentryLevel.INFO, "Not possible to read getExternalFilesDirs");
+      logger.log(SentryLevel.INFO, "Not possible to read getExternalFilesDirs");
     }
     return null;
   }
@@ -677,19 +686,21 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    * @return the total amount of external storage, in bytes, or null if no external storage is
    *     mounted
    */
-  private Long getTotalExternalStorage(StatFs stat) {
+  private @Nullable Long getTotalExternalStorage(final @NotNull StatFs stat) {
     try {
       long blockSize = getBlockSizeLong(stat);
       long totalBlocks = getBlockCountLong(stat);
       return totalBlocks * blockSize;
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting total external storage amount.", e);
+      logger.log(SentryLevel.ERROR, "Error getting total external storage amount.", e);
       return null;
     }
   }
 
   private boolean isExternalStorageMounted() {
-    return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)
+    final String storageState = Environment.getExternalStorageState();
+    return (Environment.MEDIA_MOUNTED.equals(storageState)
+            || Environment.MEDIA_MOUNTED_READ_ONLY.equals(storageState))
         && !Environment.isExternalStorageEmulated();
   }
 
@@ -699,15 +710,13 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    * @return the unused amount of external storage, in bytes, or null if no external storage is
    *     mounted
    */
-  private Long getUnusedExternalStorage(StatFs stat) {
+  private @Nullable Long getUnusedExternalStorage(final @NotNull StatFs stat) {
     try {
       long blockSize = getBlockSizeLong(stat);
       long availableBlocks = getAvailableBlocksLong(stat);
       return availableBlocks * blockSize;
     } catch (Exception e) {
-      options
-          .getLogger()
-          .log(SentryLevel.ERROR, "Error getting unused external storage amount.", e);
+      logger.log(SentryLevel.ERROR, "Error getting unused external storage amount.", e);
       return null;
     }
   }
@@ -717,16 +726,16 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return the DisplayMetrics object for the current application
    */
-  private DisplayMetrics getDisplayMetrics() {
+  private @Nullable DisplayMetrics getDisplayMetrics() {
     try {
       return context.getResources().getDisplayMetrics();
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting DisplayMetrics.", e);
+      logger.log(SentryLevel.ERROR, "Error getting DisplayMetrics.", e);
       return null;
     }
   }
 
-  private OperatingSystem getOperatingSystem() {
+  private @NotNull OperatingSystem getOperatingSystem() {
     OperatingSystem os = new OperatingSystem();
     os.setName("Android");
     os.setVersion(Build.VERSION.RELEASE);
@@ -743,22 +752,16 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         os.setRooted((Boolean) rooted);
       }
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting OperatingSystem.", e);
+      logger.log(SentryLevel.ERROR, "Error getting OperatingSystem.", e);
     }
 
     return os;
   }
 
-  private App getApp(PackageInfo packageInfo) {
-    App app = new App();
+  private void setAppPackageInfo(final @NotNull App app, final @NotNull PackageInfo packageInfo) {
     app.setAppIdentifier(packageInfo.packageName);
-
-    //    app.setBuildType(); possible with BuildConfig.BUILD_VARIANT but Apps
-    // side, also for flavor
     app.setAppVersion(packageInfo.versionName);
-    app.setAppBuild(getVersionCode(packageInfo));
-
-    return app;
+    app.setAppBuild(ContextUtils.getVersionCode(packageInfo));
   }
 
   /**
@@ -768,7 +771,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    * @return the device's current kernel version, as a string
    */
   @SuppressWarnings("DefaultCharset")
-  private String getKernelVersion() {
+  private @Nullable String getKernelVersion() {
     // its possible to try to execute 'uname' and parse it or also another unix commands or even
     // looking for well known root installed apps
     String errorMsg = "Exception while attempting to read kernel information";
@@ -781,58 +784,10 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     try (BufferedReader br = new BufferedReader(new FileReader(file))) {
       return br.readLine();
     } catch (IOException e) {
-      options.getLogger().log(SentryLevel.ERROR, errorMsg, e);
+      logger.log(SentryLevel.ERROR, errorMsg, e);
     }
 
     return defaultVersion;
-  }
-
-  /**
-   * Attempt to discover if this device is currently rooted. From:
-   * https://stackoverflow.com/questions/1101380/determine-if-running-on-a-rooted-device
-   *
-   * @return true if heuristics show the device is probably rooted, otherwise false
-   */
-  private Boolean isRooted() {
-    // we could get some inspiration from https://github.com/scottyab/rootbeer
-    if (Build.TAGS != null && Build.TAGS.contains("test-keys")) {
-      return true;
-    }
-
-    String[] probableRootPaths = {
-      "/data/local/bin/su",
-      "/data/local/su",
-      "/data/local/xbin/su",
-      "/sbin/su",
-      "/su/bin",
-      "/su/bin/su",
-      "/system/app/SuperSU",
-      "/system/app/SuperSU.apk",
-      "/system/app/Superuser",
-      "/system/app/Superuser.apk",
-      "/system/bin/failsafe/su",
-      "/system/bin/su",
-      "/system/sd/xbin/su",
-      "/system/xbin/daemonsu",
-      "/system/xbin/su"
-    };
-
-    for (String probableRootPath : probableRootPaths) {
-      try {
-        if (new File(probableRootPath).exists()) {
-          return true;
-        }
-      } catch (Exception e) {
-        options
-            .getLogger()
-            .log(
-                SentryLevel.ERROR,
-                "Exception while attempting to detect whether the device is rooted",
-                e);
-      }
-    }
-
-    return false;
   }
 
   /**
@@ -840,7 +795,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
    *
    * @return Application name
    */
-  private String getApplicationName() {
+  private @Nullable String getApplicationName() {
     try {
       ApplicationInfo applicationInfo = context.getApplicationInfo();
       int stringId = applicationInfo.labelRes;
@@ -853,20 +808,20 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         return context.getString(stringId);
       }
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting application name.", e);
+      logger.log(SentryLevel.ERROR, "Error getting application name.", e);
     }
 
     return null;
   }
 
-  public User getUser() {
+  public @NotNull User getUser() {
     User user = new User();
     user.setId(getDeviceId());
 
     return user;
   }
 
-  private String getDeviceId() {
+  private @Nullable String getDeviceId() {
     try {
       Object androidId = contextData.get().get(ANDROID_ID);
 
@@ -874,13 +829,13 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
         return (String) androidId;
       }
     } catch (Exception e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error getting androidId.", e);
+      logger.log(SentryLevel.ERROR, "Error getting androidId.", e);
     }
     return null;
   }
 
   @SuppressWarnings("HardwareIds")
-  private String getAndroidId() {
+  private @Nullable String getAndroidId() {
     // Android 29 has changed and -> Avoid using hardware identifiers, find another way in the
     // future
     String androidId =
@@ -893,7 +848,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
       try {
         androidId = Installation.id(context);
       } catch (RuntimeException e) {
-        options.getLogger().log(SentryLevel.ERROR, "Could not generate device Id.", e);
+        logger.log(SentryLevel.ERROR, "Could not generate device Id.", e);
 
         return null;
       }
@@ -902,35 +857,35 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     return androidId;
   }
 
-  private String[] getProGuardUuids() {
-    AssetManager assets = context.getAssets();
-    try {
-      String[] files = assets.list("");
+  private @Nullable String[] getProguardUUIDs() {
+    final AssetManager assets = context.getAssets();
+    // one may have thousands of asset files and looking up this list might slow down the SDK init.
+    // quite a bit, for this reason, we try to open the file directly and take care of errors
+    // like FileNotFoundException
+    try (final InputStream is =
+        new BufferedInputStream(assets.open("sentry-debug-meta.properties"))) {
+      final Properties properties = new Properties();
+      properties.load(is);
 
-      List<String> listFiles = Arrays.asList(files != null ? files : new String[0]);
-      if (listFiles.contains("sentry-debug-meta.properties")) {
-        try (InputStream is = assets.open("sentry-debug-meta.properties")) {
-          Properties properties = new Properties();
-          properties.load(is);
+      final String uuid = properties.getProperty("io.sentry.ProguardUuids");
+      if (uuid != null && !uuid.isEmpty()) {
+        final String[] proguardUUIDs = uuid.split("\\|", -1);
 
-          String uuid = properties.getProperty("io.sentry.ProguardUuids");
-          if (uuid != null && !uuid.isEmpty()) {
-            return uuid.split("\\|");
-          }
-          options
-              .getLogger()
-              .log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
-        } catch (IOException e) {
-          options.getLogger().log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
+        // it should be only 1 proguard uuid, but the API accepts an array so we are keeping it for
+        // consistency
+        for (final String item : proguardUUIDs) {
+          logger.log(SentryLevel.DEBUG, "Proguard UUID found: %s", item);
         }
-        options
-            .getLogger()
-            .log(SentryLevel.INFO, "io.sentry.ProguardUuids property was not found.");
-      } else {
-        options.getLogger().log(SentryLevel.INFO, "Proguard UUIDs file not found.");
+        return proguardUUIDs;
       }
+      logger.log(
+          SentryLevel.INFO, "io.sentry.ProguardUuids property was not found or it is invalid.");
+    } catch (FileNotFoundException e) {
+      logger.log(SentryLevel.INFO, "sentry-debug-meta.properties file was not found.");
     } catch (IOException e) {
-      options.getLogger().log(SentryLevel.ERROR, "Error listing Proguard files.", e);
+      logger.log(SentryLevel.ERROR, "Error getting Proguard UUIDs.", e);
+    } catch (RuntimeException e) {
+      logger.log(SentryLevel.ERROR, "sentry-debug-meta.properties file is malformed.", e);
     }
 
     return null;

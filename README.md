@@ -7,24 +7,27 @@
 
 Android SDK for Sentry
 ===========
-[![Travis](https://travis-ci.com/getsentry/sentry-android.svg?branch=master)](https://travis-ci.com/getsentry/sentry-android)
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/kr49snupeb1dsgwa/branch/master?svg=true)](https://ci.appveyor.com/project/sentry/sentry-android/branch/master)
+[![Travis](https://img.shields.io/travis/getsentry/sentry-android?label=Travis)](https://travis-ci.com/getsentry/sentry-android)
+[![AppVeyor](https://img.shields.io/appveyor/build/sentry/sentry-android?label=AppVeyor)](https://ci.appveyor.com/project/sentry/sentry-android/branch/master)
+[![GH Workflow](https://img.shields.io/github/workflow/status/getsentry/sentry-android/Workflow%20Ubuntu%20macOS?label=GH%20Workflow)](https://github.com/getsentry/sentry-android/actions)
 [![Tests](https://img.shields.io/appveyor/tests/sentry/sentry-android/master?compact_message)](https://ci.appveyor.com/project/sentry/sentry-android/branch/master/tests)
 [![codecov](https://codecov.io/gh/getsentry/sentry-android/branch/master/graph/badge.svg)](https://codecov.io/gh/getsentry/sentry-android)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/getsentry/sentry-android.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/getsentry/sentry-android/context:java)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/getsentry/sentry-android.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/getsentry/sentry-android/alerts/)
-[![Discord Chat](https://img.shields.io/discord/621778831602221064.svg)](https://discord.gg/Ww9hbqr)  
 
-|      Packages          | bintray |
-| ---------------------- | ------- |
-| sentry-android | [![sentry-android](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android)](https://bintray.com/getsentry/sentry-android/sentry-android?tab=overview) |
-| sentry-android-core | [![sentry-android-core](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android-core)](https://bintray.com/getsentry/sentry-android/sentry-android-core?tab=overview) |
-| sentry-android-ndk | [![sentry-android-ndk](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-android-ndk)](https://bintray.com/getsentry/sentry-android/sentry-android-ndk?tab=overview) |
-| sentry-core | [![sentry-core](https://img.shields.io/bintray/v/getsentry/sentry-android/sentry-core)](https://bintray.com/getsentry/sentry-android/sentry-core?tab=overview) |
+|      Packages          | bintray | API |
+| ---------------------- | ------- | ------- |
+| sentry-android | [![sentry-android](https://img.shields.io/bintray/v/getsentry/sentry-android/io.sentry:sentry-android)](https://bintray.com/getsentry/sentry-android/io.sentry:sentry-android?tab=overview) | 16 |
+| sentry-android-core | [![sentry-android-core](https://img.shields.io/bintray/v/getsentry/sentry-android/io.sentry:sentry-android-core)](https://bintray.com/getsentry/sentry-android/io.sentry:sentry-android-core?tab=overview) | 14 |
+| sentry-android-ndk | [![sentry-android-ndk](https://img.shields.io/bintray/v/getsentry/sentry-android/io.sentry:sentry-android-ndk)](https://bintray.com/getsentry/sentry-android/io.sentry:sentry-android-ndk?tab=overview) | 16 |
+| sentry-android-timber | [![sentry-android-timber](https://img.shields.io/bintray/v/getsentry/sentry-android/io.sentry:sentry-android-timber)](https://bintray.com/getsentry/sentry-android/io.sentry:sentry-android-timber?tab=overview) | 14 |
+| sentry-core | [![sentry-core](https://img.shields.io/bintray/v/getsentry/sentry-android/io.sentry:sentry-core)](https://bintray.com/getsentry/sentry-android/io.sentry:sentry-core?tab=overview) | 14 |
 
 # Docs
 
 That's the initial page of the release [2.x and its docs](https://docs.sentry.io/platforms/android).
+
+Migration page from [sentry-android 1.x to sentry-android 2.0](https://docs.sentry.io/platforms/android/migrate).
 
 # Blog posts
 
@@ -32,11 +35,11 @@ That's the initial page of the release [2.x and its docs](https://docs.sentry.io
 
 [Adding Native support to our Android SDK](https://blog.sentry.io/2019/11/25/adding-native-support-to-our-android-sdk).
 
-# Note
+# Samples
 
-This SDK is under development and will be published as version 2.0 which will be released by the end of 2019. It includes many new features including NDK support.
+[Sample App. with Sentry Android SDK and Sentry Gradle Plugin](https://github.com/getsentry/examples/tree/master/android).
 
-Sentry has been offering an official SDK for Android for years now. If you are looking for the stable, LTS support of Sentry, please refer to the [1.x and its docs](https://docs.sentry.io/clients/java/integrations/#android).
+[Sample for Development](https://github.com/getsentry/sentry-android/tree/master/sentry-sample).
 
 # Development
 
@@ -48,3 +51,12 @@ For example, if you had `sentry-native` checked-out in a sibling directory to th
 
 which will be picked up by `gradle` and used instead of the git submodule.
 This directory is also included in `.gitignore` not to be shown as pending changes.
+
+# Resources
+
+* [![Documentation](https://img.shields.io/badge/documentation-sentry.io-green.svg)](https://docs.sentry.io/platforms/android/)
+* [![Forum](https://img.shields.io/badge/forum-sentry-green.svg)](https://forum.sentry.io/c/sdks)
+* [![Discord](https://img.shields.io/discord/621778831602221064)](https://discord.gg/Ww9hbqr)
+* [![Stack Overflow](https://img.shields.io/badge/stack%20overflow-sentry-green.svg)](http://stackoverflow.com/questions/tagged/sentry)
+* [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-sentry-green.svg)](https://github.com/getsentry/.github/blob/master/CODE_OF_CONDUCT.md)
+* [![Twitter Follow](https://img.shields.io/twitter/follow/getsentry?label=getsentry&style=social)](https://twitter.com/intent/follow?screen_name=getsentry)

@@ -1,11 +1,9 @@
 package io.sentry.core;
 
-import static io.sentry.core.SentryLevel.ERROR;
-
 import io.sentry.core.cache.DiskCache;
-import io.sentry.core.hints.Cached;
+import io.sentry.core.hints.Flushable;
 import io.sentry.core.hints.Retryable;
-import io.sentry.core.hints.SubmissionResult;
+import io.sentry.core.util.LogUtils;
 import io.sentry.core.util.Objects;
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,9 +13,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 final class SendCachedEvent extends DirectoryProcessor {
   private static final Charset UTF_8 = Charset.forName("UTF-8");
@@ -26,22 +23,26 @@ final class SendCachedEvent extends DirectoryProcessor {
   private final @NotNull ILogger logger;
 
   SendCachedEvent(
-      @NotNull ISerializer serializer, @NotNull IHub hub, final @NotNull ILogger logger) {
-    super(logger);
+      @NotNull ISerializer serializer,
+      @NotNull IHub hub,
+      final @NotNull ILogger logger,
+      final long flushTimeoutMillis) {
+    super(logger, flushTimeoutMillis);
     this.serializer = Objects.requireNonNull(serializer, "Serializer is required.");
     this.hub = Objects.requireNonNull(hub, "Hub is required.");
     this.logger = Objects.requireNonNull(logger, "Logger is required.");
   }
 
   @Override
-  protected void processFile(@NotNull File file) {
+  protected void processFile(@NotNull File file, @Nullable Object hint) {
     if (!file.isFile()) {
       logger.log(SentryLevel.DEBUG, "'%s' is not a file.", file.getAbsolutePath());
       return;
     }
 
     if (!isRelevantFileName(file.getName())) {
-      logger.log(SentryLevel.DEBUG, "File '%s' doesn't match extension expected.", file.getName());
+      logger.log(
+          SentryLevel.DEBUG, "File '%s' doesn't match extension expected.", file.getAbsolutePath());
       return;
     }
 
@@ -49,37 +50,56 @@ final class SendCachedEvent extends DirectoryProcessor {
       logger.log(
           SentryLevel.WARNING,
           "File '%s' cannot be delete so it will not be processed.",
-          file.getName());
+          file.getAbsolutePath());
       return;
     }
 
-    SendCachedEventHint hint =
-        new SendCachedEventHint(
-            15000,
-            logger); // TODO: get timeout from options (should be bigger than network timeout)
-    try (Reader reader =
+    try (final Reader reader =
         new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF_8))) {
       SentryEvent event = serializer.deserializeEvent(reader);
       hub.captureEvent(event, hint);
-      if (!hint.waitFlush()) {
-        logger.log(
-            SentryLevel.WARNING, "Timed out waiting for event submission: %s", event.getEventId());
+
+      if (hint instanceof Flushable) {
+        if (!((Flushable) hint).waitFlush()) {
+          logger.log(
+              SentryLevel.WARNING,
+              "Timed out waiting for event submission: %s",
+              event.getEventId());
+
+          //          TODO: find out about the time out
+          //          if (hint instanceof Retryable) {
+          //            ((Retryable) hint).setRetry(true);
+          //          }
+        }
+      } else {
+        LogUtils.logIfNotFlushable(logger, hint);
       }
     } catch (FileNotFoundException e) {
-      logger.log(SentryLevel.ERROR, "File '%s' cannot be found.", file.getName(), e);
+      logger.log(SentryLevel.ERROR, e, "File '%s' cannot be found.", file.getAbsolutePath());
     } catch (IOException e) {
-      logger.log(SentryLevel.ERROR, "I/O on file '%s' failed.", file.getName(), e);
+      logger.log(SentryLevel.ERROR, e, "I/O on file '%s' failed.", file.getAbsolutePath());
     } catch (Exception e) {
-      logger.log(SentryLevel.ERROR, "Failed to capture cached event.", file.getName(), e);
-      hint.setRetry(false);
+      logger.log(SentryLevel.ERROR, e, "Failed to capture cached event %s", file.getAbsolutePath());
+      if (hint instanceof Retryable) {
+        ((Retryable) hint).setRetry(false);
+        logger.log(SentryLevel.INFO, e, "File '%s' won't retry.", file.getAbsolutePath());
+      } else {
+        LogUtils.logIfNotRetryable(logger, hint);
+      }
     } finally {
       // Unless the transport marked this to be retried, it'll be deleted.
-      if (!hint.getRetry()) {
-        safeDelete(file, "after trying to capture it");
-        logger.log(SentryLevel.DEBUG, "Deleted file %s.", file.getName());
+      if (hint instanceof Retryable) {
+        if (!((Retryable) hint).isRetry()) {
+          safeDelete(file, "after trying to capture it");
+          logger.log(SentryLevel.DEBUG, "Deleted file %s.", file.getAbsolutePath());
+        } else {
+          logger.log(
+              SentryLevel.INFO,
+              "File not deleted since retry was marked. %s.",
+              file.getAbsolutePath());
+        }
       } else {
-        logger.log(
-            SentryLevel.INFO, "File not deleted since retry was marked. %s.", file.getName());
+        LogUtils.logIfNotRetryable(logger, hint);
       }
     }
   }
@@ -91,48 +111,20 @@ final class SendCachedEvent extends DirectoryProcessor {
 
   private void safeDelete(File file, String errorMessageSuffix) {
     try {
-      file.delete();
+      if (!file.delete()) {
+        logger.log(
+            SentryLevel.ERROR,
+            "Failed to delete '%s' %s",
+            file.getAbsolutePath(),
+            errorMessageSuffix);
+      }
     } catch (Exception e) {
       logger.log(
-          SentryLevel.ERROR, "Failed to delete '%s' " + errorMessageSuffix, file.getName(), e);
-    }
-  }
-
-  private static final class SendCachedEventHint implements Cached, Retryable, SubmissionResult {
-    boolean retry = false;
-    private final CountDownLatch latch;
-    private final long timeoutMills;
-    private final @NotNull ILogger logger;
-
-    SendCachedEventHint(final long timeoutMills, final @NotNull ILogger logger) {
-      this.timeoutMills = timeoutMills;
-      this.latch = new CountDownLatch(1);
-      this.logger = logger;
-    }
-
-    @Override
-    public boolean getRetry() {
-      return retry;
-    }
-
-    @Override
-    public void setRetry(boolean retry) {
-      this.retry = retry;
-    }
-
-    boolean waitFlush() {
-      try {
-        return latch.await(timeoutMills, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        logger.log(ERROR, "Exception while awaiting on lock.", e);
-      }
-      return false;
-    }
-
-    @Override
-    public void setResult(boolean succeeded) {
-      latch.countDown();
+          SentryLevel.ERROR,
+          e,
+          "Failed to delete '%s' %s",
+          file.getAbsolutePath(),
+          errorMessageSuffix);
     }
   }
 }

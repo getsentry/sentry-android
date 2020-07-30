@@ -11,7 +11,19 @@ class DsnTest {
     fun `dsn parsed with path, sets all properties`() {
         val dsn = Dsn("https://publicKey:secretKey@host/path/id")
 
-        assertEquals("https://host/path/api/id/store/", dsn.sentryUri.toURL().toString())
+        assertEquals("https://host/path/api/id", dsn.sentryUri.toURL().toString())
+        assertEquals("publicKey", dsn.publicKey)
+        assertEquals("secretKey", dsn.secretKey)
+        assertEquals("/path/", dsn.path)
+        assertEquals("id", dsn.projectId)
+    }
+
+    @Test
+    fun `dsn parsed with path, sets all properties and ignores query strings`() {
+        // query strings were once a feature, but no more
+        val dsn = Dsn("https://publicKey:secretKey@host/path/id?sample.rate=0.1")
+
+        assertEquals("https://host/path/api/id", dsn.sentryUri.toURL().toString())
         assertEquals("publicKey", dsn.publicKey)
         assertEquals("secretKey", dsn.secretKey)
         assertEquals("/path/", dsn.path)
@@ -21,19 +33,19 @@ class DsnTest {
     @Test
     fun `dsn parsed without path`() {
         val dsn = Dsn("https://key@host/id")
-        assertEquals("https://host/api/id/store/", dsn.sentryUri.toURL().toString())
+        assertEquals("https://host/api/id", dsn.sentryUri.toURL().toString())
     }
 
     @Test
     fun `dsn parsed with port number`() {
         val dsn = Dsn("http://key@host:69/id")
-        assertEquals("http://host:69/api/id/store/", dsn.sentryUri.toURL().toString())
+        assertEquals("http://host:69/api/id", dsn.sentryUri.toURL().toString())
     }
 
     @Test
     fun `dsn parsed with trailing slash`() {
         val dsn = Dsn("http://key@host/id/")
-        assertEquals("http://host/api/id/store/", dsn.sentryUri.toURL().toString())
+        assertEquals("http://host/api/id", dsn.sentryUri.toURL().toString())
     }
 
     @Test

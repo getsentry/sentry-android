@@ -6,6 +6,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ScopeTest {
     @Test
@@ -212,5 +214,193 @@ class ScopeTest {
         val scope = Scope(SentryOptions())
         scope.addEventProcessor(processor)
         assertEquals(processor, scope.eventProcessors.first())
+    }
+
+    @Test
+    fun `Scope starts a new session with release, env and user`() {
+        val options = SentryOptions().apply {
+            distinctId = "123"
+        }
+        options.release = "rel"
+        options.environment = "env"
+        val user = User()
+
+        val scope = Scope(options)
+        scope.user = user
+
+        val sessionPair = scope.startSession()
+        assertNotNull(sessionPair.current)
+        assertEquals("rel", sessionPair.current.release)
+        assertEquals("env", sessionPair.current.environment)
+        assertEquals("123", sessionPair.current.distinctId)
+    }
+
+    @Test
+    fun `Scope ends a session and returns it if theres one`() {
+        val options = SentryOptions()
+
+        val scope = Scope(options)
+
+        scope.startSession()
+        val session = scope.endSession()
+        assertNotNull(session)
+    }
+
+    @Test
+    fun `Scope ends a session and returns null if none exist`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val session = scope.endSession()
+        assertNull(session)
+    }
+
+    @Test
+    fun `withSession returns a callback with the current Session`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        scope.startSession()
+        scope.withSession {
+            assertNotNull(it)
+        }
+    }
+
+    @Test
+    fun `withSession returns a callback with a null session if theres none`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        scope.withSession {
+            assertNull(it)
+        }
+    }
+
+    @Test
+    fun `Scope clones the start and end session objects`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val sessionPair = scope.startSession()
+        val endSession = scope.endSession()!!
+
+        assertNotSame(sessionPair.current, endSession)
+    }
+
+    @Test
+    fun `Scope sets init to null when mutating a session`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val start = scope.startSession().current
+
+        scope.withSession {
+            it!!.update(null, null, false)
+        }
+
+        val end = scope.endSession()!!
+
+        assertTrue(start.init!!)
+        assertNull(end.init)
+    }
+
+    @Test
+    fun `Scope increases session error count when capturing an error`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val start = scope.startSession().current
+
+        scope.withSession {
+            it!!.update(null, null, true)
+        }
+
+        val end = scope.endSession()!!
+
+        assertEquals(0, start.errorCount())
+        assertEquals(1, end.errorCount())
+    }
+
+    @Test
+    fun `Scope sets status when capturing a fatal error`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val start = scope.startSession().current
+
+        scope.withSession {
+            it!!.update(Session.State.Crashed, null, true)
+        }
+
+        val end = scope.endSession()!!
+
+        assertEquals(Session.State.Ok, start.status)
+        assertEquals(Session.State.Crashed, end.status)
+    }
+
+    @Test
+    fun `Scope sets user agent when capturing an error`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val start = scope.startSession().current
+
+        scope.withSession {
+            it!!.update(null, "jamesBond", true)
+        }
+
+        val end = scope.endSession()!!
+
+        assertNull(start.userAgent)
+        assertEquals("jamesBond", end.userAgent)
+    }
+
+    @Test
+    fun `Scope sets timestamp when capturing an error`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val start = scope.startSession().current
+
+        scope.withSession {
+            it!!.update(null, null, true)
+        }
+        val end = scope.endSession()!!
+
+        assertNotSame(end.timestamp!!, start.timestamp)
+    }
+
+    @Test
+    fun `Scope increases sequence when capturing an error`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val start = scope.startSession().current
+
+        scope.withSession {
+            it!!.update(null, null, true)
+        }
+
+        val end = scope.endSession()!!
+
+        assertNull(start.sequence)
+        assertTrue(end.sequence!! > 0)
+    }
+
+    @Test
+    fun `Scope sets duration when ending a session`() {
+        val options = SentryOptions()
+        val scope = Scope(options)
+
+        val start = scope.startSession().current
+
+        scope.withSession {
+            it!!.update(null, null, true)
+        }
+
+        val end = scope.endSession()!!
+
+        assertNull(start.duration)
+        assertNotNull(end.duration)
     }
 }

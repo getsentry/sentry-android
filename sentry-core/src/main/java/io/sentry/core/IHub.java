@@ -55,6 +55,25 @@ public interface IHub {
   SentryId captureMessage(String message, SentryLevel level);
 
   /**
+   * Captures an envelope.
+   *
+   * @param envelope the SentryEnvelope to send.
+   * @param hint SDK specific but provides high level information about the origin of the event
+   * @return The Id (SentryId object) of the event
+   */
+  SentryId captureEnvelope(SentryEnvelope envelope, @Nullable Object hint);
+
+  /**
+   * Captures an envelope.
+   *
+   * @param envelope the SentryEnvelope to send.
+   * @return The Id (SentryId object) of the event
+   */
+  default SentryId captureEnvelope(SentryEnvelope envelope) {
+    return captureEnvelope(envelope, null);
+  }
+
+  /**
    * Captures the exception.
    *
    * @param throwable The exception.
@@ -72,6 +91,12 @@ public interface IHub {
   default SentryId captureException(Throwable throwable) {
     return captureException(throwable, null);
   }
+
+  /** Starts a new session. If there's a running session, it ends it before starting the new one. */
+  void startSession();
+
+  /** Ends the current session */
+  void endSession();
 
   /** Flushes out the queue for up to timeout seconds and disable the Hub. */
   void close();
@@ -155,6 +180,13 @@ public interface IHub {
   void setTag(String key, String value);
 
   /**
+   * Removes the tag to a string value to the current Scope
+   *
+   * @param key the key
+   */
+  void removeTag(String key);
+
+  /**
    * Sets the extra key to an arbitrary value to the current Scope, overwriting a potential previous
    * value
    *
@@ -162,6 +194,13 @@ public interface IHub {
    * @param value the value
    */
   void setExtra(String key, String value);
+
+  /**
+   * Removes the extra key to an arbitrary value to the current Scope
+   *
+   * @param key the key
+   */
+  void removeExtra(String key);
 
   /**
    * Last event id recorded in the current scope
@@ -200,9 +239,9 @@ public interface IHub {
   /**
    * Flushes events queued up, but keeps the Hub enabled. Not implemented yet.
    *
-   * @param timeoutMills time in milliseconds
+   * @param timeoutMillis time in milliseconds
    */
-  void flush(long timeoutMills);
+  void flush(long timeoutMillis);
 
   /**
    * Clones the Hub

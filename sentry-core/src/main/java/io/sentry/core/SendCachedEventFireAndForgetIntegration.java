@@ -1,53 +1,91 @@
 package io.sentry.core;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import io.sentry.core.util.Objects;
+import java.io.File;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-final class SendCachedEventFireAndForgetIntegration implements Integration {
+/** Sends cached events over when your App. is starting. */
+public final class SendCachedEventFireAndForgetIntegration implements Integration {
 
   private final SendFireAndForgetFactory factory;
 
-  interface SendFireAndForget {
+  public interface SendFireAndForget {
     void send();
   }
 
-  interface SendFireAndForgetFactory {
-    SendFireAndForget create(IHub hub, SentryOptions options);
+  public interface SendFireAndForgetDirPath {
+    @Nullable
+    String getDirPath();
   }
 
-  SendCachedEventFireAndForgetIntegration(SendFireAndForgetFactory factory) {
-    this.factory = factory;
+  public interface SendFireAndForgetFactory {
+    @Nullable
+    SendFireAndForget create(IHub hub, SentryOptions options);
+
+    default boolean hasValidPath(final @Nullable String dirPath, final @NotNull ILogger logger) {
+      if (dirPath == null || dirPath.isEmpty()) {
+        logger.log(SentryLevel.INFO, "No cached dir path is defined in options.");
+        return false;
+      }
+      return true;
+    }
+
+    default @NotNull SendFireAndForget processDir(
+        final @NotNull DirectoryProcessor directoryProcessor,
+        final @NotNull String dirPath,
+        final @NotNull ILogger logger) {
+      final File dirFile = new File(dirPath);
+      return () -> {
+        logger.log(SentryLevel.DEBUG, "Started processing cached files from %s", dirPath);
+
+        directoryProcessor.processDirectory(dirFile);
+
+        logger.log(SentryLevel.DEBUG, "Finished processing cached files from %s", dirPath);
+      };
+    }
+  }
+
+  public SendCachedEventFireAndForgetIntegration(final @NotNull SendFireAndForgetFactory factory) {
+    this.factory = Objects.requireNonNull(factory, "SendFireAndForgetFactory is required");
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   @Override
-  public void register(@NotNull IHub hub, @NotNull SentryOptions options) {
-    String cachedDir = options.getCacheDirPath();
-    if (cachedDir == null) {
-      options.getLogger().log(SentryLevel.WARNING, "No cache dir path is defined in options.");
+  public final void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
+    Objects.requireNonNull(hub, "Hub is required");
+    Objects.requireNonNull(options, "SentryOptions is required");
+
+    final String cachedDir = options.getCacheDirPath();
+    if (!factory.hasValidPath(cachedDir, options.getLogger())) {
+      options.getLogger().log(SentryLevel.ERROR, "No cache dir path is defined in options.");
       return;
     }
 
-    SendFireAndForget sender = factory.create(hub, options);
+    final SendFireAndForget sender = factory.create(hub, options);
+
+    if (sender == null) {
+      options.getLogger().log(SentryLevel.ERROR, "SendFireAndForget factory is null.");
+      return;
+    }
 
     try {
-      ExecutorService es = Executors.newSingleThreadExecutor();
-      es.submit(
-          () -> {
-            try {
-              sender.send();
-              options
-                  .getLogger()
-                  .log(SentryLevel.DEBUG, "Finished processing cached files from %s", cachedDir);
-            } catch (Exception e) {
-              options.getLogger().log(SentryLevel.ERROR, "Failed trying to send cached events.", e);
-            }
-          });
+      options
+          .getExecutorService()
+          .submit(
+              () -> {
+                try {
+                  sender.send();
+                } catch (Exception e) {
+                  options
+                      .getLogger()
+                      .log(SentryLevel.ERROR, "Failed trying to send cached events.", e);
+                }
+              });
+
       options
           .getLogger()
-          .log(SentryLevel.DEBUG, "Scheduled sending cached files from %s", cachedDir);
-      es.shutdown();
+          .log(SentryLevel.DEBUG, "SendCachedEventFireAndForgetIntegration installed.");
     } catch (Exception e) {
       options
           .getLogger()

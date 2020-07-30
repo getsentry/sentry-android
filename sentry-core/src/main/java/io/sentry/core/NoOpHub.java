@@ -31,9 +31,20 @@ final class NoOpHub implements IHub {
   }
 
   @Override
+  public SentryId captureEnvelope(SentryEnvelope envelope, @Nullable Object hint) {
+    return SentryId.EMPTY_ID;
+  }
+
+  @Override
   public SentryId captureException(Throwable throwable, @Nullable Object hint) {
     return SentryId.EMPTY_ID;
   }
+
+  @Override
+  public void startSession() {}
+
+  @Override
+  public void endSession() {}
 
   @Override
   public void close() {}
@@ -60,7 +71,13 @@ final class NoOpHub implements IHub {
   public void setTag(String key, String value) {}
 
   @Override
+  public void removeTag(String key) {}
+
+  @Override
   public void setExtra(String key, String value) {}
+
+  @Override
+  public void removeExtra(String key) {}
 
   @Override
   public SentryId getLastEventId() {
@@ -83,7 +100,7 @@ final class NoOpHub implements IHub {
   public void bindClient(ISentryClient client) {}
 
   @Override
-  public void flush(long timeoutMills) {}
+  public void flush(long timeoutMillis) {}
 
   @Override
   public IHub clone() {

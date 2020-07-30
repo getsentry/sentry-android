@@ -9,6 +9,15 @@ plugins {
     id(Config.QualityPlugins.gradleVersions)
 }
 
+configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+}
+
 dependencies {
     // Envelopes require JSON. Until a parse is done without GSON, we'll depend on it explicitly here
     implementation(Config.Libs.gson)
@@ -23,6 +32,7 @@ dependencies {
     testImplementation(kotlin(Config.kotlinStdLib))
     testImplementation(Config.TestLibs.kotlinTestJunit)
     testImplementation(Config.TestLibs.mockitoKotlin)
+    testImplementation(Config.TestLibs.awaitility)
 }
 
 configure<SourceSetContainer> {
@@ -64,8 +74,17 @@ configure<PublishExtension> {
     website = Config.Sentry.website
     repoName = Config.Sentry.repoName
     setLicences(Config.Sentry.licence)
+    setLicenceUrls(Config.Sentry.licenceUrl)
     issueTracker = Config.Sentry.issueTracker
     repository = Config.Sentry.repository
     sign = Config.Deploy.sign
-    artifactId = "sentry-core"
+    artifactId = project.name
+    uploadName = "${project.group}:${project.name}"
+    devId = Config.Sentry.userOrg
+    devName = Config.Sentry.devName
+    devEmail = Config.Sentry.devEmail
+    scmConnection = Config.Sentry.scmConnection
+    scmDevConnection = Config.Sentry.scmDevConnection
+    scmUrl  = Config.Sentry.scmUrl
 }
+

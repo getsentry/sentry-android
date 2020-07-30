@@ -6,19 +6,14 @@ plugins {
     `java-library`
     id(Config.QualityPlugins.spotless) version Config.QualityPlugins.spotlessVersion apply true
     jacoco
-}
-
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    id(Config.QualityPlugins.detekt) version Config.QualityPlugins.detektVersion
 }
 
 buildscript {
     repositories {
-        mavenLocal()
         google()
         jcenter()
-        maven { setUrl("https://dl.bintray.com/novoda-oss/snapshots/") }
+        maven { setUrl("https://dl.bintray.com/maranda/maven/") }
     }
     dependencies {
         classpath(Config.BuildPlugins.androidGradle)
@@ -32,28 +27,27 @@ buildscript {
         classpath(Config.NativePlugins.nativeBundlePlugin)
 
         // add classpath of sentry android gradle plugin
-//        classpath("io.sentry:sentry-android-gradle-plugin:{version}}")
+        // classpath("io.sentry:sentry-android-gradle-plugin:{version}")
     }
 }
 
 allprojects {
     repositories {
-        mavenLocal()
         google()
         jcenter()
         mavenCentral()
     }
     group = Config.Sentry.group
-    version = Config.Sentry.version
+    version = properties[Config.Sentry.versionNameProp].toString()
     description = Config.Sentry.description
     tasks {
         withType<Test> {
             testLogging.showStandardStreams = true
             testLogging.exceptionFormat = TestExceptionFormat.FULL
             testLogging.events = setOf(
-                TestLogEvent.SKIPPED,
-                TestLogEvent.PASSED,
-                TestLogEvent.FAILED)
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.FAILED)
             dependsOn("cleanTest")
         }
         withType<JavaCompile> {

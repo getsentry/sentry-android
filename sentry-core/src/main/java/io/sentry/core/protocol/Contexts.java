@@ -1,5 +1,6 @@
 package io.sentry.core.protocol;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,6 +9,10 @@ public final class Contexts extends ConcurrentHashMap<String, Object> {
 
   public Contexts(Map<String, Object> initialValues) {
     super(initialValues);
+  }
+
+  public Contexts() {
+    this(Collections.emptyMap());
   }
 
   private <T> T toContextType(String key, Class<T> clazz) {

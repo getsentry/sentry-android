@@ -1,4 +1,5 @@
 import com.novoda.gradle.release.PublishExtension
+import org.jetbrains.kotlin.config.KotlinCompilerVersion
 
 plugins {
     id("com.android.library")
@@ -18,21 +19,16 @@ android {
     } else {
         "sentry-native"
     }
+    println("sentry-android-ndk: $sentryNativeSrc")
 
     defaultConfig {
         targetSdkVersion(Config.Android.targetSdkVersion)
         minSdkVersion(Config.Android.minSdkVersionNdk) // NDK requires a higher API level than core.
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                includeCompileClasspath = true
-            }
-        }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         versionName = project.version.toString()
-        versionCode = Config.Sentry.buildVersionCode
+        versionCode = project.properties[Config.Sentry.buildVersionCodeProp].toString().toInt()
 
         externalNativeBuild {
             cmake {
@@ -42,24 +38,14 @@ android {
         }
 
         ndk {
-            val platform = System.getenv("ABI")
-            if (platform == null || platform.toLowerCase() == "all") {
-                abiFilters("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
-            } else {
-                abiFilters(platform)
-            }
-        }
-
-        // replace with https://issuetracker.google.com/issues/72050365 once released.
-        libraryVariants.all {
-            generateBuildConfigProvider?.configure {
-                enabled = false
-            }
+            setAbiFilters(Config.Android.abiFilters)
+            ndkVersion = Config.Android.ndkVersion
         }
     }
 
     externalNativeBuild {
         cmake {
+            version = Config.Android.cmakeVersion
             setPath("CMakeLists.txt")
         }
     }
@@ -103,8 +89,6 @@ android {
         isCheckReleaseBuilds = false
     }
 
-//    ndkVersion = "21.0.6113669" while https://discuss.lgtm.com/t/android-project-build-is-not-working/2587/4 is not fixed.
-
     nativeBundleExport {
         headerDir = "${project.projectDir}/$sentryNativeSrc/include"
     }
@@ -115,11 +99,15 @@ dependencies {
     api(project(":sentry-android-core"))
 
     compileOnly(Config.CompileOnly.jetbrainsAnnotations)
+
+    testImplementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
+    testImplementation(Config.TestLibs.kotlinTestJunit)
 }
 
 val initNative = tasks.register<Exec>("initNative") {
     logger.log(LogLevel.LIFECYCLE, "Initializing git submodules")
     commandLine("git", "submodule", "update", "--init", "--recursive")
+    outputs.dir("${project.projectDir}/sentry-native")
 }
 
 tasks.named("preBuild") {
@@ -135,8 +123,16 @@ configure<PublishExtension> {
     website = Config.Sentry.website
     repoName = Config.Sentry.repoName
     setLicences(Config.Sentry.licence)
+    setLicenceUrls(Config.Sentry.licenceUrl)
     issueTracker = Config.Sentry.issueTracker
     repository = Config.Sentry.repository
     sign = Config.Deploy.sign
-    artifactId = "sentry-android-ndk"
+    artifactId = project.name
+    uploadName = "${project.group}:${project.name}"
+    devId = Config.Sentry.userOrg
+    devName = Config.Sentry.devName
+    devEmail = Config.Sentry.devEmail
+    scmConnection = Config.Sentry.scmConnection
+    scmDevConnection = Config.Sentry.scmDevConnection
+    scmUrl  = Config.Sentry.scmUrl
 }

@@ -1,12 +1,15 @@
 package io.sentry.core
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argWhere
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.exception.ExceptionMechanismException
 import io.sentry.core.protocol.SentryId
+import io.sentry.core.util.NoFlushTimeout
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -42,7 +45,7 @@ class UncaughtExceptionHandlerIntegrationTest {
         val threadMock = mock<Thread>()
         val throwableMock = mock<Throwable>()
         val hubMock = mock<IHub>()
-        val options = SentryOptions()
+        val options = SentryOptions().NoFlushTimeout()
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
@@ -57,7 +60,7 @@ class UncaughtExceptionHandlerIntegrationTest {
         val defaultHandlerMock = mock<Thread.UncaughtExceptionHandler>()
         whenever(handlerMock.defaultUncaughtExceptionHandler).thenReturn(defaultHandlerMock)
         val hubMock = mock<IHub>()
-        val options = SentryOptions()
+        val options = SentryOptions().NoFlushTimeout()
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
@@ -77,7 +80,7 @@ class UncaughtExceptionHandlerIntegrationTest {
             assertTrue(e.exceptionMechanism.isHandled)
             SentryId.EMPTY_ID
         }
-        val options = SentryOptions()
+        val options = SentryOptions().NoFlushTimeout()
         val sut = UncaughtExceptionHandlerIntegration(handlerMock)
         sut.register(hubMock, options)
         sut.uncaughtException(threadMock, throwableMock)
@@ -92,9 +95,31 @@ class UncaughtExceptionHandlerIntegrationTest {
         options.addIntegration(integrationMock)
         options.cacheDirPath = file.absolutePath
         options.setSerializer(mock())
+//        val expected = HubAdapter.getInstance()
         val hub = Hub(options)
-        verify(integrationMock).register(hub, options)
+//        verify(integrationMock).register(expected, options)
         hub.close()
         verify(integrationMock).close()
+    }
+
+    @Test
+    fun `When defaultUncaughtExceptionHandler is disabled, should not install Sentry UncaughtExceptionHandler`() {
+        val options = SentryOptions()
+        options.isEnableUncaughtExceptionHandler = false
+        val hub = mock<IHub>()
+        val handlerMock = mock<UncaughtExceptionHandler>()
+        val integration = UncaughtExceptionHandlerIntegration(handlerMock)
+        integration.register(hub, options)
+        verify(handlerMock, never()).defaultUncaughtExceptionHandler = any()
+    }
+
+    @Test
+    fun `When defaultUncaughtExceptionHandler is enabled, should install Sentry UncaughtExceptionHandler`() {
+        val options = SentryOptions()
+        val hub = mock<IHub>()
+        val handlerMock = mock<UncaughtExceptionHandler>()
+        val integration = UncaughtExceptionHandlerIntegration(handlerMock)
+        integration.register(hub, options)
+        verify(handlerMock).defaultUncaughtExceptionHandler = argWhere { it is UncaughtExceptionHandlerIntegration }
     }
 }

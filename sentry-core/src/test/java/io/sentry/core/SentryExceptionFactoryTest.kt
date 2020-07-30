@@ -41,12 +41,12 @@ class SentryExceptionFactoryTest {
     }
 
     @Test
-    fun `when exception has a cause, ensure conversion queue keeps order`() {
+    fun `when exception is nested, it should be sorted oldest to newest`() {
         val exception = Exception("message", Exception("cause"))
         val queue = sut.extractExceptionQueue(exception)
 
-        assertEquals("message", queue.first.value)
-        assertEquals("cause", queue.last.value)
+        assertEquals("cause", queue.first.value)
+        assertEquals("message", queue.last.value)
     }
 
     @Test
@@ -56,5 +56,36 @@ class SentryExceptionFactoryTest {
         assertEquals("SentryExceptionFactoryTest\$InnerClassThrowable", queue.first.type)
     }
 
-    private inner class InnerClassThrowable constructor(cause: Throwable? = null) : Throwable(cause)
+    @Test
+    fun `when getSentryExceptions is called passing an anonymous exception, not empty result`() {
+        val queue = sut.extractExceptionQueue(anonymousException)
+        assertEquals("SentryExceptionFactoryTest\$anonymousException\$1", queue.first.type)
+    }
+
+    @Test
+    fun `when exception has no mechanism, it should get and set the current threadId`() {
+        val threadId = Thread.currentThread().id
+        val exception = Exception("message", Exception("cause"))
+        val queue = sut.extractExceptionQueue(exception)
+
+        assertEquals(threadId, queue.first.threadId)
+    }
+
+    @Test
+    fun `when exception has a mechanism, it should get and set the mechanism's threadId`() {
+        val exception = Exception("message")
+        val mechanism = Mechanism()
+        mechanism.type = "ANR"
+        val thread = Thread()
+        val throwable = ExceptionMechanismException(mechanism, exception, thread)
+
+        val queue = sut.extractExceptionQueue(throwable)
+
+        assertEquals(thread.id, queue.first.threadId)
+    }
+
+    internal inner class InnerClassThrowable constructor(cause: Throwable? = null) : Throwable(cause)
+
+    internal val anonymousException = object : Exception() {
+    }
 }

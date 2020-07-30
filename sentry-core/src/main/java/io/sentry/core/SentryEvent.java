@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 public final class SentryEvent implements IUnknownPropertiesConsumer {
@@ -60,10 +61,12 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     return eventId;
   }
 
+  @SuppressWarnings("JdkObsolete")
   public Date getTimestamp() {
     return (Date) timestamp.clone();
   }
 
+  @Nullable
   Throwable getThrowable() {
     return throwable;
   }
@@ -192,7 +195,7 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     this.sdk = sdk;
   }
 
-  List<String> getFingerprints() {
+  public List<String> getFingerprints() {
     return fingerprint;
   }
 
@@ -215,6 +218,10 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     breadcrumbs.add(breadcrumb);
   }
 
+  public void addBreadcrumb(final @Nullable String message) {
+    this.addBreadcrumb(new Breadcrumb(message));
+  }
+
   Map<String, String> getTags() {
     return tags;
   }
@@ -227,6 +234,13 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     if (tags != null) {
       tags.remove(key);
     }
+  }
+
+  public @Nullable String getTag(final @NotNull String key) {
+    if (tags != null) {
+      return tags.get(key);
+    }
+    return null;
   }
 
   public void setTag(String key, String value) {
@@ -255,6 +269,13 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     if (extra != null) {
       extra.remove(key);
     }
+  }
+
+  public @Nullable Object getExtra(final @NotNull String key) {
+    if (extra != null) {
+      return extra.get(key);
+    }
+    return null;
   }
 
   public Contexts getContexts() {
@@ -297,11 +318,49 @@ public final class SentryEvent implements IUnknownPropertiesConsumer {
     }
   }
 
+  public @Nullable String getModule(final @NotNull String key) {
+    if (modules != null) {
+      return modules.get(key);
+    }
+    return null;
+  }
+
   public DebugMeta getDebugMeta() {
     return debugMeta;
   }
 
   public void setDebugMeta(DebugMeta debugMeta) {
     this.debugMeta = debugMeta;
+  }
+
+  /**
+   * Returns true if Level is Fatal or any exception was unhandled by the user.
+   *
+   * @return true if its crashed or false otherwise
+   */
+  public boolean isCrashed() {
+    if (level == SentryLevel.FATAL) {
+      return true;
+    }
+    if (exception != null) {
+      for (SentryException e : exception.getValues()) {
+        if (e.getMechanism() != null
+            && e.getMechanism().isHandled() != null
+            && !e.getMechanism().isHandled()) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns true if this event has any sort of excetion
+   *
+   * @return true if errored or false otherwise
+   */
+  public boolean isErrored() {
+    return exception != null && !exception.getValues().isEmpty();
   }
 }
