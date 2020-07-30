@@ -64,7 +64,7 @@ public final class SystemOutLogger implements ILogger {
     }
   }
 
-  private String captureStackTrace(@NotNull Throwable throwable) {
+  private @NotNull String captureStackTrace(final @NotNull Throwable throwable) {
     StringWriter stringWriter = new StringWriter();
     PrintWriter printWriter = new PrintWriter(stringWriter);
     throwable.printStackTrace(printWriter);
