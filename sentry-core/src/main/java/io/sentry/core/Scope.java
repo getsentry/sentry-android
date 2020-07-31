@@ -293,10 +293,11 @@ public final class Scope implements Cloneable {
   /**
    * Sets the Scope's contexts
    *
-   * @param contexts the contexts
+   * @param key the context key
+   * @param value the context value
    */
-  public void setContexts(final @NotNull Contexts contexts) {
-    this.contexts = contexts;
+  public void setContexts(final @NotNull String key, final @NotNull Object value) {
+    this.contexts.put(key, value);
   }
 
   /**
