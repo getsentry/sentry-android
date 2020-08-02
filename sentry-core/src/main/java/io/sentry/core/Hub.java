@@ -215,7 +215,7 @@ public final class Hub implements IHub {
   }
 
   @Override
-  public void endSession() {
+  public void endSession(final @Nullable Object hint) {
     if (!isEnabled()) {
       options
           .getLogger()
@@ -225,7 +225,7 @@ public final class Hub implements IHub {
       if (item != null) {
         final Session previousSession = item.scope.endSession();
         if (previousSession != null) {
-          item.client.captureSession(previousSession, new SessionEndHint());
+          item.client.captureSession(previousSession, hint);
         }
       } else {
         options.getLogger().log(SentryLevel.FATAL, "Stack peek was null when endSession");

@@ -48,8 +48,8 @@ public final class HubAdapter implements IHub {
   }
 
   @Override
-  public void endSession() {
-    Sentry.endSession();
+  public void endSession(@Nullable Object hint) {
+    Sentry.getCurrentHub().endSession(hint);
   }
 
   @Override

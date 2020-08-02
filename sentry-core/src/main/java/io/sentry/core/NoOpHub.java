@@ -44,7 +44,7 @@ final class NoOpHub implements IHub {
   public void startSession() {}
 
   @Override
-  public void endSession() {}
+  public void endSession(@Nullable Object hint) {}
 
   @Override
   public void close() {}
