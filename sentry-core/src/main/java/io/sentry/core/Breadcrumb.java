@@ -188,7 +188,7 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
   @ApiStatus.Internal
   @Override
   public void acceptUnknownProperties(@Nullable Map<String, Object> unknown) {
-    this.unknown = unknown;
+    this.unknown = new ConcurrentHashMap<>(unknown);
   }
 
   /**
@@ -212,21 +212,7 @@ public final class Breadcrumb implements Cloneable, IUnknownPropertiesConsumer {
   public @NotNull Breadcrumb clone() throws CloneNotSupportedException {
     final Breadcrumb clone = (Breadcrumb) super.clone();
 
-    final Map<String, Object> dataRef = data;
-    if (dataRef != null) {
-      final Map<String, Object> dataClone = new ConcurrentHashMap<>();
-
-      for (Map.Entry<String, Object> item : dataRef.entrySet()) {
-        if (item != null) {
-          dataClone.put(item.getKey(), item.getValue()); // shallow copy
-        }
-      }
-
-      clone.data = dataClone;
-    } else {
-      clone.data = null;
-    }
-
+    clone.data = CollectionUtils.shallowCopy(data);
     clone.unknown = CollectionUtils.shallowCopy(unknown);
 
     final SentryLevel levelRef = level;

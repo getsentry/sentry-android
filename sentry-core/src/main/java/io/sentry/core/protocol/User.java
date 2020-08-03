@@ -117,7 +117,7 @@ public final class User implements Cloneable, IUnknownPropertiesConsumer {
    * @param other the other user related data..
    */
   public void setOthers(@Nullable Map<String, String> other) {
-    this.other = other;
+    this.other = new ConcurrentHashMap<>(other);
   }
 
   /**
@@ -128,7 +128,7 @@ public final class User implements Cloneable, IUnknownPropertiesConsumer {
   @ApiStatus.Internal
   @Override
   public void acceptUnknownProperties(Map<String, Object> unknown) {
-    this.unknown = unknown;
+    this.unknown = new ConcurrentHashMap<>(unknown);
   }
 
   /**
@@ -151,21 +151,7 @@ public final class User implements Cloneable, IUnknownPropertiesConsumer {
   public @NotNull User clone() throws CloneNotSupportedException {
     final User clone = (User) super.clone();
 
-    final Map<String, String> otherRef = other;
-    if (otherRef != null) {
-      final Map<String, String> otherClone = new ConcurrentHashMap<>();
-
-      for (Map.Entry<String, String> item : otherRef.entrySet()) {
-        if (item != null) {
-          otherClone.put(item.getKey(), item.getValue()); // shallow copy
-        }
-      }
-
-      clone.other = otherClone;
-    } else {
-      clone.other = null;
-    }
-
+    clone.other = CollectionUtils.shallowCopy(other);
     clone.unknown = CollectionUtils.shallowCopy(unknown);
 
     return clone;

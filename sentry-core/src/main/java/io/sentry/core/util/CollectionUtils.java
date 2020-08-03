@@ -1,8 +1,8 @@
 package io.sentry.core.util;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,15 +39,7 @@ public final class CollectionUtils {
    */
   public static <K, V> @Nullable Map<K, V> shallowCopy(@Nullable Map<K, V> map) {
     if (map != null) {
-      final Map<K, V> clone = new HashMap<>();
-
-      for (Map.Entry<K, V> item : map.entrySet()) {
-        if (item != null) {
-          clone.put(item.getKey(), item.getValue()); // shallow copy
-        }
-      }
-
-      return clone;
+      return new ConcurrentHashMap<>(map);
     } else {
       return null;
     }
