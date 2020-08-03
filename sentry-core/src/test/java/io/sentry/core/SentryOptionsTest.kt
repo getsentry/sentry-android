@@ -135,7 +135,7 @@ class SentryOptionsTest {
         assertEquals(BuildConfig.SDK_VERSION, sdkVersion.version)
 
         assertTrue(sdkVersion.packages!!.any {
-            it.name == "maven:sentry-core"
+            it.name == "maven:sentry-core" &&
             it.version == BuildConfig.SDK_VERSION
         })
     }
