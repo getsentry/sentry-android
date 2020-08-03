@@ -5,6 +5,8 @@ object Config {
     object BuildPlugins {
         val androidGradle = "com.android.tools.build:gradle:4.0.1"
         val kotlinGradlePlugin = "gradle-plugin"
+        val buildConfig = "com.github.gmazzo.buildconfig"
+        val buildConfigVersion = "2.0.2"
     }
 
     object Android {

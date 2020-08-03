@@ -1036,5 +1036,18 @@ public class SentryOptions {
     integrations.add(new ShutdownHookIntegration());
 
     eventProcessors.add(new MainEventProcessor(this));
+
+    setSdkVersion(createSdkVersion());
+  }
+
+  private @NotNull SdkVersion createSdkVersion() {
+    final SdkVersion sdkVersion = new SdkVersion();
+
+    sdkVersion.setName(BuildConfig.SDK_NAME);
+    String version = BuildConfig.SDK_VERSION;
+    sdkVersion.setVersion(version);
+    sdkVersion.addPackage("maven:sentry-core", version);
+
+    return sdkVersion;
   }
 }
