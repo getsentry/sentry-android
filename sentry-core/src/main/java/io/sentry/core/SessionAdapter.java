@@ -205,7 +205,8 @@ public final class SessionAdapter extends TypeAdapter<Session> {
         release);
   }
 
-  private @Nullable Date converTimeStamp(final @NotNull String timestamp, final @NotNull String field) {
+  private @Nullable Date converTimeStamp(
+      final @NotNull String timestamp, final @NotNull String field) {
     try {
       return DateUtils.getDateTime(timestamp);
     } catch (IllegalArgumentException e) {
