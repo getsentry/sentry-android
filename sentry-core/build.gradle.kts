@@ -69,8 +69,8 @@ tasks {
 buildConfig {
     useJavaOutput()
     packageName("io.sentry.core")
-    buildConfigField("String", "SDK_NAME", "\"${Config.Sentry.SENTRY_CLIENT_NAME}\"")
-    buildConfigField("String", "SDK_VERSION", "\"${project.version}\"")
+    buildConfigField("String", "SENTRY_CLIENT_NAME", "\"${Config.Sentry.SENTRY_JAVA_CLIENT_NAME}\"")
+    buildConfigField("String", "VERSION_NAME", "\"${project.version}\"")
 }
 
 val generateBuildConfig by tasks
