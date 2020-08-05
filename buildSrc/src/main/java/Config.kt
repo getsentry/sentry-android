@@ -60,8 +60,8 @@ object Config {
     }
 
     object Sentry {
-        val SENTRY_JAVA_CLIENT_NAME = "sentry.java"
-        val SENTRY_ANDROID_CLIENT_NAME = "$SENTRY_JAVA_CLIENT_NAME.android"
+        val SENTRY_JAVA_SDK_NAME = "sentry.java"
+        val SENTRY_ANDROID_SDK_NAME = "$SENTRY_JAVA_SDK_NAME.android"
         val group = "io.sentry"
         val description = "SDK for sentry.io"
         val website = "https://sentry.io"

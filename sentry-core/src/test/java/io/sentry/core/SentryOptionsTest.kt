@@ -131,7 +131,7 @@ class SentryOptionsTest {
         assertNotNull(sentryOptions.sdkVersion)
         val sdkVersion = sentryOptions.sdkVersion!!
 
-        assertEquals(BuildConfig.SENTRY_CLIENT_NAME, sdkVersion.name)
+        assertEquals(BuildConfig.SENTRY_JAVA_SDK_NAME, sdkVersion.name)
         assertEquals(BuildConfig.VERSION_NAME, sdkVersion.version)
 
         assertTrue(sdkVersion.packages!!.any {
@@ -144,7 +144,7 @@ class SentryOptionsTest {
     fun `init should set clientName`() {
         val sentryOptions = SentryOptions()
 
-        val clientName = "${BuildConfig.SENTRY_CLIENT_NAME}/${BuildConfig.VERSION_NAME}"
+        val clientName = "${BuildConfig.SENTRY_JAVA_SDK_NAME}/${BuildConfig.VERSION_NAME}"
 
         assertEquals(clientName, sentryOptions.sentryClientName)
     }

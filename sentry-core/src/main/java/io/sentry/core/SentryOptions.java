@@ -1037,14 +1037,14 @@ public class SentryOptions {
 
     eventProcessors.add(new MainEventProcessor(this));
 
-    setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
+    setSentryClientName(BuildConfig.SENTRY_JAVA_SDK_NAME + "/" + BuildConfig.VERSION_NAME);
     setSdkVersion(createSdkVersion());
   }
 
   private @NotNull SdkVersion createSdkVersion() {
     final SdkVersion sdkVersion = new SdkVersion();
 
-    sdkVersion.setName(BuildConfig.SENTRY_CLIENT_NAME);
+    sdkVersion.setName(BuildConfig.SENTRY_JAVA_SDK_NAME);
     String version = BuildConfig.VERSION_NAME;
     sdkVersion.setVersion(version);
     sdkVersion.addPackage("maven:sentry-core", version);

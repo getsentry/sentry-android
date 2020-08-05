@@ -35,7 +35,7 @@ public final class SentryAndroidOptions extends SentryOptions {
   private boolean enableAppComponentBreadcrumbs = true;
 
   public SentryAndroidOptions() {
-    setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
+    setSentryClientName(BuildConfig.SENTRY_ANDROID_SDK_NAME + "/" + BuildConfig.VERSION_NAME);
     setSdkVersion(createSdkVersion());
   }
 
@@ -46,7 +46,7 @@ public final class SentryAndroidOptions extends SentryOptions {
       sdkVersion = new SdkVersion();
     }
 
-    sdkVersion.setName(BuildConfig.SENTRY_CLIENT_NAME);
+    sdkVersion.setName(BuildConfig.SENTRY_ANDROID_SDK_NAME);
     String version = BuildConfig.VERSION_NAME;
     sdkVersion.setVersion(version);
     sdkVersion.addPackage("maven:sentry-android-core", version);
