@@ -1,0 +1,9 @@
+<configuration debug="true">
+  <appender name="sentry" class="io.sentry.logback.SentryAppender">
+    <dsn>https://key@sentry.io/proj</dsn>
+  </appender>
+
+  <root level="trace">
+    <appender-ref ref="sentry"/>
+  </root>
+</configuration>

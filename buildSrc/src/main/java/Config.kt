@@ -32,6 +32,10 @@ object Config {
         val lifecycleVersion = "2.2.0"
         val lifecycleProcess = "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
         val lifecycleCommonJava8 = "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
+
+        val logbackVersion = "1.2.3"
+        val logbackCore = "ch.qos.logback:logback-core:$logbackVersion"
+        val logbackClassic = "ch.qos.logback:logback-classic:$logbackVersion"
     }
 
     object TestLibs {
