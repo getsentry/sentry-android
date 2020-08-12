@@ -8,7 +8,6 @@ import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.ISentryClient
 import io.sentry.core.Sentry
 import io.sentry.core.SentryLevel
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -110,17 +109,6 @@ class SentryAppenderTest {
 
         verify(fixture.client).captureEvent(check {
             assertEquals(throwable, it.throwable)
-        }, any(), eq(null))
-    }
-
-    @Test
-    @Ignore("sdk version is currently not set")
-    fun `sets sdk version name`() {
-        fixture.logger.info("testing sdk version")
-
-        verify(fixture.client).captureEvent(check {
-            assertEquals(BuildConfig.SENTRY_LOGBACK_SDK_NAME, it.sdk.name)
-            assertEquals(BuildConfig.VERSION_NAME, it.sdk.version)
         }, any(), eq(null))
     }
 }
