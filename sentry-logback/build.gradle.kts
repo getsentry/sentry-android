@@ -7,6 +7,7 @@ plugins {
     id(Config.QualityPlugins.errorProne)
     id(Config.Deploy.novodaBintray)
     id(Config.QualityPlugins.gradleVersions)
+    id(Config.BuildPlugins.buildConfig) version Config.BuildPlugins.buildConfigVersion
 }
 
 configure<JavaPluginConvention> {
@@ -20,9 +21,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 dependencies {
     implementation(project(":sentry-core"))
-    // Envelopes require JSON. Until a parse is done without GSON, we'll depend on it explicitly here
-    implementation(Config.Libs.gson)
-    implementation(Config.Libs.logbackCore)
     implementation(Config.Libs.logbackClassic)
 
     compileOnly(Config.CompileOnly.nopen)
@@ -66,6 +64,18 @@ tasks {
         dependsOn(jacocoTestCoverageVerification)
         dependsOn(jacocoTestReport)
     }
+}
+
+buildConfig {
+    useJavaOutput()
+    packageName("io.sentry.logback")
+    buildConfigField("String", "SENTRY_LOGBACK_SDK_NAME", "\"${Config.Sentry.SENTRY_LOGBACK_SDK_NAME}\"")
+    buildConfigField("String", "VERSION_NAME", "\"${project.version}\"")
+}
+
+val generateBuildConfig by tasks
+tasks.withType<JavaCompile>().configureEach {
+    dependsOn(generateBuildConfig)
 }
 
 //TODO: move these blocks to parent gradle file, DRY

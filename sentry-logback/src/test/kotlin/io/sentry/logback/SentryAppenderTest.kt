@@ -9,6 +9,7 @@ import io.sentry.core.ISentryClient
 import io.sentry.core.Sentry
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryLevel
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -129,6 +130,19 @@ class SentryAppenderTest {
 
         with(fixture.captor.firstValue) {
             assertEquals(throwable, this.throwable)
+        }
+    }
+
+    @Test
+    @Ignore("sdk version is currently not set")
+    fun `sets sdk version name`() {
+        fixture.logger.info("testing sdk version")
+
+        verify(fixture.client).captureEvent(fixture.captor.capture(), any(), eq(null))
+
+        with(fixture.captor.firstValue) {
+            assertEquals(BuildConfig.SENTRY_LOGBACK_SDK_NAME, this.sdk.name)
+            assertEquals(BuildConfig.VERSION_NAME, this.sdk.version)
         }
     }
 }

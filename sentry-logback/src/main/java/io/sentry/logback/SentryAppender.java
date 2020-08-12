@@ -7,7 +7,9 @@ import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
+import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.Message;
+import io.sentry.core.protocol.SdkVersion;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +45,8 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
             Optional.ofNullable(debug).ifPresent(options::setDebug);
             Optional.ofNullable(attachThreads).ifPresent(options::setAttachThreads);
             Optional.ofNullable(attachStacktrace).ifPresent(options::setAttachStacktrace);
+            options.setSentryClientName(BuildConfig.SENTRY_LOGBACK_SDK_NAME);
+            options.setSdkVersion(createSdkVersion(options));
           });
     }
     super.start();
@@ -50,9 +54,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
 
   @Override
   protected void append(@NotNull ILoggingEvent eventObject) {
-    if (Sentry.isEnabled()) {
-      Sentry.captureEvent(createEvent(eventObject));
-    }
+    Sentry.captureEvent(createEvent(eventObject));
   }
 
   /**
@@ -111,11 +113,24 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
       return SentryLevel.WARNING;
     } else if (level.isGreaterOrEqual(Level.INFO)) {
       return SentryLevel.INFO;
-    } else if (level.isGreaterOrEqual(Level.ALL)) {
-      return SentryLevel.DEBUG;
     } else {
-      return SentryLevel.LOG;
+      return SentryLevel.DEBUG;
     }
+  }
+
+  private @NotNull SdkVersion createSdkVersion(@NotNull SentryOptions sentryOptions) {
+    SdkVersion sdkVersion = sentryOptions.getSdkVersion();
+
+    if (sdkVersion == null) {
+      sdkVersion = new SdkVersion();
+    }
+
+    sdkVersion.setName(BuildConfig.SENTRY_LOGBACK_SDK_NAME);
+    final String version = BuildConfig.VERSION_NAME;
+    sdkVersion.setVersion(version);
+    sdkVersion.addPackage("maven:sentry-logback", version);
+
+    return sdkVersion;
   }
 
   public void setDsn(@Nullable String dsn) {
