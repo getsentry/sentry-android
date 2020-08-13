@@ -1,7 +1,7 @@
 package io.sentry.core;
 
 import static io.sentry.core.SentryLevel.ERROR;
-import static io.sentry.core.cache.SessionCache.PREFIX_CURRENT_SESSION_FILE;
+import static io.sentry.core.cache.EnvelopeCache.PREFIX_CURRENT_SESSION_FILE;
 
 import io.sentry.core.hints.Flushable;
 import io.sentry.core.hints.Retryable;
@@ -145,55 +145,8 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
                     "Timed out waiting for event submission: %s",
                     event.getEventId());
 
-                //                TODO: find out about the time out
-                //                if (hint instanceof Retryable) {
-                //                  ((Retryable) hint).setRetry(true);
-                //                }
-
                 break;
               }
-            } else {
-              LogUtils.logIfNotFlushable(logger, hint);
-            }
-          }
-        } catch (Exception e) {
-          logger.log(ERROR, "Item failed to process.", e);
-        }
-      } else if (SentryItemType.Session.equals(item.getHeader().getType())) {
-        try (final Reader reader =
-            new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8))) {
-          final Session session = serializer.deserializeSession(reader);
-          if (session == null) {
-            logger.log(
-                SentryLevel.ERROR,
-                "Item %d of type %s returned null by the parser.",
-                items,
-                item.getHeader().getType());
-          } else {
-            // TODO: Bundle all session in a single envelope
-            hub.captureEnvelope(
-                SentryEnvelope.fromSession(
-                    serializer, session, envelope.getHeader().getSdkVersion()),
-                hint);
-            logger.log(SentryLevel.DEBUG, "Item %d is being captured.", items);
-
-            if (hint instanceof Flushable) {
-              logger.log(SentryLevel.DEBUG, "Going to wait flush %d item.", items);
-              if (!((Flushable) hint).waitFlush()) {
-                logger.log(
-                    SentryLevel.WARNING,
-                    "Timed out waiting for item submission: %s",
-                    session.getSessionId());
-
-                //                TODO: find out about the time out
-                //                if (hint instanceof Retryable) {
-                //                  ((Retryable) hint).setRetry(true);
-                //                }
-
-                break;
-              }
-              logger.log(SentryLevel.DEBUG, "Flushed %d item.", items);
             } else {
               LogUtils.logIfNotFlushable(logger, hint);
             }

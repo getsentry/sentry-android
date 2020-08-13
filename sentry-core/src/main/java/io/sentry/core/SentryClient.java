@@ -112,6 +112,7 @@ public final class SentryClient implements ISentryClient {
 
     event = executeBeforeSend(event, hint);
 
+    // TODO: separate in a method
     SentryId sentryId = null;
     try {
       final List<SentryEnvelopeItem> envelopeItems = new ArrayList<>();

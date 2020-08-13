@@ -101,11 +101,8 @@ public class SentryOptions {
   /** The cache dir. size for capping the number of events Default is 10 */
   private int cacheDirSize = 10;
 
-//  /** The sessions dir. size for capping the number of envelopes Default is 100 */
-//  private int sessionsDirSize = 100;
-
   /** Max. queue size before flushing events/envelopes to the disk */
-  private int maxQueueSize = cacheDirSize; // + sessionsDirSize;
+  private int maxQueueSize = cacheDirSize;
 
   /**
    * This variable controls the total amount of breadcrumbs that should be captured Default is 100
@@ -456,18 +453,6 @@ public class SentryOptions {
     return cacheDirPath + File.separator + "outbox";
   }
 
-//  /**
-//   * Returns the sessions path if cacheDirPath is set
-//   *
-//   * @return the sessions path or null if not set
-//   */
-//  public @Nullable String getSessionsPath() {
-//    if (cacheDirPath == null || cacheDirPath.isEmpty()) {
-//      return null;
-//    }
-//    return cacheDirPath + File.separator + "sessions";
-//  }
-
   /**
    * Sets the cache dir. path
    *
@@ -752,24 +737,6 @@ public class SentryOptions {
   public void setServerName(@Nullable String serverName) {
     this.serverName = serverName;
   }
-
-//  /**
-//   * Returns the sessions dir size
-//   *
-//   * @return the dir size
-//   */
-//  public int getSessionsDirSize() {
-//    return sessionsDirSize;
-//  }
-//
-//  /**
-//   * Sets the sessions dir size
-//   *
-//   * @param sessionsDirSize the sessions dir size
-//   */
-//  public void setSessionsDirSize(int sessionsDirSize) {
-//    this.sessionsDirSize = sessionsDirSize;
-//  }
 
   /**
    * Returns the session tracking interval in millis

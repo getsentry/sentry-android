@@ -7,7 +7,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import io.sentry.core.cache.SessionCache
+import io.sentry.core.cache.EnvelopeCache
 import io.sentry.core.hints.Retryable
 import io.sentry.core.protocol.SentryId
 import io.sentry.core.protocol.User
@@ -177,7 +177,7 @@ class EnvelopeSenderTest {
 
     @Test
     fun `when file name is current prefix, should be ignored`() {
-        assertFalse(fixture.getSut().isRelevantFileName(SessionCache.PREFIX_CURRENT_SESSION_FILE))
+        assertFalse(fixture.getSut().isRelevantFileName(EnvelopeCache.PREFIX_CURRENT_SESSION_FILE))
     }
 
     @Test

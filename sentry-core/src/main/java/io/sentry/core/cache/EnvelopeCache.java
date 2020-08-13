@@ -15,7 +15,6 @@ import io.sentry.core.SentryOptions;
 import io.sentry.core.Session;
 import io.sentry.core.hints.SessionEnd;
 import io.sentry.core.hints.SessionStart;
-import io.sentry.core.hints.SessionUpdate;
 import io.sentry.core.util.Objects;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -44,10 +43,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
-public final class SessionCache extends CacheStrategy implements IEnvelopeCache {
+public final class EnvelopeCache extends CacheStrategy implements IEnvelopeCache {
 
   /** File suffix added to all serialized envelopes files. */
-  static final String SUFFIX_ENVELOPE_FILE = ".envelope";
+  public static final String SUFFIX_ENVELOPE_FILE = ".envelope";
 
   public static final String PREFIX_CURRENT_SESSION_FILE = "session";
   static final String SUFFIX_CURRENT_SESSION_FILE = ".json";
@@ -55,9 +54,9 @@ public final class SessionCache extends CacheStrategy implements IEnvelopeCache 
 
   private final @NotNull Map<SentryEnvelope, String> fileNameMap = new WeakHashMap<>();
 
-  public SessionCache(final @NotNull SentryOptions options) {
+  public EnvelopeCache(final @NotNull SentryOptions options) {
     // TODO: should we create a new folder?
-    super(options, options.getOutboxPath(), options.getCacheDirSize());
+    super(options, options.getCacheDirPath(), options.getCacheDirSize());
   }
 
   @Override

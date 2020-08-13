@@ -11,9 +11,9 @@ import io.sentry.core.SentryEnvelope
 import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import io.sentry.core.Session
-import io.sentry.core.cache.SessionCache.PREFIX_CURRENT_SESSION_FILE
-import io.sentry.core.cache.SessionCache.SUFFIX_CURRENT_SESSION_FILE
-import io.sentry.core.cache.SessionCache.SUFFIX_ENVELOPE_FILE
+import io.sentry.core.cache.EnvelopeCache.PREFIX_CURRENT_SESSION_FILE
+import io.sentry.core.cache.EnvelopeCache.SUFFIX_CURRENT_SESSION_FILE
+import io.sentry.core.cache.EnvelopeCache.SUFFIX_ENVELOPE_FILE
 import io.sentry.core.hints.SessionEndHint
 import io.sentry.core.hints.SessionStartHint
 import io.sentry.core.hints.SessionUpdateHint
@@ -27,7 +27,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class SessionCacheTest {
+class EnvelopeCacheTest {
     private class Fixture {
         val maxSize = 5
         val dir: Path = Files.createTempDirectory("sentry-session-cache-test")
@@ -48,7 +48,7 @@ class SessionCacheTest {
             options.setSerializer(serializer)
             options.isDebug = true
 
-            return SessionCache(options)
+            return EnvelopeCache(options)
         }
     }
 
@@ -191,7 +191,7 @@ class SessionCacheTest {
         val cache = fixture.getSUT()
 
         val file = File(fixture.options.sessionsPath!!)
-        val markerFile = File(fixture.options.cacheDirPath!!, SessionCache.CRASH_MARKER_FILE)
+        val markerFile = File(fixture.options.cacheDirPath!!, EnvelopeCache.CRASH_MARKER_FILE)
         markerFile.mkdirs()
         assertTrue(markerFile.exists())
 
@@ -210,7 +210,7 @@ class SessionCacheTest {
     fun `when session start, current file already exist and crash marker file exist, end session with given timestamp`() {
         val cache = fixture.getSUT()
         val file = File(fixture.options.sessionsPath!!)
-        val markerFile = File(fixture.options.cacheDirPath!!, SessionCache.CRASH_MARKER_FILE)
+        val markerFile = File(fixture.options.cacheDirPath!!, EnvelopeCache.CRASH_MARKER_FILE)
         File(fixture.options.cacheDirPath!!, ".sentry-native").mkdirs()
         markerFile.createNewFile()
         val date = "2020-02-07T14:16:00.000Z"
