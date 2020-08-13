@@ -22,7 +22,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class EnvelopeSenderTest {
+class OutboxSenderTest {
     private class Fixture {
 
         var hub: IHub = mock()
@@ -37,8 +37,8 @@ class EnvelopeSenderTest {
             options.setLogger(logger)
         }
 
-        fun getSut(): EnvelopeSender {
-            return EnvelopeSender(hub, envelopeReader, serializer, logger, 15000)
+        fun getSut(): OutboxSender {
+            return OutboxSender(hub, envelopeReader, serializer, logger, 15000)
         }
     }
 

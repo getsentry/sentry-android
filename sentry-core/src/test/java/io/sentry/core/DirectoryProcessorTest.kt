@@ -32,8 +32,8 @@ class DirectoryProcessorTest {
             options.setLogger(logger)
         }
 
-        fun getSut(): EnvelopeSender {
-            return EnvelopeSender(hub, envelopeReader, serializer, logger, 15000)
+        fun getSut(): OutboxSender {
+            return OutboxSender(hub, envelopeReader, serializer, logger, 15000)
         }
     }
 

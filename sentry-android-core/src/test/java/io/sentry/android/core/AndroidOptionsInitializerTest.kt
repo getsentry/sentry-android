@@ -13,7 +13,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.ILogger
 import io.sentry.core.MainEventProcessor
-import io.sentry.core.SendCachedEventFireAndForgetIntegration
+import io.sentry.core.SendCachedEnvelopeFireAndForgetIntegration
 import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import java.io.File
@@ -276,7 +276,7 @@ class AndroidOptionsInitializerTest {
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
-        val actual = sentryOptions.integrations.firstOrNull { it is SendCachedEventFireAndForgetIntegration }
+        val actual = sentryOptions.integrations.firstOrNull { it is SendCachedEnvelopeFireAndForgetIntegration }
         assertNotNull(actual)
     }
 
