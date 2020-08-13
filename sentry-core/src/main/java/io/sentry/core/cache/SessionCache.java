@@ -56,7 +56,8 @@ public final class SessionCache extends CacheStrategy implements IEnvelopeCache 
   private final @NotNull Map<SentryEnvelope, String> fileNameMap = new WeakHashMap<>();
 
   public SessionCache(final @NotNull SentryOptions options) {
-    super(options, options.getSessionsPath(), options.getSessionsDirSize());
+    // TODO: should we create a new folder?
+    super(options, options.getOutboxPath(), options.getCacheDirSize());
   }
 
   @Override
@@ -134,10 +135,10 @@ public final class SessionCache extends CacheStrategy implements IEnvelopeCache 
       updateCurrentSession(currentSessionFile, envelope);
     }
 
-    if (hint instanceof SessionUpdate) {
-      updateCurrentSession(currentSessionFile, envelope);
-      return;
-    }
+//    if (hint instanceof SessionUpdate) {
+//      updateCurrentSession(currentSessionFile, envelope);
+//      return;
+//    }
 
     final File envelopeFile = getEnvelopeFile(envelope);
     if (envelopeFile.exists()) {

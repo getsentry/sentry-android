@@ -3,16 +3,12 @@ package io.sentry.core.transport;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryEnvelope;
 import io.sentry.core.SentryEnvelopeItem;
-import io.sentry.core.SentryEvent;
-import io.sentry.core.SentryItemType;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.cache.IEnvelopeCache;
-import io.sentry.core.cache.IEventCache;
 import io.sentry.core.hints.Cached;
 import io.sentry.core.hints.DiskFlushNotification;
 import io.sentry.core.hints.Retryable;
-import io.sentry.core.hints.SessionUpdate;
 import io.sentry.core.hints.SubmissionResult;
 import io.sentry.core.util.LogUtils;
 import io.sentry.core.util.Objects;
@@ -35,23 +31,23 @@ public final class AsyncConnection implements Closeable, Connection {
   private final @NotNull ITransport transport;
   private final @NotNull ITransportGate transportGate;
   private final @NotNull ExecutorService executor;
-  private final @NotNull IEventCache eventCache;
+//  private final @NotNull IEventCache eventCache;
   private final @NotNull IEnvelopeCache sessionCache;
   private final @NotNull SentryOptions options;
 
   public AsyncConnection(
       final ITransport transport,
       final ITransportGate transportGate,
-      final IEventCache eventCache,
+//      final IEventCache eventCache,
       final IEnvelopeCache sessionCache,
       final int maxQueueSize,
       final SentryOptions options) {
     this(
         transport,
         transportGate,
-        eventCache,
+//        eventCache,
         sessionCache,
-        initExecutor(maxQueueSize, eventCache, sessionCache, options.getLogger()),
+        initExecutor(maxQueueSize, sessionCache, options.getLogger()),
         options);
   }
 
@@ -59,13 +55,13 @@ public final class AsyncConnection implements Closeable, Connection {
   AsyncConnection(
       final @NotNull ITransport transport,
       final @NotNull ITransportGate transportGate,
-      final @NotNull IEventCache eventCache,
+//      final @NotNull IEventCache eventCache,
       final @NotNull IEnvelopeCache sessionCache,
       final @NotNull ExecutorService executorService,
       final @NotNull SentryOptions options) {
     this.transport = transport;
     this.transportGate = transportGate;
-    this.eventCache = eventCache;
+//    this.eventCache = eventCache;
     this.sessionCache = sessionCache;
     this.options = options;
     this.executor = executorService;
@@ -73,22 +69,22 @@ public final class AsyncConnection implements Closeable, Connection {
 
   private static QueuedThreadPoolExecutor initExecutor(
       final int maxQueueSize,
-      final @NotNull IEventCache eventCache,
+//      final @NotNull IEventCache eventCache,
       final @NotNull IEnvelopeCache sessionCache,
       final @NotNull ILogger logger) {
 
     final RejectedExecutionHandler storeEvents =
         (r, executor) -> {
-          if (r instanceof EventSender) {
-            final EventSender eventSender = (EventSender) r;
-
-            if (!(eventSender.hint instanceof Cached)) {
-              eventCache.store(eventSender.event);
-            }
-
-            markHintWhenSendingFailed(eventSender.hint, true);
-            logger.log(SentryLevel.WARNING, "Event rejected: %s", eventSender.event.getEventId());
-          }
+//          if (r instanceof EventSender) {
+//            final EventSender eventSender = (EventSender) r;
+//
+//            if (!(eventSender.hint instanceof Cached)) {
+//              eventCache.store(eventSender.event);
+//            }
+//
+//            markHintWhenSendingFailed(eventSender.hint, true);
+//            logger.log(SentryLevel.WARNING, "Event rejected: %s", eventSender.event.getEventId());
+//          }
           if (r instanceof SessionSender) {
             final SessionSender sessionSender = (SessionSender) r;
 
@@ -120,35 +116,35 @@ public final class AsyncConnection implements Closeable, Connection {
     }
   }
 
-  /**
-   * Tries to send the event to the Sentry server.
-   *
-   * @param event the event to send
-   * @throws IOException on error
-   */
-  @SuppressWarnings("FutureReturnValueIgnored")
-  @Override
-  public void send(final @NotNull SentryEvent event, final @Nullable Object hint)
-      throws IOException {
-    IEventCache currentEventCache = eventCache;
-    boolean cached = false;
-    if (hint instanceof Cached) {
-      currentEventCache = NoOpEventCache.getInstance();
-      cached = true;
-      options.getLogger().log(SentryLevel.DEBUG, "Captured SentryEvent is already cached");
-    }
-
-    // no reason to continue
-    if (transport.isRetryAfter(SentryItemType.Event.getItemType())) {
-      if (cached) {
-        eventCache.discard(event);
-      }
-      markHintWhenSendingFailed(hint, false);
-      return;
-    }
-
-    executor.submit(new EventSender(event, hint, currentEventCache));
-  }
+//  /**
+//   * Tries to send the event to the Sentry server.
+//   *
+//   * @param event the event to send
+//   * @throws IOException on error
+//   */
+//  @SuppressWarnings("FutureReturnValueIgnored")
+//  @Override
+//  public void send(final @NotNull SentryEvent event, final @Nullable Object hint)
+//      throws IOException {
+//    IEventCache currentEventCache = eventCache;
+//    boolean cached = false;
+//    if (hint instanceof Cached) {
+//      currentEventCache = NoOpEventCache.getInstance();
+//      cached = true;
+//      options.getLogger().log(SentryLevel.DEBUG, "Captured SentryEvent is already cached");
+//    }
+//
+//    // no reason to continue
+//    if (transport.isRetryAfter(SentryItemType.Event.getItemType())) {
+//      if (cached) {
+//        eventCache.discard(event);
+//      }
+//      markHintWhenSendingFailed(hint, false);
+//      return;
+//    }
+//
+//    executor.submit(new EventSender(event, hint, currentEventCache));
+//  }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   @Override
@@ -240,89 +236,89 @@ public final class AsyncConnection implements Closeable, Connection {
     }
   }
 
-  private final class EventSender implements Runnable {
-    private final SentryEvent event;
-    private final Object hint;
-    private final IEventCache eventCache;
-    private final TransportResult failedResult = TransportResult.error();
-
-    EventSender(
-        final @NotNull SentryEvent event,
-        final @Nullable Object hint,
-        final @NotNull IEventCache eventCache) {
-      this.event = event;
-      this.hint = hint;
-      this.eventCache = eventCache;
-    }
-
-    @Override
-    public void run() {
-      TransportResult result = this.failedResult;
-      try {
-        result = flush();
-      } catch (Exception e) {
-        options
-            .getLogger()
-            .log(SentryLevel.ERROR, e, "Event submission failed: %s", event.getEventId());
-        throw e;
-      } finally {
-        if (hint instanceof SubmissionResult) {
-          options
-              .getLogger()
-              .log(SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
-          ((SubmissionResult) hint).setResult(result.isSuccess());
-        }
-      }
-    }
-
-    private @NotNull TransportResult flush() {
-      TransportResult result = this.failedResult;
-      eventCache.store(event);
-
-      if (hint instanceof DiskFlushNotification) {
-        ((DiskFlushNotification) hint).markFlushed();
-        options
-            .getLogger()
-            .log(SentryLevel.DEBUG, "Disk flush event fired: %s", event.getEventId());
-      }
-
-      if (transportGate.isConnected()) {
-        try {
-          result =
-              transport.send(
-                  SentryEnvelope.fromEvent(
-                      options.getSerializer(), event, options.getSdkVersion()));
-          if (result.isSuccess()) {
-            eventCache.discard(event);
-          } else {
-            final String message =
-                "The transport failed to send the event with response code "
-                    + result.getResponseCode();
-
-            options.getLogger().log(SentryLevel.ERROR, message);
-
-            throw new IllegalStateException(message);
-          }
-        } catch (IOException e) {
-          // Failure due to IO is allowed to retry the event
-          if (hint instanceof Retryable) {
-            ((Retryable) hint).setRetry(true);
-          } else {
-            LogUtils.logIfNotRetryable(options.getLogger(), hint);
-          }
-          throw new IllegalStateException("Sending the event failed.", e);
-        }
-      } else {
-        // If transportGate is blocking from sending, allowed to retry
-        if (hint instanceof Retryable) {
-          ((Retryable) hint).setRetry(true);
-        } else {
-          LogUtils.logIfNotRetryable(options.getLogger(), hint);
-        }
-      }
-      return result;
-    }
-  }
+//  private final class EventSender implements Runnable {
+//    private final SentryEvent event;
+//    private final Object hint;
+//    private final IEventCache eventCache;
+//    private final TransportResult failedResult = TransportResult.error();
+//
+//    EventSender(
+//        final @NotNull SentryEvent event,
+//        final @Nullable Object hint,
+//        final @NotNull IEventCache eventCache) {
+//      this.event = event;
+//      this.hint = hint;
+//      this.eventCache = eventCache;
+//    }
+//
+//    @Override
+//    public void run() {
+//      TransportResult result = this.failedResult;
+//      try {
+//        result = flush();
+//      } catch (Exception e) {
+//        options
+//            .getLogger()
+//            .log(SentryLevel.ERROR, e, "Event submission failed: %s", event.getEventId());
+//        throw e;
+//      } finally {
+//        if (hint instanceof SubmissionResult) {
+//          options
+//              .getLogger()
+//              .log(SentryLevel.DEBUG, "Marking event submission result: %s", result.isSuccess());
+//          ((SubmissionResult) hint).setResult(result.isSuccess());
+//        }
+//      }
+//    }
+//
+//    private @NotNull TransportResult flush() {
+//      TransportResult result = this.failedResult;
+//      eventCache.store(event);
+//
+//      if (hint instanceof DiskFlushNotification) {
+//        ((DiskFlushNotification) hint).markFlushed();
+//        options
+//            .getLogger()
+//            .log(SentryLevel.DEBUG, "Disk flush event fired: %s", event.getEventId());
+//      }
+//
+//      if (transportGate.isConnected()) {
+//        try {
+//          result =
+//              transport.send(
+//                  SentryEnvelope.fromEvent(
+//                      options.getSerializer(), event, options.getSdkVersion()));
+//          if (result.isSuccess()) {
+//            eventCache.discard(event);
+//          } else {
+//            final String message =
+//                "The transport failed to send the event with response code "
+//                    + result.getResponseCode();
+//
+//            options.getLogger().log(SentryLevel.ERROR, message);
+//
+//            throw new IllegalStateException(message);
+//          }
+//        } catch (IOException e) {
+//          // Failure due to IO is allowed to retry the event
+//          if (hint instanceof Retryable) {
+//            ((Retryable) hint).setRetry(true);
+//          } else {
+//            LogUtils.logIfNotRetryable(options.getLogger(), hint);
+//          }
+//          throw new IllegalStateException("Sending the event failed.", e);
+//        }
+//      } else {
+//        // If transportGate is blocking from sending, allowed to retry
+//        if (hint instanceof Retryable) {
+//          ((Retryable) hint).setRetry(true);
+//        } else {
+//          LogUtils.logIfNotRetryable(options.getLogger(), hint);
+//        }
+//      }
+//      return result;
+//    }
+//  }
 
   private final class SessionSender implements Runnable {
     private final @NotNull SentryEnvelope envelope;
@@ -363,13 +359,20 @@ public final class AsyncConnection implements Closeable, Connection {
 
       sessionCache.store(envelope, hint);
 
-      // we only flush a session update to the disk, but not to the network
-      if (hint instanceof SessionUpdate) {
+      if (hint instanceof DiskFlushNotification) {
+        ((DiskFlushNotification) hint).markFlushed();
         options
-            .getLogger()
-            .log(SentryLevel.DEBUG, "SessionUpdate event, leaving after event being cached.");
-        return TransportResult.success();
+                .getLogger()
+                .log(SentryLevel.DEBUG, "Disk flush envelope fired");
       }
+
+      // we only flush a session update to the disk, but not to the network
+//      if (hint instanceof SessionUpdate) {
+//        options
+//            .getLogger()
+//            .log(SentryLevel.DEBUG, "SessionUpdate event, leaving after event being cached.");
+//        return TransportResult.success();
+//      }
 
       if (transportGate.isConnected()) {
         try {

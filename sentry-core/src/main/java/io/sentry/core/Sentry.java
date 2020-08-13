@@ -189,8 +189,8 @@ public final class Sentry {
       final File outboxDir = new File(options.getOutboxPath());
       outboxDir.mkdirs();
 
-      final File sessionsDir = new File(options.getSessionsPath());
-      sessionsDir.mkdirs();
+//      final File sessionsDir = new File(options.getSessionsPath());
+//      sessionsDir.mkdirs();
 
       options.setEventDiskCache(new DiskCache(options));
       options.setEnvelopeDiskCache(new SessionCache(options));

@@ -1,8 +1,6 @@
 package io.sentry.core;
 
 import io.sentry.core.hints.DiskFlushNotification;
-import io.sentry.core.hints.SessionEndHint;
-import io.sentry.core.hints.SessionUpdateHint;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.transport.Connection;
 import io.sentry.core.transport.ITransport;
@@ -12,8 +10,11 @@ import io.sentry.core.util.Objects;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,7 +51,7 @@ public final class SentryClient implements ISentryClient {
     if (connection == null) {
       connection =
           AsyncConnectionFactory.create(
-              options, options.getEventDiskCache(), options.getEnvelopeDiskCache());
+              options, options.getEnvelopeDiskCache());
     }
     this.connection = connection;
     random = options.getSampleRate() == null ? null : new Random();
@@ -97,7 +98,7 @@ public final class SentryClient implements ISentryClient {
     }
 
     // TODO: should it be done on the HUB?
-    updateSessionData(event, hint, scope);
+    final Session session = updateSessionData(event, hint, scope);
 
     if (!sample()) {
       options
@@ -111,17 +112,37 @@ public final class SentryClient implements ISentryClient {
 
     event = executeBeforeSend(event, hint);
 
-    if (event == null) {
-      options.getLogger().log(SentryLevel.DEBUG, "Event was dropped by beforeSend");
-      return SentryId.EMPTY_ID;
-    }
-
+    SentryId sentryId = null;
     try {
-      connection.send(event, hint);
+      final List<SentryEnvelopeItem> envelopeItems = new ArrayList<>();
+
+      if (event != null) {
+        final SentryEnvelopeItem eventItem = SentryEnvelopeItem.fromEvent(options.getSerializer(), event);
+        envelopeItems.add(eventItem);
+        sentryId = event.getEventId();
+      }
+
+      if (session != null) {
+        final SentryEnvelopeItem sessionItem = SentryEnvelopeItem.fromSession(options.getSerializer(), session);
+        envelopeItems.add(sessionItem);
+      }
+
+      if (!envelopeItems.isEmpty()) {
+        final SentryEnvelopeHeader envelopeHeader = new SentryEnvelopeHeader(sentryId, options.getSdkVersion());
+        final SentryEnvelope envelope = new SentryEnvelope(envelopeHeader, envelopeItems);
+
+        // TODO: might need to do something about hint session update and end
+        connection.send(envelope, hint);
+      }
     } catch (IOException e) {
       options
           .getLogger()
-          .log(SentryLevel.WARNING, "Capturing event " + event.getEventId() + " failed.", e);
+          .log(SentryLevel.WARNING, "Capturing event " + sentryId + " failed.", e);
+    }
+
+    if (event == null) {
+      options.getLogger().log(SentryLevel.DEBUG, "Event was dropped by beforeSend");
+      return SentryId.EMPTY_ID;
     }
 
     return event.getEventId();
@@ -135,8 +156,10 @@ public final class SentryClient implements ISentryClient {
    * @param scope the Scope or null
    */
   @TestOnly
-  void updateSessionData(
+  @Nullable Session updateSessionData(
       final @NotNull SentryEvent event, final @Nullable Object hint, final @Nullable Scope scope) {
+    final AtomicReference<Session> currentSession = new AtomicReference<>();
+
     if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       if (scope != null) {
         scope.withSession(
@@ -161,18 +184,19 @@ public final class SentryClient implements ISentryClient {
 
                 if (session.update(status, userAgent, crashedOrErrored)) {
 
-                  Object sessionHint;
+//                  Object sessionHint;
 
                   // if hint is DiskFlushNotification, it means we have an uncaughtException
                   // and we can end the session.
                   if (hint instanceof DiskFlushNotification) {
-                    sessionHint = new SessionEndHint();
+//                    sessionHint = new SessionEndHint();
                     session.end();
-                  } else {
+                  }// else {
                     // otherwise we just cache in the disk but do not flush to the network.
-                    sessionHint = new SessionUpdateHint();
-                  }
-                  captureSession(session, sessionHint);
+//                    sessionHint = new SessionUpdateHint();
+//                  }
+//                  captureSession(session, sessionHint);
+                  currentSession.set(session);
                 }
               } else {
                 options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
@@ -182,6 +206,7 @@ public final class SentryClient implements ISentryClient {
         options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
       }
     }
+    return currentSession.get();
   }
 
   @ApiStatus.Internal
