@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import io.sentry.core.HubAdapter;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
@@ -28,6 +29,16 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
   private @Nullable Boolean debug;
   private @Nullable Boolean attachThreads;
   private @Nullable Boolean attachStacktrace;
+
+  private @NotNull final HubAdapter hubAdapter;
+
+  SentryAppender(@NotNull HubAdapter hubAdapter) {
+    this.hubAdapter = hubAdapter;
+  }
+
+  public SentryAppender() {
+    this(HubAdapter.getInstance());
+  }
 
   @Override
   public void start() {
@@ -54,7 +65,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
 
   @Override
   protected void append(@NotNull ILoggingEvent eventObject) {
-    Sentry.captureEvent(createEvent(eventObject));
+    hubAdapter.captureEvent(createEvent(eventObject));
   }
 
   /**
