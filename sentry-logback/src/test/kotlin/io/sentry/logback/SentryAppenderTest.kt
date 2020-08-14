@@ -107,7 +107,7 @@ class SentryAppenderTest {
         fixture.logger.warn("testing thread information")
 
         verify(fixture.hubAdapter).captureEvent(check {
-            assertEquals("value", it.getTag("key"))
+            assertEquals("value", it.getExtra("key"))
         })
     }
 

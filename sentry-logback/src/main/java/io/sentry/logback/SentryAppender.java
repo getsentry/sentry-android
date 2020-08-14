@@ -94,7 +94,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
     }
 
     for (Map.Entry<String, String> entry : loggingEvent.getMDCPropertyMap().entrySet()) {
-      event.setTag(entry.getKey(), entry.getValue());
+      event.setExtra(entry.getKey(), entry.getValue());
     }
 
     return event;
