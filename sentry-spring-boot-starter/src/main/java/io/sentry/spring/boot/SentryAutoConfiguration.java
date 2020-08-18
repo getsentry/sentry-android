@@ -36,12 +36,12 @@ public class SentryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public Sentry.OptionsConfiguration<SentryOptions> optionsOptionsConfiguration(
-        ObjectProvider<SentryOptions.BeforeSendCallback> beforeSendCallback,
-        ObjectProvider<SentryOptions.BeforeBreadcrumbCallback> beforeBreadcrumbCallback,
-        ObjectProvider<EventProcessor> eventProcessors,
-        ObjectProvider<Integration> integrations,
-        ObjectProvider<ITransportGate> transportGate,
-        ObjectProvider<ITransport> transport) {
+      ObjectProvider<SentryOptions.BeforeSendCallback> beforeSendCallback,
+      ObjectProvider<SentryOptions.BeforeBreadcrumbCallback> beforeBreadcrumbCallback,
+      ObjectProvider<EventProcessor> eventProcessors,
+      ObjectProvider<Integration> integrations,
+      ObjectProvider<ITransportGate> transportGate,
+      ObjectProvider<ITransport> transport) {
       return options -> {
         beforeSendCallback.ifAvailable(options::setBeforeSend);
         beforeBreadcrumbCallback.ifAvailable(options::setBeforeBreadcrumb);
