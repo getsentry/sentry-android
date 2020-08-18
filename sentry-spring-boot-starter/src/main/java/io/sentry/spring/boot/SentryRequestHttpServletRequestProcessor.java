@@ -20,7 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class SentryRequestHttpServletRequestProcessor implements EventProcessor {
 
   @Override
-  public SentryEvent process(final @NotNull SentryEvent event, final @Nullable Object hint) {
+  public @NotNull SentryEvent process(final @NotNull SentryEvent event, final @Nullable Object hint) {
     final RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
     if (requestAttributes instanceof ServletRequestAttributes) {
       final HttpServletRequest request =
@@ -34,11 +34,11 @@ public class SentryRequestHttpServletRequestProcessor implements EventProcessor 
   private static @NotNull Request resolveSentryRequest(
       final @NotNull HttpServletRequest httpRequest) {
     final Request sentryRequest = new Request();
-    // TODO: set cookies
     sentryRequest.setMethod(httpRequest.getMethod());
     sentryRequest.setQueryString(httpRequest.getQueryString());
     sentryRequest.setUrl(httpRequest.getRequestURL().toString());
     sentryRequest.setHeaders(resolveHeadersMap(httpRequest));
+    sentryRequest.setCookies(toString(httpRequest.getHeaders("Cookie")));
     return sentryRequest;
   }
 
@@ -46,12 +46,12 @@ public class SentryRequestHttpServletRequestProcessor implements EventProcessor 
       final @NotNull HttpServletRequest request) {
     final Map<String, String> headersMap = new HashMap<>();
     for (String headerName : Collections.list(request.getHeaderNames())) {
-      headersMap.put(headerName, headersToString(request.getHeaders(headerName)));
+      headersMap.put(headerName, toString(request.getHeaders(headerName)));
     }
     return headersMap;
   }
 
-  private static String headersToString(final @NotNull Enumeration<String> headers) {
-    return String.join(",", Collections.list(headers));
+  private static @Nullable String toString(final @Nullable Enumeration<String> enumeration) {
+    return enumeration != null ? String.join(",", Collections.list(enumeration)) : null;
   }
 }

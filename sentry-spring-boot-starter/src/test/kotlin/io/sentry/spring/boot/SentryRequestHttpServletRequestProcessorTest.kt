@@ -53,4 +53,20 @@ class SentryRequestHttpServletRequestProcessorTest {
             "another-header" to "another value,another value2"
         ), event.request.headers)
     }
+
+    @Test
+    fun `attaches cookies information`() {
+        val request = MockMvcRequestBuilders
+            .get(URI.create("http://example.com?param1=xyz"))
+            .header("Cookie", "name=value")
+            .header("Cookie", "name2=value2")
+            .buildRequest(MockServletContext())
+
+        RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
+        val event = SentryEvent()
+
+        eventProcessor.process(event, null)
+
+        assertEquals("name=value,name2=value2", event.request.cookies)
+    }
 }
