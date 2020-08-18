@@ -11,10 +11,8 @@
     <dsn>https://f7f320d5c3a54709be7b28e0f2ca7081@sentry.io/1808954</dsn>
 
     <!-- Optionally you can filter what statements are sent to Sentry independently from loggers configuration -->
-<!--    <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
 <!--      <level>WARN</level>-->
-<!--      <onMatch>ACCEPT</onMatch>-->
-<!--      <onMismatch>DENY</onMismatch>-->
 <!--    </filter>-->
   </appender>
 
