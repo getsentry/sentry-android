@@ -4,15 +4,24 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import io.sentry.core.HubAdapter;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SdkVersion;
-import java.util.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import io.sentry.core.transport.ITransport;
+import io.sentry.core.util.CollectionUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,16 +38,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
   private @Nullable Boolean debug;
   private @Nullable Boolean attachThreads;
   private @Nullable Boolean attachStacktrace;
-
-  private @NotNull final HubAdapter hubAdapter;
-
-  SentryAppender(@NotNull HubAdapter hubAdapter) {
-    this.hubAdapter = hubAdapter;
-  }
-
-  public SentryAppender() {
-    this(HubAdapter.getInstance());
-  }
+  private @Nullable ITransport transport;
 
   @Override
   public void start() {
@@ -58,6 +58,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
             Optional.ofNullable(attachStacktrace).ifPresent(options::setAttachStacktrace);
             options.setSentryClientName(BuildConfig.SENTRY_LOGBACK_SDK_NAME);
             options.setSdkVersion(createSdkVersion(options));
+            Optional.ofNullable(transport).ifPresent(options::setTransport);
           });
     }
     super.start();
@@ -65,7 +66,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
 
   @Override
   protected void append(@NotNull ILoggingEvent eventObject) {
-    hubAdapter.captureEvent(createEvent(eventObject));
+    Sentry.captureEvent(createEvent(eventObject));
   }
 
   /**
@@ -93,9 +94,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
       event.setExtra("thread_name", loggingEvent.getThreadName());
     }
 
-    for (Map.Entry<String, String> entry : loggingEvent.getMDCPropertyMap().entrySet()) {
-      event.setExtra(entry.getKey(), entry.getValue());
-    }
+    event.getContexts().put("MDC", CollectionUtils.shallowCopy(loggingEvent.getMDCPropertyMap()));
 
     return event;
   }
@@ -186,5 +185,10 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
 
   public void setAttachStacktrace(@Nullable Boolean attachStacktrace) {
     this.attachStacktrace = attachStacktrace;
+  }
+
+  @ApiStatus.Internal
+  void setTransport(@Nullable ITransport transport) {
+    this.transport = transport;
   }
 }
