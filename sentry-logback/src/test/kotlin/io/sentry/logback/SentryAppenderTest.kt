@@ -23,6 +23,7 @@ class SentryAppenderTest {
             val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
 
             val appender = SentryAppender(hubAdapter)
+            appender.setDsn("http://key@localhost/proj")
             appender.context = loggerContext
 
             val rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME)
