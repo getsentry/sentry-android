@@ -20,7 +20,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    implementation(project(":sentry-core"))
+    api(project(":sentry-core"))
     implementation(Config.Libs.logbackClassic)
 
     compileOnly(Config.CompileOnly.nopen)
@@ -56,8 +56,7 @@ tasks.jacocoTestReport {
 tasks {
     jacocoTestCoverageVerification {
         violationRules {
-            // TODO: Raise the minimum to a sensible value.
-            rule { limit { minimum = BigDecimal.valueOf(0.1) } }
+            rule { limit { minimum = BigDecimal.valueOf(0.6) } }
         }
     }
     check {
