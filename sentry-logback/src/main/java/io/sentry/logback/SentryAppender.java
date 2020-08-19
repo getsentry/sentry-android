@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import io.sentry.core.DateUtils;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
@@ -77,7 +78,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
    */
   @SuppressWarnings("JdkObsolete")
   final @NotNull SentryEvent createEvent(@NotNull ILoggingEvent loggingEvent) {
-    final SentryEvent event = new SentryEvent(new Date(loggingEvent.getTimeStamp()));
+    final SentryEvent event = new SentryEvent(DateUtils.getDateTime(new Date(loggingEvent.getTimeStamp())));
     final Message message = new Message();
     message.setMessage(loggingEvent.getMessage());
     message.setFormatted(loggingEvent.getFormattedMessage());

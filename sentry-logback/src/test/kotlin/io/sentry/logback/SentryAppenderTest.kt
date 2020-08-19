@@ -18,6 +18,9 @@ import kotlin.test.assertNotNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlin.test.AfterTest
 import kotlin.test.assertTrue
 
@@ -61,6 +64,24 @@ class SentryAppenderTest {
                 assertEquals("testing message conversion {}, {}", it.message.message)
                 assertEquals(listOf("1", "2"), it.message.params)
                 assertEquals("io.sentry.logback.SentryAppenderTest", it.logger)
+            })
+        }
+    }
+
+    @Test
+    fun `event date is in UTC`() {
+        val utcTime = LocalDateTime.now(ZoneId.of("UTC"))
+
+        fixture.logger.debug("testing event date")
+
+        await.untilAsserted {
+            verify(fixture.transport).send(check { it: SentryEvent ->
+                val eventTime = Instant.ofEpochMilli(it.timestamp.time)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+
+                assertTrue { eventTime.isAfter(utcTime) }
+                assertTrue { eventTime.minusSeconds(1).isBefore(utcTime) }
             })
         }
     }
