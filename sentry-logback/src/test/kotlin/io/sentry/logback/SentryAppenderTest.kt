@@ -80,7 +80,7 @@ class SentryAppenderTest {
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime()
 
-                assertTrue { eventTime.isAfter(utcTime) }
+                assertTrue { eventTime.plusSeconds(1).isAfter(utcTime) }
                 assertTrue { eventTime.minusSeconds(1).isBefore(utcTime) }
             })
         }
