@@ -79,6 +79,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
   final @NotNull SentryEvent createEvent(@NotNull ILoggingEvent loggingEvent) {
     final SentryEvent event = new SentryEvent(new Date(loggingEvent.getTimeStamp()));
     final Message message = new Message();
+    message.setMessage(loggingEvent.getMessage());
     message.setFormatted(loggingEvent.getFormattedMessage());
     message.setParams(toParams(loggingEvent.getArgumentArray()));
     event.setMessage(message);

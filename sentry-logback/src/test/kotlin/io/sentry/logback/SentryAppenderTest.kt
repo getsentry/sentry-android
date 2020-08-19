@@ -56,6 +56,7 @@ class SentryAppenderTest {
 
         verify(fixture.transport).send(check { it: SentryEvent ->
             assertEquals("testing message conversion 1, 2", it.message.formatted)
+            assertEquals("testing message conversion {}, {}", it.message.message)
             assertEquals(listOf("1", "2"), it.message.params)
             assertEquals("io.sentry.logback.SentryAppenderTest", it.logger)
         })
