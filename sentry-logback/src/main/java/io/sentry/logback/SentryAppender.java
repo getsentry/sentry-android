@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -96,7 +97,10 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
       event.setExtra("thread_name", loggingEvent.getThreadName());
     }
 
-    event.getContexts().put("MDC", CollectionUtils.shallowCopy(loggingEvent.getMDCPropertyMap()));
+    final Map<String, String> mdcProperties = CollectionUtils.shallowCopy(loggingEvent.getMDCPropertyMap());
+    if (!mdcProperties.isEmpty()) {
+      event.getContexts().put("MDC", mdcProperties);
+    }
 
     return event;
   }

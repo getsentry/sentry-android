@@ -22,6 +22,8 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SentryAppenderTest {
@@ -52,6 +54,11 @@ class SentryAppenderTest {
     @AfterTest
     fun `stop logback`() {
         fixture.loggerContext.stop()
+    }
+
+    @BeforeTest
+    fun `clear MDC`() {
+        MDC.clear()
     }
 
     @Test
@@ -155,11 +162,22 @@ class SentryAppenderTest {
     @Test
     fun `sets tags from MDC`() {
         MDC.put("key", "value")
-        fixture.logger.warn("testing thread information")
+        fixture.logger.warn("testing MDC tags")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
                 assertEquals(mapOf("key" to "value"), it.contexts["MDC"])
+            })
+        }
+    }
+
+    @Test
+    fun `does not create MDC context when no MDC tags are set`() {
+        fixture.logger.warn("testing without MDC tags")
+
+        await.untilAsserted {
+            verify(fixture.transport).send(check { it: SentryEvent ->
+                assertFalse(it.contexts.containsKey("MDC"))
             })
         }
     }
