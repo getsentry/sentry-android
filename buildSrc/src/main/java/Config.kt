@@ -37,6 +37,9 @@ object Config {
         val lifecycleProcess = "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
         val lifecycleCommonJava8 = "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
 
+        val logbackVersion = "1.2.3"
+        val logbackClassic = "ch.qos.logback:logback-classic:$logbackVersion"
+
         val springBootStarter = "org.springframework.boot:spring-boot-starter:$springBootVersion"
 
         val springWeb = "org.springframework:spring-webmvc"
@@ -72,6 +75,7 @@ object Config {
     object Sentry {
         val SENTRY_JAVA_SDK_NAME = "sentry.java"
         val SENTRY_ANDROID_SDK_NAME = "$SENTRY_JAVA_SDK_NAME.android"
+        val SENTRY_LOGBACK_SDK_NAME = "$SENTRY_JAVA_SDK_NAME.logback"
         val SENTRY_SPRING_BOOT_SDK_NAME = "$SENTRY_JAVA_SDK_NAME.spring-boot"
         val group = "io.sentry"
         val description = "SDK for sentry.io"
