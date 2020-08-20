@@ -1,4 +1,5 @@
 import com.diffplug.spotless.LineEnding
+import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
@@ -32,6 +33,7 @@ buildscript {
 }
 
 allprojects {
+    apply<net.ltgt.gradle.errorprone.ErrorPronePlugin>()
     repositories {
         google()
         jcenter()
@@ -52,6 +54,10 @@ allprojects {
         }
         withType<JavaCompile> {
             options.compilerArgs.addAll(arrayOf("-Xlint:all", "-Werror", "-Xlint:-classfile"))
+        }
+
+        withType<JavaCompile>().configureEach {
+            options.errorprone.checks.put("JdkObsolete", net.ltgt.gradle.errorprone.CheckSeverity.OFF)
         }
     }
 }

@@ -77,7 +77,6 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
    * @param loggingEvent the logback event
    * @return the sentry event
    */
-  @SuppressWarnings("JdkObsolete")
   final @NotNull SentryEvent createEvent(@NotNull ILoggingEvent loggingEvent) {
     final SentryEvent event = new SentryEvent(DateUtils.getDateTime(new Date(loggingEvent.getTimeStamp())));
     final Message message = new Message();
