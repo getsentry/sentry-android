@@ -70,8 +70,7 @@ tasks.jacocoTestReport {
 tasks {
     jacocoTestCoverageVerification {
         violationRules {
-            // TODO: Raise the minimum to a sensible value.
-            rule { limit { minimum = BigDecimal.valueOf(0.1) } }
+            rule { limit { minimum = BigDecimal.valueOf(0.6) } }
         }
     }
     check {
