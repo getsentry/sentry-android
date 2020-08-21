@@ -6,7 +6,6 @@ import io.sentry.core.HubAdapter;
 import io.sentry.core.IHub;
 import io.sentry.core.Integration;
 import io.sentry.core.Sentry;
-import io.sentry.core.SentryClient;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.transport.ITransport;
@@ -53,18 +52,19 @@ public class SentryAutoConfiguration {
     }
 
     @Bean
-    IHub sentryHub(
-        Sentry.OptionsConfiguration<SentryOptions> optionsConfiguration,
-        SentryProperties properties,
-        ObjectProvider<SentryClient> sentryClient) {
-      Sentry.init(
-          options -> {
-            properties.applyTo(options);
-            optionsConfiguration.configure(options);
-            options.setSentryClientName(BuildConfig.SENTRY_SPRING_BOOT_SDK_NAME);
-            options.setSdkVersion(createSdkVersion(options));
-          });
-      sentryClient.ifAvailable(Sentry::bindClient);
+    public SentryOptions sentryOptions(Sentry.OptionsConfiguration<SentryOptions> optionsConfiguration,
+                                       SentryProperties properties) {
+      final SentryOptions options = new SentryOptions();
+      optionsConfiguration.configure(options);
+      properties.applyTo(options);
+      options.setSentryClientName(BuildConfig.SENTRY_SPRING_BOOT_SDK_NAME);
+      options.setSdkVersion(createSdkVersion(options));
+      return options;
+    }
+
+    @Bean
+    IHub sentryHub(SentryOptions sentryOptions) {
+      Sentry.init(sentryOptions);
       return HubAdapter.getInstance();
     }
 

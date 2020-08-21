@@ -124,6 +124,15 @@ public final class Sentry {
   }
 
   /**
+   * Initializes the SDK with a SentryOptions.
+   *
+   * @param options options the SentryOptions
+   */
+  public static void init(final @NotNull SentryOptions options) {
+    init(options, GLOBAL_HUB_DEFAULT_MODE);
+  }
+
+  /**
    * Initializes the SDK with a SentryOptions and globalHubMode
    *
    * @param options options the SentryOptions

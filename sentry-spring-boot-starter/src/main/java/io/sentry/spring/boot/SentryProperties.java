@@ -61,12 +61,6 @@ public class SentryProperties {
   /** minimum LogLevel to be used if debug is enabled */
   private SentryLevel diagnosticLevel = SentryLevel.DEBUG;
 
-  /**
-   * Sentry client name used for the HTTP authHeader and userAgent eg
-   * sentry.{language}.{platform}/{version} eg sentry.java.android/2.0.0 would be a valid case
-   */
-  private String sentryClientName;
-
   /** This variable controls the total amount of breadcrumbs that should be captured. */
   private Integer maxBreadcrumbs;
 
@@ -137,6 +131,8 @@ public class SentryProperties {
     Optional.ofNullable(release).ifPresent(options::setRelease);
     Optional.ofNullable(sampleRate).ifPresent(options::setSampleRate);
     Optional.ofNullable(serverName).ifPresent(options::setServerName);
+    Optional.ofNullable(inAppExcludes).ifPresent(excludes -> excludes.forEach(options::addInAppExclude));
+    Optional.ofNullable(inAppIncludes).ifPresent(includes -> includes.forEach(options::addInAppInclude));
   }
 
   public boolean isEnabled() {
@@ -177,14 +173,6 @@ public class SentryProperties {
 
   public void setDiagnosticLevel(SentryLevel diagnosticLevel) {
     this.diagnosticLevel = diagnosticLevel;
-  }
-
-  public String getSentryClientName() {
-    return sentryClientName;
-  }
-
-  public void setSentryClientName(String sentryClientName) {
-    this.sentryClientName = sentryClientName;
   }
 
   public int getMaxBreadcrumbs() {
