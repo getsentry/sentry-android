@@ -85,12 +85,14 @@ public class SentryAutoConfiguration {
     static class SentryWebMvcConfiguration {
 
       @Bean
-      public @NotNull SentryRequestHttpServletRequestProcessor sentryEventHttpServletRequestProcessor() {
+      public @NotNull SentryRequestHttpServletRequestProcessor
+          sentryEventHttpServletRequestProcessor() {
         return new SentryRequestHttpServletRequestProcessor();
       }
 
       @Bean
-      public @NotNull SentryUserHttpServletRequestProcessor sentryUserHttpServletRequestProcessor() {
+      public @NotNull SentryUserHttpServletRequestProcessor
+          sentryUserHttpServletRequestProcessor() {
         return new SentryUserHttpServletRequestProcessor();
       }
 

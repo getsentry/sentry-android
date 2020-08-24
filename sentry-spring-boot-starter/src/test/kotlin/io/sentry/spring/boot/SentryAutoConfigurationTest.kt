@@ -1,5 +1,6 @@
 package io.sentry.spring.boot
 
+import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -217,9 +218,9 @@ class SentryAutoConfigurationTest {
             .run {
                 Sentry.captureMessage("Some message")
                 val transport = it.getBean(ITransport::class.java)
-                verify(transport).send(check { event: SentryEvent ->
-                    assertThat(event.release).isEqualTo("git-commit-id")
-                })
+                val captor = argumentCaptor<SentryEvent>()
+                verify(transport).send(captor.capture())
+                assertThat(captor.firstValue.release).isEqualTo("git-commit-id")
             }
     }
 
@@ -230,9 +231,9 @@ class SentryAutoConfigurationTest {
             .run {
                 Sentry.captureMessage("Some message")
                 val transport = it.getBean(ITransport::class.java)
-                verify(transport).send(check { event: SentryEvent ->
-                    assertThat(event.release).isEqualTo("my-release")
-                })
+                val captor = argumentCaptor<SentryEvent>()
+                verify(transport).send(captor.capture())
+                assertThat(captor.firstValue.release).isEqualTo("my-release")
             }
     }
 
