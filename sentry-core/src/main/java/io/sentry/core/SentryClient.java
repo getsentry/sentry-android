@@ -79,7 +79,17 @@ public final class SentryClient implements ISentryClient {
     }
 
     for (EventProcessor processor : options.getEventProcessors()) {
-      event = processor.process(event, hint);
+      try {
+        event = processor.process(event, hint);
+      } catch (Exception e) {
+        options
+            .getLogger()
+            .log(
+                SentryLevel.ERROR,
+                e,
+                "An exception occurred while processing event by processor: %s",
+                processor.getClass().getName());
+      }
 
       if (event == null) {
         options
@@ -275,7 +285,17 @@ public final class SentryClient implements ISentryClient {
       }
 
       for (EventProcessor processor : scope.getEventProcessors()) {
-        event = processor.process(event, hint);
+        try {
+          event = processor.process(event, hint);
+        } catch (Exception e) {
+          options
+              .getLogger()
+              .log(
+                  SentryLevel.ERROR,
+                  e,
+                  "An exception occurred while processing event by processor: %s",
+                  processor.getClass().getName());
+        }
 
         if (event == null) {
           options
