@@ -3,12 +3,12 @@ package io.sentry.spring.boot
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.SentryEvent
+import java.security.Principal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import java.security.Principal
 
 class SentryUserHttpServletRequestProcessorTest {
 

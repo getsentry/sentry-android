@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.info.GitProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,12 +36,13 @@ public class SentryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public @NotNull Sentry.OptionsConfiguration<SentryOptions> optionsOptionsConfiguration(
-      final @NotNull ObjectProvider<SentryOptions.BeforeSendCallback> beforeSendCallback,
-      final @NotNull ObjectProvider<SentryOptions.BeforeBreadcrumbCallback> beforeBreadcrumbCallback,
-      final @NotNull ObjectProvider<EventProcessor> eventProcessors,
-      final @NotNull ObjectProvider<Integration> integrations,
-      final @NotNull ObjectProvider<ITransportGate> transportGate,
-      final @NotNull ObjectProvider<ITransport> transport) {
+        final @NotNull ObjectProvider<SentryOptions.BeforeSendCallback> beforeSendCallback,
+        final @NotNull ObjectProvider<SentryOptions.BeforeBreadcrumbCallback>
+                beforeBreadcrumbCallback,
+        final @NotNull ObjectProvider<EventProcessor> eventProcessors,
+        final @NotNull ObjectProvider<Integration> integrations,
+        final @NotNull ObjectProvider<ITransportGate> transportGate,
+        final @NotNull ObjectProvider<ITransport> transport) {
       return options -> {
         beforeSendCallback.ifAvailable(options::setBeforeSend);
         beforeBreadcrumbCallback.ifAvailable(options::setBeforeBreadcrumb);
@@ -52,10 +54,18 @@ public class SentryAutoConfiguration {
     }
 
     @Bean
-    public @NotNull SentryOptions sentryOptions(final @NotNull Sentry.OptionsConfiguration<SentryOptions> optionsConfiguration,
-                                       final @NotNull SentryProperties properties) {
+    public @NotNull SentryOptions sentryOptions(
+        final @NotNull Sentry.OptionsConfiguration<SentryOptions> optionsConfiguration,
+        final @NotNull SentryProperties properties,
+        final @NotNull ObjectProvider<GitProperties> gitProperties) {
       final SentryOptions options = new SentryOptions();
       optionsConfiguration.configure(options);
+      gitProperties.ifAvailable(
+          git -> {
+            if (properties.isUseGitCommitIdAsRelease()) {
+              options.setRelease(git.getCommitId());
+            }
+          });
       properties.applyTo(options);
       options.setSentryClientName(BuildConfig.SENTRY_SPRING_BOOT_SDK_NAME);
       options.setSdkVersion(createSdkVersion(options));
@@ -63,7 +73,7 @@ public class SentryAutoConfiguration {
     }
 
     @Bean
-    @NotNull IHub sentryHub(final @NotNull SentryOptions sentryOptions) {
+    public @NotNull IHub sentryHub(final @NotNull SentryOptions sentryOptions) {
       Sentry.init(sentryOptions);
       return HubAdapter.getInstance();
     }
@@ -75,22 +85,24 @@ public class SentryAutoConfiguration {
     static class SentryWebMvcConfiguration {
 
       @Bean
-      @NotNull SentryRequestHttpServletRequestProcessor sentryEventHttpServletRequestProcessor() {
+      public @NotNull SentryRequestHttpServletRequestProcessor sentryEventHttpServletRequestProcessor() {
         return new SentryRequestHttpServletRequestProcessor();
       }
 
       @Bean
-      @NotNull SentryUserHttpServletRequestProcessor sentryUserHttpServletRequestProcessor() {
+      public @NotNull SentryUserHttpServletRequestProcessor sentryUserHttpServletRequestProcessor() {
         return new SentryUserHttpServletRequestProcessor();
       }
 
       @Bean
-      public @NotNull FilterRegistrationBean<SentryRequestFilter> sentryRequestFilter(final @NotNull IHub sentryHub) {
+      public @NotNull FilterRegistrationBean<SentryRequestFilter> sentryRequestFilter(
+          final @NotNull IHub sentryHub) {
         return new FilterRegistrationBean<>(new SentryRequestFilter(sentryHub));
       }
     }
 
-    private static @NotNull SdkVersion createSdkVersion(final @NotNull SentryOptions sentryOptions) {
+    private static @NotNull SdkVersion createSdkVersion(
+        final @NotNull SentryOptions sentryOptions) {
       SdkVersion sdkVersion = sentryOptions.getSdkVersion();
 
       if (sdkVersion == null) {

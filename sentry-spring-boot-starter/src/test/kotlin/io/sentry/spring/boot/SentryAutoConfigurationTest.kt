@@ -1,8 +1,9 @@
 package io.sentry.spring.boot
 
+import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.check
+import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.Breadcrumb
 import io.sentry.core.EventProcessor
 import io.sentry.core.IHub
@@ -17,6 +18,7 @@ import kotlin.test.Test
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
+import org.springframework.boot.info.GitProperties
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner
 import org.springframework.context.annotation.Bean
@@ -208,11 +210,37 @@ class SentryAutoConfigurationTest {
             }
     }
 
+    @Test
+    fun `sets release on SentryEvents if Git integration is configured`() {
+        contextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj")
+            .withUserConfiguration(MockTransportConfiguration::class.java, MockGitPropertiesConfiguration::class.java)
+            .run {
+                Sentry.captureMessage("Some message")
+                val transport = it.getBean(ITransport::class.java)
+                verify(transport).send(check { event: SentryEvent ->
+                    assertThat(event.release).isEqualTo("git-commit-id")
+                })
+            }
+    }
+
+    @Test
+    fun `sets custom release on SentryEvents if release property is set and Git integration is configured`() {
+        contextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj", "sentry.release=my-release")
+            .withUserConfiguration(MockTransportConfiguration::class.java, MockGitPropertiesConfiguration::class.java)
+            .run {
+                Sentry.captureMessage("Some message")
+                val transport = it.getBean(ITransport::class.java)
+                verify(transport).send(check { event: SentryEvent ->
+                    assertThat(event.release).isEqualTo("my-release")
+                })
+            }
+    }
+
     @Configuration(proxyBeanMethods = false)
     open class CustomOptionsConfigurationConfiguration {
 
         @Bean
-        open fun customOptionsConfiguration() = Sentry.OptionsConfiguration<SentryOptions>() {
+        open fun customOptionsConfiguration() = Sentry.OptionsConfiguration<SentryOptions> {
         }
     }
 
@@ -276,5 +304,16 @@ class SentryAutoConfigurationTest {
 
     class CustomTransportGate : ITransportGate {
         override fun isConnected() = true
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    open class MockGitPropertiesConfiguration {
+
+        @Bean
+        open fun gitProperties(): GitProperties {
+            val git = mock<GitProperties>()
+            whenever(git.commitId).thenReturn("git-commit-id")
+            return git
+        }
     }
 }

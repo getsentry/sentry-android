@@ -20,7 +20,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class SentryRequestHttpServletRequestProcessor implements EventProcessor {
 
   @Override
-  public @NotNull SentryEvent process(final @NotNull SentryEvent event, final @Nullable Object hint) {
+  public @NotNull SentryEvent process(
+      final @NotNull SentryEvent event, final @Nullable Object hint) {
     final RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
     if (requestAttributes instanceof ServletRequestAttributes) {
       final HttpServletRequest request =

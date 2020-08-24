@@ -109,6 +109,9 @@ public class SentryProperties {
   /** The server name used in the Sentry messages. */
   private String serverName;
 
+  /** Weather to use Git commit id as a release. */
+  private boolean useGitCommitIdAsRelease = true;
+
   /**
    * Applies configuration from this instance to the {@link SentryOptions} instance.
    *
@@ -131,8 +134,10 @@ public class SentryProperties {
     Optional.ofNullable(release).ifPresent(options::setRelease);
     Optional.ofNullable(sampleRate).ifPresent(options::setSampleRate);
     Optional.ofNullable(serverName).ifPresent(options::setServerName);
-    Optional.ofNullable(inAppExcludes).ifPresent(excludes -> excludes.forEach(options::addInAppExclude));
-    Optional.ofNullable(inAppIncludes).ifPresent(includes -> includes.forEach(options::addInAppInclude));
+    Optional.ofNullable(inAppExcludes)
+        .ifPresent(excludes -> excludes.forEach(options::addInAppExclude));
+    Optional.ofNullable(inAppIncludes)
+        .ifPresent(includes -> includes.forEach(options::addInAppInclude));
   }
 
   public boolean isEnabled() {
@@ -309,5 +314,13 @@ public class SentryProperties {
 
   public void setAttachStacktrace(Boolean attachStacktrace) {
     this.attachStacktrace = attachStacktrace;
+  }
+
+  public boolean isUseGitCommitIdAsRelease() {
+    return useGitCommitIdAsRelease;
+  }
+
+  public void setUseGitCommitIdAsRelease(boolean useGitCommitIdAsRelease) {
+    this.useGitCommitIdAsRelease = useGitCommitIdAsRelease;
   }
 }
