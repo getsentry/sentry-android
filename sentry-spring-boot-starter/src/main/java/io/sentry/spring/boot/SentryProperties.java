@@ -8,19 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Configuration for Sentry in a shape of Spring Boot configuration bean. Example:
- *
- * <pre>
- * sentry:
- *     enabled: true
- *     dsn: https://00059966e6224d03a77ea5eca10fbe18@sentry.mycompany.com/14
- *     release: "1.0.1"
- *     dist: x86
- *     environment: staging
- *     server-name: megaServer
- * </pre>
- */
+/** Configuration for Sentry integration. */
 @ConfigurationProperties("sentry")
 @Open
 public class SentryProperties {
