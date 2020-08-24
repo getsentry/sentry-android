@@ -34,13 +34,13 @@ public class SentryAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public Sentry.OptionsConfiguration<SentryOptions> optionsOptionsConfiguration(
-      ObjectProvider<SentryOptions.BeforeSendCallback> beforeSendCallback,
-      ObjectProvider<SentryOptions.BeforeBreadcrumbCallback> beforeBreadcrumbCallback,
-      ObjectProvider<EventProcessor> eventProcessors,
-      ObjectProvider<Integration> integrations,
-      ObjectProvider<ITransportGate> transportGate,
-      ObjectProvider<ITransport> transport) {
+    public @NotNull Sentry.OptionsConfiguration<SentryOptions> optionsOptionsConfiguration(
+      final @NotNull ObjectProvider<SentryOptions.BeforeSendCallback> beforeSendCallback,
+      final @NotNull ObjectProvider<SentryOptions.BeforeBreadcrumbCallback> beforeBreadcrumbCallback,
+      final @NotNull ObjectProvider<EventProcessor> eventProcessors,
+      final @NotNull ObjectProvider<Integration> integrations,
+      final @NotNull ObjectProvider<ITransportGate> transportGate,
+      final @NotNull ObjectProvider<ITransport> transport) {
       return options -> {
         beforeSendCallback.ifAvailable(options::setBeforeSend);
         beforeBreadcrumbCallback.ifAvailable(options::setBeforeBreadcrumb);
@@ -52,8 +52,8 @@ public class SentryAutoConfiguration {
     }
 
     @Bean
-    public SentryOptions sentryOptions(Sentry.OptionsConfiguration<SentryOptions> optionsConfiguration,
-                                       SentryProperties properties) {
+    public @NotNull SentryOptions sentryOptions(final @NotNull Sentry.OptionsConfiguration<SentryOptions> optionsConfiguration,
+                                       final @NotNull SentryProperties properties) {
       final SentryOptions options = new SentryOptions();
       optionsConfiguration.configure(options);
       properties.applyTo(options);
@@ -63,7 +63,7 @@ public class SentryAutoConfiguration {
     }
 
     @Bean
-    IHub sentryHub(SentryOptions sentryOptions) {
+    @NotNull IHub sentryHub(final @NotNull SentryOptions sentryOptions) {
       Sentry.init(sentryOptions);
       return HubAdapter.getInstance();
     }
@@ -75,22 +75,22 @@ public class SentryAutoConfiguration {
     static class SentryWebMvcConfiguration {
 
       @Bean
-      SentryRequestHttpServletRequestProcessor sentryEventHttpServletRequestProcessor() {
+      @NotNull SentryRequestHttpServletRequestProcessor sentryEventHttpServletRequestProcessor() {
         return new SentryRequestHttpServletRequestProcessor();
       }
 
       @Bean
-      SentryUserHttpServletRequestProcessor sentryUserHttpServletRequestProcessor() {
+      @NotNull SentryUserHttpServletRequestProcessor sentryUserHttpServletRequestProcessor() {
         return new SentryUserHttpServletRequestProcessor();
       }
 
       @Bean
-      public FilterRegistrationBean<SentryRequestFilter> sentryRequestFilter(IHub sentryHub) {
+      public @NotNull FilterRegistrationBean<SentryRequestFilter> sentryRequestFilter(final @NotNull IHub sentryHub) {
         return new FilterRegistrationBean<>(new SentryRequestFilter(sentryHub));
       }
     }
 
-    private static @NotNull SdkVersion createSdkVersion(@NotNull SentryOptions sentryOptions) {
+    private static @NotNull SdkVersion createSdkVersion(final @NotNull SentryOptions sentryOptions) {
       SdkVersion sdkVersion = sentryOptions.getSdkVersion();
 
       if (sdkVersion == null) {
