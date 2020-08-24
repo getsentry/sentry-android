@@ -4,12 +4,15 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.check
 import io.sentry.core.Breadcrumb
+import io.sentry.core.EventProcessor
 import io.sentry.core.IHub
+import io.sentry.core.Integration
 import io.sentry.core.Sentry
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
+import io.sentry.core.transport.ITransportGate
 import kotlin.test.Test
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.boot.autoconfigure.AutoConfigurations
@@ -178,6 +181,33 @@ class SentryAutoConfigurationTest {
             }
     }
 
+    @Test
+    fun `registers event processor on SentryOptions`() {
+        contextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj")
+            .withUserConfiguration(CustomEventProcessorConfiguration::class.java)
+            .run {
+                assertThat(it.getBean(SentryOptions::class.java).eventProcessors).anyMatch { processor -> processor.javaClass == CustomEventProcessor::class.java }
+            }
+    }
+
+    @Test
+    fun `registers transport gate on SentryOptions`() {
+        contextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj")
+            .withUserConfiguration(CustomTransportGateConfiguration::class.java)
+            .run {
+                assertThat(it.getBean(SentryOptions::class.java).transportGate).isInstanceOf(CustomTransportGate::class.java)
+            }
+    }
+
+    @Test
+    fun `registers custom integration on SentryOptions`() {
+        contextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj")
+            .withUserConfiguration(CustomIntegration::class.java)
+            .run {
+                assertThat(it.getBean(SentryOptions::class.java).integrations).anyMatch { integration -> integration.javaClass == CustomIntegration::class.java }
+            }
+    }
+
     @Configuration(proxyBeanMethods = false)
     open class CustomOptionsConfigurationConfiguration {
 
@@ -213,5 +243,38 @@ class SentryAutoConfigurationTest {
 
     class CustomBeforeBreadcrumbCallback : SentryOptions.BeforeBreadcrumbCallback {
         override fun execute(breadcrumb: Breadcrumb, hint: Any?): Breadcrumb? = null
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    open class CustomEventProcessorConfiguration {
+
+        @Bean
+        open fun customEventProcessor() = CustomEventProcessor()
+    }
+
+    class CustomEventProcessor : EventProcessor {
+        override fun process(event: SentryEvent?, hint: Any?) = null
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    open class CustomIntegrationConfiguration {
+
+        @Bean
+        open fun customIntegration() = CustomIntegration()
+    }
+
+    class CustomIntegration : Integration {
+        override fun register(hub: IHub?, options: SentryOptions?) {}
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    open class CustomTransportGateConfiguration {
+
+        @Bean
+        open fun customTransportGate() = CustomTransportGate()
+    }
+
+    class CustomTransportGate : ITransportGate {
+        override fun isConnected() = true
     }
 }
