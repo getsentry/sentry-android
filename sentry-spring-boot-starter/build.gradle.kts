@@ -48,6 +48,7 @@ dependencies {
     testImplementation(Config.TestLibs.kotlinTestJunit)
     testImplementation(Config.TestLibs.mockitoKotlin)
     testImplementation(Config.TestLibs.springBootStarterTest)
+    testImplementation(Config.TestLibs.awaitility)
 }
 
 configure<SourceSetContainer> {
