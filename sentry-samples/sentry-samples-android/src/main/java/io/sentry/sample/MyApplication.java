@@ -31,7 +31,7 @@ public class MyApplication extends Application {
     //    brings them to your attention so you can fix them.
     if (BuildConfig.DEBUG) {
       StrictMode.setThreadPolicy(
-              new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
+          new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
 
       StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
     }
