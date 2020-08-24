@@ -1,5 +1,7 @@
 package io.sentry.android.core;
 
+import android.os.Handler;
+import android.os.Looper;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import io.sentry.android.core.util.MainThreadChecker;
 import io.sentry.core.IHub;
@@ -46,20 +48,13 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
         Class.forName("androidx.lifecycle.DefaultLifecycleObserver");
         Class.forName("androidx.lifecycle.ProcessLifecycleOwner");
         if (MainThreadChecker.isMainThread()) {
-          watcher =
-              new LifecycleWatcher(
-                  hub,
-                  this.options.getSessionTrackingIntervalMillis(),
-                  this.options.isEnableSessionTracking(),
-                  this.options.isEnableAppLifecycleBreadcrumbs());
-          ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
+          addObserver(hub);
           options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
         } else {
-          options
-              .getLogger()
-              .log(
-                  SentryLevel.WARNING,
-                  "AppLifecycleIntegration is not running on the main thread.");
+          // some versions of the androidx lifecycle-process require this to be executed on the main
+          // thread.
+          final Handler handler = new Handler(Looper.getMainLooper());
+          handler.post(() -> addObserver(hub));
         }
       } catch (ClassNotFoundException e) {
         options
@@ -70,6 +65,16 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
                 e);
       }
     }
+  }
+
+  private void addObserver(final @NotNull IHub hub) {
+    watcher =
+        new LifecycleWatcher(
+            hub,
+            this.options.getSessionTrackingIntervalMillis(),
+            this.options.isEnableSessionTracking(),
+            this.options.isEnableAppLifecycleBreadcrumbs());
+    ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
   }
 
   @Override
