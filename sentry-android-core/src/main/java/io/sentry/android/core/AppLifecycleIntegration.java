@@ -1,6 +1,7 @@
 package io.sentry.android.core;
 
 import androidx.lifecycle.ProcessLifecycleOwner;
+import io.sentry.android.core.util.MainThreadChecker;
 import io.sentry.core.IHub;
 import io.sentry.core.Integration;
 import io.sentry.core.SentryLevel;
@@ -44,15 +45,22 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
       try {
         Class.forName("androidx.lifecycle.DefaultLifecycleObserver");
         Class.forName("androidx.lifecycle.ProcessLifecycleOwner");
-        watcher =
-            new LifecycleWatcher(
-                hub,
-                this.options.getSessionTrackingIntervalMillis(),
-                this.options.isEnableSessionTracking(),
-                this.options.isEnableAppLifecycleBreadcrumbs());
-        ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
-
-        options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
+        if (MainThreadChecker.isMainThread()) {
+          watcher =
+              new LifecycleWatcher(
+                  hub,
+                  this.options.getSessionTrackingIntervalMillis(),
+                  this.options.isEnableSessionTracking(),
+                  this.options.isEnableAppLifecycleBreadcrumbs());
+          ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
+          options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
+        } else {
+          options
+              .getLogger()
+              .log(
+                  SentryLevel.WARNING,
+                  "AppLifecycleIntegration is not running on the main thread.");
+        }
       } catch (ClassNotFoundException e) {
         options
             .getLogger()

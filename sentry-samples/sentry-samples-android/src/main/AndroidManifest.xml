@@ -24,6 +24,11 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning, UnusedAttribute">
 
+        <provider
+            android:name="io.sentry.android.core.SentryInitProvider"
+            android:authorities="${applicationId}.SentryInitProvider"
+            tools:node="remove" />
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

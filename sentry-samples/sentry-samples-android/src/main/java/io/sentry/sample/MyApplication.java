@@ -2,6 +2,7 @@ package io.sentry.sample;
 
 import android.app.Application;
 import android.os.StrictMode;
+import io.sentry.android.core.SentryAndroid;
 
 // import io.sentry.android.core.SentryAndroid;
 
@@ -15,14 +16,7 @@ public class MyApplication extends Application {
 
     // Example how to initialize the SDK manually which allows access to SentryOptions callbacks.
     // Make sure you disable the auto init via manifest meta-data: io.sentry.auto-init=false
-    // SentryAndroid.init(
-    // this,
-    // options -> {
-    //   options.setBeforeSend(event -> {
-    //     event.setTag("sample-key", "before-send");
-    //   });
-    //   options.setAnrTimeoutIntervalMillis(2000);
-    // });
+    new Thread(() -> SentryAndroid.init(getApplicationContext())).start();
   }
 
   private void strictMode() {

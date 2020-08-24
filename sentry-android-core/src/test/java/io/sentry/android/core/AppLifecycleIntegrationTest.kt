@@ -1,11 +1,14 @@
 package io.sentry.android.core
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nhaarman.mockitokotlin2.mock
 import io.sentry.core.IHub
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.runner.RunWith
 
+@RunWith(AndroidJUnit4::class)
 class AppLifecycleIntegrationTest {
 
     private val integration = AppLifecycleIntegration()
