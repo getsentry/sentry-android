@@ -5,6 +5,7 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import io.sentry.core.IHub
+import java.util.concurrent.CountDownLatch
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -67,8 +68,14 @@ class AppLifecycleIntegrationTest {
         val handler = mock<IHandler>()
         val sut = fixture.getSut(handler)
         val options = SentryAndroidOptions()
+        val latch = CountDownLatch(1)
 
-        Thread { sut.register(fixture.hub, options) }.start()
+        Thread {
+            sut.register(fixture.hub, options)
+            latch.countDown()
+        }.start()
+
+        latch.await()
 
         verify(handler).post(any())
     }
