@@ -1,7 +1,5 @@
 package io.sentry.android.core;
 
-import android.os.Handler;
-import android.os.Looper;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import io.sentry.android.core.util.MainThreadChecker;
 import io.sentry.core.IHub;
@@ -20,6 +18,16 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
   @TestOnly @Nullable LifecycleWatcher watcher;
 
   private @Nullable SentryAndroidOptions options;
+
+  private final @NotNull IHandler handler;
+
+  public AppLifecycleIntegration() {
+    this(new MainLooperHandler());
+  }
+
+  AppLifecycleIntegration(final @NotNull IHandler handler) {
+    this.handler = handler;
+  }
 
   @Override
   public void register(final @NotNull IHub hub, final @NotNull SentryOptions options) {
@@ -52,7 +60,6 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
         } else {
           // some versions of the androidx lifecycle-process require this to be executed on the main
           // thread.
-          final Handler handler = new Handler(Looper.getMainLooper());
           handler.post(() -> addObserver(hub));
         }
       } catch (ClassNotFoundException e) {
