@@ -49,7 +49,6 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
         Class.forName("androidx.lifecycle.ProcessLifecycleOwner");
         if (MainThreadChecker.isMainThread()) {
           addObserver(hub);
-          options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
         } else {
           // some versions of the androidx lifecycle-process require this to be executed on the main
           // thread.
@@ -63,6 +62,10 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
                 SentryLevel.INFO,
                 "androidx.lifecycle is not available, AppLifecycleIntegration won't be installed",
                 e);
+      } catch (IllegalStateException e) {
+        options
+            .getLogger()
+            .log(SentryLevel.ERROR, "AppLifecycleIntegration could not be installed", e);
       }
     }
   }
@@ -75,6 +78,7 @@ public final class AppLifecycleIntegration implements Integration, Closeable {
             this.options.isEnableSessionTracking(),
             this.options.isEnableAppLifecycleBreadcrumbs());
     ProcessLifecycleOwner.get().getLifecycle().addObserver(watcher);
+    options.getLogger().log(SentryLevel.DEBUG, "AppLifecycleIntegration installed.");
   }
 
   @Override
