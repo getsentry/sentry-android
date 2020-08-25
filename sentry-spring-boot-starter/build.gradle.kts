@@ -1,4 +1,7 @@
 import com.novoda.gradle.release.PublishExtension
+import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
     `java-library`
@@ -13,9 +16,9 @@ plugins {
 
 apply(plugin = Config.BuildPlugins.springDependencyManagement)
 
-the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().apply {
+the<DependencyManagementExtension>().apply {
     imports {
-        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+        mavenBom(SpringBootPlugin.BOM_COORDINATES)
     }
 }
 
@@ -24,7 +27,7 @@ configure<JavaPluginConvention> {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
 }
 
