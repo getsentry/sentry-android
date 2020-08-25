@@ -37,8 +37,8 @@ dependencies {
     implementation(Config.Libs.springWeb)
     implementation(Config.Libs.servletApi)
 
-    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    annotationProcessor(Config.AnnotationProcessors.springBootAutoConfigure)
+    annotationProcessor(Config.AnnotationProcessors.springBootConfiguration)
 
     compileOnly(Config.CompileOnly.nopen)
     errorprone(Config.CompileOnly.nopenChecker)

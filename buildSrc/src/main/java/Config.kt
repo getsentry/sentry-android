@@ -46,6 +46,11 @@ object Config {
         val servletApi = "javax.servlet:javax.servlet-api"
     }
 
+    object AnnotationProcessors {
+        val springBootAutoConfigure = "org.springframework.boot:spring-boot-autoconfigure-processor"
+        val springBootConfiguration = "org.springframework.boot:spring-boot-configuration-processor"
+    }
+
     object TestLibs {
         private val androidxTestVersion = "1.2.0"
 
