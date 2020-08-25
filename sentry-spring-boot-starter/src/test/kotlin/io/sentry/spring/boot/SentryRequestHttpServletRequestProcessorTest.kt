@@ -7,12 +7,8 @@ import kotlin.test.assertEquals
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockServletContext
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 
 class SentryRequestHttpServletRequestProcessorTest {
-
-    private val eventProcessor = SentryRequestHttpServletRequestProcessor()
 
     @Test
     fun `attaches basic information from HTTP request to SentryEvent`() {
@@ -21,8 +17,7 @@ class SentryRequestHttpServletRequestProcessorTest {
             .header("some-header", "some-header value")
             .accept(MediaType.APPLICATION_JSON)
             .buildRequest(MockServletContext())
-
-        RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
+        val eventProcessor = SentryRequestHttpServletRequestProcessor(request)
         val event = SentryEvent()
 
         eventProcessor.process(event, null)
@@ -43,8 +38,7 @@ class SentryRequestHttpServletRequestProcessorTest {
             .header("another-header", "another value")
             .header("another-header", "another value2")
             .buildRequest(MockServletContext())
-
-        RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
+        val eventProcessor = SentryRequestHttpServletRequestProcessor(request)
         val event = SentryEvent()
 
         eventProcessor.process(event, null)
@@ -61,8 +55,7 @@ class SentryRequestHttpServletRequestProcessorTest {
             .header("Cookie", "name=value")
             .header("Cookie", "name2=value2")
             .buildRequest(MockServletContext())
-
-        RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
+        val eventProcessor = SentryRequestHttpServletRequestProcessor(request)
         val event = SentryEvent()
 
         eventProcessor.process(event, null)

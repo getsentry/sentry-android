@@ -133,24 +133,6 @@ class SentryAutoConfigurationTest {
     }
 
     @Test
-    fun `does not register event processors for non web-servlet application type`() {
-        contextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj")
-            .run {
-                assertThat(it).doesNotHaveBean(SentryRequestHttpServletRequestProcessor::class.java)
-                assertThat(it).doesNotHaveBean(SentryUserHttpServletRequestProcessor::class.java)
-            }
-    }
-
-    @Test
-    fun `registers event processors for web servlet application type`() {
-        webContextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj")
-            .run {
-                assertThat(it).hasSingleBean(SentryRequestHttpServletRequestProcessor::class.java)
-                assertThat(it).hasSingleBean(SentryUserHttpServletRequestProcessor::class.java)
-            }
-    }
-
-    @Test
     fun `sets SDK version on sent events`() {
         contextRunner.withPropertyValues("sentry.dsn=http://key@localhost/proj")
             .withUserConfiguration(MockTransportConfiguration::class.java)

@@ -6,20 +6,12 @@ import io.sentry.core.SentryEvent
 import java.security.Principal
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 
 class SentryUserHttpServletRequestProcessorTest {
 
-    private val eventProcessor = SentryUserHttpServletRequestProcessor()
-
     @Test
     fun `attaches user's IP address to Sentry Event`() {
-        val request = MockHttpServletRequest()
-        request.remoteAddr = "192.168.0.1"
-
-        RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
+        val eventProcessor = SentryUserHttpServletRequestProcessor(null, "192.168.0.1")
         val event = SentryEvent()
 
         eventProcessor.process(event, null)
@@ -31,10 +23,8 @@ class SentryUserHttpServletRequestProcessorTest {
     fun `attaches username to Sentry Event`() {
         val principal = mock<Principal>()
         whenever(principal.name).thenReturn("janesmith")
-        val request = MockHttpServletRequest()
-        request.userPrincipal = principal
 
-        RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
+        val eventProcessor = SentryUserHttpServletRequestProcessor(principal, null)
         val event = SentryEvent()
 
         eventProcessor.process(event, null)

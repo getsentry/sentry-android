@@ -11,23 +11,20 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /** Attaches information about HTTP request to {@link SentryEvent}. */
 @Open
 public class SentryRequestHttpServletRequestProcessor implements EventProcessor {
+  private final @NotNull HttpServletRequest request;
+
+  public SentryRequestHttpServletRequestProcessor(final @NotNull HttpServletRequest request) {
+    this.request = request;
+  }
 
   @Override
   public @NotNull SentryEvent process(
       final @NotNull SentryEvent event, final @Nullable Object hint) {
-    final RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
-    if (requestAttributes instanceof ServletRequestAttributes) {
-      final HttpServletRequest request =
-          ((ServletRequestAttributes) requestAttributes).getRequest();
-      event.setRequest(resolveSentryRequest(request));
-    }
+    event.setRequest(resolveSentryRequest(request));
     return event;
   }
 

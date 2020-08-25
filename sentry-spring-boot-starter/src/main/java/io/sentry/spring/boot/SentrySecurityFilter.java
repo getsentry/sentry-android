@@ -10,12 +10,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** Pushes new {@link io.sentry.core.Scope} on each incoming HTTP request. */
+/**
+ * Adds {@link SentryUserHttpServletRequestProcessor} to the scope in order to decorate {@link
+ * io.sentry.core.SentryEvent} with principal name and user ip address.
+ */
 @Open
-public class SentryRequestFilter extends OncePerRequestFilter {
+public class SentrySecurityFilter extends OncePerRequestFilter {
   private final @NotNull IHub hub;
 
-  public SentryRequestFilter(final @NotNull IHub hub) {
+  public SentrySecurityFilter(final @NotNull IHub hub) {
     this.hub = hub;
   }
 
@@ -25,12 +28,16 @@ public class SentryRequestFilter extends OncePerRequestFilter {
       final @NotNull HttpServletResponse response,
       final @NotNull FilterChain filterChain)
       throws ServletException, IOException {
-    hub.pushScope();
-
     hub.configureScope(
-        scope -> {
-          scope.addEventProcessor(new SentryRequestHttpServletRequestProcessor(request));
-        });
+        scope ->
+            scope.addEventProcessor(
+                new SentryUserHttpServletRequestProcessor(
+                    request.getUserPrincipal(), toIpAddress(request))));
     filterChain.doFilter(request, response);
+  }
+
+  private static @NotNull String toIpAddress(final @NotNull HttpServletRequest request) {
+    final String ipAddress = request.getHeader("X-FORWARDED-FOR");
+    return ipAddress != null ? ipAddress : request.getRemoteAddr();
   }
 }

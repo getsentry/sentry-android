@@ -20,6 +20,7 @@ import org.springframework.boot.info.GitProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 
 @Configuration
 @ConditionalOnProperty(name = "sentry.enabled", havingValue = "true", matchIfMissing = true)
@@ -81,25 +82,17 @@ public class SentryAutoConfiguration {
     /** Registers beans specific to Spring MVC. */
     @Configuration
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    @ConditionalOnProperty("sentry.dsn")
     @Open
     static class SentryWebMvcConfiguration {
 
       @Bean
-      public @NotNull SentryRequestHttpServletRequestProcessor
-          sentryEventHttpServletRequestProcessor() {
-        return new SentryRequestHttpServletRequestProcessor();
-      }
-
-      @Bean
-      public @NotNull SentryUserHttpServletRequestProcessor
-          sentryUserHttpServletRequestProcessor() {
-        return new SentryUserHttpServletRequestProcessor();
-      }
-
-      @Bean
       public @NotNull FilterRegistrationBean<SentryRequestFilter> sentryRequestFilter(
           final @NotNull IHub sentryHub) {
-        return new FilterRegistrationBean<>(new SentryRequestFilter(sentryHub));
+        FilterRegistrationBean<SentryRequestFilter> filterRegistrationBean =
+            new FilterRegistrationBean<>(new SentryRequestFilter(sentryHub));
+        filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return filterRegistrationBean;
       }
     }
 

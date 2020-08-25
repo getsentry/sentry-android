@@ -48,6 +48,8 @@ dependencies {
     testImplementation(Config.TestLibs.kotlinTestJunit)
     testImplementation(Config.TestLibs.mockitoKotlin)
     testImplementation(Config.TestLibs.springBootStarterTest)
+    testImplementation(Config.TestLibs.springBootStarterWeb)
+    testImplementation(Config.TestLibs.springBootStarterSecurity)
     testImplementation(Config.TestLibs.awaitility)
 }
 
