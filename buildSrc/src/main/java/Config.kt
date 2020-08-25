@@ -57,6 +57,8 @@ object Config {
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
         val awaitility = "org.awaitility:awaitility-kotlin:4.0.3"
         val springBootStarterTest = "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+        val springBootStarterWeb = "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+        val springBootStarterSecurity = "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
     }
 
     object QualityPlugins {
