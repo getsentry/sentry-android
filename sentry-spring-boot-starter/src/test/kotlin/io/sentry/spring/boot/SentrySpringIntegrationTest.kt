@@ -66,6 +66,22 @@ class SentrySpringIntegrationTest {
             })
         }
     }
+
+    @Test
+    fun `attaches first ip address if multiple addresses exist in a header`() {
+        val restTemplate = TestRestTemplate().withBasicAuth("user", "password")
+        val headers = HttpHeaders()
+        headers["X-FORWARDED-FOR"] = listOf("169.128.0.1, 192.168.0.1")
+        val entity = HttpEntity<Void>(headers)
+
+        restTemplate.exchange("http://localhost:$port/hello", HttpMethod.GET, entity, Void::class.java)
+
+        await.untilAsserted {
+            verify(transport).send(check { event: SentryEvent ->
+                assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
+            })
+        }
+    }
 }
 
 @SpringBootApplication

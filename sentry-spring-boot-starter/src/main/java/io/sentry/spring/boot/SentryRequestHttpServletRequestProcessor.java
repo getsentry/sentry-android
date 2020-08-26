@@ -28,7 +28,8 @@ public class SentryRequestHttpServletRequestProcessor implements EventProcessor 
     return event;
   }
 
-  @SuppressWarnings("JdkObsolete") // httpRequest.getRequestURL() returns StringBuffer which is considered an obsolete class.
+  // httpRequest.getRequestURL() returns StringBuffer which is considered an obsolete class.
+  @SuppressWarnings("JdkObsolete")
   private static @NotNull Request resolveSentryRequest(
       final @NotNull HttpServletRequest httpRequest) {
     final Request sentryRequest = new Request();

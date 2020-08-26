@@ -36,8 +36,15 @@ public class SentrySecurityFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
+  // it is advised to not use `String#split` method but since we do not have 3rd party libraries
+  // this is our only option.
+  @SuppressWarnings("StringSplitter")
   private static @NotNull String toIpAddress(final @NotNull HttpServletRequest request) {
     final String ipAddress = request.getHeader("X-FORWARDED-FOR");
-    return ipAddress != null ? ipAddress : request.getRemoteAddr();
+    if (ipAddress != null) {
+      return ipAddress.contains(",") ? ipAddress.split(",")[0].trim() : ipAddress;
+    } else {
+      return request.getRemoteAddr();
+    }
   }
 }
