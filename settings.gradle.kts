@@ -7,8 +7,8 @@ include("sentry-android",
     "sentry-core",
     "sentry-logback",
     "sentry-spring-boot-starter",
+    "sentry-android-timber",
     "sentry-samples:sentry-samples-android",
     "sentry-samples:sentry-samples-console",
     "sentry-samples:sentry-samples-logback",
-    "sentry-samples:sentry-samples-spring-boot",
-    "sentry-android-timber")
+    "sentry-samples:sentry-samples-spring-boot")
