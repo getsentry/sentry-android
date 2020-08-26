@@ -7,7 +7,6 @@ import io.sentry.core.protocol.User;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
