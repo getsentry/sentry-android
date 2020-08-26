@@ -11,6 +11,7 @@ object Config {
         val buildConfigVersion = "2.0.2"
         val springBoot = "org.springframework.boot"
         val springDependencyManagement = "io.spring.dependency-management"
+        val springDependencyManagementVersion = "1.0.10.RELEASE"
     }
 
     object Android {
