@@ -210,6 +210,9 @@ public class SentryOptions {
   /** SdkVersion object that contains the Sentry Client Name and its version */
   private @Nullable SdkVersion sdkVersion;
 
+  /** whether to send personal identifiable information along with events */
+  private boolean sendDefaultPii = false;
+
   /**
    * Adds an event processor
    *
@@ -996,6 +999,14 @@ public class SentryOptions {
     this.sdkVersion = sdkVersion;
   }
 
+  public boolean isSendDefaultPii() {
+    return sendDefaultPii;
+  }
+
+  public void setSendDefaultPii(boolean sendDefaultPii) {
+    this.sendDefaultPii = sendDefaultPii;
+  }
+
   /** The BeforeSend callback */
   public interface BeforeSendCallback {
 
@@ -1036,6 +1047,7 @@ public class SentryOptions {
     integrations.add(new ShutdownHookIntegration());
 
     eventProcessors.add(new MainEventProcessor(this));
+    eventProcessors.add(new PiiEventProcessor(this));
 
     setSentryClientName(BuildConfig.SENTRY_JAVA_SDK_NAME + "/" + BuildConfig.VERSION_NAME);
     setSdkVersion(createSdkVersion());
