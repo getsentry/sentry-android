@@ -23,13 +23,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
 @Configuration
-@ConditionalOnProperty(name = "sentry.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "sentry.dsn")
 @Open
 public class SentryAutoConfiguration {
 
   /** Registers general purpose Sentry related beans. */
   @Configuration
-  @ConditionalOnProperty("sentry.dsn")
   @EnableConfigurationProperties(SentryProperties.class)
   @Open
   static class HubConfiguration {
@@ -76,7 +75,6 @@ public class SentryAutoConfiguration {
     /** Registers beans specific to Spring MVC. */
     @Configuration
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    @ConditionalOnProperty("sentry.dsn")
     @Open
     static class SentryWebMvcConfiguration {
 
