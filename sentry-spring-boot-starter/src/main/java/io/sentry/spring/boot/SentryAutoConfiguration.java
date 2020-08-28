@@ -30,7 +30,7 @@ public class SentryAutoConfiguration {
   /** Registers general purpose Sentry related beans. */
   @Configuration
   @ConditionalOnProperty("sentry.dsn")
-  @EnableConfigurationProperties(SentryProperties.class)
+  @EnableConfigurationProperties(SentrySpringProperties.class)
   @Open
   static class HubConfiguration {
 
@@ -57,7 +57,7 @@ public class SentryAutoConfiguration {
     @Bean
     public @NotNull SentryOptions sentryOptions(
         final @NotNull Sentry.OptionsConfiguration<SentryOptions> optionsConfiguration,
-        final @NotNull SentryProperties properties,
+        final @NotNull SentrySpringProperties properties,
         final @NotNull ObjectProvider<GitProperties> gitProperties) {
       final SentryOptions options = new SentryOptions();
       optionsConfiguration.configure(options);

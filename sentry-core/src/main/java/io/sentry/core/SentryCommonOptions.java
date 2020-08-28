@@ -3,7 +3,6 @@ package io.sentry.core;
 import static io.sentry.core.SentryOptions.DEFAULT_DIAGNOSTIC_LEVEL;
 
 import com.jakewharton.nopen.annotation.Open;
-import io.sentry.core.util.ReflectionUtils;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.jetbrains.annotations.NotNull;
@@ -107,7 +106,42 @@ public class SentryCommonOptions {
    * @param options the instance of {@link SentryOptions} to apply the configuration to
    */
   public void applyTo(SentryOptions options) {
-    ReflectionUtils.copyNonNullFields(this, options);
+    if (dsn != null) {
+      options.setDsn(dsn);
+    }
+    if (environment != null) {
+      options.setEnvironment(environment);
+    }
+    if (sampleRate != null) {
+      options.setSampleRate(sampleRate);
+    }
+    if (dist != null) {
+      options.setDist(dist);
+    }
+    if (release != null) {
+      options.setRelease(release);
+    }
+    if (sampleRate != null) {
+      options.setSampleRate(sampleRate);
+    }
+    if (serverName != null) {
+      options.setServerName(serverName);
+    }
+    for (String inAppExclude : inAppExcludes) {
+      options.addInAppExclude(inAppExclude);
+    }
+    for (String inAppInclude : inAppIncludes) {
+      options.addInAppInclude(inAppInclude);
+    }
+    options.setMaxBreadcrumbs(maxBreadcrumbs);
+    options.setShutdownTimeout(shutdownTimeout);
+    options.setFlushTimeoutMillis(flushTimeoutMillis);
+    options.setReadTimeoutMillis(readTimeoutMillis);
+    options.setBypassSecurity(bypassSecurity);
+    options.setDebug(debug);
+    options.setAttachThreads(attachThreads);
+    options.setAttachStacktrace(attachStacktrace);
+    options.setDiagnosticLevel(diagnosticLevel);
   }
 
   /**

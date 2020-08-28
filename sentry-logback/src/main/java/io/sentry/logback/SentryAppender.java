@@ -6,7 +6,6 @@ import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import io.sentry.core.DateUtils;
 import io.sentry.core.Sentry;
-import io.sentry.core.SentryCommonOptions;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
@@ -28,19 +27,16 @@ import org.jetbrains.annotations.Nullable;
 
 /** Appender for logback in charge of sending the logged events to a Sentry server. */
 public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
-  private @Nullable SentryCommonOptions options;
+  private @Nullable SentryOptions options;
   private @Nullable ITransport transport;
 
   @Override
   public void start() {
     if (options != null && options.getDsn() != null) {
-      Sentry.init(
-          sentryOptions -> {
-            options.applyTo(sentryOptions);
-            sentryOptions.setSentryClientName(BuildConfig.SENTRY_LOGBACK_SDK_NAME);
-            sentryOptions.setSdkVersion(createSdkVersion(sentryOptions));
-            Optional.ofNullable(transport).ifPresent(sentryOptions::setTransport);
-          });
+      options.setSentryClientName(BuildConfig.SENTRY_LOGBACK_SDK_NAME);
+      options.setSdkVersion(createSdkVersion(options));
+      Optional.ofNullable(transport).ifPresent(options::setTransport);
+      Sentry.init(options);
     }
     super.start();
   }
@@ -130,7 +126,7 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
     return sdkVersion;
   }
 
-  public void setOptions(@Nullable SentryCommonOptions options) {
+  public void setOptions(@Nullable SentryOptions options) {
     this.options = options;
   }
 

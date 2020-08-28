@@ -7,9 +7,9 @@ import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import io.sentry.core.SentryCommonOptions
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryLevel
+import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
 import io.sentry.core.transport.TransportResult
 import java.time.Instant
@@ -37,7 +37,7 @@ class SentryAppenderTest {
             whenever(transport.send(any<SentryEvent>())).thenReturn(TransportResult.success())
 
             val appender = SentryAppender()
-            val options = SentryCommonOptions()
+            val options = SentryOptions()
             options.dsn = "http://key@localhost/proj"
             appender.setOptions(options)
             appender.context = loggerContext

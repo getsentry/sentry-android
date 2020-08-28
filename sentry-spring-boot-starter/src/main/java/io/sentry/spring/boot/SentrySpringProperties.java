@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /** Configuration for Sentry integration. */
 @ConfigurationProperties(prefix = "sentry")
 @Open
-public class SentryProperties extends SentryCommonOptions {
+public class SentrySpringProperties extends SentryCommonOptions {
   /** Whether Sentry integration should be enabled. */
   private boolean enabled = true;
 
