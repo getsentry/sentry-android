@@ -4,6 +4,8 @@ import io.sentry.core.protocol.Request;
 import io.sentry.core.protocol.User;
 import io.sentry.core.util.CollectionUtils;
 import io.sentry.core.util.Objects;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +15,9 @@ import org.jetbrains.annotations.Nullable;
  * SentryOptions#isSendDefaultPii()} is set to false.
  */
 final class PiiEventProcessor implements EventProcessor {
+  private static final List<String> SENSITIVE_HEADERS =
+      Arrays.asList("X-FORWARDED-FOR", "Authorization", "Cookies");
+
   private final @NotNull SentryOptions options;
 
   PiiEventProcessor(final @NotNull SentryOptions options) {
@@ -33,9 +38,9 @@ final class PiiEventProcessor implements EventProcessor {
       if (request != null) {
         final Map<String, String> headers = CollectionUtils.shallowCopy(request.getHeaders());
         if (headers != null) {
-          headers.remove("X-FORWARDED-FOR");
-          headers.remove("Authorization");
-          headers.remove("Cookies");
+          for (String sensitiveHeader : SENSITIVE_HEADERS) {
+            headers.remove(sensitiveHeader);
+          }
           request.setHeaders(headers);
         }
         if (request.getCookies() != null) {
