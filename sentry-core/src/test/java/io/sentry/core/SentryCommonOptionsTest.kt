@@ -11,11 +11,11 @@ class SentryCommonOptionsTest {
         val commonOptions = with(SentryCommonOptions()) {
             dsn = "http://key@localhost/proj"
             readTimeoutMillis = 10
-            shutdownTimeoutMillis = 20L
+            shutdownTimeout = 20L
             flushTimeoutMillis = 30
-            bypassSecurity = true
-            debug = true
-            diagnosticLevel = SentryLevel.INFO
+            isBypassSecurity = true
+            isDebug = true
+            setDiagnosticLevel(SentryLevel.INFO)
             maxBreadcrumbs = 100
             release = "1.0.3"
             environment = "production"
@@ -23,8 +23,8 @@ class SentryCommonOptionsTest {
             inAppExcludes = listOf("org.springframework")
             inAppIncludes = listOf("com.myapp")
             dist = "my-dist"
-            attachStacktrace = true
-            attachThreads = true
+            isAttachStacktrace = true
+            isAttachThreads = true
             serverName = "host-001"
             this
         }

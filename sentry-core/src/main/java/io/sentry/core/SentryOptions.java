@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 /** Sentry SDK options */
 @Open
-public class SentryOptions {
+public class SentryOptions extends SentryCommonOptions {
 
   /** Default Log level if not specified Default is DEBUG */
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;
@@ -37,40 +37,11 @@ public class SentryOptions {
    */
   private final @NotNull List<Integration> integrations = new CopyOnWriteArrayList<>();
 
-  /**
-   * The DSN tells the SDK where to send the events to. If this value is not provided, the SDK will
-   * just not send any events.
-   */
-  private @Nullable String dsn;
-
-  /**
-   * Controls how many seconds to wait before shutting down. Sentry SDKs send events from a
-   * background queue and this queue is given a certain amount to drain pending events Default is
-   * 2000 = 2s
-   */
-  private long shutdownTimeoutMillis = 2000; // 2s
-
-  /**
-   * Controls how many seconds to wait before flushing down. Sentry SDKs cache events from a
-   * background queue and this queue is given a certain amount to drain pending events Default is
-   * 15000 = 15s
-   */
-  private long flushTimeoutMillis = 15000; // 15s
-
-  /**
-   * Turns debug mode on or off. If debug is enabled SDK will attempt to print out useful debugging
-   * information if something goes wrong. Default is disabled.
-   */
-  private boolean debug;
-
   /** Turns NDK on or off. Default is enabled. */
   private boolean enableNdk = true;
 
   /** Logger interface to log useful debugging information if debug is enabled */
   private @NotNull ILogger logger = NoOpLogger.getInstance();
-
-  /** minimum LogLevel to be used if debug is enabled */
-  private @NotNull SentryLevel diagnosticLevel = DEFAULT_DIAGNOSTIC_LEVEL;
 
   /** Serializer interface to serialize/deserialize json events */
   private @NotNull ISerializer serializer = NoOpSerializer.getInstance();
@@ -108,45 +79,10 @@ public class SentryOptions {
   private int maxQueueSize = cacheDirSize + sessionsDirSize;
 
   /**
-   * This variable controls the total amount of breadcrumbs that should be captured Default is 100
-   */
-  private int maxBreadcrumbs = 100;
-
-  /** Sets the release. SDK will try to automatically configure a release out of the box */
-  private @Nullable String release;
-
-  /**
-   * Sets the environment. This string is freeform and not set by default. A release can be
-   * associated with more than one environment to separate them in the UI Think staging vs prod or
-   * similar.
-   */
-  private @Nullable String environment;
-
-  /**
    * When set, a proxy can be configured that should be used for outbound requests. This is also
    * used for HTTPS requests
    */
   private @Nullable Proxy proxy;
-
-  /**
-   * Configures the sample rate as a percentage of events to be sent in the range of 0.0 to 1.0. if
-   * 1.0 is set it means that 100% of events are sent. If set to 0.1 only 10% of events will be
-   * sent. Events are picked randomly. Default is null (disabled)
-   */
-  private @Nullable Double sampleRate;
-
-  /**
-   * A list of string prefixes of module names that do not belong to the app, but rather third-party
-   * packages. Modules considered not to be part of the app will be hidden from stack traces by
-   * default.
-   */
-  private final @NotNull List<String> inAppExcludes = new CopyOnWriteArrayList<>();
-
-  /**
-   * A list of string prefixes of module names that belong to the app. This option takes precedence
-   * over inAppExcludes.
-   */
-  private final @NotNull List<String> inAppIncludes = new CopyOnWriteArrayList<>();
 
   /** The transport is an internal construct of the client that abstracts away the event sending. */
   private @NotNull ITransport transport = NoOpTransport.getInstance();
@@ -156,18 +92,6 @@ public class SentryOptions {
    * events
    */
   private @NotNull ITransportGate transportGate = NoOpTransportGate.getInstance();
-
-  /** Sets the distribution. Think about it together with release and environment */
-  private @Nullable String dist;
-
-  /** When enabled, threads are automatically attached to all logged events. */
-  private boolean attachThreads = true;
-
-  /**
-   * When enabled, stack traces are automatically attached to all threads logged. Stack traces are
-   * always attached to exceptions but when this is set stack traces are also sent with threads
-   */
-  private boolean attachStacktrace;
 
   /** Whether to enable automatic session tracking. */
   private boolean enableSessionTracking;
@@ -181,9 +105,6 @@ public class SentryOptions {
   /** The distinct Id (generated Guid) used for session tracking */
   private String distinctId;
 
-  /** The server name used in the Sentry messages. */
-  private String serverName;
-
   /*
   When enabled, Sentry installs UncaughtExceptionHandlerIntegration.
    */
@@ -191,15 +112,6 @@ public class SentryOptions {
 
   /** Sentry Executor Service that sends cached events and envelopes on App. start. */
   private @NotNull ISentryExecutorService executorService;
-
-  /** connection timeout in milliseconds. */
-  private int connectionTimeoutMillis = 5000;
-
-  /** read timeout in milliseconds */
-  private int readTimeoutMillis = 5000;
-
-  /** whether to ignore TLS errors */
-  private boolean bypassSecurity = false;
 
   /** Reads and caches event json files in the disk */
   private @NotNull IEventCache eventDiskCache = NoOpEventCache.getInstance();
@@ -247,42 +159,6 @@ public class SentryOptions {
   }
 
   /**
-   * Returns the DSN
-   *
-   * @return the DSN or null if not set
-   */
-  public @Nullable String getDsn() {
-    return dsn;
-  }
-
-  /**
-   * Sets the DSN
-   *
-   * @param dsn the DSN
-   */
-  public void setDsn(@Nullable String dsn) {
-    this.dsn = dsn;
-  }
-
-  /**
-   * Check if debug mode is ON Default is OFF
-   *
-   * @return true if ON or false otherwise
-   */
-  public boolean isDebug() {
-    return debug;
-  }
-
-  /**
-   * Sets the debug mode to ON or OFF Default is OFF
-   *
-   * @param debug true if ON or false otherwise
-   */
-  public void setDebug(boolean debug) {
-    this.debug = debug;
-  }
-
-  /**
    * Returns the Logger interface
    *
    * @return the logger
@@ -298,24 +174,6 @@ public class SentryOptions {
    */
   public void setLogger(final @Nullable ILogger logger) {
     this.logger = (logger == null) ? NoOpLogger.getInstance() : new DiagnosticLogger(this, logger);
-  }
-
-  /**
-   * Returns the minimum LogLevel
-   *
-   * @return the log level
-   */
-  public @NotNull SentryLevel getDiagnosticLevel() {
-    return diagnosticLevel;
-  }
-
-  /**
-   * Sets the minimum LogLevel if null, it uses the default min. LogLevel Default is DEBUG
-   *
-   * @param diagnosticLevel the log level
-   */
-  public void setDiagnosticLevel(@Nullable final SentryLevel diagnosticLevel) {
-    this.diagnosticLevel = (diagnosticLevel != null) ? diagnosticLevel : DEFAULT_DIAGNOSTIC_LEVEL;
   }
 
   /**
@@ -361,24 +219,6 @@ public class SentryOptions {
    */
   public void setEnableNdk(boolean enableNdk) {
     this.enableNdk = enableNdk;
-  }
-
-  /**
-   * Returns the shutdown timeout in Millis
-   *
-   * @return the timeout in Millis
-   */
-  public long getShutdownTimeout() {
-    return shutdownTimeoutMillis;
-  }
-
-  /**
-   * Sets the shutdown timeout in Millis Default is 2000 = 2s
-   *
-   * @param shutdownTimeoutMillis the shutdown timeout in millis
-   */
-  public void setShutdownTimeout(long shutdownTimeoutMillis) {
-    this.shutdownTimeoutMillis = shutdownTimeoutMillis;
   }
 
   /**
@@ -496,60 +336,6 @@ public class SentryOptions {
   }
 
   /**
-   * Returns the max Breadcrumbs Default is 100
-   *
-   * @return the max breadcrumbs
-   */
-  public int getMaxBreadcrumbs() {
-    return maxBreadcrumbs;
-  }
-
-  /**
-   * Sets the max breadcrumbs Default is 100
-   *
-   * @param maxBreadcrumbs the max breadcrumbs
-   */
-  public void setMaxBreadcrumbs(int maxBreadcrumbs) {
-    this.maxBreadcrumbs = maxBreadcrumbs;
-  }
-
-  /**
-   * Returns the release
-   *
-   * @return the release or null if not set
-   */
-  public @Nullable String getRelease() {
-    return release;
-  }
-
-  /**
-   * Sets the release
-   *
-   * @param release the release
-   */
-  public void setRelease(@Nullable String release) {
-    this.release = release;
-  }
-
-  /**
-   * Returns the environment
-   *
-   * @return the environment or null if not set
-   */
-  public @Nullable String getEnvironment() {
-    return environment;
-  }
-
-  /**
-   * Sets the environment
-   *
-   * @param environment the environment
-   */
-  public void setEnvironment(@Nullable String environment) {
-    this.environment = environment;
-  }
-
-  /**
    * Returns the proxy if set
    *
    * @return the proxy or null if not set
@@ -565,66 +351,6 @@ public class SentryOptions {
    */
   public void setProxy(@Nullable Proxy proxy) {
     this.proxy = proxy;
-  }
-
-  /**
-   * Returns the sample rate Default is null (disabled)
-   *
-   * @return the sample rate
-   */
-  public @Nullable Double getSampleRate() {
-    return sampleRate;
-  }
-
-  /**
-   * Sets the sampleRate Can be anything between 0.01 and 1.0 or null (default), to disable it.
-   *
-   * @param sampleRate the sample rate
-   */
-  public void setSampleRate(Double sampleRate) {
-    if (sampleRate != null && (sampleRate > 1.0 || sampleRate <= 0.0)) {
-      throw new IllegalArgumentException(
-          "The value "
-              + sampleRate
-              + " is not valid. Use null to disable or values between 0.01 (inclusive) and 1.0 (exclusive).");
-    }
-    this.sampleRate = sampleRate;
-  }
-
-  /**
-   * the list of inApp excludes
-   *
-   * @return the inApp excludes list
-   */
-  public @NotNull List<String> getInAppExcludes() {
-    return inAppExcludes;
-  }
-
-  /**
-   * Adds an inApp exclude
-   *
-   * @param exclude the inApp exclude module/package
-   */
-  public void addInAppExclude(@NotNull String exclude) {
-    inAppExcludes.add(exclude);
-  }
-
-  /**
-   * Returns the inApp includes list
-   *
-   * @return the inApp includes list
-   */
-  public @NotNull List<String> getInAppIncludes() {
-    return inAppIncludes;
-  }
-
-  /**
-   * Adds an inApp include
-   *
-   * @param include the inApp include module/package
-   */
-  public void addInAppInclude(@NotNull String include) {
-    inAppIncludes.add(include);
   }
 
   /**
@@ -646,24 +372,6 @@ public class SentryOptions {
   }
 
   /**
-   * Sets the distribution
-   *
-   * @return the distribution or null if not set
-   */
-  public @Nullable String getDist() {
-    return dist;
-  }
-
-  /**
-   * Sets the distribution
-   *
-   * @param dist the distribution
-   */
-  public void setDist(@Nullable String dist) {
-    this.dist = dist;
-  }
-
-  /**
    * Returns the TransportGate interface
    *
    * @return the transport gate
@@ -682,42 +390,6 @@ public class SentryOptions {
   }
 
   /**
-   * Checks if the AttachStacktrace is enabled or not
-   *
-   * @return true if enabled or false otherwise
-   */
-  public boolean isAttachStacktrace() {
-    return attachStacktrace;
-  }
-
-  /**
-   * Sets the attachStacktrace to enabled or disabled
-   *
-   * @param attachStacktrace true if enabled or false otherwise
-   */
-  public void setAttachStacktrace(boolean attachStacktrace) {
-    this.attachStacktrace = attachStacktrace;
-  }
-
-  /**
-   * Checks if the AttachThreads is enabled or not
-   *
-   * @return true if enabled or false otherwise
-   */
-  public boolean isAttachThreads() {
-    return attachThreads;
-  }
-
-  /**
-   * Sets the attachThreads to enabled or disabled
-   *
-   * @param attachThreads true if enabled or false otherwise
-   */
-  public void setAttachThreads(boolean attachThreads) {
-    this.attachThreads = attachThreads;
-  }
-
-  /**
    * Returns if the automatic session tracking is enabled or not
    *
    * @return true if enabled or false otherwise
@@ -733,24 +405,6 @@ public class SentryOptions {
    */
   public void setEnableSessionTracking(boolean enableSessionTracking) {
     this.enableSessionTracking = enableSessionTracking;
-  }
-
-  /**
-   * Gets the default server name to be used in Sentry events.
-   *
-   * @return the default server name or null if none set
-   */
-  public @Nullable String getServerName() {
-    return serverName;
-  }
-
-  /**
-   * Sets the default server name to be used in Sentry events.
-   *
-   * @param serverName the default server name or null if none should be used
-   */
-  public void setServerName(@Nullable String serverName) {
-    this.serverName = serverName;
   }
 
   /**
@@ -810,24 +464,6 @@ public class SentryOptions {
   }
 
   /**
-   * Returns the flush timeout in millis
-   *
-   * @return the timeout in millis
-   */
-  public long getFlushTimeoutMillis() {
-    return flushTimeoutMillis;
-  }
-
-  /**
-   * Sets the flush timeout in millis
-   *
-   * @param flushTimeoutMillis the timeout in millis
-   */
-  public void setFlushTimeoutMillis(long flushTimeoutMillis) {
-    this.flushTimeoutMillis = flushTimeoutMillis;
-  }
-
-  /**
    * Checks if the default UncaughtExceptionHandlerIntegration is enabled or not.
    *
    * @return true if enabled or false otherwise.
@@ -864,60 +500,6 @@ public class SentryOptions {
     if (executorService != null) {
       this.executorService = executorService;
     }
-  }
-
-  /**
-   * Returns the connection timeout in milliseconds.
-   *
-   * @return the connectionTimeoutMillis
-   */
-  public int getConnectionTimeoutMillis() {
-    return connectionTimeoutMillis;
-  }
-
-  /**
-   * Sets the connection timeout in milliseconds.
-   *
-   * @param connectionTimeoutMillis the connectionTimeoutMillis
-   */
-  public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
-    this.connectionTimeoutMillis = connectionTimeoutMillis;
-  }
-
-  /**
-   * Returns the read timeout in milliseconds
-   *
-   * @return the readTimeoutMillis
-   */
-  public int getReadTimeoutMillis() {
-    return readTimeoutMillis;
-  }
-
-  /**
-   * Sets the read timeout in milliseconds
-   *
-   * @param readTimeoutMillis the readTimeoutMillis
-   */
-  public void setReadTimeoutMillis(int readTimeoutMillis) {
-    this.readTimeoutMillis = readTimeoutMillis;
-  }
-
-  /**
-   * Returns whether to ignore TLS errors
-   *
-   * @return the bypassSecurity
-   */
-  public boolean isBypassSecurity() {
-    return bypassSecurity;
-  }
-
-  /**
-   * Sets whether to ignore TLS errors
-   *
-   * @param bypassSecurity the bypassSecurity
-   */
-  public void setBypassSecurity(boolean bypassSecurity) {
-    this.bypassSecurity = bypassSecurity;
   }
 
   /**
