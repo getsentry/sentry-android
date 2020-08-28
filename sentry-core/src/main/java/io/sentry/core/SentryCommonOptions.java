@@ -133,7 +133,7 @@ public class SentryCommonOptions {
     this.dsn = dsn;
   }
 
-  public long getShutdownTimeoutMillis() {
+  public Long getShutdownTimeoutMillis() {
     return shutdownTimeoutMillis;
   }
 
@@ -141,7 +141,7 @@ public class SentryCommonOptions {
     this.shutdownTimeoutMillis = shutdownTimeoutMillis;
   }
 
-  public boolean isDebug() {
+  public Boolean isDebug() {
     return debug;
   }
 
@@ -157,7 +157,7 @@ public class SentryCommonOptions {
     this.diagnosticLevel = diagnosticLevel;
   }
 
-  public int getMaxBreadcrumbs() {
+  public Integer getMaxBreadcrumbs() {
     return maxBreadcrumbs;
   }
 
@@ -213,7 +213,7 @@ public class SentryCommonOptions {
     this.dist = dist;
   }
 
-  public boolean isAttachThreads() {
+  public Boolean isAttachThreads() {
     return attachThreads;
   }
 
@@ -221,7 +221,7 @@ public class SentryCommonOptions {
     this.attachThreads = attachThreads;
   }
 
-  public boolean isAttachStacktrace() {
+  public Boolean isAttachStacktrace() {
     return attachStacktrace;
   }
 

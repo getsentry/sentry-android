@@ -6,12 +6,14 @@ import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import io.sentry.core.DateUtils;
 import io.sentry.core.Sentry;
+import io.sentry.core.SentryCommonOptions;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.Message;
 import io.sentry.core.protocol.SdkVersion;
-
+import io.sentry.core.transport.ITransport;
+import io.sentry.core.util.CollectionUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -20,47 +22,24 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import io.sentry.core.transport.ITransport;
-import io.sentry.core.util.CollectionUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /** Appender for logback in charge of sending the logged events to a Sentry server. */
 public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
-  private @Nullable String dsn;
-  private @Nullable String environment;
-  private @Nullable Integer maxBreadcrumbs;
-  private @Nullable Integer shutdownTimeoutMillis;
-  private @Nullable Integer flushTimeoutMillis;
-  private @Nullable Integer readTimeoutMillis;
-  private @Nullable Double sampleRate;
-  private @Nullable Boolean bypassSecurity;
-  private @Nullable Boolean debug;
-  private @Nullable Boolean attachThreads;
-  private @Nullable Boolean attachStacktrace;
+  private @Nullable SentryCommonOptions options;
   private @Nullable ITransport transport;
 
   @Override
   public void start() {
-    if (dsn != null) {
+    if (options != null && options.getDsn() != null) {
       Sentry.init(
-          options -> {
-            options.setDsn(dsn);
-            Optional.ofNullable(maxBreadcrumbs).ifPresent(options::setMaxBreadcrumbs);
-            Optional.ofNullable(environment).ifPresent(options::setEnvironment);
-            Optional.ofNullable(shutdownTimeoutMillis).ifPresent(options::setShutdownTimeout);
-            Optional.ofNullable(flushTimeoutMillis).ifPresent(options::setFlushTimeoutMillis);
-            Optional.ofNullable(readTimeoutMillis).ifPresent(options::setReadTimeoutMillis);
-            Optional.ofNullable(sampleRate).ifPresent(options::setSampleRate);
-            Optional.ofNullable(bypassSecurity).ifPresent(options::setBypassSecurity);
-            Optional.ofNullable(debug).ifPresent(options::setDebug);
-            Optional.ofNullable(attachThreads).ifPresent(options::setAttachThreads);
-            Optional.ofNullable(attachStacktrace).ifPresent(options::setAttachStacktrace);
-            options.setSentryClientName(BuildConfig.SENTRY_LOGBACK_SDK_NAME);
-            options.setSdkVersion(createSdkVersion(options));
-            Optional.ofNullable(transport).ifPresent(options::setTransport);
+          sentryOptions -> {
+            options.applyTo(sentryOptions);
+            sentryOptions.setSentryClientName(BuildConfig.SENTRY_LOGBACK_SDK_NAME);
+            sentryOptions.setSdkVersion(createSdkVersion(sentryOptions));
+            Optional.ofNullable(transport).ifPresent(sentryOptions::setTransport);
           });
     }
     super.start();
@@ -79,7 +58,8 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
    */
   @SuppressWarnings("JdkObsolete")
   final @NotNull SentryEvent createEvent(@NotNull ILoggingEvent loggingEvent) {
-    final SentryEvent event = new SentryEvent(DateUtils.getDateTime(new Date(loggingEvent.getTimeStamp())));
+    final SentryEvent event =
+        new SentryEvent(DateUtils.getDateTime(new Date(loggingEvent.getTimeStamp())));
     final Message message = new Message();
     message.setMessage(loggingEvent.getMessage());
     message.setFormatted(loggingEvent.getFormattedMessage());
@@ -97,7 +77,8 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
       event.setExtra("thread_name", loggingEvent.getThreadName());
     }
 
-    final Map<String, String> mdcProperties = CollectionUtils.shallowCopy(loggingEvent.getMDCPropertyMap());
+    final Map<String, String> mdcProperties =
+        CollectionUtils.shallowCopy(loggingEvent.getMDCPropertyMap());
     if (!mdcProperties.isEmpty()) {
       event.getContexts().put("MDC", mdcProperties);
     }
@@ -149,48 +130,8 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
     return sdkVersion;
   }
 
-  public void setDsn(@Nullable String dsn) {
-    this.dsn = dsn;
-  }
-
-  public void setEnvironment(@Nullable String environment) {
-    this.environment = environment;
-  }
-
-  public void setMaxBreadcrumbs(@Nullable Integer maxBreadcrumbs) {
-    this.maxBreadcrumbs = maxBreadcrumbs;
-  }
-
-  public void setShutdownTimeoutMillis(@Nullable Integer shutdownTimeoutMillis) {
-    this.shutdownTimeoutMillis = shutdownTimeoutMillis;
-  }
-
-  public void setFlushTimeoutMillis(@Nullable Integer flushTimeoutMillis) {
-    this.flushTimeoutMillis = flushTimeoutMillis;
-  }
-
-  public void setReadTimeoutMillis(@Nullable Integer readTimeoutMillis) {
-    this.readTimeoutMillis = readTimeoutMillis;
-  }
-
-  public void setSampleRate(@Nullable Double sampleRate) {
-    this.sampleRate = sampleRate;
-  }
-
-  public void setBypassSecurity(@Nullable Boolean bypassSecurity) {
-    this.bypassSecurity = bypassSecurity;
-  }
-
-  public void setDebug(@Nullable Boolean debug) {
-    this.debug = debug;
-  }
-
-  public void setAttachThreads(@Nullable Boolean attachThreads) {
-    this.attachThreads = attachThreads;
-  }
-
-  public void setAttachStacktrace(@Nullable Boolean attachStacktrace) {
-    this.attachStacktrace = attachStacktrace;
+  public void setOptions(@Nullable SentryCommonOptions options) {
+    this.options = options;
   }
 
   @ApiStatus.Internal
