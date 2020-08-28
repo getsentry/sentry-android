@@ -137,15 +137,39 @@ public class SentryCommonOptions {
     return shutdownTimeoutMillis;
   }
 
-  public void setShutdownTimeoutMillis(long shutdownTimeoutMillis) {
+  public void setShutdownTimeoutMillis(Long shutdownTimeoutMillis) {
     this.shutdownTimeoutMillis = shutdownTimeoutMillis;
   }
 
-  public Boolean isDebug() {
+  public Long getFlushTimeoutMillis() {
+    return flushTimeoutMillis;
+  }
+
+  public void setFlushTimeoutMillis(Long flushTimeoutMillis) {
+    this.flushTimeoutMillis = flushTimeoutMillis;
+  }
+
+  public Integer getReadTimeoutMillis() {
+    return readTimeoutMillis;
+  }
+
+  public void setReadTimeoutMillis(Integer readTimeoutMillis) {
+    this.readTimeoutMillis = readTimeoutMillis;
+  }
+
+  public Boolean getBypassSecurity() {
+    return bypassSecurity;
+  }
+
+  public void setBypassSecurity(Boolean bypassSecurity) {
+    this.bypassSecurity = bypassSecurity;
+  }
+
+  public Boolean getDebug() {
     return debug;
   }
 
-  public void setDebug(boolean debug) {
+  public void setDebug(Boolean debug) {
     this.debug = debug;
   }
 
@@ -161,7 +185,7 @@ public class SentryCommonOptions {
     return maxBreadcrumbs;
   }
 
-  public void setMaxBreadcrumbs(int maxBreadcrumbs) {
+  public void setMaxBreadcrumbs(Integer maxBreadcrumbs) {
     this.maxBreadcrumbs = maxBreadcrumbs;
   }
 
@@ -213,70 +237,6 @@ public class SentryCommonOptions {
     this.dist = dist;
   }
 
-  public Boolean isAttachThreads() {
-    return attachThreads;
-  }
-
-  public void setAttachThreads(boolean attachThreads) {
-    this.attachThreads = attachThreads;
-  }
-
-  public Boolean isAttachStacktrace() {
-    return attachStacktrace;
-  }
-
-  public void setAttachStacktrace(boolean attachStacktrace) {
-    this.attachStacktrace = attachStacktrace;
-  }
-
-  public String getServerName() {
-    return serverName;
-  }
-
-  public void setServerName(String serverName) {
-    this.serverName = serverName;
-  }
-
-  public void setShutdownTimeoutMillis(Long shutdownTimeoutMillis) {
-    this.shutdownTimeoutMillis = shutdownTimeoutMillis;
-  }
-
-  public Long getFlushTimeoutMillis() {
-    return flushTimeoutMillis;
-  }
-
-  public void setFlushTimeoutMillis(Long flushTimeoutMillis) {
-    this.flushTimeoutMillis = flushTimeoutMillis;
-  }
-
-  public Integer getReadTimeoutMillis() {
-    return readTimeoutMillis;
-  }
-
-  public void setReadTimeoutMillis(Integer readTimeoutMillis) {
-    this.readTimeoutMillis = readTimeoutMillis;
-  }
-
-  public Boolean getBypassSecurity() {
-    return bypassSecurity;
-  }
-
-  public void setBypassSecurity(Boolean bypassSecurity) {
-    this.bypassSecurity = bypassSecurity;
-  }
-
-  public Boolean getDebug() {
-    return debug;
-  }
-
-  public void setDebug(Boolean debug) {
-    this.debug = debug;
-  }
-
-  public void setMaxBreadcrumbs(Integer maxBreadcrumbs) {
-    this.maxBreadcrumbs = maxBreadcrumbs;
-  }
-
   public Boolean getAttachThreads() {
     return attachThreads;
   }
@@ -291,5 +251,13 @@ public class SentryCommonOptions {
 
   public void setAttachStacktrace(Boolean attachStacktrace) {
     this.attachStacktrace = attachStacktrace;
+  }
+
+  public String getServerName() {
+    return serverName;
+  }
+
+  public void setServerName(String serverName) {
+    this.serverName = serverName;
   }
 }

@@ -92,7 +92,6 @@ class SentryAutoConfigurationTest {
             "sentry.bypass-security=true",
             "sentry.debug=true",
             "sentry.diagnostic-level=INFO",
-            "sentry.sentry-client-name=my-client",
             "sentry.max-breadcrumbs=100",
             "sentry.release=1.0.3",
             "sentry.environment=production",
