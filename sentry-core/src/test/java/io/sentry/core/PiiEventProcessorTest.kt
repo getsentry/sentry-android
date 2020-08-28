@@ -10,27 +10,27 @@ class PiiEventProcessorTest {
 
     private class Fixture {
         val user = with(User()) {
-            this.id = "some-id"
-            this.username = "john.doe"
-            this.email = "john.doe@example.com"
-            this.ipAddress = "66.249.73.223"
+            id = "some-id"
+            username = "john.doe"
+            email = "john.doe@example.com"
+            ipAddress = "66.249.73.223"
             this
         }
 
         val request = with(Request()) {
-            this.headers = mutableMapOf(
+            headers = mutableMapOf(
                 "X-FORWARDED-FOR" to "66.249.73.223",
                 "Authorization" to "token",
                 "Cookies" to "some-cookies",
                 "Safe-Header" to "some-value"
             )
-            this.cookies = "some-cookies"
+            cookies = "some-cookies"
             this
         }
 
         fun getSut(sendPii: Boolean) =
             PiiEventProcessor(with(SentryOptions()) {
-                this.isSendDefaultPii = sendPii
+                isSendDefaultPii = sendPii
                 this
             })
     }
