@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -97,7 +96,6 @@ public final class SentryClient implements ISentryClient {
       return SentryId.EMPTY_ID;
     }
 
-    // TODO: should it be done on the HUB?
     final Session session = updateSessionData(event, hint, scope);
 
     if (!sample()) {
@@ -159,7 +157,7 @@ public final class SentryClient implements ISentryClient {
   @TestOnly
   @Nullable Session updateSessionData(
       final @NotNull SentryEvent event, final @Nullable Object hint, final @Nullable Scope scope) {
-    final AtomicReference<Session> currentSession = new AtomicReference<>();
+    Session clonedSession = null;
 
     if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       if (scope != null) {
@@ -184,30 +182,22 @@ public final class SentryClient implements ISentryClient {
                 }
 
                 if (session.update(status, userAgent, crashedOrErrored)) {
-
-//                  Object sessionHint;
-
                   // if hint is DiskFlushNotification, it means we have an uncaughtException
                   // and we can end the session.
                   if (hint instanceof DiskFlushNotification) {
-//                    sessionHint = new SessionEndHint();
                     session.end();
-                  }// else {
-                    // otherwise we just cache in the disk but do not flush to the network.
-//                    sessionHint = new SessionUpdateHint();
-//                  }
-//                  captureSession(session, sessionHint);
-                  currentSession.set(session);
+                  }
                 }
               } else {
                 options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
               }
             });
+        clonedSession = scope.cloneSession();
       } else {
         options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
       }
     }
-    return currentSession.get();
+    return clonedSession;
   }
 
   @ApiStatus.Internal

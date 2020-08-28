@@ -69,14 +69,14 @@ public final class AsyncConnection implements Closeable, Connection {
 
     final RejectedExecutionHandler storeEvents =
         (r, executor) -> {
-          if (r instanceof SessionSender) {
-            final SessionSender sessionSender = (SessionSender) r;
+          if (r instanceof EnvelopeSender) {
+            final EnvelopeSender envelopeSender = (EnvelopeSender) r;
 
-            if (!(sessionSender.hint instanceof Cached)) {
-              envelopeCache.store(sessionSender.envelope, sessionSender.hint);
+            if (!(envelopeSender.hint instanceof Cached)) {
+              envelopeCache.store(envelopeSender.envelope, envelopeSender.hint);
             }
 
-            markHintWhenSendingFailed(sessionSender.hint, true);
+            markHintWhenSendingFailed(envelopeSender.hint, true);
             logger.log(SentryLevel.WARNING, "Envelope rejected");
           }
         };
@@ -153,7 +153,7 @@ public final class AsyncConnection implements Closeable, Connection {
       envelope = new SentryEnvelope(envelope.getHeader(), toSend);
     }
 
-    executor.submit(new SessionSender(envelope, hint, currentEnvelopeCache));
+    executor.submit(new EnvelopeSender(envelope, hint, currentEnvelopeCache));
   }
 
   @Override
@@ -190,13 +190,13 @@ public final class AsyncConnection implements Closeable, Connection {
     }
   }
 
-  private final class SessionSender implements Runnable {
+  private final class EnvelopeSender implements Runnable {
     private final @NotNull SentryEnvelope envelope;
     private final @Nullable Object hint;
     private final @NotNull IEnvelopeCache envelopeCache;
     private final TransportResult failedResult = TransportResult.error();
 
-    SessionSender(
+    EnvelopeSender(
         final @NotNull SentryEnvelope envelope,
         final @Nullable Object hint,
         final @NotNull IEnvelopeCache envelopeCache) {

@@ -51,7 +51,7 @@ public final class EnvelopeSender extends DirectoryProcessor implements IEnvelop
         if (!file.getParentFile().canWrite()) {
             logger.log(
                     SentryLevel.WARNING,
-                    "File '%s' cannot be delete so it will not be processed.",
+                    "File '%s' cannot be deleted so it will not be processed.",
                     file.getAbsolutePath());
             return;
         }

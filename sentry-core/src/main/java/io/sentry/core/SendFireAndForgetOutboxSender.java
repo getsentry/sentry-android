@@ -27,7 +27,7 @@ public final class SendFireAndForgetOutboxSender
 
     final String dirPath = sendFireAndForgetDirPath.getDirPath();
     if (!hasValidPath(dirPath, options.getLogger())) {
-      options.getLogger().log(SentryLevel.ERROR, "No cache dir path is defined in options.");
+      options.getLogger().log(SentryLevel.ERROR, "No outbox dir path is defined in options.");
       return null;
     }
 
