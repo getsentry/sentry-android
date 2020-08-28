@@ -8,9 +8,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/** Subset of {@link SentryOptions} properties used in 3rd party framework integrations. */
+/**
+ * Subset of {@link SentryOptions} properties bindable from text, extracted to separate class to be
+ * used in 3rd party framework integrations.
+ */
 @Open
-public class SentryCommonOptions {
+public class SentryBindableOptions {
 
   /**
    * The DSN tells the SDK where to send the events to. If this value is not provided, the SDK will

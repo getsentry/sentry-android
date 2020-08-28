@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 /** Sentry SDK options */
 @Open
-public class SentryOptions extends SentryCommonOptions {
+public class SentryOptions extends SentryBindableOptions {
 
   /** Default Log level if not specified Default is DEBUG */
   static final SentryLevel DEFAULT_DIAGNOSTIC_LEVEL = SentryLevel.DEBUG;

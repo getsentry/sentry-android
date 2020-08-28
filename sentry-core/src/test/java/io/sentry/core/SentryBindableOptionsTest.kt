@@ -4,11 +4,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SentryCommonOptionsTest {
+class SentryBindableOptionsTest {
 
     @Test
     fun `applies properties to SentryOptions`() {
-        val commonOptions = with(SentryCommonOptions()) {
+        val commonOptions = with(SentryBindableOptions()) {
             dsn = "http://key@localhost/proj"
             readTimeoutMillis = 10
             shutdownTimeout = 20L

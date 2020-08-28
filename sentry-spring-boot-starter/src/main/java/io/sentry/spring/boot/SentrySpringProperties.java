@@ -1,13 +1,13 @@
 package io.sentry.spring.boot;
 
 import com.jakewharton.nopen.annotation.Open;
-import io.sentry.core.SentryCommonOptions;
+import io.sentry.core.SentryBindableOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Configuration for Sentry integration. */
 @ConfigurationProperties(prefix = "sentry")
 @Open
-public class SentrySpringProperties extends SentryCommonOptions {
+public class SentrySpringProperties extends SentryBindableOptions {
   /** Whether Sentry integration should be enabled. */
   private boolean enabled = true;
 
