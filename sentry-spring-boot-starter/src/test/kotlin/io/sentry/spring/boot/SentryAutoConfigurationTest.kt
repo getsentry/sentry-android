@@ -87,7 +87,7 @@ class SentryAutoConfigurationTest {
         contextRunner.withPropertyValues(
             "sentry.dsn=http://key@localhost/proj",
             "sentry.read-timeout-millis=10",
-            "sentry.shutdown-timeout-millis=20",
+            "sentry.shutdown-timeout=20",
             "sentry.flush-timeout-millis=30",
             "sentry.bypass-security=true",
             "sentry.debug=true",
