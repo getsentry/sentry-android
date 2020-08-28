@@ -441,6 +441,21 @@ class SentryClientTest {
     }
 
     @Test
+    fun `pii event processor is the last event processor applied`() {
+        val processor = EventProcessor { event, hint ->
+            event.user = User()
+            event.user.email = "john.doe@example.com"
+            event
+        }
+        fixture.sentryOptions.addEventProcessor(processor)
+
+        val event = SentryEvent()
+
+        fixture.getSut().captureEvent(event)
+        assertNull(event.user.email)
+    }
+
+    @Test
     fun `when captureSession and no release is set, do nothing`() {
         fixture.getSut().captureSession(createSession(""))
         verify(fixture.connection, never()).send(any<SentryEnvelope>())

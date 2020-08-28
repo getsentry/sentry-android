@@ -31,6 +31,8 @@ public class SentryOptions {
    */
   private final @NotNull List<EventProcessor> eventProcessors = new CopyOnWriteArrayList<>();
 
+  private final @NotNull EventProcessor piiEventProcessor;
+
   /**
    * Code that provides middlewares, bindings or hooks into certain frameworks or environments,
    * along with code that inserts those bindings and activates them.
@@ -1007,6 +1009,11 @@ public class SentryOptions {
     this.sendDefaultPii = sendDefaultPii;
   }
 
+  @NotNull
+  public EventProcessor getPiiEventProcessor() {
+    return piiEventProcessor;
+  }
+
   /** The BeforeSend callback */
   public interface BeforeSendCallback {
 
@@ -1047,7 +1054,8 @@ public class SentryOptions {
     integrations.add(new ShutdownHookIntegration());
 
     eventProcessors.add(new MainEventProcessor(this));
-    eventProcessors.add(new PiiEventProcessor(this));
+    // piiEventProcessor is set outside of eventProcessors to make sure that it runs last
+    piiEventProcessor = new PiiEventProcessor(this);
 
     setSentryClientName(BuildConfig.SENTRY_JAVA_SDK_NAME + "/" + BuildConfig.VERSION_NAME);
     setSdkVersion(createSdkVersion());

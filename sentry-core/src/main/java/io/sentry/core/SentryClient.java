@@ -92,6 +92,10 @@ public final class SentryClient implements ISentryClient {
       }
     }
 
+    if (event != null) {
+      event = options.getPiiEventProcessor().process(event, hint);
+    }
+
     if (event == null) {
       return SentryId.EMPTY_ID;
     }
