@@ -27,7 +27,7 @@ public class SentryCommonOptions {
   private Boolean debug;
 
   /** @see SentryOptions#diagnosticLevel */
-  private SentryLevel diagnosticLevel = SentryLevel.DEBUG;
+  private SentryLevel diagnosticLevel;
 
   /** @see SentryOptions#maxBreadcrumbs */
   private Integer maxBreadcrumbs;
