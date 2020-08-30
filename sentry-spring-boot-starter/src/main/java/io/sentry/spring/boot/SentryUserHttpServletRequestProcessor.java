@@ -15,12 +15,12 @@ import org.jetbrains.annotations.Nullable;
 public class SentryUserHttpServletRequestProcessor implements EventProcessor {
   private final @Nullable Principal principal;
   private final @Nullable String ipAddress;
-  private final @Nullable SentryOptions options;
+  private final @NotNull SentryOptions options;
 
   public SentryUserHttpServletRequestProcessor(
       final @Nullable Principal principal,
       final @Nullable String ipAddress,
-      final @Nullable SentryOptions options) {
+      final @NotNull SentryOptions options) {
     this.principal = principal;
     this.ipAddress = ipAddress;
     this.options = options;
