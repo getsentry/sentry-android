@@ -30,8 +30,8 @@ import org.jetbrains.annotations.Nullable;
 public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
   private @Nullable SentryOptions options;
   private @Nullable ITransport transport;
-  private @Nullable Level minimumBreadcrumbLevel;
-  private @Nullable Level minimumEventLevel;
+  private @NotNull Level minimumBreadcrumbLevel = Level.INFO;
+  private @NotNull Level minimumEventLevel = Level.ERROR;
 
   @Override
   public void start() {
@@ -46,11 +46,10 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
 
   @Override
   protected void append(@NotNull ILoggingEvent eventObject) {
-    if (minimumEventLevel == null || eventObject.getLevel().isGreaterOrEqual(minimumEventLevel)) {
+    if (eventObject.getLevel().isGreaterOrEqual(minimumEventLevel)) {
       Sentry.captureEvent(createEvent(eventObject));
     }
-    if (minimumBreadcrumbLevel == null
-        || eventObject.getLevel().isGreaterOrEqual(minimumBreadcrumbLevel)) {
+    if (eventObject.getLevel().isGreaterOrEqual(minimumBreadcrumbLevel)) {
       Sentry.addBreadcrumb(createBreadcrumb(eventObject));
     }
   }
@@ -154,11 +153,15 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
   }
 
   public void setMinimumBreadcrumbLevel(final @Nullable Level minimumBreadcrumbLevel) {
-    this.minimumBreadcrumbLevel = minimumBreadcrumbLevel;
+    if (minimumBreadcrumbLevel != null) {
+      this.minimumBreadcrumbLevel = minimumBreadcrumbLevel;
+    }
   }
 
   public void setMinimumEventLevel(final @Nullable Level minimumEventLevel) {
-    this.minimumEventLevel = minimumEventLevel;
+    if (minimumEventLevel != null) {
+      this.minimumEventLevel = minimumEventLevel;
+    }
   }
 
   @ApiStatus.Internal
