@@ -46,7 +46,7 @@ class AsyncConnectionTest {
         }
 
         fun getSUT(): AsyncConnection {
-            return AsyncConnection(transport, transportGate, eventCache, sessionCache, executor, sentryOptions)
+            return AsyncConnection(transport, transportGate, sessionCache, executor, sentryOptions)
         }
     }
 
@@ -60,7 +60,7 @@ class AsyncConnectionTest {
         whenever(fixture.transport.send(any())).thenReturn(TransportResult.success())
 
         // when
-        fixture.getSUT().send(ev)
+        fixture.getSUT().send(any())
 
         // then
         val order = inOrder(fixture.transport, fixture.eventCache)
@@ -101,7 +101,7 @@ class AsyncConnectionTest {
         whenever(fixture.transportGate.isConnected).thenReturn(false)
 
         // when
-        fixture.getSUT().send(ev)
+        fixture.getSUT().send(any())
 
         // then
         verify(fixture.eventCache).store(eq(ev))
@@ -131,7 +131,7 @@ class AsyncConnectionTest {
 
         // when
         try {
-            fixture.getSUT().send(ev)
+            fixture.getSUT().send(any())
         } catch (e: IllegalStateException) {
             // expected - this is how the AsyncConnection signals failure to the executor for it to retry
         }
@@ -181,7 +181,7 @@ class AsyncConnectionTest {
 
         // when
         try {
-            fixture.getSUT().send(ev)
+            fixture.getSUT().send(any())
         } catch (e: IllegalStateException) {
             // expected - this is how the AsyncConnection signals failure to the executor for it to retry
         }
@@ -221,7 +221,7 @@ class AsyncConnectionTest {
         whenever(fixture.transport.isRetryAfter(any())).thenReturn(true)
 
         // when
-        fixture.getSUT().send(ev)
+        fixture.getSUT().send(any())
 
         // then
         verify(fixture.executor, never()).submit(any())
@@ -234,7 +234,7 @@ class AsyncConnectionTest {
         whenever(fixture.transport.isRetryAfter(any())).thenReturn(false)
 
         // when
-        fixture.getSUT().send(ev)
+        fixture.getSUT().send(any())
 
         // then
         verify(fixture.executor).submit(any())
@@ -315,7 +315,7 @@ class AsyncConnectionTest {
         whenever(fixture.transport.isRetryAfter(any())).thenReturn(true)
 
         // when
-        fixture.getSUT().send(ev, CachedEvent())
+        fixture.getSUT().send(any(), CachedEvent())
 
         // then
         verify(fixture.eventCache).discard(any())
@@ -328,7 +328,7 @@ class AsyncConnectionTest {
         whenever(fixture.transport.isRetryAfter(any())).thenReturn(true)
 
         // when
-        fixture.getSUT().send(ev)
+        fixture.getSUT().send(any())
 
         // then
         verify(fixture.eventCache, never()).discard(any())

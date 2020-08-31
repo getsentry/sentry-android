@@ -30,8 +30,8 @@ class SendCachedEventTest {
             options.setLogger(logger)
         }
 
-        fun getSut(): SendCachedEvent {
-            return SendCachedEvent(serializer!!, hub!!, logger!!, options.flushTimeoutMillis)
+        fun getSut(): EnvelopeSender {
+            return EnvelopeSender(hub!!, serializer!!, logger!!, options.flushTimeoutMillis)
         }
     }
 
