@@ -1,6 +1,7 @@
 package io.sentry.logback
 
 import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Level.WARN
 import ch.qos.logback.classic.LoggerContext
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.check
@@ -28,31 +29,30 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
 class SentryAppenderTest {
-    private class Fixture {
+    private class Fixture(minimumBreadcrumbLevel: Level? = null, minimumEventLevel: Level? = null) {
         val transport = mock<ITransport>()
         val logger: Logger = LoggerFactory.getLogger(SentryAppenderTest::class.java)
         val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
 
         init {
             whenever(transport.send(any<SentryEvent>())).thenReturn(TransportResult.success())
-
             val appender = SentryAppender()
             val options = SentryOptions()
             options.dsn = "http://key@localhost/proj"
             appender.setOptions(options)
+            appender.setMinimumBreadcrumbLevel(minimumBreadcrumbLevel)
+            appender.setMinimumEventLevel(minimumEventLevel)
             appender.context = loggerContext
             appender.setTransport(transport)
-
             val rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME)
             rootLogger.level = Level.TRACE
             rootLogger.addAppender(appender)
-
             appender.start()
             loggerContext.start()
         }
     }
 
-    private val fixture = Fixture()
+    private lateinit var fixture: Fixture
 
     @AfterTest
     fun `stop logback`() {
@@ -66,6 +66,7 @@ class SentryAppenderTest {
 
     @Test
     fun `converts message`() {
+        fixture = Fixture()
         fixture.logger.debug("testing message conversion {}, {}", 1, 2)
 
         await.untilAsserted {
@@ -80,6 +81,7 @@ class SentryAppenderTest {
 
     @Test
     fun `event date is in UTC`() {
+        fixture = Fixture()
         val utcTime = LocalDateTime.now(ZoneId.of("UTC"))
 
         fixture.logger.debug("testing event date")
@@ -98,6 +100,7 @@ class SentryAppenderTest {
 
     @Test
     fun `converts trace log level to Sentry level`() {
+        fixture = Fixture()
         fixture.logger.trace("testing trace level")
 
         await.untilAsserted {
@@ -109,6 +112,7 @@ class SentryAppenderTest {
 
     @Test
     fun `converts debug log level to Sentry level`() {
+        fixture = Fixture()
         fixture.logger.debug("testing debug level")
 
         await.untilAsserted {
@@ -120,6 +124,7 @@ class SentryAppenderTest {
 
     @Test
     fun `converts info log level to Sentry level`() {
+        fixture = Fixture()
         fixture.logger.info("testing info level")
 
         await.untilAsserted {
@@ -131,6 +136,7 @@ class SentryAppenderTest {
 
     @Test
     fun `converts warn log level to Sentry level`() {
+        fixture = Fixture()
         fixture.logger.warn("testing warn level")
 
         await.untilAsserted {
@@ -142,6 +148,7 @@ class SentryAppenderTest {
 
     @Test
     fun `converts error log level to Sentry level`() {
+        fixture = Fixture()
         fixture.logger.error("testing error level")
 
         await.untilAsserted {
@@ -153,6 +160,7 @@ class SentryAppenderTest {
 
     @Test
     fun `attaches thread information`() {
+        fixture = Fixture()
         fixture.logger.warn("testing thread information")
 
         await.untilAsserted {
@@ -164,6 +172,7 @@ class SentryAppenderTest {
 
     @Test
     fun `sets tags from MDC`() {
+        fixture = Fixture()
         MDC.put("key", "value")
         fixture.logger.warn("testing MDC tags")
 
@@ -176,6 +185,7 @@ class SentryAppenderTest {
 
     @Test
     fun `does not create MDC context when no MDC tags are set`() {
+        fixture = Fixture()
         fixture.logger.warn("testing without MDC tags")
 
         await.untilAsserted {
@@ -187,6 +197,7 @@ class SentryAppenderTest {
 
     @Test
     fun `attaches throwable`() {
+        fixture = Fixture()
         val throwable = RuntimeException("something went wrong")
         fixture.logger.warn("testing throwable", throwable)
 
@@ -199,6 +210,7 @@ class SentryAppenderTest {
 
     @Test
     fun `sets SDK version`() {
+        fixture = Fixture()
         fixture.logger.info("testing sdk version")
 
         await.untilAsserted {
@@ -210,6 +222,31 @@ class SentryAppenderTest {
                     "maven:sentry-logback" == pkg.name &&
                         BuildConfig.VERSION_NAME == pkg.version
                 })
+            })
+        }
+    }
+
+    @Test
+    fun `attaches breadcrumbs`() {
+        fixture = Fixture(minimumBreadcrumbLevel = Level.DEBUG, minimumEventLevel = WARN)
+        val utcTime = LocalDateTime.now(ZoneId.of("UTC"))
+
+        fixture.logger.debug("this should be a breadcrumb #1")
+        fixture.logger.info("this should be a breadcrumb #2")
+        fixture.logger.warn("testing message with breadcrumbs")
+
+        await.untilAsserted {
+            verify(fixture.transport).send(check { it: SentryEvent ->
+                assertEquals(2, it.breadcrumbs.size)
+                val breadcrumb = it.breadcrumbs[0]
+                val breadcrumbTime = Instant.ofEpochMilli(it.timestamp.time)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                assertTrue { breadcrumbTime.plusSeconds(1).isAfter(utcTime) }
+                assertTrue { breadcrumbTime.minusSeconds(1).isBefore(utcTime) }
+                assertEquals("this should be a breadcrumb #1", breadcrumb.message)
+                assertEquals("io.sentry.logback.SentryAppenderTest", breadcrumb.category)
+                assertEquals(SentryLevel.DEBUG, breadcrumb.level)
             })
         }
     }

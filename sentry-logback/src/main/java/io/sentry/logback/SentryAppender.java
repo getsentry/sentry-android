@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import io.sentry.core.Breadcrumb;
 import io.sentry.core.DateUtils;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryEvent;
@@ -29,6 +30,8 @@ import org.jetbrains.annotations.Nullable;
 public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
   private @Nullable SentryOptions options;
   private @Nullable ITransport transport;
+  private @Nullable Level minimumBreadcrumbLevel;
+  private @Nullable Level minimumEventLevel;
 
   @Override
   public void start() {
@@ -43,7 +46,13 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
 
   @Override
   protected void append(@NotNull ILoggingEvent eventObject) {
-    Sentry.captureEvent(createEvent(eventObject));
+    if (minimumEventLevel == null || eventObject.getLevel().isGreaterOrEqual(minimumEventLevel)) {
+      Sentry.captureEvent(createEvent(eventObject));
+    }
+    if (minimumBreadcrumbLevel == null
+        || eventObject.getLevel().isGreaterOrEqual(minimumBreadcrumbLevel)) {
+      Sentry.addBreadcrumb(createBreadcrumb(eventObject));
+    }
   }
 
   /**
@@ -94,6 +103,20 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
   }
 
   /**
+   * Creates {@link Breadcrumb} from Logback's {@link ILoggingEvent}.
+   *
+   * @param loggingEvent the logback event
+   * @return the sentry breadcrumb
+   */
+  private @NotNull Breadcrumb createBreadcrumb(final @NotNull ILoggingEvent loggingEvent) {
+    final Breadcrumb breadcrumb = new Breadcrumb();
+    breadcrumb.setLevel(formatLevel(loggingEvent.getLevel()));
+    breadcrumb.setCategory(loggingEvent.getLoggerName());
+    breadcrumb.setMessage(loggingEvent.getFormattedMessage());
+    return breadcrumb;
+  }
+
+  /**
    * Transforms a {@link Level} into an {@link SentryLevel}.
    *
    * @param level original level as defined in log4j.
@@ -126,8 +149,16 @@ public final class SentryAppender extends UnsynchronizedAppenderBase<ILoggingEve
     return sdkVersion;
   }
 
-  public void setOptions(SentryOptions options) {
+  public void setOptions(final @Nullable SentryOptions options) {
     this.options = options;
+  }
+
+  public void setMinimumBreadcrumbLevel(final @Nullable Level minimumBreadcrumbLevel) {
+    this.minimumBreadcrumbLevel = minimumBreadcrumbLevel;
+  }
+
+  public void setMinimumEventLevel(final @Nullable Level minimumEventLevel) {
+    this.minimumEventLevel = minimumEventLevel;
   }
 
   @ApiStatus.Internal
