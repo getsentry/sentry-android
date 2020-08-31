@@ -18,7 +18,8 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
-class SendCachedEventTest {
+// TODO: rename to? its been deleted
+class EnvelopeSenderTest {
     private class Fixture {
         var hub: IHub? = mock()
         var logger: ILogger? = mock()

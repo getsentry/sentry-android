@@ -13,10 +13,8 @@ import io.sentry.core.SentryOptions
 import io.sentry.core.Session
 import io.sentry.core.cache.EnvelopeCache.PREFIX_CURRENT_SESSION_FILE
 import io.sentry.core.cache.EnvelopeCache.SUFFIX_CURRENT_SESSION_FILE
-import io.sentry.core.cache.EnvelopeCache.SUFFIX_ENVELOPE_FILE
 import io.sentry.core.hints.SessionEndHint
 import io.sentry.core.hints.SessionStartHint
-import io.sentry.core.hints.SessionUpdateHint
 import io.sentry.core.protocol.User
 import java.io.File
 import java.nio.file.Files
@@ -124,29 +122,6 @@ class EnvelopeCacheTest {
 
         cache.store(envelope, SessionEndHint())
         assertFalse(currentFile.exists())
-
-        file.deleteRecursively()
-    }
-
-    @Test
-    fun `updates current file on session update, but do not create a new envelope`() {
-        val cache = fixture.getSUT()
-
-        val file = File(fixture.options.cacheDirPath!!)
-
-        val envelope = SentryEnvelope.fromSession(fixture.serializer, createSession(), null)
-        cache.store(envelope, SessionStartHint())
-
-        val currentFile = File(fixture.options.cacheDirPath!!, "$PREFIX_CURRENT_SESSION_FILE$SUFFIX_CURRENT_SESSION_FILE")
-        assertTrue(currentFile.exists())
-
-        val newEnvelope = SentryEnvelope.fromSession(fixture.serializer, createSession(), null)
-
-        cache.store(newEnvelope, SessionUpdateHint())
-        assertTrue(currentFile.exists())
-
-        val newFile = File(file.absolutePath, "${newEnvelope.header.eventId}$SUFFIX_ENVELOPE_FILE")
-        assertFalse(newFile.exists())
 
         file.deleteRecursively()
     }

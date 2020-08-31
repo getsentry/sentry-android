@@ -261,7 +261,7 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `SendCachedEventFireAndForgetIntegration added to integration list`() {
+    fun `SendCachedEnvelopeFireAndForgetIntegration added to integration list`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
