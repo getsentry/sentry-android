@@ -93,16 +93,6 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `sessionDir should be set at initialization`() {
-        val sentryOptions = SentryAndroidOptions()
-        val mockContext = createMockContext()
-
-        AndroidOptionsInitializer.init(sentryOptions, mockContext)
-
-        assertTrue(sentryOptions.sessionsPath?.endsWith("${File.separator}cache${File.separator}sentry${File.separator}sessions")!!)
-    }
-
-    @Test
     fun `init should set context package name as appInclude`() {
         val sentryOptions = SentryAndroidOptions()
 

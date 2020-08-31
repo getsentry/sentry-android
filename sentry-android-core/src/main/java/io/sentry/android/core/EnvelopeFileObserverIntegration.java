@@ -1,9 +1,9 @@
 package io.sentry.android.core;
 
-import io.sentry.core.OutboxSender;
 import io.sentry.core.IHub;
 import io.sentry.core.ILogger;
 import io.sentry.core.Integration;
+import io.sentry.core.OutboxSender;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Objects;

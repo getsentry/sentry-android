@@ -495,6 +495,7 @@ public final class Scope implements Cloneable {
 
   /**
    * Clones a session if there's an active session
+   *
    * @return the cloned session or null otherwise
    */
   @Nullable

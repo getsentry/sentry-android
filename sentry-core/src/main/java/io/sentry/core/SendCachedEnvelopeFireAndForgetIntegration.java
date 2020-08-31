@@ -46,7 +46,8 @@ public final class SendCachedEnvelopeFireAndForgetIntegration implements Integra
     }
   }
 
-  public SendCachedEnvelopeFireAndForgetIntegration(final @NotNull SendFireAndForgetFactory factory) {
+  public SendCachedEnvelopeFireAndForgetIntegration(
+      final @NotNull SendFireAndForgetFactory factory) {
     this.factory = Objects.requireNonNull(factory, "SendFireAndForgetFactory is required");
   }
 

@@ -138,7 +138,8 @@ public final class UncaughtExceptionHandlerIntegration
     }
   }
 
-  private static final class UncaughtExceptionHint implements DiskFlushNotification, Flushable, SessionEnd {
+  private static final class UncaughtExceptionHint
+      implements DiskFlushNotification, Flushable, SessionEnd {
 
     private final CountDownLatch latch;
     private final long flushTimeoutMillis;

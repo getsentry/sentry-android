@@ -43,7 +43,7 @@ public final class AsyncConnection implements Closeable, Connection {
     this(
         transport,
         transportGate,
-            envelopeCache,
+        envelopeCache,
         initExecutor(maxQueueSize, envelopeCache, options.getLogger()),
         options);
   }
@@ -231,9 +231,7 @@ public final class AsyncConnection implements Closeable, Connection {
 
       if (hint instanceof DiskFlushNotification) {
         ((DiskFlushNotification) hint).markFlushed();
-        options
-                .getLogger()
-                .log(SentryLevel.DEBUG, "Disk flush envelope fired");
+        options.getLogger().log(SentryLevel.DEBUG, "Disk flush envelope fired");
       }
 
       if (transportGate.isConnected()) {
