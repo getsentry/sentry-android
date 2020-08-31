@@ -14,7 +14,7 @@
     <!-- Demonstrates how to modify the minimum values -->
     <!-- Default for Events is ERROR -->
     <minimumEventLevel>WARN</minimumEventLevel>
-    <!-- Default for Events is INFO -->
+    <!-- Default for Breadcrumbs is INFO -->
     <minimumBreadcrumbLevel>DEBUG</minimumBreadcrumbLevel>
   </appender>
 
