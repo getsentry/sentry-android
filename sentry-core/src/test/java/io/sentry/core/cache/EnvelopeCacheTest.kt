@@ -67,24 +67,6 @@ class EnvelopeCacheTest {
     }
 
     @Test
-    fun `limits the number of stored envelopes`() {
-        val cache = fixture.getSUT()
-
-        val file = File(fixture.options.cacheDirPath!!)
-        val nofFiles = { file.list()?.size }
-
-        assertEquals(0, nofFiles())
-
-        (1..fixture.maxSize + 1).forEach { _ ->
-            cache.store(SentryEnvelope.fromSession(fixture.serializer, createSession(), null))
-        }
-
-        assertEquals(fixture.maxSize, nofFiles())
-
-        file.deleteRecursively()
-    }
-
-    @Test
     fun `tolerates discarding unknown envelope`() {
         val cache = fixture.getSUT()
 

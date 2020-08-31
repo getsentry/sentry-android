@@ -7,7 +7,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
-import io.sentry.core.cache.DiskCache
+import io.sentry.core.cache.EnvelopeCache
 import io.sentry.core.hints.Retryable
 import io.sentry.core.util.NoFlushTimeout
 import java.io.File
@@ -18,7 +18,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
-// TODO: rename to? its been deleted
 class EnvelopeSenderTest {
     private class Fixture {
         var hub: IHub? = mock()
@@ -60,7 +59,7 @@ class EnvelopeSenderTest {
     @Test
     fun `when directory is actually a file, processDirectory logs and returns`() {
         val sut = fixture.getSut()
-        val testFile = File(Files.createTempFile("send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
+        val testFile = File(Files.createTempFile("send-cached-event-test", EnvelopeCache.SUFFIX_ENVELOPE_FILE).toUri())
         testFile.deleteOnExit()
         sut.processDirectory(testFile)
         verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq("Cache dir %s is not a directory."), any<Any>())
@@ -79,38 +78,38 @@ class EnvelopeSenderTest {
 
     @Test
     fun `when directory has event files, processDirectory captures with hub`() {
-        val expected = SentryEvent()
-        whenever(fixture.serializer!!.deserializeEvent(any())).thenReturn(expected)
+        val event = SentryEvent()
+        val envelope = SentryEnvelope.fromEvent(fixture.serializer!!, event, null)
+        whenever(fixture.serializer!!.deserializeEnvelope(any())).thenReturn(envelope)
         val sut = fixture.getSut()
-        val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
+        val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", EnvelopeCache.SUFFIX_ENVELOPE_FILE).toUri())
         testFile.deleteOnExit()
         sut.processDirectory(File(tempDirectory.toUri()))
-        verify(fixture.hub)!!.captureEvent(eq(expected), any())
+        verify(fixture.hub)!!.captureEnvelope(eq(envelope), any())
     }
 
     @Test
     fun `when serializer throws, error is logged, file deleted`() {
         val expected = RuntimeException()
-        whenever(fixture.serializer!!.deserializeEvent(any())).doThrow(expected)
+        whenever(fixture.serializer!!.deserializeEnvelope(any())).doThrow(expected)
         val sut = fixture.getSut()
-        val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
+        val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", EnvelopeCache.SUFFIX_ENVELOPE_FILE).toUri())
         testFile.deleteOnExit()
         sut.processFile(testFile, mock<Retryable>())
-        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq(expected), eq("Failed to capture cached event %s"), eq(testFile.absolutePath))
+        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq(expected), eq("Failed to capture cached envelope %s"), eq(testFile.absolutePath))
         verifyNoMoreInteractions(fixture.hub)
         assertFalse(testFile.exists())
     }
 
     @Test
     fun `when hub throws, file gets deleted`() {
-        whenever(fixture.serializer!!.deserializeEvent(any())).thenReturn(SentryEvent())
         val expected = RuntimeException()
-        whenever(fixture.serializer!!.deserializeEvent(any())).doThrow(expected)
+        whenever(fixture.serializer!!.deserializeEnvelope(any())).doThrow(expected)
         val sut = fixture.getSut()
-        val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", DiskCache.FILE_SUFFIX).toUri())
+        val testFile = File(Files.createTempFile(tempDirectory, "send-cached-event-test", EnvelopeCache.SUFFIX_ENVELOPE_FILE).toUri())
         testFile.deleteOnExit()
         sut.processFile(testFile, any())
-        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq(expected), eq("Failed to capture cached event %s"), eq(testFile.absolutePath))
+        verify(fixture.logger)!!.log(eq(SentryLevel.ERROR), eq(expected), eq("Failed to capture cached envelope %s"), eq(testFile.absolutePath))
         verifyNoMoreInteractions(fixture.hub)
     }
 }
