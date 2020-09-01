@@ -128,7 +128,7 @@ public final class SentryClient implements ISentryClient {
         connection.send(envelope, hint);
       }
     } catch (IOException e) {
-      options.getLogger().log(SentryLevel.WARNING, "Capturing event " + sentryId + " failed.", e);
+      options.getLogger().log(SentryLevel.WARNING, e, "Capturing event %s failed.", sentryId);
       sendEvent = false;
     }
 
