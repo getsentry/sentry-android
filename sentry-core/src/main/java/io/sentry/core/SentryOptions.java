@@ -2,12 +2,10 @@ package io.sentry.core;
 
 import com.jakewharton.nopen.annotation.Open;
 import io.sentry.core.cache.IEnvelopeCache;
-import io.sentry.core.cache.IEventCache;
 import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import io.sentry.core.transport.NoOpEnvelopeCache;
-import io.sentry.core.transport.NoOpEventCache;
 import io.sentry.core.transport.NoOpTransport;
 import io.sentry.core.transport.NoOpTransportGate;
 import java.io.File;
@@ -197,9 +195,6 @@ public class SentryOptions {
 
   /** whether to ignore TLS errors */
   private boolean bypassSecurity = false;
-
-  /** Reads and caches event json files in the disk */
-  private @NotNull IEventCache eventDiskCache = NoOpEventCache.getInstance();
 
   /** Reads and caches envelope files in the disk */
   private @NotNull IEnvelopeCache envelopeDiskCache = NoOpEnvelopeCache.getInstance();
@@ -885,24 +880,6 @@ public class SentryOptions {
    */
   public void setBypassSecurity(boolean bypassSecurity) {
     this.bypassSecurity = bypassSecurity;
-  }
-
-  /**
-   * Returns the EventCache interface
-   *
-   * @return the EventCache object
-   */
-  public @NotNull IEventCache getEventDiskCache() {
-    return eventDiskCache;
-  }
-
-  /**
-   * Sets the EventCache interface
-   *
-   * @param eventDiskCache the EventCache object
-   */
-  public void setEventDiskCache(final @Nullable IEventCache eventDiskCache) {
-    this.eventDiskCache = eventDiskCache != null ? eventDiskCache : NoOpEventCache.getInstance();
   }
 
   /**

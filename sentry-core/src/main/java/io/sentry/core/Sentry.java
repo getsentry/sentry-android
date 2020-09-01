@@ -1,6 +1,5 @@
 package io.sentry.core;
 
-import io.sentry.core.cache.DiskCache;
 import io.sentry.core.cache.EnvelopeCache;
 import io.sentry.core.protocol.SentryId;
 import io.sentry.core.protocol.User;
@@ -197,7 +196,6 @@ public final class Sentry {
       final File outboxDir = new File(options.getOutboxPath());
       outboxDir.mkdirs();
 
-      options.setEventDiskCache(new DiskCache(options));
       options.setEnvelopeDiskCache(new EnvelopeCache(options));
     } else {
       logger.log(SentryLevel.INFO, "No outbox dir path is defined in options.");
