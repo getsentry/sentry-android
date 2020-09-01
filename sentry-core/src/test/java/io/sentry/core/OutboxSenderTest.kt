@@ -10,7 +10,6 @@ import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.cache.EnvelopeCache
 import io.sentry.core.hints.Retryable
 import io.sentry.core.protocol.SentryId
-import io.sentry.core.protocol.User
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.file.Files
@@ -84,16 +83,17 @@ class OutboxSenderTest {
     @Test
     fun `when parser is EnvelopeReader and serializer returns SentryEnvelope, event captured, file is deleted `() {
         fixture.envelopeReader = EnvelopeReader()
-        val session = Session("123", User(), "env", "release")
-        val expected = SentryEnvelope(SentryId("3067d54967f84f20a2adfab5119156ce"), null, setOf())
+
+        val event = SentryEvent(SentryId("9ec79c33ec9942ab8353589fcb2e04dc"), Date())
+        val expected = SentryEnvelope(SentryId("9ec79c33ec9942ab8353589fcb2e04dc"), null, setOf())
         whenever(fixture.serializer.deserializeEnvelope(any())).thenReturn(expected)
-        whenever(fixture.serializer.deserializeSession(any())).thenReturn(session)
+        whenever(fixture.serializer.deserializeEvent(any())).thenReturn(event)
         val sut = fixture.getSut()
-        val path = getTempEnvelope("envelope-session-start.txt")
+        val path = getTempEnvelope("envelope-event-attachment.txt")
         assertTrue(File(path).exists()) // sanity check
         sut.processEnvelopeFile(path, mock<Retryable>())
 
-        verify(fixture.hub).captureEnvelope(any(), any())
+        verify(fixture.hub).captureEvent(any(), any())
         assertFalse(File(path).exists())
         // Additionally make sure we have no errors logged
         verify(fixture.logger, never()).log(eq(SentryLevel.ERROR), any(), any<Any>())
@@ -119,9 +119,9 @@ class OutboxSenderTest {
     fun `when parser is EnvelopeReader and serializer returns a null envelope, file error logged, no event captured `() {
         fixture.envelopeReader = EnvelopeReader()
         whenever(fixture.serializer.deserializeEnvelope(any())).thenReturn(null)
-        whenever(fixture.serializer.deserializeSession(any())).thenReturn(null)
+        whenever(fixture.serializer.deserializeEvent(any())).thenReturn(null)
         val sut = fixture.getSut()
-        val path = getTempEnvelope("envelope-session-start.txt")
+        val path = getTempEnvelope("envelope-event-attachment.txt")
         assertTrue(File(path).exists()) // sanity check
         sut.processEnvelopeFile(path, mock<Retryable>())
 
@@ -140,7 +140,7 @@ class OutboxSenderTest {
 
     @Test
     fun `when hub is null, ctor throws`() {
-        val clazz = Class.forName("io.sentry.core.EnvelopeSender")
+        val clazz = Class.forName("io.sentry.core.OutboxSender")
         val ctor = clazz.getConstructor(IHub::class.java, IEnvelopeReader::class.java, ISerializer::class.java, ILogger::class.java, Long::class.java)
         val params = arrayOf(null, mock<IEnvelopeReader>(), mock<ISerializer>(), mock<ILogger>(), null)
         assertFailsWith<IllegalArgumentException> { ctor.newInstance(params) }
@@ -148,7 +148,7 @@ class OutboxSenderTest {
 
     @Test
     fun `when envelopeReader is null, ctor throws`() {
-        val clazz = Class.forName("io.sentry.core.EnvelopeSender")
+        val clazz = Class.forName("io.sentry.core.OutboxSender")
         val ctor = clazz.getConstructor(IHub::class.java, IEnvelopeReader::class.java, ISerializer::class.java, ILogger::class.java, Long::class.java)
         val params = arrayOf(mock<IHub>(), null, mock<ISerializer>(), mock<ILogger>(), 15000)
         assertFailsWith<IllegalArgumentException> { ctor.newInstance(params) }
@@ -156,7 +156,7 @@ class OutboxSenderTest {
 
     @Test
     fun `when serializer is null, ctor throws`() {
-        val clazz = Class.forName("io.sentry.core.EnvelopeSender")
+        val clazz = Class.forName("io.sentry.core.OutboxSender")
         val ctor = clazz.getConstructor(IHub::class.java, IEnvelopeReader::class.java, ISerializer::class.java, ILogger::class.java, Long::class.java)
         val params = arrayOf(mock<IHub>(), mock<IEnvelopeReader>(), null, mock<ILogger>(), 15000)
         assertFailsWith<IllegalArgumentException> { ctor.newInstance(params) }
@@ -164,7 +164,7 @@ class OutboxSenderTest {
 
     @Test
     fun `when logger is null, ctor throws`() {
-        val clazz = Class.forName("io.sentry.core.EnvelopeSender")
+        val clazz = Class.forName("io.sentry.core.OutboxSender")
         val ctor = clazz.getConstructor(IHub::class.java, IEnvelopeReader::class.java, ISerializer::class.java, ILogger::class.java, Long::class.java)
         val params = arrayOf(mock<IHub>(), mock<IEnvelopeReader>(), mock<ISerializer>(), null, 15000)
         assertFailsWith<IllegalArgumentException> { ctor.newInstance(params) }
