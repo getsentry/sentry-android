@@ -1,4 +1,4 @@
-package io.sentry.samples.log4j2;
+package io.sentry.samples.logback;
 
 import java.util.UUID;
 import org.slf4j.Logger;

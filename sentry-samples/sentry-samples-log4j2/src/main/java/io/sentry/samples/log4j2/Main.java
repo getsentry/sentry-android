@@ -11,7 +11,7 @@ public class Main {
   public static void main(String[] args) {
     LOGGER.debug("Hello Sentry!");
 
-    // MDC parameters are converted to Sentry Event tags
+    // ThreadContext parameters are converted to Sentry Event tags
     ThreadContext.put("userId", UUID.randomUUID().toString());
 
     // logging arguments are converted to Sentry Event parameters
