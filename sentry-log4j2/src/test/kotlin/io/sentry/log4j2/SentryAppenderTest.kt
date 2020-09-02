@@ -3,6 +3,7 @@ package io.sentry.log4j2
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
+import io.sentry.core.HubAdapter
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryLevel
 import io.sentry.core.transport.ITransport
@@ -35,7 +36,7 @@ class SentryAppenderTest {
         init {
             loggerContext.start()
             val config: Configuration = loggerContext.configuration
-            val appender = SentryAppender("sentry", null, "http://key@localhost/proj", minimumBreadcrumbLevel, minimumEventLevel, transport)
+            val appender = SentryAppender("sentry", null, "http://key@localhost/proj", minimumBreadcrumbLevel, minimumEventLevel, transport, HubAdapter.getInstance())
             config.addAppender(appender)
 
             val ref = AppenderRef.createAppenderRef("sentry", null, null)

@@ -9,6 +9,8 @@ public class Main {
   private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
   public static void main(String[] args) {
+    // The SDK was initialized through the appender configuration because a DSN was set there.
+    // Update the DSN in log4j2.xml to see these events in your Sentry dashboard.
     LOGGER.debug("Hello Sentry!");
 
     // ThreadContext parameters are converted to Sentry Event tags

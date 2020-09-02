@@ -2,6 +2,8 @@ package io.sentry.log4j2;
 
 import io.sentry.core.Breadcrumb;
 import io.sentry.core.DateUtils;
+import io.sentry.core.HubAdapter;
+import io.sentry.core.IHub;
 import io.sentry.core.Sentry;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
@@ -27,17 +29,17 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.impl.ThrowableProxy;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /** Appender for Log4j2 in charge of sending the logged events to a Sentry server. */
 @Plugin(name = "Sentry", category = "Core", elementType = "appender", printObject = true)
 public final class SentryAppender extends AbstractAppender {
-  private @Nullable String dsn;
-  private @Nullable ITransport transport;
+  private final @Nullable String dsn;
+  private final @Nullable ITransport transport;
   private @NotNull Level minimumBreadcrumbLevel = Level.INFO;
   private @NotNull Level minimumEventLevel = Level.ERROR;
+  private final @NotNull IHub hub;
 
   public SentryAppender(
       final @NotNull String name,
@@ -45,7 +47,8 @@ public final class SentryAppender extends AbstractAppender {
       final @Nullable String dsn,
       final @Nullable Level minimumBreadcrumbLevel,
       final @Nullable Level minimumEventLevel,
-      final @Nullable ITransport transport) {
+      final @Nullable ITransport transport,
+      final @NotNull IHub hub) {
     super(name, filter, null, true, null);
     this.dsn = dsn;
     if (minimumBreadcrumbLevel != null) {
@@ -55,6 +58,7 @@ public final class SentryAppender extends AbstractAppender {
       this.minimumEventLevel = minimumEventLevel;
     }
     this.transport = transport;
+    this.hub = hub;
   }
 
   /**
@@ -76,7 +80,7 @@ public final class SentryAppender extends AbstractAppender {
       LOGGER.error("No name provided for SentryAppender");
       return null;
     }
-    return new SentryAppender(name, filter, dsn, minimumBreadcrumbLevel, minimumEventLevel, null);
+    return new SentryAppender(name, filter, dsn, minimumBreadcrumbLevel, minimumEventLevel, null, HubAdapter.getInstance());
   }
 
   @Override
@@ -96,10 +100,10 @@ public final class SentryAppender extends AbstractAppender {
   @Override
   public void append(final @NotNull LogEvent eventObject) {
     if (eventObject.getLevel().isMoreSpecificThan(minimumEventLevel)) {
-      Sentry.captureEvent(createEvent(eventObject));
+      hub.captureEvent(createEvent(eventObject));
     }
     if (eventObject.getLevel().isMoreSpecificThan(minimumBreadcrumbLevel)) {
-      Sentry.addBreadcrumb(createBreadcrumb(eventObject));
+      hub.addBreadcrumb(createBreadcrumb(eventObject));
     }
   }
 
@@ -198,26 +202,5 @@ public final class SentryAppender extends AbstractAppender {
     sdkVersion.addPackage("maven:sentry-log4j2", version);
 
     return sdkVersion;
-  }
-
-  public void setDsn(final @Nullable String dsn) {
-    this.dsn = dsn;
-  }
-
-  public void setMinimumBreadcrumbLevel(final @Nullable Level minimumBreadcrumbLevel) {
-    if (minimumBreadcrumbLevel != null) {
-      this.minimumBreadcrumbLevel = minimumBreadcrumbLevel;
-    }
-  }
-
-  public void setMinimumEventLevel(final @Nullable Level minimumEventLevel) {
-    if (minimumEventLevel != null) {
-      this.minimumEventLevel = minimumEventLevel;
-    }
-  }
-
-  @ApiStatus.Internal
-  void setTransport(final @Nullable ITransport transport) {
-    this.transport = transport;
   }
 }
