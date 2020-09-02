@@ -392,11 +392,19 @@ public final class Scope implements Cloneable {
    * Callback to do atomic operations on session
    *
    * @param sessionCallback the IWithSession callback
+   * @return a clone of the Session after executing the callback and mutating the session
    */
-  void withSession(@NotNull IWithSession sessionCallback) {
+  @Nullable
+  Session withSession(@NotNull IWithSession sessionCallback) {
+    Session cloneSession = null;
     synchronized (sessionLock) {
       sessionCallback.accept(session);
+
+      if (session != null) {
+        cloneSession = session.clone();
+      }
     }
+    return cloneSession;
   }
 
   /** the IWithSession callback */
@@ -491,21 +499,5 @@ public final class Scope implements Cloneable {
       }
     }
     return previousSession;
-  }
-
-  /**
-   * Clones a session if there's an active session
-   *
-   * @return the cloned session or null otherwise
-   */
-  @Nullable
-  Session cloneSession() {
-    Session cloneSession = null;
-    synchronized (sessionLock) {
-      if (session != null) {
-        cloneSession = session.clone();
-      }
-    }
-    return cloneSession;
   }
 }
