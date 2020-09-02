@@ -60,8 +60,6 @@ public final class SentryClient implements ISentryClient {
 
     options.getLogger().log(SentryLevel.DEBUG, "Capturing event: %s", event.getEventId());
 
-    boolean sendEvent = true;
-
     if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       // Event has already passed through here before it was cached
       // Going through again could be reading data that is no longer relevant
@@ -70,7 +68,6 @@ public final class SentryClient implements ISentryClient {
 
       if (event == null) {
         options.getLogger().log(SentryLevel.DEBUG, "Event was dropped by applyScope");
-        sendEvent = false;
       }
     } else {
       options
@@ -88,7 +85,6 @@ public final class SentryClient implements ISentryClient {
                 SentryLevel.DEBUG,
                 "Event was dropped by processor: %s",
                 processor.getClass().getName());
-        sendEvent = false;
         break;
       }
     }
@@ -105,7 +101,7 @@ public final class SentryClient implements ISentryClient {
                 SentryLevel.DEBUG,
                 "Event %s was dropped due to sampling decision.",
                 event.getEventId());
-        sendEvent = false;
+        // setting event as null to not be sent as its been discarded by sample rate
         event = null;
       }
     }
@@ -115,11 +111,14 @@ public final class SentryClient implements ISentryClient {
 
       if (event == null) {
         options.getLogger().log(SentryLevel.DEBUG, "Event was dropped by beforeSend");
-        sendEvent = false;
       }
     }
 
     SentryId sentryId = SentryId.EMPTY_ID;
+
+    if (event != null) {
+      sentryId = event.getEventId();
+    }
 
     try {
       final SentryEnvelope envelope = buildEnvelope(event, session);
@@ -129,11 +128,9 @@ public final class SentryClient implements ISentryClient {
       }
     } catch (IOException e) {
       options.getLogger().log(SentryLevel.WARNING, e, "Capturing event %s failed.", sentryId);
-      sendEvent = false;
-    }
 
-    if (sendEvent) {
-      sentryId = event.getEventId();
+      // if there was an error capturing the event, we return an emptyId
+      sentryId = SentryId.EMPTY_ID;
     }
 
     return sentryId;
@@ -182,38 +179,40 @@ public final class SentryClient implements ISentryClient {
 
     if (ApplyScopeUtils.shouldApplyScopeData(hint)) {
       if (scope != null) {
-        scope.withSession(
-            session -> {
-              if (session != null) {
-                Session.State status = null;
-                if (event.isCrashed()) {
-                  status = Session.State.Crashed;
-                }
+        clonedSession =
+            scope.withSession(
+                session -> {
+                  if (session != null) {
+                    Session.State status = null;
+                    if (event.isCrashed()) {
+                      status = Session.State.Crashed;
+                    }
 
-                boolean crashedOrErrored = false;
-                if (Session.State.Crashed == status || event.isErrored()) {
-                  crashedOrErrored = true;
-                }
+                    boolean crashedOrErrored = false;
+                    if (Session.State.Crashed == status || event.isErrored()) {
+                      crashedOrErrored = true;
+                    }
 
-                String userAgent = null;
-                if (event.getRequest() != null && event.getRequest().getHeaders() != null) {
-                  if (event.getRequest().getHeaders().containsKey("user-agent")) {
-                    userAgent = event.getRequest().getHeaders().get("user-agent");
+                    String userAgent = null;
+                    if (event.getRequest() != null && event.getRequest().getHeaders() != null) {
+                      if (event.getRequest().getHeaders().containsKey("user-agent")) {
+                        userAgent = event.getRequest().getHeaders().get("user-agent");
+                      }
+                    }
+
+                    if (session.update(status, userAgent, crashedOrErrored)) {
+                      // if hint is DiskFlushNotification, it means we have an uncaughtException
+                      // and we can end the session.
+                      if (hint instanceof DiskFlushNotification) {
+                        session.end();
+                      }
+                    }
+                  } else {
+                    options
+                        .getLogger()
+                        .log(SentryLevel.INFO, "Session is null on scope.withSession");
                   }
-                }
-
-                if (session.update(status, userAgent, crashedOrErrored)) {
-                  // if hint is DiskFlushNotification, it means we have an uncaughtException
-                  // and we can end the session.
-                  if (hint instanceof DiskFlushNotification) {
-                    session.end();
-                  }
-                }
-              } else {
-                options.getLogger().log(SentryLevel.INFO, "Session is null on scope.withSession");
-              }
-            });
-        clonedSession = scope.cloneSession();
+                });
       } else {
         options.getLogger().log(SentryLevel.INFO, "Scope is null on client.captureEvent");
       }
