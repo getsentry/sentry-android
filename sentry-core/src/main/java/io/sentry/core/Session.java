@@ -142,6 +142,13 @@ public final class Session {
     return init;
   }
 
+  /**
+   * Used for migrating the init flag when an session is gonna be deleted.
+   */
+  public void setInitAsTrue() {
+    this.init = true;
+  }
+
   public int errorCount() {
     return errorCount.get();
   }
