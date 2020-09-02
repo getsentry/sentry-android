@@ -132,7 +132,7 @@ public final class EnvelopeCache extends CacheStrategy implements IEnvelopeCache
       }
       updateCurrentSession(currentSessionFile, envelope);
     }
-
+    // TODO: problem we need to update the current session file
     final File envelopeFile = getEnvelopeFile(envelope);
     if (envelopeFile.exists()) {
       options
