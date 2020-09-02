@@ -18,6 +18,8 @@ public class Main {
 
     // logging arguments are converted to Sentry Event parameters
     LOGGER.info("User has made a purchase of product: {}", 445);
+    // because minimumEventLevel is set to WARN this raises an event
+    LOGGER.warn("Important warning");
 
     try {
       throw new RuntimeException("Invalid productId=445");

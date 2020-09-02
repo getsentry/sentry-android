@@ -19,21 +19,22 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.ThreadContext
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.config.AppenderRef
 import org.apache.logging.log4j.core.config.Configuration
 import org.apache.logging.log4j.core.config.LoggerConfig
+import org.apache.logging.log4j.spi.ExtendedLogger
 import org.awaitility.kotlin.await
 
 class SentryAppenderTest {
-    private class Fixture(minimumBreadcrumbLevel: Level? = null, minimumEventLevel: Level? = null) {
+    private class Fixture {
         val transport = mock<ITransport>()
-        val logger: Logger
         val loggerContext = LogManager.getContext() as LoggerContext
+        var minimumBreadcrumbLevel: Level? = null
+        var minimumEventLevel: Level? = null
 
-        init {
+        fun getSut(): ExtendedLogger {
             loggerContext.start()
             val config: Configuration = loggerContext.configuration
             val appender = SentryAppender("sentry", null, "http://key@localhost/proj", minimumBreadcrumbLevel, minimumEventLevel, transport, HubAdapter.getInstance())
@@ -50,11 +51,11 @@ class SentryAppenderTest {
             appender.start()
             loggerContext.start()
 
-            logger = LogManager.getContext().getLogger(SentryAppenderTest::class.java.name)
+            return LogManager.getContext().getLogger(SentryAppenderTest::class.java.name)
         }
     }
 
-    private lateinit var fixture: Fixture
+    private var fixture = Fixture()
 
     @AfterTest
     fun `stop log4j2`() {
@@ -68,8 +69,9 @@ class SentryAppenderTest {
 
     @Test
     fun `converts message`() {
-        fixture = Fixture(minimumEventLevel = Level.DEBUG)
-        fixture.logger.debug("testing message conversion {}, {}", 1, 2)
+        fixture.minimumEventLevel = Level.DEBUG
+        val logger = fixture.getSut()
+        logger.debug("testing message conversion {}, {}", 1, 2)
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -83,10 +85,11 @@ class SentryAppenderTest {
 
     @Test
     fun `event date is in UTC`() {
-        fixture = Fixture(minimumEventLevel = Level.DEBUG)
+        fixture.minimumEventLevel = Level.DEBUG
+        val logger = fixture.getSut()
         val utcTime = LocalDateTime.now(ZoneId.of("UTC"))
 
-        fixture.logger.debug("testing event date")
+        logger.debug("testing event date")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -102,8 +105,9 @@ class SentryAppenderTest {
 
     @Test
     fun `converts trace log level to Sentry level`() {
-        fixture = Fixture(minimumEventLevel = Level.TRACE)
-        fixture.logger.trace("testing trace level")
+        fixture.minimumEventLevel = Level.TRACE
+        val logger = fixture.getSut()
+        logger.trace("testing trace level")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -114,8 +118,9 @@ class SentryAppenderTest {
 
     @Test
     fun `converts debug log level to Sentry level`() {
-        fixture = Fixture(minimumEventLevel = Level.DEBUG)
-        fixture.logger.debug("testing debug level")
+        fixture.minimumEventLevel = Level.DEBUG
+        val logger = fixture.getSut()
+        logger.debug("testing debug level")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -126,8 +131,9 @@ class SentryAppenderTest {
 
     @Test
     fun `converts info log level to Sentry level`() {
-        fixture = Fixture(minimumEventLevel = Level.INFO)
-        fixture.logger.info("testing info level")
+        fixture.minimumEventLevel = Level.INFO
+        val logger = fixture.getSut()
+        logger.info("testing info level")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -138,8 +144,9 @@ class SentryAppenderTest {
 
     @Test
     fun `converts warn log level to Sentry level`() {
-        fixture = Fixture(minimumEventLevel = Level.WARN)
-        fixture.logger.warn("testing warn level")
+        fixture.minimumEventLevel = Level.WARN
+        val logger = fixture.getSut()
+        logger.warn("testing warn level")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -150,8 +157,9 @@ class SentryAppenderTest {
 
     @Test
     fun `converts error log level to Sentry level`() {
-        fixture = Fixture(minimumEventLevel = Level.ERROR)
-        fixture.logger.error("testing error level")
+        fixture.minimumEventLevel = Level.ERROR
+        val logger = fixture.getSut()
+        logger.error("testing error level")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -162,8 +170,9 @@ class SentryAppenderTest {
 
     @Test
     fun `converts fatal log level to Sentry level`() {
-        fixture = Fixture(minimumEventLevel = Level.FATAL)
-        fixture.logger.fatal("testing fatal level")
+        fixture.minimumEventLevel = Level.FATAL
+        val logger = fixture.getSut()
+        logger.fatal("testing fatal level")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -174,8 +183,9 @@ class SentryAppenderTest {
 
     @Test
     fun `attaches thread information`() {
-        fixture = Fixture(minimumEventLevel = Level.WARN)
-        fixture.logger.warn("testing thread information")
+        fixture.minimumEventLevel = Level.WARN
+        val logger = fixture.getSut()
+        logger.warn("testing thread information")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -186,21 +196,23 @@ class SentryAppenderTest {
 
     @Test
     fun `sets tags from ThreadContext`() {
-        fixture = Fixture(minimumEventLevel = Level.WARN)
+        fixture.minimumEventLevel = Level.WARN
+        val logger = fixture.getSut()
         ThreadContext.put("key", "value")
-        fixture.logger.warn("testing MDC tags")
+        logger.warn("testing MDC tags")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(mapOf("key" to "value"), it.contexts["MDC"])
+                assertEquals(mapOf("key" to "value"), it.contexts["Context Data"])
             })
         }
     }
 
     @Test
     fun `does not create MDC context when no MDC tags are set`() {
-        fixture = Fixture(minimumEventLevel = Level.WARN)
-        fixture.logger.warn("testing without MDC tags")
+        fixture.minimumEventLevel = Level.WARN
+        val logger = fixture.getSut()
+        logger.warn("testing without MDC tags")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -211,9 +223,10 @@ class SentryAppenderTest {
 
     @Test
     fun `attaches throwable`() {
-        fixture = Fixture(minimumEventLevel = Level.WARN)
+        fixture.minimumEventLevel = Level.WARN
+        val logger = fixture.getSut()
         val throwable = RuntimeException("something went wrong")
-        fixture.logger.warn("testing throwable", throwable)
+        logger.warn("testing throwable", throwable)
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -224,8 +237,9 @@ class SentryAppenderTest {
 
     @Test
     fun `sets SDK version`() {
-        fixture = Fixture(minimumEventLevel = Level.INFO)
-        fixture.logger.info("testing sdk version")
+        fixture.minimumEventLevel = Level.INFO
+        val logger = fixture.getSut()
+        logger.info("testing sdk version")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -242,12 +256,14 @@ class SentryAppenderTest {
 
     @Test
     fun `attaches breadcrumbs with level higher than minimumBreadcrumbLevel`() {
-        fixture = Fixture(minimumBreadcrumbLevel = Level.DEBUG, minimumEventLevel = Level.WARN)
+        fixture.minimumEventLevel = Level.WARN
+        fixture.minimumBreadcrumbLevel = Level.DEBUG
+        val logger = fixture.getSut()
         val utcTime = LocalDateTime.now(ZoneId.of("UTC"))
 
-        fixture.logger.debug("this should be a breadcrumb #1")
-        fixture.logger.info("this should be a breadcrumb #2")
-        fixture.logger.warn("testing message with breadcrumbs")
+        logger.debug("this should be a breadcrumb #1")
+        logger.info("this should be a breadcrumb #2")
+        logger.warn("testing message with breadcrumbs")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -267,11 +283,13 @@ class SentryAppenderTest {
 
     @Test
     fun `does not attach breadcrumbs with level lower than minimumBreadcrumbLevel`() {
-        fixture = Fixture(minimumBreadcrumbLevel = Level.INFO, minimumEventLevel = Level.WARN)
+        fixture.minimumEventLevel = Level.WARN
+        fixture.minimumBreadcrumbLevel = Level.INFO
+        val logger = fixture.getSut()
 
-        fixture.logger.debug("this should NOT be a breadcrumb")
-        fixture.logger.info("this should be a breadcrumb")
-        fixture.logger.warn("testing message with breadcrumbs")
+        logger.debug("this should NOT be a breadcrumb")
+        logger.info("this should be a breadcrumb")
+        logger.warn("testing message with breadcrumbs")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->
@@ -283,12 +301,12 @@ class SentryAppenderTest {
 
     @Test
     fun `attaches breadcrumbs for default appender configuration`() {
-        fixture = Fixture()
+        val logger = fixture.getSut()
 
-        fixture.logger.debug("this should not be a breadcrumb as the level is lower than the minimum INFO")
-        fixture.logger.info("this should be a breadcrumb")
-        fixture.logger.warn("this should not be sent as the event but be a breadcrumb")
-        fixture.logger.error("this should be sent as the event")
+        logger.debug("this should not be a breadcrumb as the level is lower than the minimum INFO")
+        logger.info("this should be a breadcrumb")
+        logger.warn("this should not be sent as the event but be a breadcrumb")
+        logger.error("this should be sent as the event")
 
         await.untilAsserted {
             verify(fixture.transport).send(check { it: SentryEvent ->

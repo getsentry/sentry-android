@@ -135,10 +135,10 @@ public final class SentryAppender extends AbstractAppender {
       event.setExtra("thread_name", loggingEvent.getThreadName());
     }
 
-    final Map<String, String> mdcProperties =
+    final Map<String, String> contextData =
         CollectionUtils.shallowCopy(loggingEvent.getContextData().toMap());
-    if (!mdcProperties.isEmpty()) {
-      event.getContexts().put("MDC", mdcProperties);
+    if (!contextData.isEmpty()) {
+      event.getContexts().put("Context Data", contextData);
     }
 
     return event;
