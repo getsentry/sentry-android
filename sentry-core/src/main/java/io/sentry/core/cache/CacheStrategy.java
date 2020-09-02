@@ -12,15 +12,23 @@ import io.sentry.core.Session;
 import io.sentry.core.util.Objects;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,7 +102,7 @@ abstract class CacheStrategy {
       sortFilesOldestToNewest(files);
 
       // TODO: double check the range
-      final File[] notDeletedFiles = Arrays.copyOfRange(files, totalToBeDeleted, files.length);
+      final File[] notDeletedFiles = Arrays.copyOfRange(files, totalToBeDeleted, length);
 
       // delete files from the top of the Array as its sorted by the oldest to the newest
       for (int i = 0; i < totalToBeDeleted; i++) {
@@ -112,15 +120,15 @@ abstract class CacheStrategy {
     }
   }
 
-  private void moveInitFlagIfNecessary(final @NotNull File file, final @NotNull File[] notDeletedFiles) {
-    //    try (final InputStream inputStream = new BufferedInputStream(new FileInputStream(file))) {
-    final SentryEnvelope envelope = getEnvelope(file);
+  private void moveInitFlagIfNecessary(
+      final @NotNull File currentFile, final @NotNull File[] notDeletedFiles) {
+    final SentryEnvelope currentEnvelope = getEnvelope(currentFile);
 
-    if (envelope == null) {
+    if (currentEnvelope == null) {
       return;
     }
 
-    final Session session = getSession(envelope);
+    final Session session = getSession(currentEnvelope);
 
     if (session == null) {
       return;
@@ -142,30 +150,68 @@ abstract class CacheStrategy {
     }
 
     // we need to move the init flag
-    for(final File item : notDeletedFiles) {
-      final SentryEnvelope envelopeItem = getEnvelope(item);
+    for (final File notDeletedFile : notDeletedFiles) {
+      final SentryEnvelope envelopeItem = getEnvelope(notDeletedFile);
 
       if (envelopeItem == null) {
         continue;
       }
 
-      final Session sessionItem = getSession(envelopeItem);
+      SentryEnvelopeItem newSessionItem = null;
+      final Iterator<SentryEnvelopeItem> itemsIterator = envelopeItem.getItems().iterator();
 
-      if (sessionItem == null) {
-        continue;
-      }
+      while(itemsIterator.hasNext()) {
+        final SentryEnvelopeItem sentryEnvelopeItem = itemsIterator.next();
 
-      if (sessionId.equals(sessionItem.getSessionId())) {
-        final Boolean initItem = sessionItem.getInit();
-        if (initItem == null || !initItem) {
+        if (!sentryEnvelopeItem.getHeader().getType().equals(SentryItemType.Session)) {
           continue;
         }
 
-        sessionItem.setInitAsTrue();
+        try (final Reader reader =
+            new BufferedReader(
+                new InputStreamReader(
+                    new ByteArrayInputStream(sentryEnvelopeItem.getData()), UTF_8))) {
+          final Session sessionItem = serializer.deserializeSession(reader);
 
+          if (sessionItem == null) {
+            continue;
+          }
 
+          if (sessionId.equals(sessionItem.getSessionId())) {
+            final Boolean initItem = sessionItem.getInit();
+            if (initItem == null || !initItem) {
+              continue;
+            }
 
-        break;
+            sessionItem.setInitAsTrue();
+            newSessionItem = SentryEnvelopeItem.fromSession(serializer, sessionItem);
+            itemsIterator.remove();
+
+            break;
+          }
+        } catch (Exception e) {
+          // TODO: catch it
+        }
+      }
+
+      if (newSessionItem != null) {
+        final List<SentryEnvelopeItem> newEnvelopeItems = new ArrayList<>();
+
+        for(final SentryEnvelopeItem newEnvelopeItem : envelopeItem.getItems()) {
+          newEnvelopeItems.add(newEnvelopeItem);
+        }
+        newEnvelopeItems.add(newSessionItem);
+
+        final SentryEnvelope newEnvelope = new SentryEnvelope(envelopeItem.getHeader(), newEnvelopeItems);
+
+        notDeletedFile.delete();
+
+        try (final OutputStream outputStream = new FileOutputStream(notDeletedFile);
+             final Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8))) {
+          serializer.serialize(newEnvelope, writer);
+        } catch (Exception e) {
+          // TODO: log it
+        }
       }
     }
   }
