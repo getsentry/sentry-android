@@ -40,11 +40,11 @@ public final class SentryAppender extends AbstractAppender {
   private @NotNull Level minimumEventLevel = Level.ERROR;
 
   public SentryAppender(
-      String name,
-      Filter filter,
-      @Nullable String dsn,
-      @Nullable Level minimumBreadcrumbLevel,
-      @Nullable Level minimumEventLevel,
+      final @NotNull String name,
+      final @Nullable Filter filter,
+      final @Nullable String dsn,
+      final @Nullable Level minimumBreadcrumbLevel,
+      final @Nullable Level minimumEventLevel,
       final @Nullable ITransport transport) {
     super(name, filter, null, true, null);
     this.dsn = dsn;
@@ -94,7 +94,7 @@ public final class SentryAppender extends AbstractAppender {
   }
 
   @Override
-  public void append(LogEvent eventObject) {
+  public void append(final @NotNull LogEvent eventObject) {
     if (eventObject.getLevel().isMoreSpecificThan(minimumEventLevel)) {
       Sentry.captureEvent(createEvent(eventObject));
     }
@@ -109,8 +109,9 @@ public final class SentryAppender extends AbstractAppender {
    * @param loggingEvent the log4j2 event
    * @return the sentry event
    */
+  // for the Android compatibility we must use old Java Date class
   @SuppressWarnings("JdkObsolete")
-  final @NotNull SentryEvent createEvent(@NotNull LogEvent loggingEvent) {
+  final @NotNull SentryEvent createEvent(final @NotNull LogEvent loggingEvent) {
     final SentryEvent event =
         new SentryEvent(DateUtils.getDateTime(new Date(loggingEvent.getTimeMillis())));
     final Message message = new Message();
@@ -139,7 +140,7 @@ public final class SentryAppender extends AbstractAppender {
     return event;
   }
 
-  private @NotNull List<String> toParams(@Nullable Object[] arguments) {
+  private @NotNull List<String> toParams(final @Nullable Object[] arguments) {
     if (arguments != null) {
       return Arrays.stream(arguments)
           .filter(Objects::nonNull)
@@ -170,8 +171,10 @@ public final class SentryAppender extends AbstractAppender {
    * @param level original level as defined in log4j.
    * @return log level used within sentry.
    */
-  private static @NotNull SentryLevel formatLevel(@NotNull Level level) {
-    if (level.isMoreSpecificThan(Level.ERROR)) {
+  private static @NotNull SentryLevel formatLevel(final @NotNull Level level) {
+    if (level.isMoreSpecificThan(Level.FATAL)) {
+      return SentryLevel.FATAL;
+    } else if (level.isMoreSpecificThan(Level.ERROR)) {
       return SentryLevel.ERROR;
     } else if (level.isMoreSpecificThan(Level.WARN)) {
       return SentryLevel.WARNING;
@@ -182,7 +185,7 @@ public final class SentryAppender extends AbstractAppender {
     }
   }
 
-  private @NotNull SdkVersion createSdkVersion(@NotNull SentryOptions sentryOptions) {
+  private @NotNull SdkVersion createSdkVersion(final @NotNull SentryOptions sentryOptions) {
     SdkVersion sdkVersion = sentryOptions.getSdkVersion();
 
     if (sdkVersion == null) {
@@ -214,7 +217,7 @@ public final class SentryAppender extends AbstractAppender {
   }
 
   @ApiStatus.Internal
-  void setTransport(@Nullable ITransport transport) {
+  void setTransport(final @Nullable ITransport transport) {
     this.transport = transport;
   }
 }
