@@ -1,4 +1,4 @@
-package io.sentry.samples.spring;
+package io.sentry.samples.spring.boot;
 
 import io.sentry.core.EventProcessor;
 import io.sentry.core.SentryEvent;

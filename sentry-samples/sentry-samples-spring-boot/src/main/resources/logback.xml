@@ -4,9 +4,7 @@
   <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
   <appender name="SENTRY" class="io.sentry.logback.SentryAppender">
-    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-      <level>WARN</level>
-    </filter>
+    <minimumEventLevel>WARN</minimumEventLevel>
   </appender>
 
   <root level="info">

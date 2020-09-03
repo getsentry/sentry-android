@@ -1,4 +1,4 @@
-package io.sentry.samples.spring;
+package io.sentry.samples.spring.boot;
 
 import io.sentry.core.IHub;
 import io.sentry.core.SentryOptions;

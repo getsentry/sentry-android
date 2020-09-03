@@ -33,12 +33,17 @@ public class SentryRequestFilter extends OncePerRequestFilter implements Ordered
     hub.pushScope();
     // clears breadcrumbs that may have been added during application startup through one of the logging integrations.
     hub.clearBreadcrumbs();
+    hub.addBreadcrumb(createRequestBreadcrumb(request));
 
     hub.configureScope(
         scope -> {
           scope.addEventProcessor(new SentryRequestHttpServletRequestProcessor(request, options));
         });
     filterChain.doFilter(request, response);
+  }
+
+  private @NotNull String createRequestBreadcrumb(final @NotNull HttpServletRequest request) {
+    return "Starting to serve request " + request.getMethod() + " " + request.getRequestURI();
   }
 
   @Override
