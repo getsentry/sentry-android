@@ -10,6 +10,7 @@ import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
+import io.sentry.spring.SentryWebConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -17,10 +18,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.GitProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
+import org.springframework.context.annotation.Import;
 
 @Configuration
 @ConditionalOnProperty(name = "sentry.dsn")
@@ -75,18 +75,9 @@ public class SentryAutoConfiguration {
     /** Registers beans specific to Spring MVC. */
     @Configuration
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    @Import(SentryWebConfiguration.class)
     @Open
-    static class SentryWebMvcConfiguration {
-
-      @Bean
-      public @NotNull FilterRegistrationBean<SentryRequestFilter> sentryRequestFilter(
-          final @NotNull IHub sentryHub, final @NotNull SentryOptions sentryOptions) {
-        FilterRegistrationBean<SentryRequestFilter> filterRegistrationBean =
-            new FilterRegistrationBean<>(new SentryRequestFilter(sentryHub, sentryOptions));
-        filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return filterRegistrationBean;
-      }
-    }
+    static class SentryWebMvcConfiguration {}
 
     private static @NotNull SdkVersion createSdkVersion(
         final @NotNull SentryOptions sentryOptions) {

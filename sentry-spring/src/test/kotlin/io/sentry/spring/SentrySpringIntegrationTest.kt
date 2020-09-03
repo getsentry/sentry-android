@@ -1,4 +1,4 @@
-package io.sentry.spring.boot
+package io.sentry.spring
 
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.verify
@@ -7,7 +7,6 @@ import io.sentry.core.Sentry
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
-import io.sentry.spring.SentrySecurityFilter
 import java.lang.RuntimeException
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -102,6 +101,7 @@ class SentrySpringIntegrationTest {
 }
 
 @SpringBootApplication
+@EnableSentry
 open class App
 
 @RestController
