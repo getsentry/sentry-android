@@ -7,7 +7,7 @@ plugins {
     kotlin("plugin.spring") version Config.kotlinVersion
 }
 
-group = "io.sentry.sample.spring-boot"
+group = "io.sentry.sample.spring"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
