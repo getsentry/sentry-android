@@ -31,6 +31,8 @@ public class SentryRequestFilter extends OncePerRequestFilter implements Ordered
       final @NotNull FilterChain filterChain)
       throws ServletException, IOException {
     hub.pushScope();
+    // clears breadcrumbs that may have been added during application startup through one of the logging integrations.
+    hub.clearBreadcrumbs();
 
     hub.configureScope(
         scope -> {
