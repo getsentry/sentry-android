@@ -59,7 +59,7 @@ configure<SourceSetContainer> {
 }
 
 jacoco {
-    toolVersion = Config.QualityPlugins.jacocoVersion
+    toolVersion = Config.QualityPlugins.Jacoco.version
 }
 
 tasks.jacocoTestReport {

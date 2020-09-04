@@ -1,3 +1,5 @@
+import java.math.BigDecimal
+
 object Config {
     val kotlinVersion = "1.3.72"
     val kotlinStdLib = "stdlib-jdk8"
@@ -72,7 +74,10 @@ object Config {
     }
 
     object QualityPlugins {
-        val jacocoVersion = "0.8.5"
+        object Jacoco {
+            val version = "0.8.5"
+            val minimumCoverage = BigDecimal.valueOf(0.6)
+        }
         val spotless = "com.diffplug.spotless"
         val spotlessVersion = "5.1.0"
         val errorProne = "net.ltgt.errorprone"
