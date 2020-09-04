@@ -62,7 +62,7 @@ abstract class DirectoryProcessor {
 
         logger.log(SentryLevel.DEBUG, "Processing file: %s", file.getAbsolutePath());
 
-        final SendCachedEventHint hint = new SendCachedEventHint(flushTimeoutMillis, logger);
+        final SendCachedEnvelopeHint hint = new SendCachedEnvelopeHint(flushTimeoutMillis, logger);
         processFile(file, hint);
       }
     } catch (Exception e) {
@@ -74,7 +74,7 @@ abstract class DirectoryProcessor {
 
   protected abstract boolean isRelevantFileName(String fileName);
 
-  private static final class SendCachedEventHint
+  private static final class SendCachedEnvelopeHint
       implements Cached, Retryable, SubmissionResult, Flushable {
     boolean retry = false;
     boolean succeeded = false;
@@ -83,7 +83,7 @@ abstract class DirectoryProcessor {
     private final long flushTimeoutMillis;
     private final @NotNull ILogger logger;
 
-    public SendCachedEventHint(final long flushTimeoutMillis, final @NotNull ILogger logger) {
+    public SendCachedEnvelopeHint(final long flushTimeoutMillis, final @NotNull ILogger logger) {
       this.flushTimeoutMillis = flushTimeoutMillis;
       this.latch = new CountDownLatch(1);
       this.logger = logger;

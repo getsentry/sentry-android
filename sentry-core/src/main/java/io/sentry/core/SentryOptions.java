@@ -97,7 +97,7 @@ public class SentryOptions {
   private @Nullable String cacheDirPath;
 
   /** The cache dir. size for capping the number of events Default is 10 */
-  private int cacheDirSize = 3;
+  private int cacheDirSize = 10;
 
   /** Max. queue size before flushing events/envelopes to the disk */
   private int maxQueueSize = cacheDirSize;
