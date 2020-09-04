@@ -16,14 +16,14 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter")
+    implementation(Config.Libs.springBootStarterSecurity)
+    implementation(Config.Libs.springBootStarterWeb)
+    implementation(Config.Libs.springBootStarter)
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation(project(":sentry-spring"))
     implementation(project(":sentry-logback"))
-    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+    testImplementation(Config.Libs.springBootStarterTest) {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
 }

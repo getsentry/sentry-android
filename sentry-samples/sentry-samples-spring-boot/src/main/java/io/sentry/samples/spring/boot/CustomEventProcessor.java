@@ -6,7 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * Custom {@link EventProcessor} implementation lets modifying {@link SentryEvent}s before they are sent to Sentry.
+ * Custom {@link EventProcessor} implementation lets modifying {@link SentryEvent}s before they are
+ * sent to Sentry.
  */
 @Component
 public class CustomEventProcessor implements EventProcessor {

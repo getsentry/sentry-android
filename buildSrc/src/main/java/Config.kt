@@ -46,6 +46,9 @@ object Config {
         val log4j2Core = "org.apache.logging.log4j:log4j-core:$log4j2Version"
 
         val springBootStarter = "org.springframework.boot:spring-boot-starter:$springBootVersion"
+        val springBootStarterTest = "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+        val springBootStarterWeb = "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+        val springBootStarterSecurity = "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
 
         val springWeb = "org.springframework:spring-webmvc"
         val servletApi = "javax.servlet:javax.servlet-api"
@@ -66,9 +69,6 @@ object Config {
         val robolectric = "org.robolectric:robolectric:4.3.1"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
         val awaitility = "org.awaitility:awaitility-kotlin:4.0.3"
-        val springBootStarterTest = "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-        val springBootStarterWeb = "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-        val springBootStarterSecurity = "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
     }
 
     object QualityPlugins {

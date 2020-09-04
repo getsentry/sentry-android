@@ -46,9 +46,9 @@ dependencies {
     testImplementation(kotlin(Config.kotlinStdLib))
     testImplementation(Config.TestLibs.kotlinTestJunit)
     testImplementation(Config.TestLibs.mockitoKotlin)
-    testImplementation(Config.TestLibs.springBootStarterTest)
-    testImplementation(Config.TestLibs.springBootStarterWeb)
-    testImplementation(Config.TestLibs.springBootStarterSecurity)
+    testImplementation(Config.Libs.springBootStarterTest)
+    testImplementation(Config.Libs.springBootStarterWeb)
+    testImplementation(Config.Libs.springBootStarterSecurity)
     testImplementation(Config.TestLibs.awaitility)
 }
 
