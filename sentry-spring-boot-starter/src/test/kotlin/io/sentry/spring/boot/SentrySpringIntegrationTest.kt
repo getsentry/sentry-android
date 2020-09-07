@@ -6,6 +6,7 @@ import io.sentry.core.IHub
 import io.sentry.core.Sentry
 import io.sentry.core.SentryEvent
 import io.sentry.core.SentryOptions
+import io.sentry.core.exception.ExceptionMechanismException
 import io.sentry.core.transport.ITransport
 import io.sentry.spring.SentrySecurityFilter
 import java.lang.RuntimeException
@@ -95,7 +96,10 @@ class SentrySpringIntegrationTest {
         await.untilAsserted {
             verify(transport).send(check { event: SentryEvent ->
                 assertThat(event.throwable).isNotNull()
-                assertThat(event.throwable!!.message).isEqualTo("something went wrong")
+                assertThat(event.throwable).isInstanceOf(ExceptionMechanismException::class.java)
+                val ex = event.throwable as ExceptionMechanismException
+                assertThat(ex.throwable.message).isEqualTo("something went wrong")
+                assertThat(ex.exceptionMechanism.isHandled).isFalse()
             })
         }
     }

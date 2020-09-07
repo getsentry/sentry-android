@@ -2,7 +2,10 @@ package io.sentry.spring;
 
 import com.jakewharton.nopen.annotation.Open;
 import io.sentry.core.IHub;
-import io.sentry.core.SentryOptions;
+import io.sentry.core.SentryEvent;
+import io.sentry.core.SentryLevel;
+import io.sentry.core.exception.ExceptionMechanismException;
+import io.sentry.core.protocol.Mechanism;
 import io.sentry.core.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,11 +23,9 @@ import org.springframework.web.servlet.ModelAndView;
 @Open
 public class SentryExceptionResolver implements HandlerExceptionResolver, Ordered {
   private final @NotNull IHub hub;
-  private final @NotNull SentryOptions options;
 
-  public SentryExceptionResolver(final @NotNull IHub hub, final @NotNull SentryOptions options) {
+  public SentryExceptionResolver(final @NotNull IHub hub) {
     this.hub = Objects.requireNonNull(hub, "hub is required");
-    this.options = Objects.requireNonNull(options, "options are required");
   }
 
   @Override
@@ -34,9 +35,13 @@ public class SentryExceptionResolver implements HandlerExceptionResolver, Ordere
       final @Nullable Object handler,
       final @NotNull Exception ex) {
 
-    if (options.isEnableUncaughtExceptionHandler()) {
-      hub.captureException(ex);
-    }
+    final Mechanism mechanism = new Mechanism();
+    mechanism.setHandled(false);
+    final Throwable throwable =
+        new ExceptionMechanismException(mechanism, ex, Thread.currentThread());
+    final SentryEvent event = new SentryEvent(throwable);
+    event.setLevel(SentryLevel.FATAL);
+    hub.captureEvent(event);
 
     // null = run other HandlerExceptionResolvers to actually handle the exception
     return null;
