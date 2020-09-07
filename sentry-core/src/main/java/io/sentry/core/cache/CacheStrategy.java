@@ -160,7 +160,7 @@ abstract class CacheStrategy {
       SentryEnvelopeItem newSessionItem = null;
       final Iterator<SentryEnvelopeItem> itemsIterator = envelopeItem.getItems().iterator();
 
-      while(itemsIterator.hasNext()) {
+      while (itemsIterator.hasNext()) {
         final SentryEnvelopeItem sentryEnvelopeItem = itemsIterator.next();
 
         if (!sentryEnvelopeItem.getHeader().getType().equals(SentryItemType.Session)) {
@@ -197,17 +197,18 @@ abstract class CacheStrategy {
       if (newSessionItem != null) {
         final List<SentryEnvelopeItem> newEnvelopeItems = new ArrayList<>();
 
-        for(final SentryEnvelopeItem newEnvelopeItem : envelopeItem.getItems()) {
+        for (final SentryEnvelopeItem newEnvelopeItem : envelopeItem.getItems()) {
           newEnvelopeItems.add(newEnvelopeItem);
         }
         newEnvelopeItems.add(newSessionItem);
 
-        final SentryEnvelope newEnvelope = new SentryEnvelope(envelopeItem.getHeader(), newEnvelopeItems);
+        final SentryEnvelope newEnvelope =
+            new SentryEnvelope(envelopeItem.getHeader(), newEnvelopeItems);
 
         notDeletedFile.delete();
 
         try (final OutputStream outputStream = new FileOutputStream(notDeletedFile);
-             final Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8))) {
+            final Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8))) {
           serializer.serialize(newEnvelope, writer);
         } catch (Exception e) {
           // TODO: log it
