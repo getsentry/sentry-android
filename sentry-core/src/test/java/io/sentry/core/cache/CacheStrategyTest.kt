@@ -22,11 +22,11 @@ class CacheStrategyTest {
 
     private class Fixture {
         val dir = Files.createTempDirectory("sentry-disk-cache-test").toAbsolutePath().toFile()
-        val options = SentryOptions().apply {
-            setSerializer(GsonSerializer(mock(), envelopeReader))
+        val sentryOptions = SentryOptions().apply {
+            setSerializer(mock())
         }
 
-        fun getSUT(maxSize: Int = 5): CacheStrategy {
+        fun getSUT(maxSize: Int = 5, options: SentryOptions = sentryOptions): CacheStrategy {
             return CustomCache(options, dir.absolutePath, maxSize)
         }
     }
@@ -74,31 +74,24 @@ class CacheStrategyTest {
 
     @Test
     fun `do not move init flag if state is not ok`() {
-        val sut = fixture.getSUT(3)
+        val options = SentryOptions().apply {
+            setSerializer(GsonSerializer(mock(), envelopeReader))
+        }
+        val sut = fixture.getSUT(3, getOptionsWithRealSerializer())
 
         val files = createTempFilesSortByOldestToNewest()
 
-        val crashedSession = createSessionMockData(Session.State.Crashed, null)
-        val crashedEnvelope = SentryEnvelope.fromSession(sut.serializer, crashedSession, null)
-        sut.serializer.serialize(crashedEnvelope, files[0].writer())
+        saveSessionToFile(files[0], sut, Session.State.Crashed, null)
 
-        val exitedSession = createSessionMockData(Session.State.Exited, null)
-        val exitedEnvelope = SentryEnvelope.fromSession(sut.serializer, exitedSession, null)
-        sut.serializer.serialize(exitedEnvelope, files[1].writer())
+        saveSessionToFile(files[1], sut, Session.State.Exited, null)
 
-        val abnormalSession = createSessionMockData(Session.State.Exited, null)
-        val abnormalEnvelope = SentryEnvelope.fromSession(sut.serializer, abnormalSession, null)
-        sut.serializer.serialize(abnormalEnvelope, files[2].writer())
+        saveSessionToFile(files[2], sut, Session.State.Exited, null)
 
         sut.rotateCacheIfNeeded(files)
 
         // files[0] has been deleted because of rotation
         for (i in 1..2) {
-            val envelope = sut.serializer.deserializeEnvelope(files[i].inputStream())
-            val item = envelope.items.first()
-
-            val reader = InputStreamReader(ByteArrayInputStream(item.data), Charsets.UTF_8)
-            val expectedSession = sut.serializer.deserializeSession(reader)
+            val expectedSession = getSessionFromFile(files[i], sut)
 
             assertNull(expectedSession.init)
         }
@@ -106,7 +99,10 @@ class CacheStrategyTest {
 
     @Test
     fun `move init flag if state is ok`() {
-        val sut = fixture.getSUT(3)
+        val options = SentryOptions().apply {
+            setSerializer(GsonSerializer(mock(), envelopeReader))
+        }
+        val sut = fixture.getSUT(3, options)
 
         val files = createTempFilesSortByOldestToNewest()
 
@@ -119,18 +115,12 @@ class CacheStrategyTest {
         val updatedOkEnvelope = SentryEnvelope.fromSession(sut.serializer, updatedOkSession, null)
         sut.serializer.serialize(updatedOkEnvelope, files[1].writer())
 
-        val abnormalSession = createSessionMockData(Session.State.Exited, null)
-        val abnormalEnvelope = SentryEnvelope.fromSession(sut.serializer, abnormalSession, null)
-        sut.serializer.serialize(abnormalEnvelope, files[2].writer())
+        saveSessionToFile(files[2], sut, Session.State.Exited, null)
 
         sut.rotateCacheIfNeeded(files)
 
         // files[1] should be the one with the init flag true
-        val envelope = sut.serializer.deserializeEnvelope(files[1].inputStream())
-        val item = envelope.items.first()
-
-        val reader = InputStreamReader(ByteArrayInputStream(item.data), Charsets.UTF_8)
-        val expectedSession = sut.serializer.deserializeSession(reader)
+        val expectedSession = getSessionFromFile(files[1], sut)
 
         assertTrue(expectedSession.init!!)
     }
@@ -173,4 +163,24 @@ class CacheStrategyTest {
                     "debug",
                     "io.sentry@1.0+123"
             )
+
+    private fun getSessionFromFile(file: File, sut: CacheStrategy): Session {
+        val envelope = sut.serializer.deserializeEnvelope(file.inputStream())
+        val item = envelope.items.first()
+
+        val reader = InputStreamReader(ByteArrayInputStream(item.data), Charsets.UTF_8)
+        return sut.serializer.deserializeSession(reader)
+    }
+
+    private fun saveSessionToFile(file: File, sut: CacheStrategy, state: Session.State = Session.State.Ok, init: Boolean? = true) {
+        val okSession = createSessionMockData(Session.State.Ok, init)
+        val okEnvelope = SentryEnvelope.fromSession(sut.serializer, okSession, null)
+        sut.serializer.serialize(okEnvelope, file.writer())
+    }
+
+    private fun getOptionsWithRealSerializer(): SentryOptions {
+        return SentryOptions().apply {
+            setSerializer(GsonSerializer(mock(), envelopeReader))
+        }
+    }
 }
