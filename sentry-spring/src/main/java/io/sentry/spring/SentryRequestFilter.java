@@ -1,6 +1,7 @@
 package io.sentry.spring;
 
 import com.jakewharton.nopen.annotation.Open;
+import io.sentry.core.Breadcrumb;
 import io.sentry.core.IHub;
 import io.sentry.core.SentryOptions;
 import io.sentry.core.util.Objects;
@@ -31,20 +32,17 @@ public class SentryRequestFilter extends OncePerRequestFilter implements Ordered
       final @NotNull FilterChain filterChain)
       throws ServletException, IOException {
     hub.pushScope();
+    // TODO: check if it's there in Sentry 1.x
     // clears breadcrumbs that may have been added during application startup through one of the
     // logging integrations.
     hub.clearBreadcrumbs();
-    hub.addBreadcrumb(createRequestBreadcrumb(request));
+    hub.addBreadcrumb(Breadcrumb.http(request.getRequestURI(), request.getMethod()));
 
     hub.configureScope(
         scope -> {
           scope.addEventProcessor(new SentryRequestHttpServletRequestProcessor(request, options));
         });
     filterChain.doFilter(request, response);
-  }
-
-  private @NotNull String createRequestBreadcrumb(final @NotNull HttpServletRequest request) {
-    return "Starting to serve request " + request.getMethod() + " " + request.getRequestURI();
   }
 
   @Override

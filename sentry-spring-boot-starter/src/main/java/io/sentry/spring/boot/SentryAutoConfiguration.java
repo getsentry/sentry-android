@@ -11,6 +11,7 @@ import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
 import io.sentry.spring.SentryWebConfiguration;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -21,8 +22,6 @@ import org.springframework.boot.info.GitProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import java.util.List;
 
 @Configuration
 @ConditionalOnProperty(name = "sentry.dsn")
