@@ -2,6 +2,7 @@ package io.sentry.samples.spring.boot;
 
 import io.sentry.core.EventProcessor;
 import io.sentry.core.SentryEvent;
+import io.sentry.core.protocol.SentryRuntime;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +26,10 @@ public class CustomEventProcessor implements EventProcessor {
 
   @Override
   public SentryEvent process(SentryEvent event, @Nullable Object hint) {
-    event.setTag("Java-Version", javaVersion);
-    event.setTag("Java-Vendor", javaVendor);
+    final SentryRuntime runtime = new SentryRuntime();
+    runtime.setVersion(javaVersion);
+    runtime.setName(javaVendor);
+    event.getContexts().setRuntime(runtime);
     return event;
   }
 }
