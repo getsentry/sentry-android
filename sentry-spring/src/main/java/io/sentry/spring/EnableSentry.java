@@ -9,13 +9,24 @@ import org.springframework.context.annotation.Import;
 /**
  * Enables Sentry error handling capabilities.
  *
- * <p>- creates bean of type {@link io.sentry.core.SentryOptions} using properties from Spring
- * {@link org.springframework.core.env.Environment}. - registers {@link io.sentry.core.IHub} for
- * sending Sentry events - registers {@link SentryRequestFilter} for attaching request information
- * to Sentry events - registers {@link SentryExceptionResolver} to send Sentry event for any
- * uncaught exception in Spring MVC flow.
+ * <ul>
+ *   <li>creates bean of type {@link io.sentry.core.SentryOptions}
+ *   <li>registers {@link io.sentry.core.IHub} for sending Sentry events
+ *   <li>registers {@link SentryRequestFilter} for attaching request information to Sentry events
+ *   <li>registers {@link SentryExceptionResolver} to send Sentry event for any uncaught exception
+ *       in Spring MVC flow.
+ * </ul>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Import({SentryCoreConfiguration.class, SentryWebConfiguration.class})
+@Import({SentryHubRegistrar.class, SentryInitBeanPostProcessor.class, SentryWebConfiguration.class})
 @Target(ElementType.TYPE)
-public @interface EnableSentry {}
+public @interface EnableSentry {
+  /**
+   * The DSN tells the SDK where to send the events to. If this value is not provided, the SDK will
+   * just not send any events.
+   */
+  String dsn() default "";
+
+  /** Whether to send personal identifiable information along with events. */
+  boolean sendDefaultPii() default false;
+}
