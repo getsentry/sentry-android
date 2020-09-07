@@ -22,6 +22,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import java.util.List;
+
 @Configuration
 @ConditionalOnProperty(name = "sentry.dsn")
 @Open
@@ -39,15 +41,15 @@ public class SentryAutoConfiguration {
         final @NotNull ObjectProvider<SentryOptions.BeforeSendCallback> beforeSendCallback,
         final @NotNull ObjectProvider<SentryOptions.BeforeBreadcrumbCallback>
                 beforeBreadcrumbCallback,
-        final @NotNull ObjectProvider<EventProcessor> eventProcessors,
-        final @NotNull ObjectProvider<Integration> integrations,
+        final @NotNull List<EventProcessor> eventProcessors,
+        final @NotNull List<Integration> integrations,
         final @NotNull ObjectProvider<ITransportGate> transportGate,
         final @NotNull ObjectProvider<ITransport> transport) {
       return options -> {
         beforeSendCallback.ifAvailable(options::setBeforeSend);
         beforeBreadcrumbCallback.ifAvailable(options::setBeforeBreadcrumb);
-        eventProcessors.stream().forEach(options::addEventProcessor);
-        integrations.stream().forEach(options::addIntegration);
+        eventProcessors.forEach(options::addEventProcessor);
+        integrations.forEach(options::addIntegration);
         transportGate.ifAvailable(options::setTransportGate);
         transport.ifAvailable(options::setTransport);
       };
