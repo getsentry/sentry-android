@@ -133,6 +133,12 @@ abstract class CacheStrategy {
       return;
     }
 
+    // nothing to do if its not true
+    final Boolean currentSessionInit = currentSession.getInit();
+    if (currentSessionInit == null || !currentSessionInit) {
+      return;
+    }
+
     // we need to move the init flag
     for (final File notDeletedFile : notDeletedFiles) {
       final SentryEnvelope envelope = readEnvelope(notDeletedFile);
@@ -157,12 +163,18 @@ abstract class CacheStrategy {
           continue;
         }
 
+        // if its already true, nothing to do
+        final Boolean init = session.getInit();
+        if (init != null && init) {
+          return;
+        }
+
         if (currentSession.getSessionId().equals(session.getSessionId())) {
           session.setInitAsTrue();
           try {
             newSessionItem = SentryEnvelopeItem.fromSession(serializer, session);
             // remove item from envelope items so we can replace with the new one that has the
-            // init flag true
+            // currentSessionInit flag true
             itemsIterator.remove();
           } catch (IOException e) {
             options
@@ -195,7 +207,8 @@ abstract class CacheStrategy {
         break;
       } else {
         // TODO: if theres no more files with that currentSession, should we still delete it?
-        // that means the next currentSession update will be init=false but the one with init=true
+        // that means the next currentSession update will be currentSessionInit=false but the one
+        // with currentSessionInit=true
         // will be deleted.
         // either we don't delete it or we generate a new envelope only with that currentSession.
       }
@@ -230,11 +243,6 @@ abstract class CacheStrategy {
     }
 
     if (!session.getStatus().equals(Session.State.Ok)) {
-      return false;
-    }
-
-    final Boolean init = session.getInit();
-    if (init == null || !init) {
       return false;
     }
 
