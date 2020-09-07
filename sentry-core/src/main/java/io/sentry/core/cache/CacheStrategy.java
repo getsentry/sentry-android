@@ -101,7 +101,6 @@ abstract class CacheStrategy {
 
       sortFilesOldestToNewest(files);
 
-      // TODO: double check the range
       final File[] notDeletedFiles = Arrays.copyOfRange(files, totalToBeDeleted, length);
 
       // delete files from the top of the Array as its sorted by the oldest to the newest
@@ -122,125 +121,182 @@ abstract class CacheStrategy {
 
   private void moveInitFlagIfNecessary(
       final @NotNull File currentFile, final @NotNull File[] notDeletedFiles) {
-    final SentryEnvelope currentEnvelope = getEnvelope(currentFile);
+    final SentryEnvelope currentEnvelope = readEnvelope(currentFile);
 
-    if (currentEnvelope == null) {
+    if (!isValidEnvelope(currentEnvelope)) {
       return;
     }
 
-    final Session session = getSession(currentEnvelope);
+    final Session currentSession = getFirstSession(currentEnvelope);
 
-    if (session == null) {
-      return;
-    }
-
-    if (!session.getStatus().equals(Session.State.Ok)) {
-      return;
-    }
-
-    final Boolean init = session.getInit();
-    if (init == null || !init) {
-      return;
-    }
-
-    final UUID sessionId = session.getSessionId();
-
-    if (sessionId == null) {
+    if (!isValidSession(currentSession)) {
       return;
     }
 
     // we need to move the init flag
     for (final File notDeletedFile : notDeletedFiles) {
-      final SentryEnvelope envelopeItem = getEnvelope(notDeletedFile);
+      final SentryEnvelope envelope = readEnvelope(notDeletedFile);
 
-      if (envelopeItem == null) {
+      if (!isValidEnvelope(envelope)) {
         continue;
       }
 
       SentryEnvelopeItem newSessionItem = null;
-      final Iterator<SentryEnvelopeItem> itemsIterator = envelopeItem.getItems().iterator();
+      final Iterator<SentryEnvelopeItem> itemsIterator = envelope.getItems().iterator();
 
       while (itemsIterator.hasNext()) {
-        final SentryEnvelopeItem sentryEnvelopeItem = itemsIterator.next();
+        final SentryEnvelopeItem envelopeItem = itemsIterator.next();
 
-        if (!sentryEnvelopeItem.getHeader().getType().equals(SentryItemType.Session)) {
+        if (!isSessionType(envelopeItem)) {
           continue;
         }
 
-        try (final Reader reader =
-            new BufferedReader(
-                new InputStreamReader(
-                    new ByteArrayInputStream(sentryEnvelopeItem.getData()), UTF_8))) {
-          final Session sessionItem = serializer.deserializeSession(reader);
+        final Session session = readSession(envelopeItem);
 
-          if (sessionItem == null) {
-            continue;
-          }
+        if (!isValidSession(session)) {
+          continue;
+        }
 
-          if (sessionId.equals(sessionItem.getSessionId())) {
-            final Boolean initItem = sessionItem.getInit();
-            if (initItem == null || !initItem) {
-              continue;
-            }
-
-            sessionItem.setInitAsTrue();
-            newSessionItem = SentryEnvelopeItem.fromSession(serializer, sessionItem);
+        if (currentSession.getSessionId().equals(session.getSessionId())) {
+          session.setInitAsTrue();
+          try {
+            newSessionItem = SentryEnvelopeItem.fromSession(serializer, session);
+            // remove item from envelope items so we can replace with the new one that has the
+            // init flag true
             itemsIterator.remove();
-
-            break;
+          } catch (IOException e) {
+            options
+                .getLogger()
+                .log(
+                    ERROR,
+                    e,
+                    "Failed to create new envelope item for the currentSession %s",
+                    currentSession.getSessionId());
           }
-        } catch (Exception e) {
-          // TODO: catch it
+
+          break;
         }
       }
 
       if (newSessionItem != null) {
-        final List<SentryEnvelopeItem> newEnvelopeItems = new ArrayList<>();
+        final SentryEnvelope newEnvelope = buildNewEnvelope(envelope, newSessionItem);
 
-        for (final SentryEnvelopeItem newEnvelopeItem : envelopeItem.getItems()) {
-          newEnvelopeItems.add(newEnvelopeItem);
+        long notDeletedFileTimestamp = notDeletedFile.lastModified();
+        if (!notDeletedFile.delete()) {
+          options
+              .getLogger()
+              .log(
+                  SentryLevel.WARNING,
+                  "File can't be deleted: %s",
+                  notDeletedFile.getAbsolutePath());
         }
-        newEnvelopeItems.add(newSessionItem);
 
-        final SentryEnvelope newEnvelope =
-            new SentryEnvelope(envelopeItem.getHeader(), newEnvelopeItems);
-
-        notDeletedFile.delete();
-
-        try (final OutputStream outputStream = new FileOutputStream(notDeletedFile);
-            final Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8))) {
-          serializer.serialize(newEnvelope, writer);
-        } catch (Exception e) {
-          // TODO: log it
-        }
+        saveNewEnvelope(newEnvelope, notDeletedFile, notDeletedFileTimestamp);
+        break;
+      } else {
+        // TODO: if theres no more files with that currentSession, should we still delete it?
+        // that means the next currentSession update will be init=false but the one with init=true
+        // will be deleted.
+        // either we don't delete it or we generate a new envelope only with that currentSession.
       }
     }
   }
 
-  private @Nullable SentryEnvelope getEnvelope(final @NotNull File file) {
+  private @Nullable SentryEnvelope readEnvelope(final @NotNull File file) {
     try (final InputStream inputStream = new BufferedInputStream(new FileInputStream(file))) {
       return serializer.deserializeEnvelope(inputStream);
     } catch (IOException e) {
-      // TODO: catch it
+      options.getLogger().log(ERROR, "Failed to deserialize the envelope.", e);
     }
 
     return null;
   }
 
-  private @Nullable Session getSession(final @NotNull SentryEnvelope envelope) {
+  private @Nullable Session getFirstSession(final @NotNull SentryEnvelope envelope) {
     for (final SentryEnvelopeItem item : envelope.getItems()) {
-      if (!item.getHeader().getType().equals(SentryItemType.Session)) {
+      if (!isSessionType(item)) {
         continue;
       }
 
-      try (final Reader reader =
-          new BufferedReader(
-              new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8))) {
-        return serializer.deserializeSession(reader);
-      } catch (Exception e) {
-        // TODO: catch it
-      }
+      // we are assuming that there's only 1 session per envelope for now
+      return readSession(item);
     }
     return null;
+  }
+
+  private boolean isValidSession(final @Nullable Session session) {
+    if (session == null) {
+      return false;
+    }
+
+    if (!session.getStatus().equals(Session.State.Ok)) {
+      return false;
+    }
+
+    final Boolean init = session.getInit();
+    if (init == null || !init) {
+      return false;
+    }
+
+    final UUID sessionId = session.getSessionId();
+
+    if (sessionId == null) {
+      return false;
+    }
+    return true;
+  }
+
+  private boolean isSessionType(final @Nullable SentryEnvelopeItem item) {
+    if (item == null) {
+      return false;
+    }
+
+    return item.getHeader().getType().equals(SentryItemType.Session);
+  }
+
+  private @Nullable Session readSession(final @NotNull SentryEnvelopeItem item) {
+    try (final Reader reader =
+        new BufferedReader(
+            new InputStreamReader(new ByteArrayInputStream(item.getData()), UTF_8))) {
+      return serializer.deserializeSession(reader);
+    } catch (Exception e) {
+      options.getLogger().log(ERROR, "Failed to deserialize the session.", e);
+    }
+    return null;
+  }
+
+  private void saveNewEnvelope(
+      final @NotNull SentryEnvelope envelope, final @NotNull File file, final long timestamp) {
+    try (final OutputStream outputStream = new FileOutputStream(file);
+        final Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, UTF_8))) {
+      serializer.serialize(envelope, writer);
+      // we need to set the same timestamp so the sorting from oldest to newest wont break.
+      file.setLastModified(timestamp);
+    } catch (Exception e) {
+      options.getLogger().log(ERROR, "Failed to serialize the new envelope to the disk.", e);
+    }
+  }
+
+  private @NotNull SentryEnvelope buildNewEnvelope(
+      final @NotNull SentryEnvelope envelope, final @NotNull SentryEnvelopeItem sessionItem) {
+    final List<SentryEnvelopeItem> newEnvelopeItems = new ArrayList<>();
+
+    for (final SentryEnvelopeItem newEnvelopeItem : envelope.getItems()) {
+      newEnvelopeItems.add(newEnvelopeItem);
+    }
+    newEnvelopeItems.add(sessionItem);
+
+    return new SentryEnvelope(envelope.getHeader(), newEnvelopeItems);
+  }
+
+  private boolean isValidEnvelope(final @Nullable SentryEnvelope envelope) {
+    if (envelope == null) {
+      return false;
+    }
+
+    if (!envelope.getItems().iterator().hasNext()) {
+      return false;
+    }
+    return true;
   }
 }
