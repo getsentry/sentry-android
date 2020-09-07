@@ -174,7 +174,7 @@ abstract class CacheStrategy {
           try {
             newSessionItem = SentryEnvelopeItem.fromSession(serializer, session);
             // remove item from envelope items so we can replace with the new one that has the
-            // currentSessionInit flag true
+            // init flag true
             itemsIterator.remove();
           } catch (IOException e) {
             options
@@ -206,11 +206,10 @@ abstract class CacheStrategy {
         saveNewEnvelope(newEnvelope, notDeletedFile, notDeletedFileTimestamp);
         break;
       } else {
-        // TODO: if theres no more files with that currentSession, should we still delete it?
-        // that means the next currentSession update will be currentSessionInit=false but the one
-        // with currentSessionInit=true
-        // will be deleted.
-        // either we don't delete it or we generate a new envelope only with that currentSession.
+        // TODO: if theres no more files with that session id, should we still delete it?
+        // that means the next session update will be init=false but the one
+        // with init=true will be deleted.
+        // either we don't delete it or we generate a new envelope only with that session.
       }
     }
   }
