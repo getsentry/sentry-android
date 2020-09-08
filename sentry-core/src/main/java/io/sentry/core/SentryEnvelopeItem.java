@@ -1,7 +1,6 @@
 package io.sentry.core;
 
 import io.sentry.core.util.Objects;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -77,14 +76,12 @@ public final class SentryEnvelopeItem {
     return new SentryEnvelopeItem(itemHeader, () -> cachedItem.getBytes());
   }
 
-  public @Nullable SentryEvent getEvent(
-    final @NotNull ISerializer serializer) throws Exception {
+  public @Nullable SentryEvent getEvent(final @NotNull ISerializer serializer) throws Exception {
     if (header == null || header.getType() != SentryItemType.Event) {
       return null;
     }
     try (final Reader eventReader =
-           new BufferedReader(
-             new InputStreamReader(new ByteArrayInputStream(getData()), UTF_8))) {
+        new BufferedReader(new InputStreamReader(new ByteArrayInputStream(getData()), UTF_8))) {
       return serializer.deserializeEvent(eventReader);
     }
   }

@@ -3,7 +3,10 @@ package io.sentry.log4j2
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
-import io.sentry.core.*
+import io.sentry.core.GsonSerializer
+import io.sentry.core.HubAdapter
+import io.sentry.core.SentryLevel
+import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
 import java.time.Instant
 import java.time.LocalDateTime

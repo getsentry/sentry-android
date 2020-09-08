@@ -4,8 +4,10 @@ import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.verify
-import io.sentry.core.*
-import io.sentry.core.exception.ExceptionMechanismException
+import io.sentry.core.GsonSerializer
+import io.sentry.core.IHub
+import io.sentry.core.Sentry
+import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
 import java.lang.RuntimeException
 import org.assertj.core.api.Assertions.assertThat
