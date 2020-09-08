@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController
 @RunWith(SpringRunner::class)
 @SpringBootTest(
     classes = [App::class],
-    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = ["sentry.dsn=http://key@localhost/proj", "sentry.send-default-pii=true"]
 )
 class SentrySpringIntegrationTest {
