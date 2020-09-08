@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.config.KotlinCompilerVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -20,7 +21,7 @@ dependencies {
     implementation(Config.Libs.springBootStarterWeb)
     implementation(Config.Libs.springBootStarter)
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation(kotlin(Config.kotlinStdLib, KotlinCompilerVersion.VERSION))
     implementation(project(":sentry-spring"))
     implementation(project(":sentry-logback"))
     testImplementation(Config.Libs.springBootStarterTest) {
