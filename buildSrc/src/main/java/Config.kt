@@ -41,8 +41,9 @@ object Config {
         val androidxCore = "androidx.test:core:$androidxTestVersion"
         val androidxRunner = "androidx.test:runner:$androidxTestVersion"
         val androidxJunit = "androidx.test.ext:junit:1.1.2"
-        val robolectric = "org.robolectric:robolectric:4.3.1"
+        val robolectric = "org.robolectric:robolectric:4.4"
         val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+        val mockitoInline = "org.mockito:mockito-inline:3.5.10"
         val awaitility = "org.awaitility:awaitility-kotlin:4.0.3"
     }
 
