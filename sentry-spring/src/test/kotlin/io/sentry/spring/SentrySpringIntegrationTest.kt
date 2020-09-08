@@ -9,6 +9,7 @@ import io.sentry.core.IHub
 import io.sentry.core.Sentry
 import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
+import io.sentry.test.assertEventMatches
 import java.lang.RuntimeException
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -70,12 +71,13 @@ class SentrySpringIntegrationTest {
 
         await.untilAsserted {
             verify(transport).send(check {
-                val event = it.items.first().getEvent(options.serializer)!!
-                assertThat(event.request).isNotNull()
-                assertThat(event.request.url).isEqualTo("http://localhost:$port/hello")
-                assertThat(event.user).isNotNull()
-                assertThat(event.user.username).isEqualTo("user")
-                assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
+                assertEventMatches(it) { event ->
+                    assertThat(event.request).isNotNull()
+                    assertThat(event.request.url).isEqualTo("http://localhost:$port/hello")
+                    assertThat(event.user).isNotNull()
+                    assertThat(event.user.username).isEqualTo("user")
+                    assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
+                }
             })
         }
     }
@@ -91,8 +93,9 @@ class SentrySpringIntegrationTest {
 
         await.untilAsserted {
             verify(transport).send(check {
-                val event = it.items.first().getEvent(options.serializer)!!
-                assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
+                assertEventMatches(it) { event ->
+                    assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
+                }
             })
         }
     }
@@ -105,11 +108,12 @@ class SentrySpringIntegrationTest {
 
         await.untilAsserted {
             verify(transport).send(check {
-                val event = it.items.first().getEvent(options.serializer)!!
-                assertThat(event.exceptions).isNotEmpty
-                val ex = event.exceptions.first()
-                assertThat(ex.value).isEqualTo("something went wrong")
-                assertThat(ex.mechanism.isHandled).isFalse()
+                assertEventMatches(it) { event ->
+                    assertThat(event.exceptions).isNotEmpty
+                    val ex = event.exceptions.first()
+                    assertThat(ex.value).isEqualTo("something went wrong")
+                    assertThat(ex.mechanism.isHandled).isFalse()
+                }
             })
         }
     }

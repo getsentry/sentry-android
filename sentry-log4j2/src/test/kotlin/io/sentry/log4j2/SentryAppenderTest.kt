@@ -8,6 +8,7 @@ import io.sentry.core.HubAdapter
 import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
+import io.sentry.test.assertEventMatches
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -79,11 +80,12 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals("testing message conversion 1, 2", event.message.formatted)
-                assertEquals("testing message conversion {}, {}", event.message.message)
-                assertEquals(listOf("1", "2"), event.message.params)
-                assertEquals("io.sentry.log4j2.SentryAppenderTest", event.logger)
+                assertEventMatches(it) { event ->
+                    assertEquals("testing message conversion 1, 2", event.message.formatted)
+                    assertEquals("testing message conversion {}, {}", event.message.message)
+                    assertEquals(listOf("1", "2"), event.message.params)
+                    assertEquals("io.sentry.log4j2.SentryAppenderTest", event.logger)
+                }
             })
         }
     }
@@ -98,13 +100,14 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                val eventTime = Instant.ofEpochMilli(event.timestamp.time)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime()
+                assertEventMatches(it) { event ->
+                    val eventTime = Instant.ofEpochMilli(event.timestamp.time)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
 
-                assertTrue { eventTime.plusSeconds(1).isAfter(utcTime) }
-                assertTrue { eventTime.minusSeconds(1).isBefore(utcTime) }
+                    assertTrue { eventTime.plusSeconds(1).isAfter(utcTime) }
+                    assertTrue { eventTime.minusSeconds(1).isBefore(utcTime) }
+                }
             })
         }
     }
@@ -117,8 +120,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(SentryLevel.DEBUG, event.level)
+                assertEventMatches(it) { event ->
+                    assertEquals(SentryLevel.DEBUG, event.level)
+                }
             })
         }
     }
@@ -131,8 +135,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(SentryLevel.DEBUG, event.level)
+                assertEventMatches(it) { event ->
+                    assertEquals(SentryLevel.DEBUG, event.level)
+                }
             })
         }
     }
@@ -145,8 +150,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(SentryLevel.INFO, event.level)
+                assertEventMatches(it) { event ->
+                    assertEquals(SentryLevel.INFO, event.level)
+                }
             })
         }
     }
@@ -159,8 +165,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(SentryLevel.WARNING, event.level)
+                assertEventMatches(it) { event ->
+                    assertEquals(SentryLevel.WARNING, event.level)
+                }
             })
         }
     }
@@ -173,8 +180,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(SentryLevel.ERROR, event.level)
+                assertEventMatches(it) { event ->
+                    assertEquals(SentryLevel.ERROR, event.level)
+                }
             })
         }
     }
@@ -187,8 +195,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(SentryLevel.FATAL, event.level)
+                assertEventMatches(it) { event ->
+                    assertEquals(SentryLevel.FATAL, event.level)
+                }
             })
         }
     }
@@ -201,8 +210,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertNotNull(event.getExtra("thread_name"))
+                assertEventMatches(it) { event ->
+                    assertNotNull(event.getExtra("thread_name"))
+                }
             })
         }
     }
@@ -216,8 +226,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(mapOf("key" to "value"), event.contexts["Context Data"])
+                assertEventMatches(it) { event ->
+                    assertEquals(mapOf("key" to "value"), event.contexts["Context Data"])
+                }
             })
         }
     }
@@ -230,8 +241,9 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertFalse(event.contexts.containsKey("MDC"))
+                assertEventMatches(it) { event ->
+                    assertFalse(event.contexts.containsKey("MDC"))
+                }
             })
         }
     }
@@ -244,14 +256,15 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(BuildConfig.SENTRY_LOG4J2_SDK_NAME, event.sdk.name)
-                assertEquals(BuildConfig.VERSION_NAME, event.sdk.version)
-                assertNotNull(event.sdk.packages)
-                assertTrue(event.sdk.packages!!.any { pkg ->
-                    "maven:sentry-log4j2" == pkg.name &&
-                        BuildConfig.VERSION_NAME == pkg.version
-                })
+                assertEventMatches(it) { event ->
+                    assertEquals(BuildConfig.SENTRY_LOG4J2_SDK_NAME, event.sdk.name)
+                    assertEquals(BuildConfig.VERSION_NAME, event.sdk.version)
+                    assertNotNull(event.sdk.packages)
+                    assertTrue(event.sdk.packages!!.any { pkg ->
+                        "maven:sentry-log4j2" == pkg.name &&
+                            BuildConfig.VERSION_NAME == pkg.version
+                    })
+                }
             })
         }
     }
@@ -269,17 +282,18 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(2, event.breadcrumbs.size)
-                val breadcrumb = event.breadcrumbs[0]
-                val breadcrumbTime = Instant.ofEpochMilli(event.timestamp.time)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime()
-                assertTrue { breadcrumbTime.plusSeconds(1).isAfter(utcTime) }
-                assertTrue { breadcrumbTime.minusSeconds(1).isBefore(utcTime) }
-                assertEquals("this should be a breadcrumb #1", breadcrumb.message)
-                assertEquals("io.sentry.log4j2.SentryAppenderTest", breadcrumb.category)
-                assertEquals(SentryLevel.DEBUG, breadcrumb.level)
+                assertEventMatches(it) { event ->
+                    assertEquals(2, event.breadcrumbs.size)
+                    val breadcrumb = event.breadcrumbs[0]
+                    val breadcrumbTime = Instant.ofEpochMilli(event.timestamp.time)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+                    assertTrue { breadcrumbTime.plusSeconds(1).isAfter(utcTime) }
+                    assertTrue { breadcrumbTime.minusSeconds(1).isBefore(utcTime) }
+                    assertEquals("this should be a breadcrumb #1", breadcrumb.message)
+                    assertEquals("io.sentry.log4j2.SentryAppenderTest", breadcrumb.category)
+                    assertEquals(SentryLevel.DEBUG, breadcrumb.level)
+                }
             })
         }
     }
@@ -296,9 +310,10 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(1, event.breadcrumbs.size)
-                assertEquals("this should be a breadcrumb", event.breadcrumbs[0].message)
+                assertEventMatches(it) { event ->
+                    assertEquals(1, event.breadcrumbs.size)
+                    assertEquals("this should be a breadcrumb", event.breadcrumbs[0].message)
+                }
             })
         }
     }
@@ -314,10 +329,11 @@ class SentryAppenderTest {
 
         await.untilAsserted {
             verify(fixture.transport).send(check {
-                val event = it.items.first().getEvent(fixture.options.serializer)!!
-                assertEquals(2, event.breadcrumbs.size)
-                assertEquals("this should be a breadcrumb", event.breadcrumbs[0].message)
-                assertEquals("this should not be sent as the event but be a breadcrumb", event.breadcrumbs[1].message)
+                assertEventMatches(it) { event ->
+                    assertEquals(2, event.breadcrumbs.size)
+                    assertEquals("this should be a breadcrumb", event.breadcrumbs[0].message)
+                    assertEquals("this should not be sent as the event but be a breadcrumb", event.breadcrumbs[1].message)
+                }
             })
         }
     }
