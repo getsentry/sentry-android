@@ -29,7 +29,7 @@ object Config {
         val gson = "com.google.code.gson:gson:2.8.5"
         val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.4"
 
-        val lifecycleVersion = "2.2.0"
+        private val lifecycleVersion = "2.2.0"
         val lifecycleProcess = "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
         val lifecycleCommonJava8 = "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
     }
