@@ -1,5 +1,5 @@
 object Config {
-    val kotlinVersion = "1.3.72"
+    val kotlinVersion = "1.4.0"
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
