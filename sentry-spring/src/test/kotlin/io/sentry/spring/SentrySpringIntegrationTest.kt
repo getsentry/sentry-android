@@ -1,15 +1,13 @@
 package io.sentry.spring
 
-import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.verify
-import io.sentry.core.GsonSerializer
 import io.sentry.core.IHub
 import io.sentry.core.Sentry
 import io.sentry.core.SentryOptions
 import io.sentry.core.transport.ITransport
-import io.sentry.test.assertEventMatches
+import io.sentry.test.checkEvent
 import java.lang.RuntimeException
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -45,9 +43,6 @@ import org.springframework.web.bind.annotation.RestController
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 class SentrySpringIntegrationTest {
-    var options = SentryOptions().apply {
-        setSerializer(GsonSerializer(mock(), envelopeReader))
-    }
 
     @Autowired
     lateinit var transport: ITransport
@@ -70,14 +65,12 @@ class SentrySpringIntegrationTest {
         restTemplate.exchange("http://localhost:$port/hello", HttpMethod.GET, entity, Void::class.java)
 
         await.untilAsserted {
-            verify(transport).send(check {
-                assertEventMatches(it) { event ->
-                    assertThat(event.request).isNotNull()
-                    assertThat(event.request.url).isEqualTo("http://localhost:$port/hello")
-                    assertThat(event.user).isNotNull()
-                    assertThat(event.user.username).isEqualTo("user")
-                    assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
-                }
+            verify(transport).send(checkEvent { event ->
+                assertThat(event.request).isNotNull()
+                assertThat(event.request.url).isEqualTo("http://localhost:$port/hello")
+                assertThat(event.user).isNotNull()
+                assertThat(event.user.username).isEqualTo("user")
+                assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
             })
         }
     }
@@ -92,10 +85,8 @@ class SentrySpringIntegrationTest {
         restTemplate.exchange("http://localhost:$port/hello", HttpMethod.GET, entity, Void::class.java)
 
         await.untilAsserted {
-            verify(transport).send(check {
-                assertEventMatches(it) { event ->
-                    assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
-                }
+            verify(transport).send(checkEvent { event ->
+                assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
             })
         }
     }
@@ -107,13 +98,11 @@ class SentrySpringIntegrationTest {
         restTemplate.getForEntity("http://localhost:$port/throws", String::class.java)
 
         await.untilAsserted {
-            verify(transport).send(check {
-                assertEventMatches(it) { event ->
-                    assertThat(event.exceptions).isNotEmpty
-                    val ex = event.exceptions.first()
-                    assertThat(ex.value).isEqualTo("something went wrong")
-                    assertThat(ex.mechanism.isHandled).isFalse()
-                }
+            verify(transport).send(checkEvent { event ->
+                assertThat(event.exceptions).isNotEmpty
+                val ex = event.exceptions.first()
+                assertThat(ex.value).isEqualTo("something went wrong")
+                assertThat(ex.mechanism.isHandled).isFalse()
             })
         }
     }
