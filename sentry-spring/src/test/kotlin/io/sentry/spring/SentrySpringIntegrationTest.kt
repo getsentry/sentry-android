@@ -4,10 +4,7 @@ import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.verify
-import io.sentry.core.IHub
-import io.sentry.core.Sentry
-import io.sentry.core.SentryEvent
-import io.sentry.core.SentryOptions
+import io.sentry.core.*
 import io.sentry.core.exception.ExceptionMechanismException
 import io.sentry.core.transport.ITransport
 import java.lang.RuntimeException
@@ -45,6 +42,9 @@ import org.springframework.web.bind.annotation.RestController
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 class SentrySpringIntegrationTest {
+    var options = SentryOptions().apply {
+        setSerializer(GsonSerializer(mock(), envelopeReader))
+    }
 
     @Autowired
     lateinit var transport: ITransport
@@ -67,7 +67,8 @@ class SentrySpringIntegrationTest {
         restTemplate.exchange("http://localhost:$port/hello", HttpMethod.GET, entity, Void::class.java)
 
         await.untilAsserted {
-            verify(transport).send(check { event: SentryEvent ->
+            verify(transport).send(check {
+                val event = it.items.first().getEvent(options.serializer)!!
                 assertThat(event.request).isNotNull()
                 assertThat(event.request.url).isEqualTo("http://localhost:$port/hello")
                 assertThat(event.user).isNotNull()
@@ -87,7 +88,8 @@ class SentrySpringIntegrationTest {
         restTemplate.exchange("http://localhost:$port/hello", HttpMethod.GET, entity, Void::class.java)
 
         await.untilAsserted {
-            verify(transport).send(check { event: SentryEvent ->
+            verify(transport).send(check {
+                val event = it.items.first().getEvent(options.serializer)!!
                 assertThat(event.user.ipAddress).isEqualTo("169.128.0.1")
             })
         }
@@ -100,12 +102,12 @@ class SentrySpringIntegrationTest {
         restTemplate.getForEntity("http://localhost:$port/throws", String::class.java)
 
         await.untilAsserted {
-            verify(transport).send(check { event: SentryEvent ->
-                assertThat(event.throwable).isNotNull()
-                assertThat(event.throwable).isInstanceOf(ExceptionMechanismException::class.java)
-                val ex = event.throwable as ExceptionMechanismException
-                assertThat(ex.throwable.message).isEqualTo("something went wrong")
-                assertThat(ex.exceptionMechanism.isHandled).isFalse()
+            verify(transport).send(check {
+                val event = it.items.first().getEvent(options.serializer)!!
+                assertThat(event.exceptions).isNotEmpty
+                val ex = event.exceptions.first()
+                assertThat(ex.value).isEqualTo("something went wrong")
+                assertThat(ex.mechanism.isHandled).isFalse()
             })
         }
     }

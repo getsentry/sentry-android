@@ -7,9 +7,7 @@ import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import io.sentry.core.SentryEvent
-import io.sentry.core.SentryLevel
-import io.sentry.core.SentryOptions
+import io.sentry.core.*
 import io.sentry.core.transport.ITransport
 import io.sentry.core.transport.TransportResult
 import java.time.Instant
@@ -32,9 +30,12 @@ class SentryAppenderTest {
         val transport = mock<ITransport>()
         val logger: Logger = LoggerFactory.getLogger(SentryAppenderTest::class.java)
         val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
+        var options = SentryOptions().apply {
+            setSerializer(GsonSerializer(mock(), envelopeReader))
+        }
 
         init {
-            whenever(transport.send(any<SentryEvent>())).thenReturn(TransportResult.success())
+            whenever(transport.send(any())).thenReturn(TransportResult.success())
             val appender = SentryAppender()
             val options = SentryOptions()
             options.dsn = "http://key@localhost/proj"
@@ -69,11 +70,12 @@ class SentryAppenderTest {
         fixture.logger.debug("testing message conversion {}, {}", 1, 2)
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals("testing message conversion 1, 2", it.message.formatted)
-                assertEquals("testing message conversion {}, {}", it.message.message)
-                assertEquals(listOf("1", "2"), it.message.params)
-                assertEquals("io.sentry.logback.SentryAppenderTest", it.logger)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals("testing message conversion 1, 2", event.message.formatted)
+                assertEquals("testing message conversion {}, {}", event.message.message)
+                assertEquals(listOf("1", "2"), event.message.params)
+                assertEquals("io.sentry.logback.SentryAppenderTest", event.logger)
             })
         }
     }
@@ -86,8 +88,9 @@ class SentryAppenderTest {
         fixture.logger.debug("testing event date")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                val eventTime = Instant.ofEpochMilli(it.timestamp.time)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                val eventTime = Instant.ofEpochMilli(event.timestamp.time)
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime()
 
@@ -103,8 +106,9 @@ class SentryAppenderTest {
         fixture.logger.trace("testing trace level")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(SentryLevel.DEBUG, it.level)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(SentryLevel.DEBUG, event.level)
             })
         }
     }
@@ -115,8 +119,9 @@ class SentryAppenderTest {
         fixture.logger.debug("testing debug level")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(SentryLevel.DEBUG, it.level)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(SentryLevel.DEBUG, event.level)
             })
         }
     }
@@ -127,8 +132,9 @@ class SentryAppenderTest {
         fixture.logger.info("testing info level")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(SentryLevel.INFO, it.level)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(SentryLevel.INFO, event.level)
             })
         }
     }
@@ -139,8 +145,9 @@ class SentryAppenderTest {
         fixture.logger.warn("testing warn level")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(SentryLevel.WARNING, it.level)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(SentryLevel.WARNING, event.level)
             })
         }
     }
@@ -151,8 +158,9 @@ class SentryAppenderTest {
         fixture.logger.error("testing error level")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(SentryLevel.ERROR, it.level)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(SentryLevel.ERROR, event.level)
             })
         }
     }
@@ -163,8 +171,9 @@ class SentryAppenderTest {
         fixture.logger.warn("testing thread information")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertNotNull(it.getExtra("thread_name"))
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertNotNull(event.getExtra("thread_name"))
             })
         }
     }
@@ -176,8 +185,9 @@ class SentryAppenderTest {
         fixture.logger.warn("testing MDC tags")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(mapOf("key" to "value"), it.contexts["MDC"])
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(mapOf("key" to "value"), event.contexts["MDC"])
             })
         }
     }
@@ -188,21 +198,9 @@ class SentryAppenderTest {
         fixture.logger.warn("testing without MDC tags")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertFalse(it.contexts.containsKey("MDC"))
-            })
-        }
-    }
-
-    @Test
-    fun `attaches throwable`() {
-        fixture = Fixture(minimumEventLevel = Level.WARN)
-        val throwable = RuntimeException("something went wrong")
-        fixture.logger.warn("testing throwable", throwable)
-
-        await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(throwable, it.throwable)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertFalse(event.contexts.containsKey("MDC"))
             })
         }
     }
@@ -213,11 +211,12 @@ class SentryAppenderTest {
         fixture.logger.info("testing sdk version")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(BuildConfig.SENTRY_LOGBACK_SDK_NAME, it.sdk.name)
-                assertEquals(BuildConfig.VERSION_NAME, it.sdk.version)
-                assertNotNull(it.sdk.packages)
-                assertTrue(it.sdk.packages!!.any { pkg ->
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(BuildConfig.SENTRY_LOGBACK_SDK_NAME, event.sdk.name)
+                assertEquals(BuildConfig.VERSION_NAME, event.sdk.version)
+                assertNotNull(event.sdk.packages)
+                assertTrue(event.sdk.packages!!.any { pkg ->
                     "maven:sentry-logback" == pkg.name &&
                         BuildConfig.VERSION_NAME == pkg.version
                 })
@@ -235,10 +234,11 @@ class SentryAppenderTest {
         fixture.logger.warn("testing message with breadcrumbs")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(2, it.breadcrumbs.size)
-                val breadcrumb = it.breadcrumbs[0]
-                val breadcrumbTime = Instant.ofEpochMilli(it.timestamp.time)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(2, event.breadcrumbs.size)
+                val breadcrumb = event.breadcrumbs[0]
+                val breadcrumbTime = Instant.ofEpochMilli(event.timestamp.time)
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime()
                 assertTrue { breadcrumbTime.plusSeconds(1).isAfter(utcTime) }
@@ -259,9 +259,10 @@ class SentryAppenderTest {
         fixture.logger.warn("testing message with breadcrumbs")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(1, it.breadcrumbs.size)
-                assertEquals("this should be a breadcrumb", it.breadcrumbs[0].message)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(1, event.breadcrumbs.size)
+                assertEquals("this should be a breadcrumb", event.breadcrumbs[0].message)
             })
         }
     }
@@ -276,10 +277,11 @@ class SentryAppenderTest {
         fixture.logger.error("this should be sent as the event")
 
         await.untilAsserted {
-            verify(fixture.transport).send(check { it: SentryEvent ->
-                assertEquals(2, it.breadcrumbs.size)
-                assertEquals("this should be a breadcrumb", it.breadcrumbs[0].message)
-                assertEquals("this should not be sent as the event but be a breadcrumb", it.breadcrumbs[1].message)
+            verify(fixture.transport).send(check {
+                val event = it.items.first().getEvent(fixture.options.serializer)!!
+                assertEquals(2, event.breadcrumbs.size)
+                assertEquals("this should be a breadcrumb", event.breadcrumbs[0].message)
+                assertEquals("this should not be sent as the event but be a breadcrumb", event.breadcrumbs[1].message)
             })
         }
     }

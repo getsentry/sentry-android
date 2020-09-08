@@ -4,14 +4,7 @@ import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import io.sentry.core.Breadcrumb
-import io.sentry.core.EventProcessor
-import io.sentry.core.IHub
-import io.sentry.core.Integration
-import io.sentry.core.Sentry
-import io.sentry.core.SentryEvent
-import io.sentry.core.SentryLevel
-import io.sentry.core.SentryOptions
+import io.sentry.core.*
 import io.sentry.core.transport.ITransport
 import io.sentry.core.transport.ITransportGate
 import kotlin.test.Test
@@ -25,6 +18,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 class SentryAutoConfigurationTest {
+    var options = SentryOptions().apply {
+        setSerializer(GsonSerializer(mock(), envelopeReader))
+    }
+
     private val contextRunner = ApplicationContextRunner()
         .withConfiguration(AutoConfigurations.of(SentryAutoConfiguration::class.java, WebMvcAutoConfiguration::class.java))
 
@@ -120,7 +117,8 @@ class SentryAutoConfigurationTest {
                 Sentry.captureMessage("Some message")
                 val transport = it.getBean(ITransport::class.java)
                 await.untilAsserted {
-                    verify(transport).send(check { event: SentryEvent ->
+                    verify(transport).send(check {
+                        val event = it.items.first().getEvent(options.serializer)!!
                         assertThat(event.sdk.version).isEqualTo(BuildConfig.VERSION_NAME)
                         assertThat(event.sdk.name).isEqualTo(BuildConfig.SENTRY_SPRING_BOOT_SDK_NAME)
                         assertThat(event.sdk.packages).anyMatch { pkg ->
@@ -183,7 +181,8 @@ class SentryAutoConfigurationTest {
                 Sentry.captureMessage("Some message")
                 val transport = it.getBean(ITransport::class.java)
                 await.untilAsserted {
-                    verify(transport).send(check { event: SentryEvent ->
+                    verify(transport).send(check {
+                        val event = it.items.first().getEvent(options.serializer)!!
                         assertThat(event.release).isEqualTo("git-commit-id")
                     })
                 }
@@ -198,7 +197,8 @@ class SentryAutoConfigurationTest {
                 Sentry.captureMessage("Some message")
                 val transport = it.getBean(ITransport::class.java)
                 await.untilAsserted {
-                    verify(transport).send(check { event: SentryEvent ->
+                    verify(transport).send(check {
+                        val event = it.items.first().getEvent(options.serializer)!!
                         assertThat(event.release).isEqualTo("my-release")
                     })
                 }
