@@ -17,7 +17,7 @@ class HttpServletRequestSentryUserProviderTest {
     @Test
     fun `attaches user's IP address to Sentry Event`() {
         val request = MockHttpServletRequest()
-        request.addHeader("X-FORWARDED-FOR", "192.168.0.1")
+        request.addHeader("X-FORWARDED-FOR", "192.168.0.1,192.168.0.2")
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
 
         val options = SentryOptions()
