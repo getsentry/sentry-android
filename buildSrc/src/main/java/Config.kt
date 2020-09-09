@@ -3,8 +3,10 @@ object Config {
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
-        val androidGradle = "com.android.tools.build:gradle:4.0.0"
+        val androidGradle = "com.android.tools.build:gradle:4.0.1"
         val kotlinGradlePlugin = "gradle-plugin"
+        val buildConfig = "com.github.gmazzo.buildconfig"
+        val buildConfigVersion = "2.0.2"
     }
 
     object Android {
@@ -46,19 +48,20 @@ object Config {
 
     object QualityPlugins {
         val jacocoVersion = "0.8.5"
-        val spotless = "com.diffplug.gradle.spotless"
-        val spotlessVersion = "4.4.0"
+        val spotless = "com.diffplug.spotless"
+        val spotlessVersion = "5.1.0"
         val errorProne = "net.ltgt.errorprone"
         val errorpronePlugin = "net.ltgt.gradle:gradle-errorprone-plugin:1.2.1"
-        val gradleVersionsPlugin = "com.github.ben-manes:gradle-versions-plugin:0.28.0"
+        val gradleVersionsPlugin = "com.github.ben-manes:gradle-versions-plugin:0.29.0"
         val gradleVersions = "com.github.ben-manes.versions"
         val detekt = "io.gitlab.arturbosch.detekt"
-        val detektVersion = "1.9.1"
+        val detektVersion = "1.10.0"
         val detektPlugin = "io.gitlab.arturbosch.detekt"
     }
 
     object Sentry {
-        val SENTRY_CLIENT_NAME = "sentry.java.android"
+        val SENTRY_JAVA_SDK_NAME = "sentry.java"
+        val SENTRY_ANDROID_SDK_NAME = "$SENTRY_JAVA_SDK_NAME.android"
         val group = "io.sentry"
         val description = "SDK for sentry.io"
         val website = "https://sentry.io"
@@ -80,7 +83,7 @@ object Config {
     object CompileOnly {
         private val nopenVersion = "1.0.1"
 
-        val jetbrainsAnnotations = "org.jetbrains:annotations:19.0.0"
+        val jetbrainsAnnotations = "org.jetbrains:annotations:20.0.0"
         val nopen = "com.jakewharton.nopen:nopen-annotations:$nopenVersion"
         val nopenChecker = "com.jakewharton.nopen:nopen-checker:$nopenVersion"
         val errorprone = "com.google.errorprone:error_prone_core:2.4.0"

@@ -1,9 +1,15 @@
 package io.sentry.core;
 
 import com.jakewharton.nopen.annotation.Open;
-import io.sentry.core.protocol.SdkInfo;
+import io.sentry.core.cache.IEnvelopeCache;
+import io.sentry.core.cache.IEventCache;
+import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.transport.ITransport;
 import io.sentry.core.transport.ITransportGate;
+import io.sentry.core.transport.NoOpEnvelopeCache;
+import io.sentry.core.transport.NoOpEventCache;
+import io.sentry.core.transport.NoOpTransport;
+import io.sentry.core.transport.NoOpTransportGate;
 import java.io.File;
 import java.net.Proxy;
 import java.util.List;
@@ -69,6 +75,8 @@ public class SentryOptions {
   /** Serializer interface to serialize/deserialize json events */
   private @NotNull ISerializer serializer = NoOpSerializer.getInstance();
 
+  private @NotNull IEnvelopeReader envelopeReader = new EnvelopeReader();
+
   /**
    * Sentry client name used for the HTTP authHeader and userAgent eg
    * sentry.{language}.{platform}/{version} eg sentry.java.android/2.0.0 would be a valid case
@@ -95,6 +103,9 @@ public class SentryOptions {
 
   /** The sessions dir. size for capping the number of envelopes Default is 100 */
   private int sessionsDirSize = 100;
+
+  /** Max. queue size before flushing events/envelopes to the disk */
+  private int maxQueueSize = cacheDirSize + sessionsDirSize;
 
   /**
    * This variable controls the total amount of breadcrumbs that should be captured Default is 100
@@ -138,13 +149,13 @@ public class SentryOptions {
   private final @NotNull List<String> inAppIncludes = new CopyOnWriteArrayList<>();
 
   /** The transport is an internal construct of the client that abstracts away the event sending. */
-  private @Nullable ITransport transport;
+  private @NotNull ITransport transport = NoOpTransport.getInstance();
 
   /**
    * Implementations of this interface serve as gatekeepers that allow or disallow sending of the
    * events
    */
-  private @Nullable ITransportGate transportGate;
+  private @NotNull ITransportGate transportGate = NoOpTransportGate.getInstance();
 
   /** Sets the distribution. Think about it together with release and environment */
   private @Nullable String dist;
@@ -190,8 +201,14 @@ public class SentryOptions {
   /** whether to ignore TLS errors */
   private boolean bypassSecurity = false;
 
-  /** SdkInfo object that contains the Sentry Client Name and its version */
-  private @Nullable SdkInfo sdkInfo;
+  /** Reads and caches event json files in the disk */
+  private @NotNull IEventCache eventDiskCache = NoOpEventCache.getInstance();
+
+  /** Reads and caches envelope files in the disk */
+  private @NotNull IEnvelopeCache envelopeDiskCache = NoOpEnvelopeCache.getInstance();
+
+  /** SdkVersion object that contains the Sentry Client Name and its version */
+  private @Nullable SdkVersion sdkVersion;
 
   /**
    * Adds an event processor
@@ -317,6 +334,15 @@ public class SentryOptions {
    */
   public void setSerializer(@Nullable ISerializer serializer) {
     this.serializer = serializer != null ? serializer : NoOpSerializer.getInstance();
+  }
+
+  public @NotNull IEnvelopeReader getEnvelopeReader() {
+    return envelopeReader;
+  }
+
+  public void setEnvelopeReader(final @Nullable IEnvelopeReader envelopeReader) {
+    this.envelopeReader =
+        envelopeReader != null ? envelopeReader : NoOpEnvelopeReader.getInstance();
   }
 
   /**
@@ -606,7 +632,7 @@ public class SentryOptions {
    *
    * @return the transport
    */
-  public @Nullable ITransport getTransport() {
+  public @NotNull ITransport getTransport() {
     return transport;
   }
 
@@ -616,7 +642,7 @@ public class SentryOptions {
    * @param transport the transport
    */
   public void setTransport(@Nullable ITransport transport) {
-    this.transport = transport;
+    this.transport = transport != null ? transport : NoOpTransport.getInstance();
   }
 
   /**
@@ -642,7 +668,7 @@ public class SentryOptions {
    *
    * @return the transport gate
    */
-  public @Nullable ITransportGate getTransportGate() {
+  public @NotNull ITransportGate getTransportGate() {
     return transportGate;
   }
 
@@ -652,7 +678,7 @@ public class SentryOptions {
    * @param transportGate the transport gate
    */
   public void setTransportGate(@Nullable ITransportGate transportGate) {
-    this.transportGate = transportGate;
+    this.transportGate = (transportGate != null) ? transportGate : NoOpTransportGate.getInstance();
   }
 
   /**
@@ -895,22 +921,79 @@ public class SentryOptions {
   }
 
   /**
-   * Returns the SdkInfo object
+   * Returns the EventCache interface
    *
-   * @return the SdkInfo object or null
+   * @return the EventCache object
    */
-  public @Nullable SdkInfo getSdkInfo() {
-    return sdkInfo;
+  public @NotNull IEventCache getEventDiskCache() {
+    return eventDiskCache;
   }
 
   /**
-   * Sets the SdkInfo object
+   * Sets the EventCache interface
    *
-   * @param sdkInfo the sdkInfo object or null
+   * @param eventDiskCache the EventCache object
+   */
+  public void setEventDiskCache(final @Nullable IEventCache eventDiskCache) {
+    this.eventDiskCache = eventDiskCache != null ? eventDiskCache : NoOpEventCache.getInstance();
+  }
+
+  /**
+   * Returns the EnvelopeCache interface
+   *
+   * @return the EnvelopeCache object
+   */
+  public @NotNull IEnvelopeCache getEnvelopeDiskCache() {
+    return envelopeDiskCache;
+  }
+
+  /**
+   * Sets the EnvelopeCache interface
+   *
+   * @param envelopeDiskCache the EnvelopeCache object
+   */
+  public void setEnvelopeDiskCache(final @Nullable IEnvelopeCache envelopeDiskCache) {
+    this.envelopeDiskCache =
+        envelopeDiskCache != null ? envelopeDiskCache : NoOpEnvelopeCache.getInstance();
+  }
+
+  /**
+   * Returns the Max queue size
+   *
+   * @return the max queue size
+   */
+  public int getMaxQueueSize() {
+    return maxQueueSize;
+  }
+
+  /**
+   * Sets the max queue size if maxQueueSize is bigger than 0
+   *
+   * @param maxQueueSize max queue size
+   */
+  public void setMaxQueueSize(int maxQueueSize) {
+    if (maxQueueSize > 0) {
+      this.maxQueueSize = maxQueueSize;
+    }
+  }
+
+  /**
+   * Returns the SdkVersion object
+   *
+   * @return the SdkVersion object or null
+   */
+  public @Nullable SdkVersion getSdkVersion() {
+    return sdkVersion;
+  }
+
+  /**
+   * Sets the SdkVersion object
+   *
+   * @param sdkVersion the SdkVersion object or null
    */
   @ApiStatus.Internal
-  public void setSdkInfo(final @Nullable SdkInfo sdkInfo) {
-    this.sdkInfo = sdkInfo;
+  public void setSdkVersion(final @Nullable SdkVersion sdkVersion) {
+    this.sdkVersion = sdkVersion;
   }
 
   /** The BeforeSend callback */
@@ -950,14 +1033,22 @@ public class SentryOptions {
     // if there's an error on the setup, we are able to capture it
     integrations.add(new UncaughtExceptionHandlerIntegration());
 
+    integrations.add(new ShutdownHookIntegration());
+
     eventProcessors.add(new MainEventProcessor(this));
 
-    integrations.add(
-        new SendCachedEventFireAndForgetIntegration(
-            new SendFireAndForgetEventSender(() -> getCacheDirPath())));
+    setSentryClientName(BuildConfig.SENTRY_JAVA_SDK_NAME + "/" + BuildConfig.VERSION_NAME);
+    setSdkVersion(createSdkVersion());
+  }
 
-    integrations.add(
-        new SendCachedEventFireAndForgetIntegration(
-            new SendFireAndForgetEnvelopeSender(() -> getSessionsPath())));
+  private @NotNull SdkVersion createSdkVersion() {
+    final SdkVersion sdkVersion = new SdkVersion();
+
+    sdkVersion.setName(BuildConfig.SENTRY_JAVA_SDK_NAME);
+    String version = BuildConfig.VERSION_NAME;
+    sdkVersion.setVersion(version);
+    sdkVersion.addPackage("maven:sentry-core", version);
+
+    return sdkVersion;
   }
 }

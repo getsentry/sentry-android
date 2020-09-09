@@ -136,9 +136,9 @@ public final class SessionCache implements IEnvelopeCache {
 
             session.end(timestamp);
             // if the App. has been upgraded and there's a new version of the SDK running,
-            // SdkInfo will be outdated.
+            // SdkVersion will be outdated.
             final SentryEnvelope fromSession =
-                SentryEnvelope.fromSession(serializer, session, options.getSdkInfo());
+                SentryEnvelope.fromSession(serializer, session, options.getSdkVersion());
             final File fileFromSession = getEnvelopeFile(fromSession);
             writeEnvelopeToDisk(fileFromSession, fromSession);
           }
@@ -193,6 +193,8 @@ public final class SessionCache implements IEnvelopeCache {
       return DateUtils.getDateTime(timestamp);
     } catch (IOException e) {
       options.getLogger().log(ERROR, "Error reading the crash marker file.", e);
+    } catch (IllegalArgumentException e) {
+      options.getLogger().log(SentryLevel.ERROR, e, "Error converting the crash timestamp.");
     }
     return null;
   }
@@ -215,8 +217,7 @@ public final class SessionCache implements IEnvelopeCache {
                 .getLogger()
                 .log(
                     SentryLevel.ERROR,
-                    "Item %d of type %s returned null by the parser.",
-                    items,
+                    "Item of type %s returned null by the parser.",
                     item.getHeader().getType());
           } else {
             writeSessionToDisk(currentSessionFile, session);

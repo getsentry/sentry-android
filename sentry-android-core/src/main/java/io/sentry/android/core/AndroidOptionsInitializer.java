@@ -6,14 +6,12 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.os.Build;
-import io.sentry.core.EnvelopeReader;
-import io.sentry.core.IEnvelopeReader;
 import io.sentry.core.ILogger;
 import io.sentry.core.SendCachedEventFireAndForgetIntegration;
 import io.sentry.core.SendFireAndForgetEnvelopeSender;
+import io.sentry.core.SendFireAndForgetEventSender;
 import io.sentry.core.SentryLevel;
 import io.sentry.core.SentryOptions;
-import io.sentry.core.protocol.SdkInfo;
 import io.sentry.core.util.Objects;
 import java.io.File;
 import org.jetbrains.annotations.NotNull;
@@ -99,23 +97,14 @@ final class AndroidOptionsInitializer {
     // Firstly set the logger, if `debug=true` configured, logging can start asap.
     options.setLogger(logger);
 
-    options.setSentryClientName(BuildConfig.SENTRY_CLIENT_NAME + "/" + BuildConfig.VERSION_NAME);
-    options.setSdkInfo(
-        SdkInfo.createSdkInfo(BuildConfig.SENTRY_CLIENT_NAME, BuildConfig.VERSION_NAME));
-
     ManifestMetadataReader.applyMetadata(context, options);
     initializeCacheDirs(context, options);
 
-    final IEnvelopeReader envelopeReader = new EnvelopeReader();
-
-    installDefaultIntegrations(context, options, envelopeReader, buildInfoProvider, loadClass);
+    installDefaultIntegrations(context, options, buildInfoProvider, loadClass);
 
     readDefaultOptionValues(options, context);
 
-    options.addEventProcessor(
-        new DefaultAndroidEventProcessor(context, options, buildInfoProvider));
-
-    options.setSerializer(new AndroidSerializer(options.getLogger(), envelopeReader));
+    options.addEventProcessor(new DefaultAndroidEventProcessor(context, logger, buildInfoProvider));
 
     options.setTransportGate(new AndroidTransportGate(context, options.getLogger()));
   }
@@ -123,15 +112,25 @@ final class AndroidOptionsInitializer {
   private static void installDefaultIntegrations(
       final @NotNull Context context,
       final @NotNull SentryOptions options,
-      final @NotNull IEnvelopeReader envelopeReader,
       final @NotNull IBuildInfoProvider buildInfoProvider,
       final @NotNull ILoadClass loadClass) {
+
+    options.addIntegration(
+        new SendCachedEventFireAndForgetIntegration(
+            new SendFireAndForgetEventSender(() -> options.getCacheDirPath())));
+
+    options.addIntegration(
+        new SendCachedEventFireAndForgetIntegration(
+            new SendFireAndForgetEnvelopeSender(() -> options.getSessionsPath())));
 
     // Integrations are registered in the same order. NDK before adding Watch outbox,
     // because sentry-native move files around and we don't want to watch that.
     final Class<?> sentryNdkClass = loadNdkIfAvailable(options, buildInfoProvider, loadClass);
     options.addIntegration(new NdkIntegration(sentryNdkClass));
-    options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver(envelopeReader));
+
+    // this integration uses android.os.FileObserver, we can't move to sentry-core
+    // before creating a pure java impl.
+    options.addIntegration(EnvelopeFileObserverIntegration.getOutboxFileObserver());
 
     // Send cached envelopes from outbox path
     // this should be executed after NdkIntegration because sentry-native move files on init.
@@ -205,7 +204,7 @@ final class AndroidOptionsInitializer {
   }
 
   /**
-   * It creates the cache dirs like sentry, outbox and sessions
+   * Sets the cache dirs like sentry, outbox and sessions
    *
    * @param context the Application context
    * @param options the SentryOptions
@@ -213,19 +212,7 @@ final class AndroidOptionsInitializer {
   private static void initializeCacheDirs(
       final @NotNull Context context, final @NotNull SentryOptions options) {
     final File cacheDir = new File(context.getCacheDir(), "sentry");
-    cacheDir.mkdirs();
     options.setCacheDirPath(cacheDir.getAbsolutePath());
-
-    if (options.getOutboxPath() != null) {
-      new File(options.getOutboxPath()).mkdirs();
-    } else {
-      options.getLogger().log(SentryLevel.WARNING, "No outbox dir path is defined in options.");
-    }
-    if (options.getSessionsPath() != null) {
-      new File(options.getSessionsPath()).mkdirs();
-    } else {
-      options.getLogger().log(SentryLevel.WARNING, "No session dir path is defined in options.");
-    }
   }
 
   private static boolean isNdkAvailable(final @NotNull IBuildInfoProvider buildInfoProvider) {

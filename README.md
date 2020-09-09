@@ -5,7 +5,7 @@
   <br />
 </p>
 
-Android SDK for Sentry
+Sentry SDK for Android
 ===========
 [![Travis](https://img.shields.io/travis/getsentry/sentry-android?label=Travis)](https://travis-ci.com/getsentry/sentry-android)
 [![AppVeyor](https://img.shields.io/appveyor/build/sentry/sentry-android?label=AppVeyor)](https://ci.appveyor.com/project/sentry/sentry-android/branch/master)
@@ -27,7 +27,7 @@ Android SDK for Sentry
 
 That's the initial page of the release [2.x and its docs](https://docs.sentry.io/platforms/android).
 
-Migration page from [sentry-android 1.x to sentry-android 2.0](https://docs.sentry.io/platforms/android/migrate).
+Migration page from [sentry-android 1.x to sentry-android 2.0](https://docs.sentry.io/platforms/android/migration/).
 
 # Blog posts
 

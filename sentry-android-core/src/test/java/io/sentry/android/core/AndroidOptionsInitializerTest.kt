@@ -13,6 +13,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import io.sentry.core.ILogger
 import io.sentry.core.MainEventProcessor
+import io.sentry.core.SendCachedEventFireAndForgetIntegration
 import io.sentry.core.SentryLevel
 import io.sentry.core.SentryOptions
 import java.io.File
@@ -72,42 +73,33 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
-    fun `envelopesDir should be created at initialization`() {
+    fun `envelopesDir should be set at initialization`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
         assertTrue(sentryOptions.cacheDirPath?.endsWith("${File.separator}cache${File.separator}sentry")!!)
-        val file = File(sentryOptions.cacheDirPath!!)
-        assertTrue(file.exists())
-        file.deleteOnExit()
     }
 
     @Test
-    fun `outboxDir should be created at initialization`() {
+    fun `outboxDir should be set at initialization`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
         assertTrue(sentryOptions.outboxPath?.endsWith("${File.separator}cache${File.separator}sentry${File.separator}outbox")!!)
-        val file = File(sentryOptions.outboxPath!!)
-        assertTrue(file.exists())
-        file.deleteOnExit()
     }
 
     @Test
-    fun `sessionDir should be created at initialization`() {
+    fun `sessionDir should be set at initialization`() {
         val sentryOptions = SentryAndroidOptions()
         val mockContext = createMockContext()
 
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
 
         assertTrue(sentryOptions.sessionsPath?.endsWith("${File.separator}cache${File.separator}sentry${File.separator}sessions")!!)
-        val file = File(sentryOptions.sessionsPath!!)
-        assertTrue(file.exists())
-        file.deleteOnExit()
     }
 
     @Test
@@ -174,18 +166,6 @@ class AndroidOptionsInitializerTest {
 
         assertNotNull(sentryOptions.transportGate)
         assertTrue(sentryOptions.transportGate is AndroidTransportGate)
-    }
-
-    @Test
-    fun `init should set clientName`() {
-        val sentryOptions = SentryAndroidOptions()
-        val mockContext = createMockContext()
-
-        AndroidOptionsInitializer.init(sentryOptions, mockContext)
-
-        val clientName = "${BuildConfig.SENTRY_CLIENT_NAME}/${BuildConfig.VERSION_NAME}"
-
-        assertEquals(clientName, sentryOptions.sentryClientName)
     }
 
     @Test
@@ -291,6 +271,16 @@ class AndroidOptionsInitializerTest {
     }
 
     @Test
+    fun `SendCachedEventFireAndForgetIntegration added to integration list`() {
+        val sentryOptions = SentryAndroidOptions()
+        val mockContext = createMockContext()
+
+        AndroidOptionsInitializer.init(sentryOptions, mockContext)
+        val actual = sentryOptions.integrations.firstOrNull { it is SendCachedEventFireAndForgetIntegration }
+        assertNotNull(actual)
+    }
+
+    @Test
     fun `When given Context returns a non null ApplicationContext, uses it`() {
         val sentryOptions = SentryAndroidOptions()
         val mockApp = mock<Application>()
@@ -320,25 +310,6 @@ class AndroidOptionsInitializerTest {
         AndroidOptionsInitializer.init(sentryOptions, mockContext)
         val actual = sentryOptions.integrations.firstOrNull { it is ActivityBreadcrumbsIntegration }
         assertNull(actual)
-    }
-
-    @Test
-    fun `init should set SdkInfo`() {
-        val sentryOptions = SentryAndroidOptions()
-        val mockContext = mock<Context>()
-        whenever(mockContext.applicationContext).thenReturn(null)
-
-        AndroidOptionsInitializer.init(sentryOptions, mockContext)
-
-        assertNotNull(sentryOptions.sdkInfo)
-        val sdkInfo = sentryOptions.sdkInfo!!
-
-        assertEquals("sentry.java.android", sdkInfo.sdkName)
-
-        // versions change on every release, so lets check only if its not null
-        assertNotNull(sdkInfo.versionMajor)
-        assertNotNull(sdkInfo.versionMinor)
-        assertNotNull(sdkInfo.versionPatchlevel)
     }
 
     private fun createMockContext(): Context {

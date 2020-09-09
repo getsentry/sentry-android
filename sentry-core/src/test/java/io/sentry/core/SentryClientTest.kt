@@ -18,7 +18,7 @@ import io.sentry.core.hints.DiskFlushNotification
 import io.sentry.core.hints.SessionEndHint
 import io.sentry.core.hints.SessionUpdateHint
 import io.sentry.core.protocol.Request
-import io.sentry.core.protocol.SdkInfo
+import io.sentry.core.protocol.SdkVersion
 import io.sentry.core.protocol.SentryException
 import io.sentry.core.protocol.SentryId
 import io.sentry.core.protocol.User
@@ -31,6 +31,7 @@ import java.util.UUID
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -42,7 +43,10 @@ class SentryClientTest {
     class Fixture {
         var sentryOptions: SentryOptions = SentryOptions().apply {
             dsn = dsnString
-            sdkInfo = SdkInfo.createSdkInfo("test", "1.2.3")
+            sdkVersion = SdkVersion().apply {
+                name = "test"
+                version = "1.2.3"
+            }
         }
         var connection: AsyncConnection = mock()
         fun getSut() = SentryClient(sentryOptions, connection)
@@ -62,6 +66,12 @@ class SentryClientTest {
         fixture.sentryOptions.dsn = "invalid-dsn"
         val sut = fixture.getSut()
         assertFalse(sut.isEnabled)
+    }
+
+    @Test
+    fun `when dsn is an invalid string, client throws`() {
+        fixture.sentryOptions.dsn = "invalid-dsn"
+        assertFailsWith<InvalidDsnException> { fixture.getSut() }
     }
 
     @Test
@@ -371,7 +381,7 @@ class SentryClientTest {
             dsn = dsnString
         }
         val transport = HttpTransport(sentryOptions, mock(), 500, 500, false, URL("https://key@sentry.io/proj"))
-        sentryOptions.transport = transport
+        sentryOptions.setTransport(transport)
 
         val connection = mock<AsyncConnection>()
         SentryClient(sentryOptions, connection)
@@ -385,7 +395,7 @@ class SentryClientTest {
             dsn = dsnString
         }
         val transportGate = CustomTransportGate()
-        sentryOptions.transportGate = transportGate
+        sentryOptions.setTransportGate(transportGate)
 
         val connection = mock<AsyncConnection>()
         SentryClient(sentryOptions, connection)
@@ -403,7 +413,7 @@ class SentryClientTest {
         SentryClient(sentryOptions, connection)
 
         assertNotNull(sentryOptions.transportGate)
-        assertTrue(sentryOptions.transportGate!!.isConnected)
+        assertTrue(sentryOptions.transportGate.isConnected)
     }
 
     @Test
@@ -446,7 +456,7 @@ class SentryClientTest {
     fun `when captureSession, sdkInfo should be in the envelope header`() {
         fixture.getSut().captureSession(createSession())
         verify(fixture.connection).send(check<SentryEnvelope> {
-            assertNotNull(it.header.sdkInfo)
+            assertNotNull(it.header.sdkVersion)
         }, anyOrNull())
     }
 
@@ -614,6 +624,35 @@ class SentryClientTest {
             assertEquals(Session.State.Crashed, it!!.status)
             assertEquals(1, it.errorCount())
         }
+    }
+
+    @Test
+    fun `when context property is missing on the event, property from scope contexts is applied`() {
+        val sut = fixture.getSut()
+
+        val event = SentryEvent()
+        val scope = Scope(fixture.sentryOptions)
+        scope.setContexts("key", "value")
+        scope.startSession().current
+        sut.captureEvent(event, scope, null)
+        verify(fixture.connection).send(check<SentryEvent>() {
+            assertEquals("value", it.contexts["key"])
+        }, anyOrNull())
+    }
+
+    @Test
+    fun `when contexts property is set on the event, property from scope contexts is not applied`() {
+        val sut = fixture.getSut()
+
+        val event = SentryEvent()
+        event.contexts.put("key", "event value")
+        val scope = Scope(fixture.sentryOptions)
+        scope.setContexts("key", "scope value")
+        scope.startSession().current
+        sut.captureEvent(event, scope, null)
+        verify(fixture.connection).send(check<SentryEvent>() {
+            assertEquals("event value", it.contexts["key"])
+        }, anyOrNull())
     }
 
     private fun createScope(): Scope {

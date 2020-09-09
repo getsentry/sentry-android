@@ -23,7 +23,7 @@ android {
         versionName = project.version.toString()
         versionCode = project.properties[Config.Sentry.buildVersionCodeProp].toString().toInt()
 
-        buildConfigField("String", "SENTRY_CLIENT_NAME", "\"${Config.Sentry.SENTRY_CLIENT_NAME}\"")
+        buildConfigField("String", "SENTRY_ANDROID_SDK_NAME", "\"${Config.Sentry.SENTRY_ANDROID_SDK_NAME}\"")
     }
 
     buildTypes {
@@ -68,9 +68,6 @@ android {
 
 dependencies {
     api(project(":sentry-core"))
-
-    // json parser
-    implementation(Config.Libs.gson)
 
     // lifecycle processor, session tracking
     implementation(Config.Libs.lifecycleProcess)

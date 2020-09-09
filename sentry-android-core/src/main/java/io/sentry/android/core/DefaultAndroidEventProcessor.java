@@ -14,26 +14,24 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.LocaleList;
-import android.os.Looper;
 import android.os.StatFs;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import io.sentry.android.core.util.ConnectivityChecker;
 import io.sentry.android.core.util.DeviceOrientations;
+import io.sentry.android.core.util.MainThreadChecker;
 import io.sentry.android.core.util.RootChecker;
 import io.sentry.core.DateUtils;
 import io.sentry.core.EventProcessor;
 import io.sentry.core.ILogger;
 import io.sentry.core.SentryEvent;
 import io.sentry.core.SentryLevel;
-import io.sentry.core.SentryOptions;
 import io.sentry.core.protocol.App;
 import io.sentry.core.protocol.DebugImage;
 import io.sentry.core.protocol.DebugMeta;
 import io.sentry.core.protocol.Device;
 import io.sentry.core.protocol.OperatingSystem;
-import io.sentry.core.protocol.SdkVersion;
 import io.sentry.core.protocol.SentryThread;
 import io.sentry.core.protocol.User;
 import io.sentry.core.util.ApplyScopeUtils;
@@ -70,11 +68,9 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   @TestOnly static final String EMULATOR = "emulator";
 
   // it could also be a parameter and get from Sentry.init(...)
-  private static final Date appStartTime = DateUtils.getCurrentDateTime();
+  private static final @Nullable Date appStartTime = DateUtils.getCurrentDateTimeOrNull();
 
   @TestOnly final Context context;
-
-  private final SentryOptions options;
 
   @TestOnly final Future<Map<String, Object>> contextData;
 
@@ -85,23 +81,18 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
   public DefaultAndroidEventProcessor(
       final @NotNull Context context,
-      final @NotNull SentryOptions options,
+      final @NotNull ILogger logger,
       final @NotNull IBuildInfoProvider buildInfoProvider) {
-    this(
-        context,
-        options,
-        buildInfoProvider,
-        new RootChecker(context, buildInfoProvider, options.getLogger()));
+    this(context, logger, buildInfoProvider, new RootChecker(context, buildInfoProvider, logger));
   }
 
   DefaultAndroidEventProcessor(
       final @NotNull Context context,
-      final @NotNull SentryOptions options,
+      final @NotNull ILogger logger,
       final @NotNull IBuildInfoProvider buildInfoProvider,
       final @NotNull RootChecker rootChecker) {
     this.context = Objects.requireNonNull(context, "The application context is required.");
-    this.options = Objects.requireNonNull(options, "The SentryOptions is required.");
-    this.logger = Objects.requireNonNull(options.getLogger(), "The Logger is required.");
+    this.logger = Objects.requireNonNull(logger, "The Logger is required.");
     this.buildInfoProvider =
         Objects.requireNonNull(buildInfoProvider, "The BuildInfoProvider is required.");
     this.rootChecker = Objects.requireNonNull(rootChecker, "The RootChecker is required.");
@@ -175,9 +166,6 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
     if (event.getDebugMeta() == null) {
       event.setDebugMeta(getDebugMeta());
     }
-    if (event.getSdk() == null) {
-      event.setSdk(getSdkVersion());
-    }
 
     PackageInfo packageInfo = ContextUtils.getPackageInfo(context, logger);
     if (packageInfo != null) {
@@ -193,7 +181,7 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
     if (event.getThreads() != null) {
       for (SentryThread thread : event.getThreads()) {
-        thread.setCurrent(Looper.getMainLooper().getThread().getId() == thread.getId());
+        thread.setCurrent(MainThreadChecker.isMainThread(thread));
       }
     }
   }
@@ -235,28 +223,12 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
 
     DebugMeta debugMeta = new DebugMeta();
     debugMeta.setImages(debugImages);
-    debugMeta.setSdkInfo(options.getSdkInfo());
     return debugMeta;
   }
 
   private void setAppExtras(final @NotNull App app) {
     app.setAppName(getApplicationName());
     app.setAppStartTime(appStartTime);
-  }
-
-  private @NotNull SdkVersion getSdkVersion() {
-    SdkVersion sdkVersion = new SdkVersion();
-
-    sdkVersion.setName("sentry.java.android");
-    String version = BuildConfig.VERSION_NAME;
-    sdkVersion.setVersion(version);
-    sdkVersion.addPackage("maven:sentry-core", version);
-    sdkVersion.addPackage("maven:sentry-android-core", version);
-    if (options.isEnableNdk()) {
-      sdkVersion.addPackage("maven:sentry-android-ndk", version);
-    }
-
-    return sdkVersion;
   }
 
   @SuppressWarnings("deprecation")
@@ -414,10 +386,15 @@ final class DefaultAndroidEventProcessor implements EventProcessor {
   }
 
   @SuppressWarnings("JdkObsolete")
-  private @NotNull Date getBootTime() {
-    // if user changes time, will give a wrong answer, consider ACTION_TIME_CHANGED
-    return DateUtils.getDateTime(
-        new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime()));
+  private @Nullable Date getBootTime() {
+    try {
+      // if user changes time, will give a wrong answer, consider ACTION_TIME_CHANGED
+      return DateUtils.getDateTime(
+          new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime()));
+    } catch (IllegalArgumentException e) {
+      logger.log(SentryLevel.ERROR, e, "Error getting the device's boot time.");
+    }
+    return null;
   }
 
   private @NotNull String getResolution(final @NotNull DisplayMetrics displayMetrics) {
