@@ -163,9 +163,11 @@ abstract class CacheStrategy {
           continue;
         }
 
-        // if its already true, nothing to do
         final Boolean init = session.getInit();
         if (init != null && init) {
+          options
+              .getLogger()
+              .log(ERROR, "Session %s has 2 times the init flag.", currentSession.getSessionId());
           return;
         }
 
@@ -182,7 +184,7 @@ abstract class CacheStrategy {
                 .log(
                     ERROR,
                     e,
-                    "Failed to create new envelope item for the currentSession %s",
+                    "Failed to create new envelope item for the session %s",
                     currentSession.getSessionId());
           }
 
@@ -205,11 +207,6 @@ abstract class CacheStrategy {
 
         saveNewEnvelope(newEnvelope, notDeletedFile, notDeletedFileTimestamp);
         break;
-      } else {
-        // TODO: if theres no more files with that session id, should we still delete it?
-        // that means the next session update will be init=false but the one
-        // with init=true will be deleted.
-        // either we don't delete it or we generate a new envelope only with that session.
       }
     }
   }
