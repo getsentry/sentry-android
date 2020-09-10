@@ -5,6 +5,7 @@ object Config {
     val kotlinStdLib = "stdlib-jdk8"
 
     val springBootVersion = "2.3.3.RELEASE"
+    val springKotlinCompatibleLanguageVersion = "1.3"
 
     object BuildPlugins {
         val androidGradle = "com.android.tools.build:gradle:4.0.1"
