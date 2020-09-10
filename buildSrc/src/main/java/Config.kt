@@ -1,5 +1,5 @@
 object Config {
-    val kotlinVersion = "1.4.0"
+    val kotlinVersion = "1.4.10"
     val kotlinStdLib = "stdlib-jdk8"
 
     object BuildPlugins {
@@ -10,9 +10,8 @@ object Config {
     }
 
     object Android {
-        private val sdkVersion = 29
+        private val sdkVersion = 30
 
-        val buildToolsVersion = "29.0.3"
         val minSdkVersion = 14
         val minSdkVersionNdk = 16
         val targetSdkVersion = sdkVersion
