@@ -252,7 +252,6 @@ public class HttpTransport implements ITransport {
 
     connection.setRequestMethod("POST");
     connection.setDoOutput(true);
-    connection.setChunkedStreamingMode(0);
 
     connection.setRequestProperty("Content-Encoding", "gzip");
     connection.setRequestProperty("Content-Type", contentType);
